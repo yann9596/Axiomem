@@ -3,12 +3,13 @@
 from __future__ import annotations
 
 import argparse
+import hashlib
 import json
 import re
 import shutil
 import sqlite3
 import sys
-from datetime import datetime
+from datetime import datetime, timezone
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -220,41 +221,263 @@ def safe_fts_query(query: str) -> str:
     return " OR ".join(f'"{token}"' for token in tokens)
 
 
-def cmd_retrieve(args: argparse.Namespace) -> int:
-    if args.embedding_query:
-        raise ValidationError("embedding retrieval is disabled: interface reserved, model not selected")
+def now_iso() -> str:
+    return datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
+
+
+def search_units(query: str, tag: str | None, scope: str | None, min_importance: int, min_confidence: float, limit: int, relations: bool = False) -> list[dict]:
     if not DB.exists():
         raise ValidationError("index/memory.db missing; run rebuild-index")
     conn = sqlite3.connect(DB)
     conn.row_factory = sqlite3.Row
     try:
         where = ["m.importance >= ?", "m.confidence >= ?"]
-        params: list[object] = [args.min_importance, args.min_confidence]
-        if args.tag:
+        params: list[object] = [min_importance, min_confidence]
+        if tag:
             where.append("EXISTS (SELECT 1 FROM json_each(m.tags_json) WHERE value = ?)")
-            params.append(args.tag)
-        if args.scope:
+            params.append(tag)
+        if scope:
             where.append("m.scope = ?")
-            params.append(args.scope)
-        fts = safe_fts_query(args.query)
+            params.append(scope)
+        fts = safe_fts_query(query)
         if fts:
             sql = "SELECT m.*, bm25(memory_fts) AS rank FROM memory_fts JOIN memory_units m ON m.id=memory_fts.id WHERE memory_fts MATCH ? AND " + " AND ".join(where) + " ORDER BY rank, m.importance DESC LIMIT ?"
-            rows = conn.execute(sql, [fts, *params, args.limit]).fetchall()
+            rows = conn.execute(sql, [fts, *params, limit]).fetchall()
         else:
-            rows = conn.execute("SELECT m.*, 0 AS rank FROM memory_units m WHERE " + " AND ".join(where) + " ORDER BY importance DESC LIMIT ?", [*params, args.limit]).fetchall()
+            rows = conn.execute("SELECT m.*, 0 AS rank FROM memory_units m WHERE " + " AND ".join(where) + " ORDER BY importance DESC LIMIT ?", [*params, limit]).fetchall()
         results = []
         for row in rows:
             item = {key: row[key] for key in ["id", "title", "summary", "status", "scope", "importance", "confidence", "updated_at", "path"]}
             item["tags"] = json.loads(row["tags_json"])
             item["sources"] = [r[0] for r in conn.execute("SELECT source_id FROM source_refs WHERE memory_id=?", (row["id"],))]
-            if args.relations:
+            if relations:
                 item["relationships"] = [dict(r) for r in conn.execute("SELECT source_id, relation_type, target_id, note FROM relationships WHERE source_id=? OR target_id=?", (row["id"], row["id"]))]
                 item["chains"] = [dict(r) for r in conn.execute("SELECT c.id, c.title, cm.ordinal FROM chain_members cm JOIN chains c ON c.id=cm.chain_id WHERE cm.memory_id=? ORDER BY cm.ordinal", (row["id"],))]
             results.append(item)
-        print(json.dumps({"query": args.query, "count": len(results), "retrieval": "sqlite_fts5_metadata", "embedding_provider": "disabled", "results": results}, ensure_ascii=False, indent=2))
-        return 0
+        return results
     finally:
         conn.close()
+
+
+def index_unit(unit_id: str) -> dict | None:
+    if not DB.exists():
+        raise ValidationError("index/memory.db missing; run rebuild-index")
+    conn = sqlite3.connect(DB)
+    conn.row_factory = sqlite3.Row
+    try:
+        row = conn.execute("SELECT * FROM memory_units WHERE id=?", (unit_id,)).fetchone()
+        if row is None:
+            return None
+        item = {key: row[key] for key in ["id", "title", "summary", "status", "scope", "importance", "confidence", "updated_at", "path"]}
+        item["tags"] = json.loads(row["tags_json"])
+        item["sources"] = [r[0] for r in conn.execute("SELECT source_id FROM source_refs WHERE memory_id=?", (unit_id,))]
+        item["relationships"] = [dict(r) for r in conn.execute("SELECT source_id, relation_type, target_id, note FROM relationships WHERE source_id=? OR target_id=?", (unit_id, unit_id))]
+        return item
+    finally:
+        conn.close()
+
+
+def cmd_retrieve(args: argparse.Namespace) -> int:
+    if args.embedding_query:
+        raise ValidationError("embedding retrieval is disabled: interface reserved, model not selected")
+    results = search_units(args.query, args.tag, args.scope, args.min_importance, args.min_confidence, args.limit, args.relations)
+    print(json.dumps({"query": args.query, "count": len(results), "retrieval": "sqlite_fts5_metadata", "embedding_provider": "disabled", "results": results}, ensure_ascii=False, indent=2))
+    return 0
+
+
+def challenge_signals() -> list[dict]:
+    return [doc for p in json_files(ROOT / "sources") if (doc := load_json(p)).get("kind") == "external_signal" and doc.get("source_type") == "memory_challenge"]
+
+
+def cmd_get(args: argparse.Namespace) -> int:
+    query = args.query or f"{args.task_id} {args.decision}"
+    included: dict[str, dict] = {}
+    reasons: dict[str, list[str]] = {}
+    for item in search_units(query, args.tag, args.scope, args.min_importance, args.min_confidence, args.limit, True):
+        included[item["id"]] = item
+        reasons[item["id"]] = [f"retrieval match for query '{query}'"]
+    if args.chain:
+        chain_path = ROOT / "chains" / f"{args.chain}.json"
+        if not chain_path.exists():
+            raise ValidationError(f"{chain_path}: chain not found")
+        chain = load_json(chain_path)
+        validate(chain, chain_path)
+        for mid in chain["memory_ids"]:
+            item = index_unit(mid)
+            if item is None:
+                continue
+            included.setdefault(mid, item)
+            reasons.setdefault(mid, []).append(f"chain member of {args.chain} ({chain['title']})")
+    known_facts = []
+    relevant_memory = []
+    conflicts = []
+    missing_context = []
+    for uid, item in included.items():
+        known_facts.append({"fact": f"{item['title']} — {item['summary']}", "source": f"memory_unit:{uid}; sources: {', '.join(item['sources']) or 'none'}", "confidence": item["confidence"]})
+        relevant_memory.append({"memory_id": uid, "reason": "; ".join(reasons.get(uid, ["included"]))})
+        for rel in item.get("relationships", []):
+            if rel["relation_type"] == "conflicts_with":
+                other = rel["target_id"] if rel["source_id"] == uid else rel["source_id"]
+                line = f"memory_unit:{uid} conflicts_with memory_unit:{other}" + (f" — {rel['note']}" if rel.get("note") else "")
+                if line not in conflicts:
+                    conflicts.append(line)
+    missing_unit_ids = {rel["target_id"] for item in included.values() for rel in item.get("relationships", [])} - set(included)
+    for tid in sorted(missing_unit_ids):
+        missing_context.append(f"memory_unit:{tid} is referenced by included units but not included or indexed")
+    for sig in challenge_signals():
+        target = str(sig.get("locator", "")).removeprefix("memory_unit:")
+        if target in included:
+            conflicts.append(f"challenge signal {sig['id']} on memory_unit:{target} — {sig['summary']} (reliability: {sig['reliability']})")
+    if not included:
+        missing_context.append("no indexed memory matched; sufficiency must be judged and filled by the Context Engineer")
+    candidates = []
+    cdir = ROOT / "sources" / "candidates"
+    if cdir.exists():
+        for p in json_files(cdir):
+            doc = load_json(p)
+            if doc.get("kind") == "memory_candidate" and doc.get("status") == "candidate":
+                candidates.append(doc["id"])
+    package = {
+        "schema_version": "1.0",
+        "kind": "context_package",
+        "task_id": args.task_id,
+        "role": args.role,
+        "decision": args.decision,
+        "known_facts": known_facts,
+        "relevant_memory": relevant_memory,
+        "confidence": round(min(item["confidence"] for item in included.values()), 2) if included else 0.0,
+        "conflicts": conflicts,
+        "missing_context": missing_context,
+        "memory_candidates": candidates,
+        "generated_at": now_iso(),
+    }
+    print(json.dumps(package, ensure_ascii=False, indent=2))
+    return 0
+
+
+def first_sentence(text: str) -> str:
+    match = re.split(r"(?<=[.!?。！？])\s+", text.strip(), maxsplit=1)
+    summary = match[0] if match and match[0] else text.strip()
+    return summary[:200].rstrip() + ("…" if len(summary) > 200 else "")
+
+
+def cmd_promote(args: argparse.Namespace) -> int:
+    if args.actor_role != "Context Engineer":
+        raise ValidationError("promote requires --actor-role \"Context Engineer\" (no unreviewed auto-promotion)")
+    cpath = ROOT / "sources" / "candidates" / f"{args.candidate_id}.json"
+    if not cpath.exists():
+        raise ValidationError(f"{cpath}: candidate not found")
+    cand = load_json(cpath)
+    validate(cand, cpath)
+    if cand.get("kind") != "memory_candidate":
+        raise ValidationError(f"{cpath}: not a memory_candidate")
+    if cand["status"] == "promoted":
+        raise ValidationError(f"{cpath}: candidate was already promoted; audit trail is preserved and cannot re-promote")
+    if cand["status"] != "candidate":
+        raise ValidationError(f"{cpath}: candidate status is '{cand['status']}'; only 'candidate' records can be promoted")
+    unit_id = args.unit_id or cand["id"]
+    if not ID_RE.fullmatch(unit_id):
+        raise ValidationError(f"invalid memory unit id: {unit_id}")
+    unit_path = ROOT / "memory" / f"{unit_id}.json"
+    if unit_path.exists():
+        raise ValidationError(f"{unit_path}: memory unit already exists; promote never overwrites")
+    unit_ids = {p.stem for p in json_files(ROOT / "memory")}
+    source_ids = {p.stem for p in json_files(ROOT / "sources")} | {p.stem for p in json_files(ROOT / "sources" / "candidates")} | {cand["id"]}
+    relationships = []
+    for rel in cand.get("relationships", []):
+        if not isinstance(rel, dict) or rel.get("type") not in {"supports", "conflicts_with", "supersedes", "depends_on", "related_to"} or not rel.get("target_id"):
+            raise ValidationError(f"{cpath}: invalid relationship in candidate: {rel}")
+        if rel["target_id"] not in unit_ids and rel["target_id"] != unit_id:
+            raise ValidationError(f"{cpath}: relationship target memory_unit:{rel['target_id']} does not exist; fix the candidate before promoting")
+        relationships.append({"type": rel["type"], "target_id": rel["target_id"], "note": rel.get("note", "")})
+    bad_sources = [sid for sid in cand["source_ids"] if sid not in source_ids]
+    if bad_sources:
+        raise ValidationError(f"{cpath}: source ids not found in sources/: {', '.join(bad_sources)}")
+    tags = [t.strip() for t in args.tags.split(",") if t.strip()] if args.tags else []
+    ts = now_iso()
+    unit = {
+        "schema_version": "1.0",
+        "kind": "memory_unit",
+        "id": unit_id,
+        "title": cand["proposed_title"],
+        "summary": args.summary or first_sentence(cand["proposed_content"]),
+        "content": cand["proposed_content"],
+        "status": "canonical",
+        "scope": cand["classification"],
+        "importance": args.importance if args.importance is not None else cand["importance"],
+        "confidence": args.confidence if args.confidence is not None else cand["confidence"],
+        "tags": tags,
+        "relationships": relationships,
+        "sources": cand["source_ids"],
+        "created_at": ts,
+        "updated_at": ts,
+        "verified_at": ts,
+        "verified_by": "Context Engineer",
+    }
+    validate(unit, unit_path)
+    if args.dry_run:
+        print(json.dumps({"dry_run": True, "unit": unit, "candidate_update": {"status": "promoted", "reviewed_at": ts, "review_note": args.review_note or f"promoted to memory/{unit_id}.json by Context Engineer"}}, ensure_ascii=False, indent=2))
+        return 0
+    backup = cpath.read_text(encoding="utf-8")
+    wrote_unit = False
+    try:
+        unit_path.write_text(json.dumps(unit, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+        wrote_unit = True
+        cand["status"] = "promoted"
+        cand["reviewed_at"] = ts
+        cand["review_note"] = args.review_note or f"promoted to memory/{unit_id}.json by Context Engineer"
+        cpath.write_text(json.dumps(cand, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+        stats = rebuild()
+        verification = check_all()
+    except Exception:
+        if wrote_unit and unit_path.exists():
+            unit_path.unlink()
+        cpath.write_text(backup, encoding="utf-8")
+        raise
+    print(json.dumps({"promoted": unit_id, "unit": str(unit_path.relative_to(ROOT)), "candidate": str(cpath.relative_to(ROOT)) + " marked promoted (audit preserved)", "index": stats, "verify": verification}, ensure_ascii=False))
+    return 0
+
+
+def cmd_challenge(args: argparse.Namespace) -> int:
+    if not ID_RE.fullmatch(args.unit_id):
+        raise ValidationError(f"invalid memory unit id: {args.unit_id}")
+    reason = args.reason.strip()
+    if not reason:
+        raise ValidationError("--reason must not be empty")
+    actor = args.actor.strip()
+    if not actor:
+        raise ValidationError("--actor must not be empty")
+    upath = ROOT / "memory" / f"{args.unit_id}.json"
+    if not upath.exists():
+        raise ValidationError(f"{upath}: memory unit not found; nothing to challenge")
+    unit = load_json(upath)
+    validate(unit, upath)
+    ts = now_iso()
+    sig_id = f"challenge-{args.unit_id[:80]}-{datetime.now(timezone.utc).strftime('%Y%m%d-%H%M%S')}"
+    if not ID_RE.fullmatch(sig_id):
+        raise ValidationError(f"generated challenge id is invalid: {sig_id}")
+    signal = {
+        "schema_version": "1.0",
+        "kind": "external_signal",
+        "id": sig_id,
+        "source_type": "memory_challenge",
+        "locator": f"memory_unit:{args.unit_id}",
+        "captured_at": ts,
+        "observed_at": ts,
+        "summary": reason,
+        "reliability": "disputed",
+        "content_hash": f"sha256:{hashlib.sha256(upath.read_bytes()).hexdigest()}",
+        "notes": f"challenged by {actor}; unit status: {unit['status']}; pending Context Engineer adjudication",
+    }
+    validate(signal, upath)
+    target = ROOT / "sources" / f"{sig_id}.json"
+    if args.dry_run:
+        print(json.dumps({"dry_run": True, "challenge": signal, "target": str(target.relative_to(ROOT)), "unit_untouched": str(upath.relative_to(ROOT))}, ensure_ascii=False, indent=2))
+        return 0
+    target.write_text(json.dumps(signal, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+    check_all()
+    print(json.dumps({"recorded": str(target.relative_to(ROOT)), "challenge": signal["id"], "unit_untouched": str(upath.relative_to(ROOT)), "note": "challenge recorded for Context Engineer adjudication; the canonical unit was not modified"}, ensure_ascii=False))
+    return 0
 
 
 def parser() -> argparse.ArgumentParser:
@@ -280,6 +503,35 @@ def parser() -> argparse.ArgumentParser:
     retrieve.add_argument("--relations", action="store_true")
     retrieve.add_argument("--embedding-query", action="store_true")
     retrieve.set_defaults(func=cmd_retrieve)
+    get_p = sub.add_parser("get", help="assemble a Context Package for a task x role (retrieval + chains; sufficiency is judged by the Context Engineer, not automated)")
+    get_p.add_argument("task_id")
+    get_p.add_argument("role")
+    get_p.add_argument("decision")
+    get_p.add_argument("--query", default="", help="retrieval query; defaults to '<task_id> <decision>'")
+    get_p.add_argument("--chain", help="include every member of this memory chain")
+    get_p.add_argument("--tag")
+    get_p.add_argument("--scope", choices=sorted(SCOPES))
+    get_p.add_argument("--min-importance", type=int, default=1)
+    get_p.add_argument("--min-confidence", type=float, default=0.0)
+    get_p.add_argument("--limit", type=int, default=10)
+    get_p.set_defaults(func=cmd_get)
+    promote_p = sub.add_parser("promote", help="promote one reviewed memory_candidate to a canonical memory_unit (Context Engineer only)")
+    promote_p.add_argument("candidate_id")
+    promote_p.add_argument("--actor-role", default="")
+    promote_p.add_argument("--unit-id", help="override the canonical unit id (default: candidate id)")
+    promote_p.add_argument("--summary", help="unit summary; defaults to the first sentence of proposed_content")
+    promote_p.add_argument("--tags", help="comma-separated tags")
+    promote_p.add_argument("--importance", type=int, choices=range(1, 6))
+    promote_p.add_argument("--confidence", type=float)
+    promote_p.add_argument("--review-note", help="audit note recorded on the promoted candidate")
+    promote_p.add_argument("--dry-run", action="store_true")
+    promote_p.set_defaults(func=cmd_promote)
+    challenge_p = sub.add_parser("challenge", help="record a challenge against a memory_unit without modifying it (output feeds Context Engineer adjudication)")
+    challenge_p.add_argument("unit_id")
+    challenge_p.add_argument("--reason", required=True)
+    challenge_p.add_argument("--actor", required=True, help="who raises the challenge, e.g. 'Solution Architect'")
+    challenge_p.add_argument("--dry-run", action="store_true")
+    challenge_p.set_defaults(func=cmd_challenge)
     return p
 
 

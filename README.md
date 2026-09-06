@@ -35,6 +35,9 @@ python tools/memory_cli.py verify
 python tools/memory_cli.py rebuild-index
 python tools/memory_cli.py retrieve "owner boundary" --limit 5
 python tools/memory_cli.py retrieve "Context Engineer" --tag governance --relations
+python tools/memory_cli.py get "TASK-ID" "Software Engineer" "decide the approach" --chain web-imagegen-pilot
+python tools/memory_cli.py promote <candidate-id> --actor-role "Context Engineer" --dry-run
+python tools/memory_cli.py challenge <unit-id> --reason "what is disputed" --actor "Solution Architect"
 ```
 
 `ingest` routes candidates and external signals to `sources/`; only canonical
@@ -49,6 +52,22 @@ When FTS query syntax is unsuitable it safely falls back to tokenized matching.
 The reserved `--embedding-query` switch intentionally fails with an explanatory
 message. V1 stores `embedding_provider=disabled`; no embedding model has been
 selected and semantic-vector retrieval must not be claimed as active.
+
+`get` assembles a Context Package (see `schemas/context-package.schema.json`)
+from retrieval plus an optional chain: known facts, relevant memory, declared
+conflicts and recorded challenges, structural gaps, and pending candidates. It
+performs retrieval and formatting only; sufficiency is judged by the Context
+Engineer, not automated.
+
+`promote` turns one reviewed candidate in `sources/candidates/` into a canonical
+Memory Unit. It requires `--actor-role "Context Engineer"`, never overwrites an
+existing unit, marks the candidate `promoted` (audit preserved), rebuilds the
+index and verifies. `--dry-run` prints the plan without writing.
+
+`challenge` records a dispute against a canonical unit as a `disputed` external
+signal (`source_type: memory_challenge`) under `sources/`, hashing the unit
+file's content; the unit itself is never modified or deleted. `get` surfaces
+challenges as conflicts for Context Engineer adjudication.
 
 ## Review checklist before canonicalization
 
