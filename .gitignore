@@ -1,0 +1,5 @@
+index/memory.db-shm
+index/memory.db-wal
+__pycache__/
+*.pyc
+

@@ -1,0 +1,14 @@
+{
+  "schema_version": "1.0",
+  "kind": "external_signal",
+  "id": "project-context-2026-09-06",
+  "source_type": "project_context",
+  "locator": "Multica project: Multica智能体团队V1落地",
+  "captured_at": "2026-09-06T00:00:00Z",
+  "observed_at": "2026-09-06T00:00:00Z",
+  "summary": "Project owner model and non-negotiable repository/memory constraints.",
+  "reliability": "authoritative",
+  "content_hash": "manual-project-context-v1",
+  "notes": "Captured from the active project's durable context; no secrets or chat transcript retained."
+}
+

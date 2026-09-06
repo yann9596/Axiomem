@@ -1,0 +1,20 @@
+{
+  "schema_version": "1.0",
+  "kind": "memory_unit",
+  "id": "governance-owner-boundaries",
+  "title": "Six-role owner boundaries",
+  "summary": "Context Engineer owns canonical memory and RAG; other roles retain their explicit project responsibilities.",
+  "content": "Engineering Lead owns project scope, priority, task decomposition and routing. Context Engineer is the sole normal write owner for Project Memory, Team Memory, Task Context, Canonical Memory and RAG. Solution Architect owns technical design; Software Engineer owns product implementation; Feature Reviewer owns functional review and external/user signals; QA owns milestone quality conclusions. Any role may challenge, but unresolved cross-role disagreement escalates to Engineering Lead after one round trip.",
+  "status": "canonical",
+  "scope": "team",
+  "importance": 5,
+  "confidence": 1.0,
+  "tags": ["governance", "ownership", "context"],
+  "relationships": [],
+  "sources": ["project-context-2026-09-06"],
+  "created_at": "2026-09-06T00:00:00Z",
+  "updated_at": "2026-09-06T00:00:00Z",
+  "verified_at": "2026-09-06T00:00:00Z",
+  "verified_by": "Context Engineer"
+}
+

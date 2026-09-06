@@ -1,0 +1,18 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://multica.local/schemas/memory-chain.schema.json",
+  "title": "Memory Chain",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "kind", "id", "title", "description", "scope", "memory_ids", "tags", "created_at", "updated_at"],
+  "properties": {
+    "schema_version": {"const": "1.0"}, "kind": {"const": "memory_chain"},
+    "id": {"type": "string", "pattern": "^[a-z0-9][a-z0-9._-]{2,127}$"},
+    "title": {"type": "string", "minLength": 1}, "description": {"type": "string"},
+    "scope": {"enum": ["project", "team", "task", "role", "decision"]},
+    "memory_ids": {"type": "array", "minItems": 1, "items": {"type": "string"}, "uniqueItems": true},
+    "tags": {"type": "array", "items": {"type": "string"}, "uniqueItems": true},
+    "created_at": {"type": "string", "format": "date-time"}, "updated_at": {"type": "string", "format": "date-time"}
+  }
+}
+
