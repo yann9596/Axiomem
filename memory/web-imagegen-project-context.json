@@ -1,0 +1,21 @@
+{
+  "schema_version": "1.0",
+  "kind": "memory_unit",
+  "id": "web-imagegen-project-context",
+  "title": "Web-ImageGen project context and non-negotiable constraints",
+  "summary": "Pilot project: browser-based image generation on the user's own account; product repo, local checkout, and hard collaboration boundaries set by the project owner.",
+  "content": "Goal: 调用用户浏览器生图，不占用订阅额度（用户浏览器内完成生图，不消耗平台订阅额度）。Product repo: https://github.com/yann9596/Web-ImageGen.git, default branch main; local product repo: D:\\AI\\projects\\opencode-web-imagegen. Non-negotiable constraints: (1) never clean, overwrite, commit, or discard the product repo's current uncommitted and untracked content; (2) product tasks run in an independent worktree; (3) product code writes are owned solely by Software Engineer; (4) Canonical Memory writes are owned solely by Context Engineer; (5) QA must not modify the implementation and then self-PASS; (6) no Neo4j, no full-chat vectorization, no fully automatic merge; (7) final merge is reserved for a human. Memory entry point for this team: D:\\AI\\multica-memory (in_place), canonical units under memory/, rebuildable SQLite FTS index at index/memory.db; RAG V1 uses SQLite FTS plus metadata and limited relations, and embedding remains interface-only (not enabled, no model selected). Platform permissions are not hard isolation; non-implementation-role write restrictions are enforced first by Instructions, with real hard boundaries (separate Git credentials, branch protection, ACLs, MCP/runtime tool isolation) to be added separately.",
+  "status": "canonical",
+  "scope": "project",
+  "importance": 5,
+  "confidence": 1.0,
+  "tags": ["project", "web-imagegen", "constraints", "pilot", "memory"],
+  "relationships": [
+    {"type": "related_to", "target_id": "governance-owner-boundaries", "note": "Project-level instance of the team owner model"}
+  ],
+  "sources": ["web-imagegen-project-context-2026-09-06", "project-context-2026-09-06"],
+  "created_at": "2026-09-06T08:55:00Z",
+  "updated_at": "2026-09-06T08:55:00Z",
+  "verified_at": "2026-09-06T08:55:00Z",
+  "verified_by": "Context Engineer"
+}

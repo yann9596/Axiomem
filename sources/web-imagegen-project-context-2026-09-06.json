@@ -1,0 +1,13 @@
+{
+  "schema_version": "1.0",
+  "kind": "external_signal",
+  "id": "web-imagegen-project-context-2026-09-06",
+  "source_type": "project_context",
+  "locator": "Multica project: Web-ImageGen (id 19a54e43-57eb-4823-8bd2-4e026addcea7); runtime workspace context and bound resources.json",
+  "captured_at": "2026-09-06T08:55:00Z",
+  "observed_at": "2026-09-06T08:55:00Z",
+  "summary": "Web-ImageGen pilot project: product goal, bound GitHub repo, local product repo, and non-negotiable collaboration constraints set by the project owner.",
+  "reliability": "authoritative",
+  "content_hash": "manual-project-context-web-imagegen-v1",
+  "notes": "Captured from the active Multica project context and .multica/project/resources.json; no secrets or chat transcripts retained."
+}

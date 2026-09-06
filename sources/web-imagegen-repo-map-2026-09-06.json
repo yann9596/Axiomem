@@ -1,0 +1,13 @@
+{
+  "schema_version": "1.0",
+  "kind": "external_signal",
+  "id": "web-imagegen-repo-map-2026-09-06",
+  "source_type": "code",
+  "locator": "D:\\AI\\projects\\opencode-web-imagegen README.md @ 72db245 (committed state, read-only survey)",
+  "captured_at": "2026-09-06T09:15:00Z",
+  "observed_at": "2026-09-06T09:15:00Z",
+  "summary": "Provider-neutral generation architecture, Codex-Chrome-only grok boundary, no-MCP/Playwright/CDP constraint, output layout, privacy rules, npm test entry.",
+  "reliability": "authoritative",
+  "content_hash": "readme-72db245-survey-v1",
+  "notes": "Captured via git show HEAD:README.md in the local product repo; working tree was dirty, committed revision cited for stability."
+}

@@ -1,0 +1,12 @@
+{
+  "schema_version": "1.0",
+  "kind": "memory_chain",
+  "id": "web-imagegen-pilot",
+  "title": "Web-ImageGen pilot context chain",
+  "description": "Minimum sufficient context to load before starting any Web-ImageGen task: project constraints plus team owner boundaries.",
+  "scope": "project",
+  "memory_ids": ["web-imagegen-project-context", "web-imagegen-repo-map", "governance-owner-boundaries"],
+  "tags": ["pilot", "project", "web-imagegen", "context"],
+  "created_at": "2026-09-06T08:55:00Z",
+  "updated_at": "2026-09-06T08:55:00Z"
+}

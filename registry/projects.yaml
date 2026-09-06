@@ -1,0 +1,14 @@
+# Multica 项目注册表(plan V1 §34,V1 简化版:共享单一记忆仓 D:\AI\multica-memory,用 tags 区分项目;独立 per-project context repo 为 P1 演进项)
+# Context Engineer 通过此表确认任务归属;跨项目检索默认禁止,除非链或关系显式指向。
+projects:
+  - id: 19a54e43-57eb-4823-8bd2-4e026addcea7
+    name: Web-ImageGen
+    goal: 调用用户浏览器生图,不占用订阅额度
+    memory_tags: [web-imagegen]
+    memory_chain: web-imagegen-pilot
+    context_repo: D:\AI\multica-memory
+    product_repos:
+      - id: web-imagegen
+        url: https://github.com/yann9596/Web-ImageGen.git
+        default_branch: main
+        local_path: D:\AI\projects\opencode-web-imagegen

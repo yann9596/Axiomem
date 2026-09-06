@@ -1,0 +1,21 @@
+{
+  "schema_version": "1.0",
+  "kind": "memory_unit",
+  "id": "web-imagegen-repo-map",
+  "title": "Web-ImageGen repo map and hard architecture boundaries",
+  "summary": "Initial Context Survey skeleton for the pilot: provider-neutral generation with exactly one active Generation Provider; grok rides Codex Chrome only; no MCP/Playwright/CDP; privacy and output layout rules.",
+  "content": "Web ImageGen is a provider-neutral Codex image-generation project (identity stays stable as providers grow). Architecture: one globally selected Generation Provider at any time (openai via official ImageGen skill, or grok via Web ImageGen skill -> Codex Chrome -> user's logged-in Grok tab), no implicit routing or failure fallback; grok's only browser boundary is Codex Chrome; no MCP, Playwright, CDP, self-managed Chromium, independent profile, or HTTP daemon. Target tab must be explicitly handed to Codex (@Chrome / tab mention); the tool never searches, opens, or replaces tabs, and never touches cookies, browser storage, passwords, or profiles. Workflow mode (ai-led 2-pick-1 with explicit x2 batches and real-byte validation, or user-led with 选好了/numbered candidates) is independent of provider choice. Output layout: <workspace>/imagine/<日期_任务>/<生成目标>/ with job.json, 1.<orig>, 2.<orig>, chosen.jpg; redraws use -V2 version folders and never overwrite old batches; debug logs keep only sanitized status/size/MIME. Tests: npm test. Verified against committed README.md at revision 72db245 (2026-09-06); working tree at that moment had uncommitted modifications (BREAKPOINT/CONTEXT/DESIGN/README/TASK + new gpt-provider design docs), which are out of memory scope until a verified state lands.",
+  "status": "canonical",
+  "scope": "project",
+  "importance": 3,
+  "confidence": 1.0,
+  "tags": ["project", "web-imagegen", "repo-map", "architecture", "pilot"],
+  "relationships": [
+    {"type": "related_to", "target_id": "web-imagegen-project-context", "note": "Repo-level skeleton under the project context unit"}
+  ],
+  "sources": ["web-imagegen-repo-map-2026-09-06"],
+  "created_at": "2026-09-06T09:15:00Z",
+  "updated_at": "2026-09-06T09:15:00Z",
+  "verified_at": "2026-09-06T09:15:00Z",
+  "verified_by": "Context Engineer"
+}
