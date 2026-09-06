@@ -3,7 +3,7 @@
 projects:
   - id: 19a54e43-57eb-4823-8bd2-4e026addcea7
     name: Web-ImageGen
-    goal: 调用用户浏览器生图,不占用订阅额度
+    goal: 供应商中立 Codex 生图（Web ImageGen）；grok 经 Codex Chrome 接管用户已登录 Grok Imagine 标签页，用用户浏览器会话与账号额度，不占用平台订阅生图额度；单一激活 Provider，无隐式路由/降级，无 MCP/Playwright/CDP
     memory_tags: [web-imagegen]
     memory_chain: web-imagegen-pilot
     context_repo: D:\AI\multica-memory
