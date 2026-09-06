@@ -1,0 +1,13 @@
+{
+  "schema_version": "1.0",
+  "kind": "external_signal",
+  "id": "web-imagegen-project-goal-update-2026-09-06",
+  "source_type": "human_decision",
+  "locator": "Multica project 19a54e43-57eb-4823-8bd2-4e026addcea7 (Web-ImageGen) durable description, updated by owner Yann in chat",
+  "captured_at": "2026-09-06T09:26:23Z",
+  "observed_at": "2026-09-06T09:26:23Z",
+  "summary": "Owner corrected the project description to the surveyed reality: provider-neutral Codex image generation, single active Generation Provider, grok rides Codex Chrome on the user's logged-in Grok Imagine tab using the user's own browser session and account quota (not platform subscription quota); no implicit routing or fallback; no MCP/Playwright/CDP; never reads/writes cookies or browser storage.",
+  "reliability": "authoritative",
+  "content_hash": "project-description-2026-09-06T09:26:23Z",
+  "notes": "Replaces the earlier one-line description 调用用户浏览器生图,不占用订阅额度 as durable project context; verified against project get output after update."
+}
