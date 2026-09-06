@@ -7,6 +7,9 @@ projects:
     goal: 小学语文教师（Phase 1 优先班主任兼语文教师）的本地优先“学生关注记忆系统”；核心闭环 Capture→Connect→Follow→Validate→Act；无 LLM 主闭环必须成立；学生数据默认仅保存在设备本地
     memory_tags: [app1]
     memory_chain: app1-mvp
+    # 2026-09-07 YZT-22 修正：get 必须用 --chain app1-mvp --tag app1（省略 --tag 时检索通道可混入其他项目单元）；
+    # pending candidates 通道不做项目过滤，consumer 只接受 app1- 前缀候选（详见 app1-context-consumption-contract 单元）。
+    consumption_contract: app1-context-consumption-contract
     context_repo: D:\AI\multica-memory
     product_repos:
       - id: teachers-app1

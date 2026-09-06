@@ -1,0 +1,22 @@
+{
+  "schema_version": "1.0",
+  "kind": "memory_unit",
+  "id": "app1-context-consumption-contract",
+  "title": "App1 context consumption contract for Memory V1 CLI",
+  "summary": "App1 Context Package 必须以 --chain app1-mvp --tag app1 生成与消费，禁止只写 --chain app1-mvp；pending candidates 通道不做项目过滤，consumer 只接受 app1- 前缀候选，其余一律标注为已知 V1 工具缺口。",
+  "content": "App1 安全消费契约（2026-09-07，由 01 Engineering Lead 复核 YZT-22 发现隔离缺口后责令落盘）。\n\n唯一安全命令形态（在 D:\\AI\\multica-memory 根目录执行）：python tools/memory_cli.py get <task_id> <role> <decision> --chain app1-mvp --tag app1。禁止以 --chain app1-mvp 单参数作为 App1 包的生成或消费命令。\n\n原因（V1 CLI 实际行为，已复现验证）：(1) get 的 --tag 只过滤“检索”通道；--chain 成员无条件纳入，不受 tag 过滤——app1-mvp 链成员均为 app1 单元或团队级 governance 单元，属“链显式指向”的允许例外，安全。(2) 不带 --tag 时 FTS 检索可命中其他项目单元：已复现 web-imagegen-project-context 因查询词（model/core/domain）混入 T02 包，known facts 由 7 变 8。(3) pending candidates 通道完全不按项目过滤：web-imagegen-repo-local-context-2026-09-06 在带与不带 --tag 时均混入。\n\npending candidates 处理规则：App1 包的 consumer（03 Solution Architect、04 Software Engineer、05 Feature Reviewer、06 QA 及任何包读者）只接受 id 以 app1- 为前缀的 memory_candidates；非 app1- 前缀条目一律标注为“已知 V1 工具缺口：candidates 通道未按项目过滤”，不得作为 App1 事实输入，也不得据本规则删除或改判其他项目的候选记录（他项目候选归属其自身项目流程）。\n\n边界：修复候选通道过滤或链成员 tag 校验属于基础设施演进，需 01 Engineering Lead 批准后另行立项；本契约仅在现有 CLI 行为内定义安全消费方式。变更本契约须由 Context Engineer 通过 canonical 单元 supersede 流程进行，并同步更新 registry/projects.yaml 的 consumption_contract 字段。",
+  "status": "canonical",
+  "scope": "project",
+  "importance": 4,
+  "confidence": 1.0,
+  "tags": ["app1", "memory", "constraints", "consumption"],
+  "relationships": [
+    {"type": "related_to", "target_id": "app1-project-context", "note": "记忆接入条目（tag=app1, chain=app1-mvp）的消费侧细化；隔离缺口由 01 Lead 复核发现并责令修正（YZT-22）"},
+    {"type": "related_to", "target_id": "governance-owner-boundaries", "note": "消费纪律是团队 Owner 边界在共享记忆系统上的落地"}
+  ],
+  "sources": ["app1-lead-review-yzt22-2026-09-07"],
+  "created_at": "2026-09-06T17:10:00Z",
+  "updated_at": "2026-09-06T17:10:00Z",
+  "verified_at": "2026-09-06T17:10:00Z",
+  "verified_by": "Context Engineer"
+}

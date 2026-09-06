@@ -59,6 +59,15 @@ conflicts and recorded challenges, structural gaps, and pending candidates. It
 performs retrieval and formatting only; sufficiency is judged by the Context
 Engineer, not automated.
 
+On a shared memory store `get` has two project-isolation limits (V1): `--tag`
+filters the retrieval channel only — chain members are always included
+regardless of tags — and the pending-candidates channel is not project-filtered.
+Each project's safe consumption contract is registered in
+`registry/projects.yaml` (`consumption_contract` field): pass the project chain
+and tag together, and consumers accept only that project's candidate id prefix,
+treating the rest as a known V1 tool gap. See
+`memory/app1-context-consumption-contract.json` for the reference contract.
+
 `promote` turns one reviewed candidate in `sources/candidates/` into a canonical
 Memory Unit. It requires `--actor-role "Context Engineer"`, never overwrites an
 existing unit, marks the candidate `promoted` (audit preserved), rebuilds the

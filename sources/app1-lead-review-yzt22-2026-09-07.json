@@ -1,0 +1,13 @@
+{
+  "schema_version": "1.0",
+  "kind": "external_signal",
+  "id": "app1-lead-review-yzt22-2026-09-07",
+  "source_type": "lead_review",
+  "locator": "multica:issue/01a0779c-ea14-7d86-a896-7ce11158e3bd/comment/01a077a7-0e5e-7c3c-83be-c8e02ab4fd24",
+  "captured_at": "2026-09-06T17:10:00Z",
+  "observed_at": "2026-09-06T16:57:12Z",
+  "summary": "01 Engineering Lead 独立复核 YZT-22 交付：get 仅带 --chain app1-mvp 时返回 8 条 known facts 且混入 web-imagegen-project-context，pending candidates 混入 web-imagegen-repo-local-context-2026-09-06；加 --tag app1 后 canonical 恢复 7 条但候选通道仍跨项目。责令：落盘 App1 安全消费契约（--chain app1-mvp --tag app1）、重新生成 T02 包、明确 pending candidates 处理规则、修正交付说明中的数量与隔离结论。",
+  "reliability": "authoritative",
+  "content_hash": "sha256:bf8e46d5adc7aadf38f92991646d20b9cfa6aea12fad7f63b1617a53ab5edcdb",
+  "notes": "content_hash 为该评论正文的 sha256（按 multica CLI 返回文本、UTF-8、无尾随换行）。Context Engineer 已在 D:\\AI\\multica-memory 复现同样结果（2026-09-06T17:01Z / 17:02Z 两次 get 运行）。"
+}
