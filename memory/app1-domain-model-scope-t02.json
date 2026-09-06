@@ -1,0 +1,22 @@
+{
+  "schema_version": "1.0",
+  "kind": "memory_unit",
+  "id": "app1-domain-model-scope-t02",
+  "title": "App1 core domain objects and T02 scope (from frozen baseline)",
+  "summary": "基线命名六个核心领域对象 Student/Evidence/AttentionThread/State/FollowUp/Action；Evidence 长期保留为事实资产，Thread/State/FollowUp 可清空重算；T02 负责精确关系/不变量/派生边界，Topic 阈值未冻结。",
+  "content": "六个核心领域对象（方案 v1.0 §4.2/§8B，名称来自冻结基线；精确关系属 T02，尚未冻结）：Student；Evidence；AttentionThread；State；FollowUp；Action。Evidence 最少字段（§3.1B）：student_id、scene、topic、direction、timestamp、task?（可选）、note?（可选）、source（manual/AI_structured）、created_at。AttentionThread：按 student+normalized_topic 自动组织历史 Evidence，维度 Student×Topic×Time；Thread 不等于人格画像，仅表示跨时间关注主题（示例：王晨·形近字辨析 9/06 concern、9/10 concern、9/17 positive）。State：由 Evidence+Topic Policy 派生；统一五状态框架（待复核/重复出现/持续关注/改善待确认/已缓解）；原则：可清空后全量重算、不作为永久事实、没有新 Evidence 不能自动认定改善。FollowUp：每个未充分确认的 Thread 维护——当前缺什么类型 Evidence、下次适合在哪类场景复核、是否存在教师手动 Follow-up、静默召回条件；语义是“为了让当前学情更可信，下一步最好获得什么证据”，不是“教师必须完成的任务”。Action：MVP 首要 Action=继续教学观察、家长沟通；后续可扩个别辅导/面批/教学分组/与班主任科任交接。生命周期要点（§5）：Evidence 创建（手动结构化或经 AI 结构化）、长期保留、教师可纠正、不被下游 AI 输出反向覆盖；上游 Evidence 改动→相关 Thread/State 必须重算。数据存储：业务主库 ArkData relationalStore，存在关联查询/时间查询/修改后重算/事务一致性需求，不用 JSON/KV 再迁移。Scene Pack 框架（§6，仅框架冻结、内容未冻结）每包字段：Scene ID、Teacher-facing Topic、Internal Topic、Default Direction、Evidence Policy、Follow-up Context、Positive Evidence、Task Required、Optional Note；首版候选仅三个压测 Scene：听写/字词、课堂观察、习作。T02 明确任务（parent YZT-20）：交付对象、关系、不变量、派生边界和待决项，且不把未验证 Topic Policy 写死；后续 T03 Evidence 生命周期、T04 状态机规则、T05 Topic Policy 接口、T06 Follow-up 契约、T07 Validation 契约依次展开。",
+  "status": "canonical",
+  "scope": "project",
+  "importance": 5,
+  "confidence": 1.0,
+  "tags": ["app1", "domain-model", "t02", "evidence", "thread"],
+  "relationships": [
+    {"type": "depends_on", "target_id": "app1-frozen-baseline-t01-t02a", "note": "领域对象定义受 T01/T02A 冻结基线约束"},
+    {"type": "related_to", "target_id": "app1-unfrozen-teacher-dependencies", "note": "Topic/Evidence Policy 阈值未冻结，T02 不得写死"}
+  ],
+  "sources": ["app1-mvp-plan-v1-0"],
+  "created_at": "2026-09-06T16:51:00Z",
+  "updated_at": "2026-09-06T16:51:00Z",
+  "verified_at": "2026-09-06T16:51:00Z",
+  "verified_by": "Context Engineer"
+}

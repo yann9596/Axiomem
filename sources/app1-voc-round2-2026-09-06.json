@@ -1,0 +1,13 @@
+{
+  "schema_version": "1.0",
+  "kind": "external_signal",
+  "id": "app1-voc-round2-2026-09-06",
+  "source_type": "research_finding_doc",
+  "locator": "D:\\AI\\projects\\teachers-app1\\docs\\2026-09-06-app1-voc-round2-counterevidence.md @ main 42f149a31136e85ee17847802060f8bb5dd66a93 (git blob d27609fe)",
+  "captured_at": "2026-09-06T16:51:00Z",
+  "observed_at": "2026-09-06T16:38:55Z",
+  "summary": "App1 第二次公开 VOC（Round 2 反证与证据缺口, 2026-09-06）：低负担捕获+Attention Thread → MODIFY 后条件 GO；自动 Follow-up/场景提醒 → MORE EVIDENCE（偏 COUNTER），默认不做推送、仅 opt-in 实验。H1/H2/H5 加固或强支持，H3 仍缺「忘了继续观察」S0 原话；ICP 主为班主任兼语文、次为纯科任语文。",
+  "reliability": "corroborated",
+  "content_hash": "sha256:127a2986400efecf8f52ded30da90fcf6b719c4d71f9c7e44a91be88709136ef",
+  "notes": "多源公开检索（S0 教师报/华声在线等）；部分一手样本偏中学（已标注为样本纯度缺口）；结论已作为设计约束进入 MVP 基线。"
+}

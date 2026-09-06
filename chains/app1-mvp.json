@@ -1,0 +1,12 @@
+{
+  "schema_version": "1.0",
+  "kind": "memory_chain",
+  "id": "app1-mvp",
+  "title": "App1 MVP context chain",
+  "description": "开始任何 App1 任务前载入的最小充分上下文：项目边界 → 冻结基线（T01/T02A）→ 领域对象与 T02 范围 → 未冻结教师依赖 → VOC 证据状态 → 仓 map → 团队 Owner 边界。project tag=app1；跨项目检索默认禁止，除非关系或链显式指向。",
+  "scope": "project",
+  "memory_ids": ["app1-project-context", "app1-frozen-baseline-t01-t02a", "app1-domain-model-scope-t02", "app1-unfrozen-teacher-dependencies", "app1-voc-evidence-status", "app1-repo-map", "governance-owner-boundaries"],
+  "tags": ["app1", "project", "context", "mvp"],
+  "created_at": "2026-09-06T16:51:00Z",
+  "updated_at": "2026-09-06T16:51:00Z"
+}

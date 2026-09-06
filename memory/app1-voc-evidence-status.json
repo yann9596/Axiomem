@@ -1,0 +1,22 @@
+{
+  "schema_version": "1.0",
+  "kind": "memory_unit",
+  "id": "app1-voc-evidence-status",
+  "title": "App1 VOC evidence status after Round 2 (public-source, hypotheses H1–H5)",
+  "summary": "两轮公开 VOC：H1/H2/H5 支持且加固；H3 自动 Follow-up 提醒证据不足偏 COUNTER（默认关闭、仅 opt-in 实验）；H4 MIXED 待验证；ICP 主为班主任兼语文、次为纯科任语文；产品必须与纸质/Excel 并存且避免催办美学。",
+  "content": "Round 1（v0.1, 2026-09-06）：判断 GO，但 Follow-up 价值未证实。支持：班主任事务细碎、用手机备忘录清单（S0）；教师用照片/纸质/Excel/微信等多载体记录并用于期末评语与家长沟通；学校制度性记录（班主任手册/一生一档/综评）服务留痕检查考核，与“下次该继续看谁”的个人学情记忆 Job 不同。缺：「忘了继续观察某学生」的直接 S0 原话。Round 2（反证与缺口, 2026-09-06）：(a) 低负担捕获+Attention Thread → MODIFY 后条件 GO——成熟教师有完整纸质个人系统（A6 黑匣子、日观察表→周五会诊，均 S0），新 App 必须更快、可检索、保护隐私、与纸质/Excel 并存，定位为“稀疏关注名单的外置记忆”，不宣称取代；(b) 自动 Follow-up/场景提醒 → MORE EVIDENCE 偏 COUNTER——教师减负/指尖形式主义政策逆风（教育部禁强制打卡、杜绝「手机响不停」，S1），H3 的遗忘原话仍缺；禁止默认推送、禁止「今天待跟进」作首页第一信息；实验仅限个人 opt-in、批次/静默、嵌入手动复盘仪式（如周五会诊）。假设记分（Round 2）：H1 碎片需求 支持（S0 纸质系统加固）；H2 稀疏记录 强支持；H3 Follow-up 价值 MIXED、自动提醒偏 COUNTER；H4 正向证据校验 MIXED（捕获+手搓复盘正、推送负）；H5 制度≠个人 支持（数字档案催交 vs 个人黑匣子加固）。ICP：主为班主任兼小学语文，次为纯科任语文（更薄：少数帮扶对象+反馈班主任）。证据缺口（Round 3 优先）：「忘了继续观察」S0 原话；「已有电子档案仍用私人记录」S0 配对；因 Excel/纸质已够而拒绝同类 App 的理由；对个人（非校方）自动提醒的反感度；样本纯度（本轮部分 S0 偏中学，需小学确认）；小学班主任典型 watchlist 人数定量；纯科任笔记时间预算。产品含义（已进基线）：默认 watchlist 稀疏名单；勿做完成率催办美学；Follow-up 默认静默场景内召回。置信度 0.85：公开源、多级别（S0–S3）交叉，但未经教师问卷/访谈确认；其设计约束部分已被 MVP 基线采纳（那部分按基线 confidence 1.0 处理）。",
+  "status": "canonical",
+  "scope": "project",
+  "importance": 4,
+  "confidence": 0.85,
+  "tags": ["app1", "voc", "evidence", "follow-up", "icp"],
+  "relationships": [
+    {"type": "related_to", "target_id": "app1-unfrozen-teacher-dependencies", "note": "Follow-up 呈现与首页信息受本轮收紧约束"},
+    {"type": "related_to", "target_id": "app1-project-context", "note": "为产品边界提供用户证据支撑"}
+  ],
+  "sources": ["app1-voc-round1-v0-1", "app1-voc-round2-2026-09-06"],
+  "created_at": "2026-09-06T16:51:00Z",
+  "updated_at": "2026-09-06T16:51:00Z",
+  "verified_at": "2026-09-06T16:51:00Z",
+  "verified_by": "Context Engineer"
+}

@@ -1,0 +1,13 @@
+{
+  "schema_version": "1.0",
+  "kind": "external_signal",
+  "id": "app1-mvp-plan-v1-0",
+  "source_type": "product_doc",
+  "locator": "D:\\AI\\projects\\teachers-app1\\docs\\App1-MVP-完整项目方案-v1.0-HarmonyOS.md @ main 42f149a31136e85ee17847802060f8bb5dd66a93 (git blob 6b272a5)",
+  "captured_at": "2026-09-06T16:51:00Z",
+  "observed_at": "2026-09-06T16:38:55Z",
+  "summary": "App1 MVP 完整项目方案 v1.0（HarmonyOS）：T01 产品母模型与 T02A HarmonyOS 技术基线的冻结文本。含核心闭环 Capture→Connect→Follow→Validate→Act、16 条设计原则 P1–P16、MVP 必做 A–H 与明确不做清单、数据生命周期、Scene Pack 框架、AI 位置、任务总表 T01–T37、风险 R1–R8 与当前 GO 决策。",
+  "reliability": "authoritative",
+  "content_hash": "sha256:b84d47fe09b9f654b7bbd11a7e2cac215413d8022f194064fd04cf4267a86105",
+  "notes": "项目冻结基线（YZT-20 Confirmed baseline：T01/T02A 已由方案冻结）。产品仓只读引用，不修改产品仓。"
+}

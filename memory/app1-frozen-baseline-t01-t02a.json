@@ -1,0 +1,23 @@
+{
+  "schema_version": "1.0",
+  "kind": "memory_unit",
+  "id": "app1-frozen-baseline-t01-t02a",
+  "title": "App1 frozen baseline: product mother model (T01) and HarmonyOS tech baseline (T02A)",
+  "summary": "方案 v1.0 冻结 T01 产品母模型（P1–P16）与 T02A 技术基线（ArkTS+ArkUI+Stage Model+ArkData relationalStore，本地优先，Domain 解耦，LLM/通知经 Adapter）；无 LLM 主闭环必须成立；Evidence 是事实资产，Thread/State/Follow-up 可重算。",
+  "content": "T01 产品母模型（P1–P16，方案 v1.0 §1 冻结）：P1 手机优先；P2 小学语文先做深；P3 常见记录最多 3 次点击（学生→Topic→Direction，Topic 自带方向可 2 次）；P4 身份显示由教师控制；P5 不强迫全员记录（默认稀疏关注名单，禁止全班日更/完成率/缺失红点）；P6 Evidence 是核心资产（原始事实长期保留，State 为可重算派生结果）；P7 Attention Thread 是核心组织单位（Student×Topic×Time，非学生综合画像）；P8 Follow-up 是学情准确性核心（驱动取证，不是布置任务）；P9 正向 Evidence 两类作用（自然进步、校验负向 Thread 是否仍成立），不要求全量记录正常表现；P10 对外反馈前必须 Validation；P11 LLM 是可替换增强层（关闭后主闭环仍成立）；P12 AI 解决语义不决定学情成立（AI：结构化/归一/表达；学情引擎：规则/状态机/证据政策/时间与复核）；P13 不把可观察行为扩张为人格/能力原因（没举手≠态度差，一次听写错≠字词薄弱）；P14 HarmonyOS 原生优先；P15 核心领域层与平台能力解耦；P16 本地优先（数据默认仅设备本地，核心闭环不依赖登录/云同步/模型 API，外部能力只发最小必需数据）。T02A 技术基线（方案 §4 冻结）：ArkTS+ArkUI 声明式+Stage Model 固定；业务主数据用 ArkData relationalStore（不用已停止维护的 @ohos.data.rdb），Preferences 仅 UI 偏好/默认 Scene 等轻配置、不得承载 Evidence/Thread/State 主数据；Local-first；分层硬约束：StateEngine 不写在 ArkUI 页面事件、FollowUpEngine 不依赖 Notification Kit、TopicPolicy 不绑页面组件、Validation 可纯 Domain 单元测试、Scene Pack 尽可能配置化；LLM 经 Adapter（structureObservation/normalizeEvidence/generateParentMessage），Domain 禁直连模型 SDK、禁把模型文本当 State 事实来源、禁因模型不可用断主链；Follow-up 与系统通知完全解耦（Engine→Record→Recall Strategy：Scene 内静默/学生页/Thread 页默认，首页静默待 UX 验证，系统通知 Adapter 教师明确 opt-in；无常驻后台轮询）；HUKS/本地加密预留；API Level 当前不锁死（T20 后置到工程启动按目标设备冻结）。统一 State 框架五状态冻结：待复核/重复出现/持续关注/改善待确认/已缓解；具体升级降级规则由 Topic Policy 决定（未冻结）。数据安全最低要求：Evidence 默认仅本机；日志不得输出学生姓名/Evidence 正文/家长沟通正文；模型请求经数据最小化层；数据库预留加密与迁移；密钥优先 HUKS、不硬编码；删除学生/班级必须定义关联数据清除策略；备份导出非首发硬要求但 Schema 预留。当前项目决策：GO（设计/原型阶段）；明确不 GO：全班量表、学校台账、强推送 Follow-up、AI 自由学生画像、大而全学情平台。派生可重算原则：Thread/State/Follow-up 均应能从 Evidence 重建，改 Policy/阈值/模型不需教师重录。",
+  "status": "canonical",
+  "scope": "project",
+  "importance": 5,
+  "confidence": 1.0,
+  "tags": ["app1", "baseline", "frozen", "harmonyos", "t01", "t02a"],
+  "relationships": [
+    {"type": "related_to", "target_id": "app1-project-context", "note": "冻结基线是项目上下文的决策核心"},
+    {"type": "related_to", "target_id": "app1-domain-model-scope-t02", "note": "T02 领域设计必须在该基线内展开"},
+    {"type": "related_to", "target_id": "app1-unfrozen-teacher-dependencies", "note": "冻结/未冻结的互补边界"}
+  ],
+  "sources": ["app1-mvp-plan-v1-0"],
+  "created_at": "2026-09-06T16:51:00Z",
+  "updated_at": "2026-09-06T16:51:00Z",
+  "verified_at": "2026-09-06T16:51:00Z",
+  "verified_by": "Context Engineer"
+}

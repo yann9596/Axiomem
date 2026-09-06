@@ -1,0 +1,20 @@
+{
+  "schema_version": "1.0",
+  "kind": "memory_candidate",
+  "id": "app1-repo-local-context-pointer",
+  "proposed_title": "App1 产品仓增加 repo-local context 指针文件（如 .ai/context.yaml）",
+  "proposed_content": "建议（本候选不写产品仓）：当产品代码工程启动、协作者增多时，由 Software Engineer（或经 Engineering Lead 批准）在产品仓添加一个小的 repo-local context 指针文件（如 .ai/context.yaml 或 docs/repo-context.md），内容仅限：项目名、当前基线 commit、共享记忆仓路径 D:\\AI\\multica-memory、project tag=app1、memory chain=app1-mvp、Canonical Memory 仅由 Context Engineer 写入的约束。价值：新会话/新角色 clone 仓库后可自发现记忆入口，减少每次口头交接。当前阶段（docs-only、无代码、单人写入）价值有限，因此保持 candidate 状态，不提升为 canonical。",
+  "dedupe_key": "app1-repo-local-context-pointer",
+  "classification": "project",
+  "importance": 2,
+  "confidence": 0.6,
+  "source_ids": ["app1-repo-state-2026-09-07"],
+  "relationships": [
+    {"type": "related_to", "target_id": "app1-repo-map", "note": "针对当前 docs-only 仓的后续建议"}
+  ],
+  "possible_conflicts": [],
+  "status": "candidate",
+  "captured_at": "2026-09-06T16:51:00Z",
+  "reviewed_at": null,
+  "review_note": ""
+}

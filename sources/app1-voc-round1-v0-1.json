@@ -1,0 +1,13 @@
+{
+  "schema_version": "1.0",
+  "kind": "external_signal",
+  "id": "app1-voc-round1-v0-1",
+  "source_type": "research_finding_doc",
+  "locator": "D:\\AI\\projects\\teachers-app1\\docs\\App1-第一次VOC-教师工作记录与信息漏失-v0.1.md @ main 42f149a31136e85ee17847802060f8bb5dd66a93 (git blob 79c3afcc)",
+  "captured_at": "2026-09-06T16:51:00Z",
+  "observed_at": "2026-09-06T16:38:55Z",
+  "summary": "App1 第一次公开 VOC（Round 1, v0.1, 2026-09-06）：判断 GO 但 Follow-up 价值未证实。碎片学情真实（S0 手机备忘录等）、个人土办法多元（纸质/照片/Excel/微信/脑内）、学校制度记录与个人记录 Job 不同；H1 中–强支持，H2 倾向支持，H3 Unknown，H4 待验证，H5 支持。",
+  "reliability": "corroborated",
+  "content_hash": "sha256:a21eb03196ca057be09840b55508c18ef11d61171aff36322c33c3d1ec049dd3",
+  "notes": "公开源初步 VOC，文档自标 Preliminary；不用于估计普遍率或市场规模。"
+}

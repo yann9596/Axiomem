@@ -1,0 +1,23 @@
+{
+  "schema_version": "1.0",
+  "kind": "memory_unit",
+  "id": "app1-project-context",
+  "title": "App1 project context and non-negotiable boundaries",
+  "summary": "App1 是小学语文教师（Phase 1 优先班主任兼语文教师）的本地优先“学生关注记忆系统”，核心闭环 Capture→Connect→Follow→Validate→Act；产品仓 main@42f149a 无远端；Canonical Memory 仅由 Context Engineer 写入。",
+  "content": "产品一句话：App1 是教师个人的“学生关注记忆系统”——帮助小学语文教师在日常教学中以极低成本记录少量真正值得关注的学生事实，把跨时间的零散观察自动串成 Attention Thread，通过 Follow-up 推动后续复核，形成更可信的学情判断，支持教学行动与家长沟通。不是完整学生档案、不是 AI 学生画像、不是学校电子台账。核心闭环：Capture → Connect → Follow → Validate → Act；Follow-up 是核心，强推送不是核心。三大价值点：录入负担低（手机优先、常见记录 ≤3 次点击、不强迫全员/同频/同维度）、学情准确率高（Evidence 是事实资产、单次事件不直接升级为长期学情、没有新记录≠已改善、对外输出前必须教师 Validation）、家长反馈合理（基于已存在 Evidence+当前 State，LLM 只改善表达不决定学情成立）。目标用户：小学语文教师，Phase 1 优先班主任兼语文教师。MVP 必做（A–H）：Fast Capture、Evidence Store、Attention Thread、State Engine（统一五状态框架）、Follow-up Engine、Recall（学生页/Thread 页/Scene 内/首页近期关注静默区）、Validation Gate、家长反馈基础能力（无 LLM 用结构化 Evidence+模板）。MVP 明确不做：全班日更、学情完成率、学校管理后台、教导处报表、家长端、学生端、群发、家长已读、成绩/SIS、OCR 批改、作文全文云、综合学生画像、性格/态度诊断、向量数据库/RAG/知识图谱、Agent 工作流、多端同步、强制推送提醒、AI 自动决定学情、通用 AI 聊天框首页。产品仓：D:\\AI\\projects\\teachers-app1（main@42f149a31136e85ee17847802060f8bb5dd66a93，无远端，工作树干净）；产品任务使用独立 worktree；产品代码仅由 Software Engineer 写入。记忆接入：共享 Canonical Memory D:\\AI\\multica-memory（in_place），project tag=app1，memory chain=app1-mvp；跨项目检索默认禁止；RAG V1 为 SQLite FTS+元数据+有限关系，embedding_provider=disabled（未选模型，禁止宣称启用）。Owner 边界（项目实例）：Canonical Memory 仅由 02 Context Engineer 正常写入；技术方案归 03 Solution Architect；产品实现归 04 Software Engineer；外部/用户校准归 05 Feature Reviewer；里程碑 QA 由 01 Engineering Lead 触发；最终 Merge 保留给 Human。Multica project id：c671779f-059a-41b7-af11-95636de809ec。",
+  "status": "canonical",
+  "scope": "project",
+  "importance": 5,
+  "confidence": 1.0,
+  "tags": ["app1", "project", "constraints", "context", "memory"],
+  "relationships": [
+    {"type": "related_to", "target_id": "governance-owner-boundaries", "note": "App1 项目级实例化团队 Owner 模型"},
+    {"type": "related_to", "target_id": "app1-frozen-baseline-t01-t02a", "note": "冻结基线是本项目上下文的决策核心"},
+    {"type": "related_to", "target_id": "app1-repo-map", "note": "产品仓现状"}
+  ],
+  "sources": ["app1-mvp-plan-v1-0", "app1-project-context-2026-09-07", "app1-repo-state-2026-09-07"],
+  "created_at": "2026-09-06T16:51:00Z",
+  "updated_at": "2026-09-06T16:51:00Z",
+  "verified_at": "2026-09-06T16:51:00Z",
+  "verified_by": "Context Engineer"
+}

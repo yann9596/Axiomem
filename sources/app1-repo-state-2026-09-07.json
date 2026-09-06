@@ -1,0 +1,13 @@
+{
+  "schema_version": "1.0",
+  "kind": "external_signal",
+  "id": "app1-repo-state-2026-09-07",
+  "source_type": "repo_state_observation",
+  "locator": "git -C D:\\AI\\projects\\teachers-app1 @ main 42f149a31136e85ee17847802060f8bb5dd66a93",
+  "captured_at": "2026-09-06T16:51:00Z",
+  "observed_at": "2026-09-06T16:38:55Z",
+  "summary": "直接 git 观察：HEAD=42f149a31136e85ee17847802060f8bb5dd66a93（2026-09-07 00:38:55 +0800，docs: add initial product and VOC research plans）；git status 干净（无未提交/未跟踪内容）；git remote -v 为空（无远端）；仅跟踪 docs/ 下 4 个文件（MVP 方案 v1.0、VOC 研究方案 v1.0、第一次 VOC v0.1、Round 2 反证 2026-09-06），无产品代码。",
+  "reliability": "authoritative",
+  "content_hash": "git:42f149a31136e85ee17847802060f8bb5dd66a93",
+  "notes": "观察时间戳为 HEAD 提交时刻；观察本身发生于 2026-09-06T16:46Z 前后（YZT-22 执行时）。"
+}

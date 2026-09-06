@@ -1,0 +1,13 @@
+{
+  "schema_version": "1.0",
+  "kind": "external_signal",
+  "id": "app1-project-context-2026-09-07",
+  "source_type": "project_context",
+  "locator": "Multica project c671779f-059a-41b7-af11-95636de809ec (teachers-app1) durable project context; issues YZT-20/YZT-22",
+  "captured_at": "2026-09-06T16:51:00Z",
+  "observed_at": "2026-09-06T16:46:07Z",
+  "summary": "teachers-app1 项目 durable context：手机优先；HarmonyOS 原生 ArkTS+ArkUI+Stage Model；ArkData relationalStore 承载业务主数据；Domain 与 ArkUI/平台能力解耦；无 LLM 主闭环必须成立；LLM/Notification/网络均经 Adapter 接入；学生数据默认仅保存在设备本地；Evidence 是长期事实资产，Thread/State/Follow-up 是可重算派生结果；单次事件不得扩张为人格/态度/长期能力结论。Canonical Memory 仅由 Context Engineer 写入；产品实现仅由 Software Engineer 写入；最终 Merge 由 Human 决定。",
+  "reliability": "authoritative",
+  "content_hash": "manual-app1-project-context-v1",
+  "notes": "取自 Multica 项目上下文与 parent issue YZT-20 描述；未保留任何密钥或聊天记录。"
+}

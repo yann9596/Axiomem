@@ -1,0 +1,21 @@
+{
+  "schema_version": "1.0",
+  "kind": "memory_unit",
+  "id": "app1-repo-map",
+  "title": "App1 product repo map (main@42f149a, local-only, docs-only)",
+  "summary": "产品仓 D:\\AI\\projects\\teachers-app1 基线 main@42f149a（2026-09-07 提交），工作树干净、无远端；仅 docs/ 四份源材料，无产品代码；产品任务使用独立 worktree。",
+  "content": "产品仓：D:\\AI\\projects\\teachers-app1；默认分支 main；HEAD=42f149a31136e85ee17847802060f8bb5dd66a93（提交时间 2026-09-07 00:38:55 +0800，message: docs: add initial product and VOC research plans）；无远端（git remote -v 为空）；工作树干净（无未提交/未跟踪内容）。当前仅跟踪 4 个文件，全部在 docs/ 下：App1-MVP-完整项目方案-v1.0-HarmonyOS.md（T01/T02A 冻结基线）、App1-VOC-研究方案-v1.0.md（方法论）、App1-第一次VOC-教师工作记录与信息漏失-v0.1.md（Round 1）、2026-09-06-app1-voc-round2-counterevidence.md（Round 2 反证）。无任何产品代码：尚无 entry/、无 ArkTS 脚手架；T21（relationalStore Schema）及之后实现任务才建立代码，由 Software Engineer 在独立 worktree 写入。只读约束：Context Engineer 及其他非实现角色不修改产品仓；对 repo-local context（如 .ai/context.yaml）只提 Memory Candidate 或后续建议。防止覆盖：不得清理/覆盖/提交/丢弃仓内未提交或未跟踪内容（当前为干净树，仍是硬约束）。",
+  "status": "canonical",
+  "scope": "project",
+  "importance": 4,
+  "confidence": 1.0,
+  "tags": ["app1", "repo", "git", "baseline"],
+  "relationships": [
+    {"type": "related_to", "target_id": "app1-project-context", "note": "仓 map 是项目上下文的物理定位部分"}
+  ],
+  "sources": ["app1-repo-state-2026-09-07", "app1-project-context-2026-09-07"],
+  "created_at": "2026-09-06T16:51:00Z",
+  "updated_at": "2026-09-06T16:51:00Z",
+  "verified_at": "2026-09-06T16:51:00Z",
+  "verified_by": "Context Engineer"
+}

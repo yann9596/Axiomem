@@ -1,6 +1,22 @@
 # Multica 项目注册表(plan V1 §34,V1 简化版:共享单一记忆仓 D:\AI\multica-memory,用 tags 区分项目;独立 per-project context repo 为 P1 演进项)
 # Context Engineer 通过此表确认任务归属;跨项目检索默认禁止,除非链或关系显式指向。
 projects:
+  # App1（teachers-app1）：Multica project c671779f-059a-41b7-af11-95636de809ec；2026-09-07 由 02 Context Engineer 注册（YZT-22）。
+  - id: c671779f-059a-41b7-af11-95636de809ec
+    name: teachers-app1
+    goal: 小学语文教师（Phase 1 优先班主任兼语文教师）的本地优先“学生关注记忆系统”；核心闭环 Capture→Connect→Follow→Validate→Act；无 LLM 主闭环必须成立；学生数据默认仅保存在设备本地
+    memory_tags: [app1]
+    memory_chain: app1-mvp
+    context_repo: D:\AI\multica-memory
+    product_repos:
+      - id: teachers-app1
+        url: ""            # 无远端（as of 2026-09-07）；远端建立后补充
+        default_branch: main
+        local_path: D:\AI\projects\teachers-app1
+        current_commit: 42f149a31136e85ee17847802060f8bb5dd66a93   # docs-only 基线，工作树干净
+        has_remote: false
+        execution_mode: worktree   # 产品任务使用独立 worktree；产品代码仅由 Software Engineer 写入
+
   - id: 19a54e43-57eb-4823-8bd2-4e026addcea7
     name: Web-ImageGen
     goal: 供应商中立 Codex 生图（Web ImageGen）；grok 经 Codex Chrome 接管用户已登录 Grok Imagine 标签页，用用户浏览器会话与账号额度，不占用平台订阅生图额度；单一激活 Provider，无隐式路由/降级，无 MCP/Playwright/CDP

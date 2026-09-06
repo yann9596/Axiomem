@@ -1,0 +1,13 @@
+{
+  "schema_version": "1.0",
+  "kind": "external_signal",
+  "id": "app1-voc-plan-v1-0",
+  "source_type": "research_methodology_doc",
+  "locator": "D:\\AI\\projects\\teachers-app1\\docs\\App1-VOC-研究方案-v1.0.md @ main 42f149a31136e85ee17847802060f8bb5dd66a93 (git blob b6ef221)",
+  "captured_at": "2026-09-06T16:51:00Z",
+  "observed_at": "2026-09-06T16:38:55Z",
+  "summary": "App1 VOC 研究方案 v1.0：定义 H1–H5 假设与判定标准、S0–S4 来源分级、编码框架（Record Mode/Record Content/Failure Mode/Product Opportunity）、检索策略、采样与停止条件、Round 1–4 阶段划分。",
+  "reliability": "authoritative",
+  "content_hash": "sha256:16476f4bfd9ecf7fd5f0007e1f2dded1e65c5d95857309ed02f7a0daa118af94",
+  "notes": "方法论文本，不是用户证据本身；其第 18 节设计原则已被 MVP 方案 v1.0 基线取代（Follow-up 呈现已按 Round 2 收紧）。"
+}
