@@ -1,0 +1,16 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "V1.1 Gate C replay metric evidence",
+  "description": "Explicit evidence used with expectation and actual to compute false_canonical, false_forget, and issue_noise. Path: migration/replay-evidence/<task_id>.yaml. Missing file is fail-closed (metrics are not defaulted to 0).",
+  "type": "object",
+  "required": ["schema_version", "kind", "task_id"],
+  "properties": {
+    "schema_version": { "const": "1.1" },
+    "kind": { "const": "replay_metric_evidence" },
+    "task_id": { "type": "string" },
+    "false_canonical_refs": { "type": "array", "items": { "type": "string" } },
+    "must_retain_refs": { "type": "array", "items": { "type": "string" } },
+    "allowed_issue_refs": { "type": "array", "items": { "type": "string" } }
+  },
+  "additionalProperties": false
+}

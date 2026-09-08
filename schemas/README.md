@@ -17,6 +17,10 @@ by converting YAML → JSON before validation).
 | `role-profile.schema.json` | `team-context/roles/*.yaml` |
 | `evidence-ref.schema.json` | shared `$defs` (scope, verification, ref grammar) |
 | `context-package.schema.json` | runtime `context build` output only |
+| `legacy-inventory.schema.json` | Gate A input: `migration/legacy-inventory.yaml` (optional; missing is fail-closed) |
+| `authority-claim-evidence.schema.json` | Gate A input: `migration/authority-evidence.yaml` (claim-support + scope-coverage) |
+| `replay-metric-evidence.schema.json` | Gate C input: `migration/replay-evidence/<task_id>.yaml` |
+| `replay-expectation-lock.schema.json` | Gate C input: `migration/replay-expectation.lock.yaml` |
 
 ## Shared grammar (from evidence-ref.schema.json)
 
@@ -41,3 +45,19 @@ by converting YAML → JSON before validation).
 2. **Schema file format**: schemas are JSON Schema files (`.schema.json`)
    instead of the design doc's `.schema.yaml` suggestion, so validation tooling
    is unambiguous. Content structure follows the Spec.
+
+## Gate evidence contracts (YZT-42)
+
+These files are **inputs to executable gates**, not Canonical Memory. Context
+Engineer supplies the real 29-object inventory, 14-Rule claim-support /
+scope-coverage records, replay metric evidence, and a pre-run expectation
+lock. Software Engineer owns the checkers. Missing or corrupt evidence is
+FAIL; gates must not default `true` / `0` / `100%`.
+
+| Contract | Path | Fail-closed when |
+|---|---|---|
+| Legacy inventory | `migration/legacy-inventory.yaml` | file missing, schema invalid, or IDs disagree with filesystem |
+| Per-object map | `migration/migration-map.yaml` `legacy:` list items | object in inventory has no `legacy` entry (silent drop); section-level prose (e.g. grouped signals) does not count |
+| Authority evidence | `migration/authority-evidence.yaml` | file missing, or a Rule `authority_ref` lacks `claim_support.supported` + `scope_coverage.covers` |
+| Replay metrics | `migration/replay-evidence/<task_id>.yaml` | file missing; `false_canonical` / `false_forget` / `issue_noise` are then `null`, not 0 |
+| Expectation lock | `migration/replay-expectation.lock.yaml` | file missing, or sha256 mismatch vs current expectation files |

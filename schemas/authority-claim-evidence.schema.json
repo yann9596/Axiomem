@@ -1,0 +1,45 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "V1.1 Rule authority claim-support and scope-coverage evidence",
+  "description": "Per-rule, per-authority_ref evidence. Path: migration/authority-evidence.yaml. Resolvable refs without this file cannot PASS the Authority Gate.",
+  "type": "object",
+  "required": ["schema_version", "kind", "claims"],
+  "properties": {
+    "schema_version": { "const": "1.1" },
+    "kind": { "const": "authority_claim_evidence" },
+    "claims": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "required": ["rule_id", "authority_ref", "claim_support", "scope_coverage"],
+        "properties": {
+          "rule_id": { "type": "string" },
+          "authority_ref": { "type": "string" },
+          "claim_support": {
+            "type": "object",
+            "required": ["supported", "excerpt_or_pointer", "claim_relation"],
+            "properties": {
+              "supported": { "type": "boolean" },
+              "excerpt_or_pointer": { "type": "string" },
+              "claim_relation": { "enum": ["supports", "contradicts", "qualifies"] }
+            },
+            "additionalProperties": false
+          },
+          "scope_coverage": {
+            "type": "object",
+            "required": ["covers", "authority_scope", "rule_scope"],
+            "properties": {
+              "covers": { "type": "boolean" },
+              "authority_scope": { "type": "string" },
+              "rule_scope": { "type": "string" }
+            },
+            "additionalProperties": false
+          }
+        },
+        "additionalProperties": false
+      }
+    }
+  },
+  "additionalProperties": false
+}

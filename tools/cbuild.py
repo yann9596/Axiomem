@@ -9,6 +9,9 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 from cutil import (TEAM, PROJECTS, ScopeError, toks, now_iso, doc_at,
                    object_scope, scope_allows, entry_relevant, project_of)  # noqa: E402
 from cdata import load_all_docs, checkpoint_docs, load_role_profile  # noqa: E402
+from crole import (policy_of, wants_team_posture, wants_team_slice,  # noqa: E402
+                   wants_project_slice, wants_team_conflicts, relevance_required,
+                   kind_limit, role_rank, posture_entries)
 
 
 def _negative_dominates(napp_hit: set, applied_hit: set) -> bool:
@@ -44,11 +47,11 @@ def anchor_digest(project_id: str) -> dict:
             "non_goals": gov.get("non_goals", [])}
 
 
-def collect_conflicts(task_scope: dict) -> tuple:
+def collect_conflicts(task_scope: dict, include_team: bool = False) -> tuple:
     conflicts, blockers = [], []
     for cp in checkpoint_docs():
         st = cp["scope"]["type"]
-        if task_scope["type"] == "project" and st == "team":
+        if task_scope["type"] == "project" and st == "team" and not include_team:
             continue
         if task_scope["type"] == "project" and st == "project" and \
                 cp["scope"].get("project_id") != task_scope["project_id"]:
@@ -69,14 +72,34 @@ def collect_conflicts(task_scope: dict) -> tuple:
     return conflicts, blockers
 
 
+def _checkpoint_entries(cp: dict, checkpoint_name: str, task_tokens: set,
+                        require_relevance: bool) -> list[dict]:
+    out = []
+    for section in ("confirmed", "open", "conflicts"):
+        for entry in cp.get(section, []) or []:
+            if section == "confirmed" or not require_relevance \
+                    or entry_relevant(entry, task_tokens):
+                out.append({"checkpoint": checkpoint_name, "section": section,
+                            "id": entry["id"], "summary": entry["summary"],
+                            "refs": entry.get("refs", [])})
+    return out
+
+
 def build_package(task_id: str, role: str, task_scope: dict, decision: str = "",
                   query: str = "", case_trigger: str | None = None,
-                  limit: int = 8) -> dict:
-    excluded = {"other_project": 0, "not_active": 0}
+                  limit: int = 8, apply_role_policy: bool = True) -> dict:
+    profile = load_role_profile(role)
+    policy = policy_of(profile) if apply_role_policy else None
+    excluded = {"other_project": 0, "not_active": 0, "role_policy": 0}
+    filters = ["strict_scope_filter", "lifecycle_active_only",
+               "case_activation_default_off", "context_budget"]
+    if apply_role_policy:
+        filters.append("role_profile_loaded")
+    else:
+        filters.append("role_profile_not_applied")
     trace = {"scope_resolved": True, "case_search_performed": False,
              "case_search_trigger": None, "role_policy_applied": role,
-             "filters_applied": ["strict_scope_filter", "lifecycle_active_only",
-                                 "case_activation_default_off", "context_budget"],
+             "filters_applied": filters,
              "excluded_counts": excluded,
              "generated_at": now_iso()}
     reg = doc_at(TEAM / "registry" / "projects.yaml")["projects"]
@@ -105,14 +128,25 @@ def build_package(task_id: str, role: str, task_scope: dict, decision: str = "",
         if doc.get("status", "active") != "active":
             excluded["not_active"] += 1
             continue
+        kind = doc["_kind"]
+        if kind not in ("rule", "current_fact", "case"):
+            continue
         body = doc.get("statement", "") + " " + doc.get("title", "")
-        if doc["_kind"] == "rule":
+        if kind == "rule":
             appl = doc.get("applicability", {}).get("semantic", {}) or {}
             body += " " + " ".join(appl.get("applicable_when") or [])
-        if toks(body) & task_tokens:
-            {"rule": rules, "current_fact": facts, "case": cases}[doc["_kind"]].append(doc)
-    rules = rules[:limit]
-    facts = facts[:limit]
+        need_rel = True if policy is None else relevance_required(policy, kind)
+        if need_rel and not (toks(body) & task_tokens):
+            continue
+        {"rule": rules, "current_fact": facts, "case": cases}[kind].append(doc)
+    if policy is not None:
+        rules.sort(key=lambda d: role_rank(d, role))
+        facts.sort(key=lambda d: role_rank(d, role))
+        rules = rules[:kind_limit(policy, "rule", limit)]
+        facts = facts[:kind_limit(policy, "current_fact", limit)]
+    else:
+        rules = rules[:limit]
+        facts = facts[:limit]
 
     activated, activation_reasons = [], {}
     if case_trigger:
@@ -132,30 +166,39 @@ def build_package(task_id: str, role: str, task_scope: dict, decision: str = "",
                 activation_reasons[c["id"]] = (
                     f"scenario_match(trigger={case_trigger}, "
                     f"tokens={sorted(applied_hit)})")
-        activated = activated[:2]
+        cap = 2 if policy is None else min(2, kind_limit(policy, "case", 2))
+        activated = activated[:cap]
 
-    conflicts, blockers = collect_conflicts(task_scope)
+    include_team_conflicts = bool(policy is not None and wants_team_conflicts(policy))
+    conflicts, blockers = collect_conflicts(task_scope, include_team=include_team_conflicts)
     team_state = []
-    if task_scope["type"] != "project":
+    want_team = task_scope["type"] != "project"
+    if policy is not None:
+        want_team = want_team or wants_team_posture(policy) or wants_team_slice(policy)
+    if want_team:
         for cp in checkpoint_docs():
             if cp["scope"]["type"] != "team":
                 continue
-            for section in ("confirmed", "open", "conflicts"):
-                for entry in cp.get(section, []) or []:
-                    if section == "confirmed" or entry_relevant(entry, task_tokens):
-                        team_state.append({"checkpoint": "team", "section": section,
-                                           "id": entry["id"], "summary": entry["summary"],
-                                           "refs": entry.get("refs", [])})
+            if policy is not None and wants_team_posture(policy):
+                team_state.extend(posture_entries(cp))
+                trace["filters_applied"].append("role_baseline_team_posture")
+            slice_ok = task_scope["type"] != "project" or (
+                policy is not None and wants_team_slice(policy))
+            if slice_ok:
+                rel = True if policy is None else relevance_required(policy, "checkpoint")
+                team_state.extend(_checkpoint_entries(cp, "team", task_tokens, rel))
     project_state = []
-    if task_scope["type"] == "project":
+    want_project = task_scope["type"] == "project"
+    if policy is not None:
+        want_project = want_project and wants_project_slice(policy)
+        if task_scope["type"] == "project" and not want_project:
+            excluded["role_policy"] += 1
+            trace["filters_applied"].append("role_exclude_project_internal_detail")
+    if want_project and task_scope["type"] == "project":
         pcp = doc_at(PROJECTS / task_scope["project_id"] / "checkpoint.yaml")
-        for section in ("confirmed", "open", "conflicts"):
-            for entry in pcp.get(section, []) or []:
-                if section == "confirmed" or entry_relevant(entry, task_tokens):
-                    project_state.append({"checkpoint": task_scope["project_id"],
-                                          "section": section, "id": entry["id"],
-                                          "summary": entry["summary"],
-                                          "refs": entry.get("refs", [])})
+        rel = True if policy is None else relevance_required(policy, "checkpoint")
+        project_state = _checkpoint_entries(
+            pcp, task_scope["project_id"], task_tokens, rel)
     src_refs = []
     for d in rules + facts:
         src_refs += [f"{d['id']}: {r}" for r in (d.get("source_refs") or [])]
@@ -163,6 +206,10 @@ def build_package(task_id: str, role: str, task_scope: dict, decision: str = "",
     if task_scope["type"] == "project":
         pointers.append(f"project-context/{task_scope['project_id']}")
         pointers.append(f".ai/context.yaml (lives in the {task_scope['project_id']} product repo)")
+    # de-dupe filter names while preserving order
+    seen = set()
+    trace["filters_applied"] = [f for f in trace["filters_applied"]
+                                if not (f in seen or seen.add(f))]
     return {
         "schema_version": "1.1", "kind": "context_package",
         "request": {"task_id": task_id, "role": role,

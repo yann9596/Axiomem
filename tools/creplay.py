@@ -9,6 +9,7 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from cutil import ROOT, toks, now_iso, doc_at  # noqa: E402
 from cbuild import resolve_scope, build_package  # noqa: E402
+from cmetrics import metric_bundle, verify_expectation_lock  # noqa: E402
 
 
 def package_refs(pkg: dict) -> list:
@@ -64,6 +65,7 @@ def run_replay(case_path: Path) -> dict:
     density = round((len(pkg["rules"]) + len(pkg["current_facts"]) + len(pkg["cases"])) /
                     max(1, len(pkg["rules"]) + len(pkg["current_facts"]) +
                         len(pkg["cases"]) + pkg["assembly_trace"]["excluded_counts"]["other_project"]), 2)
+    metrics = metric_bundle(case["task_id"], refs, pkg["blocked_by"])
     result = {
         "task_id": case["task_id"],
         "coverage": case.get("notes", "").strip()[:120],
@@ -79,14 +81,20 @@ def run_replay(case_path: Path) -> dict:
                    "trace": pkg["assembly_trace"]},
         "result": {
             "scope_pollution": pollution,
-            "false_canonical": False,
+            "false_canonical": metrics["false_canonical"],
+            "false_canonical_refs": metrics["false_canonical_refs"],
             "hidden_unresolved_conflict": len(pkg["open_conflicts"]) > expected.get("expected_conflicts", 0),
             "invalid_rule_authority": any(not r.get("authority_refs") for r in pkg["rules"]),
             "false_activation": false_activation,
             "missing_context": missing,
             "unexpected_context": unexpected,
             "reinvestigation_cost": len(missing),
-            "issue_noise": 0,
+            "issue_noise": metrics["issue_noise"],
+            "issue_noise_refs": metrics["issue_noise_refs"],
+            "false_forget": metrics["false_forget"],
+            "false_forget_refs": metrics["false_forget_refs"],
+            "metric_status": metrics["status"],
+            "missing_evidence": metrics["missing_evidence"],
             "context_density": density,
             "context_size": len(refs),
             "case_search_ok": cs_ok,
@@ -104,30 +112,52 @@ def scope_pollution(pkg: dict, expected: dict, project_leak: list) -> list:
     return pollution
 
 
+def _zero_metric(values) -> bool:
+    return all(v == 0 for v in values)
+
+
 def run_all() -> dict:
     results = []
     for p in sorted((ROOT / "migration" / "replay").glob("*.yaml")):
         results.append(run_replay(p))
-    passed = all(
-        not r["result"]["scope_pollution"] and
-        not r["result"]["false_canonical"] and
-        not r["result"]["hidden_unresolved_conflict"] and
-        not r["result"]["invalid_rule_authority"] and
-        not r["result"]["missing_context"] and
-        not r["result"]["unexpected_context"] and
-        not r["result"]["false_activation"] and
-        r["result"]["case_search_ok"] and
-        r["result"]["conflicts_ok"]
-        for r in results)
+    provenance = verify_expectation_lock()
+    missing_evidence = list(provenance.get("missing_evidence") or [])
+    for r in results:
+        missing_evidence.extend(r["result"].get("missing_evidence") or [])
+    metric_complete = all(r["result"].get("metric_status") == "computed" for r in results)
+    fc_vals = [r["result"]["false_canonical"] for r in results]
+    ff_vals = [r["result"]["false_forget"] for r in results]
+    noise_vals = [r["result"]["issue_noise"] for r in results]
+    passed = (
+        bool(results) and
+        metric_complete and
+        provenance.get("ok") and
+        not missing_evidence and
+        all(
+            not r["result"]["scope_pollution"] and
+            r["result"]["false_canonical"] == 0 and
+            not r["result"]["false_forget"] and
+            not r["result"]["issue_noise"] and
+            not r["result"]["hidden_unresolved_conflict"] and
+            not r["result"]["invalid_rule_authority"] and
+            not r["result"]["missing_context"] and
+            not r["result"]["unexpected_context"] and
+            not r["result"]["false_activation"] and
+            r["result"]["case_search_ok"] and
+            r["result"]["conflicts_ok"]
+            for r in results))
     report = {"gate": "C", "passed": passed, "replays": results,
+              "provenance": provenance,
+              "missing_evidence": sorted(set(missing_evidence)),
               "aggregate": {
                   "scope_pollution_total": sum(len(r["result"]["scope_pollution"]) if isinstance(r["result"]["scope_pollution"], list) else (1 if r["result"]["scope_pollution"] else 0) for r in results),
-                  "false_canonical": 0, "false_activation_total":
+                  "false_canonical": (sum(fc_vals) if metric_complete and _zero_metric(fc_vals) is not None and all(v is not None for v in fc_vals) else None),
+                  "false_activation_total":
                       sum(len(r["result"]["false_activation"]) for r in results),
                   "missing_context_total": sum(len(r["result"]["missing_context"]) for r in results),
-                  "false_forget": 0,
+                  "false_forget": (sum(ff_vals) if metric_complete and all(v is not None for v in ff_vals) else None),
                   "reinvestigation_cost": sum(r["result"]["reinvestigation_cost"] for r in results),
-                  "issue_noise": 0,
+                  "issue_noise": (sum(noise_vals) if metric_complete and all(v is not None for v in noise_vals) else None),
                   "context_density_avg": round(sum(r["result"]["context_density"] for r in results) / max(1, len(results)), 2),
                   "context_size_avg": round(sum(r["result"]["context_size"] for r in results) / max(1, len(results)), 1),
               },

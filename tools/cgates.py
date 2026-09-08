@@ -15,12 +15,39 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from cutil import ROOT, DB, ScopeError, now_iso  # noqa: E402
 from cbuild import resolve_scope, build_package  # noqa: E402
+from crole import role_content_differs, content_fingerprint  # noqa: E402
+
+NORMAL_TASK_ID = "b10-probe"
+ROLE_PROBE_TASK_ID = "b8-probe"
+ROLE_PROBE_DECISION = "project posture provider switch"
 
 
 def refs_of(pkg: dict) -> list:
     return [r["ref"] for r in pkg["rules"]] + \
         [f["ref"] for f in pkg["current_facts"]] + \
         [c["ref"] for c in pkg["cases"]]
+
+
+def role_profile_changes_ok(lead: dict, se: dict) -> tuple[bool, str]:
+    """Content-level assertion. Echoed role labels are not evidence."""
+    changed = role_content_differs(lead, se)
+    fp_lead, fp_se = content_fingerprint(lead), content_fingerprint(se)
+    detail = (f"lead_team={fp_lead['team_state_slice']} "
+              f"se_team={fp_se['team_state_slice']} "
+              f"lead_project={fp_lead['project_state_slice']} "
+              f"se_project={fp_se['project_state_slice']}")
+    return changed, detail
+
+
+def default_case_count_ok(pkg: dict, expected_task_id: str = NORMAL_TASK_ID) -> tuple[bool, str]:
+    tid = (pkg.get("request") or {}).get("task_id")
+    n = len(pkg.get("cases") or [])
+    searched = bool((pkg.get("assembly_trace") or {}).get("case_search_performed"))
+    if tid != expected_task_id:
+        return False, (f"checked task_id={tid!r} cases={n} search={searched}; "
+                       f"expected normal-task id {expected_task_id!r}")
+    ok = n == 0 and not searched
+    return ok, f"task={tid} cases={n} search_performed={searched}"
 
 
 def gate_b() -> dict:
@@ -92,13 +119,13 @@ def gate_b() -> dict:
     record("cross_project_access_without_explicit_condition", b7_ok,
            "implicit cross-project access denied")
 
-    s3 = resolve_scope("b8-probe", None, [], "web-imagegen")
-    lead = build_package("b8-probe", "engineering-lead", s3, decision="project posture")
-    se = build_package("b8-probe", "software-engineer", s3, decision="implement provider switch")
-    record("role_profile_changes_context",
-           lead["assembly_trace"]["role_policy_applied"] != se["assembly_trace"]["role_policy_applied"],
-           f"lead={lead['assembly_trace']['role_policy_applied']} "
-           f"se={se['assembly_trace']['role_policy_applied']}")
+    s3 = resolve_scope(ROLE_PROBE_TASK_ID, None, [], "web-imagegen")
+    lead = build_package(ROLE_PROBE_TASK_ID, "engineering-lead", s3,
+                         decision=ROLE_PROBE_DECISION)
+    se = build_package(ROLE_PROBE_TASK_ID, "software-engineer", s3,
+                       decision=ROLE_PROBE_DECISION)
+    role_ok, role_detail = role_profile_changes_ok(lead, se)
+    record("role_profile_changes_context", role_ok, role_detail)
 
     s4 = resolve_scope("b9-probe", None, [], "app1")
     pkg4 = build_package("b9-probe", "solution-architect", s4, decision="app1 domain design")
@@ -106,11 +133,10 @@ def gate_b() -> dict:
     record("checkpoint_slice_is_task_relevant", not bad_slice,
            "slice clean" if not bad_slice else f"cross-project entries {bad_slice}")
 
-    pkg5 = build_package("b10-probe", "software-engineer", s4,
+    pkg5 = build_package(NORMAL_TASK_ID, "software-engineer", s4,
                          decision="small normal implementation task")
-    record("default_case_count_for_normal_task",
-           len(pkg4["cases"]) == 0 and not pkg4["assembly_trace"]["case_search_performed"],
-           f"cases={len(pkg4['cases'])}, search_performed={pkg4['assembly_trace']['case_search_performed']}")
+    case_ok, case_detail = default_case_count_ok(pkg5, expected_task_id=NORMAL_TASK_ID)
+    record("default_case_count_for_normal_task", case_ok, case_detail)
 
     report = {"gate": "B", "passed": all(c["passed"] for c in checks),
               "checks": checks, "generated_at": now_iso()}

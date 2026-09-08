@@ -10,7 +10,6 @@ Exit 0 = gate passes; 2 = STOP.
 from __future__ import annotations
 
 import json
-import re
 import sys
 from datetime import datetime, timezone
 from pathlib import Path
@@ -18,6 +17,8 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from yaml_mini import parse_yaml  # noqa: E402
 from schema_mini import Schema, load_schema_file  # noqa: E402
+from caccount import run_accounting  # noqa: E402
+from cauthority import evaluate_all_rules  # noqa: E402
 
 ROOT = Path(__file__).resolve().parents[1]
 TEAM = ROOT / "team-context"
@@ -34,41 +35,6 @@ def read_yaml(path: Path):
 def schema_check(doc, schema_name: str, path_hint: str) -> list[str]:
     schema = load_schema_file(schema_name)
     return Schema(schema, schema).validate(doc, path=path_hint)
-
-
-def adr_file(num: str):
-    d = Path(r"D:\AI\projects\opencode-web-imagegen") / "docs" / "adr"
-    if not d.exists():
-        return None
-    for p in d.glob("*.md"):
-        if p.name.startswith(num):
-            return p
-    return None
-
-
-def app1_doc(rel: str) -> bool:
-    p = Path(r"D:\AI\projects\teachers-app1") / rel
-    return p.exists()
-
-
-def authority_resolves(ref: str) -> bool:
-    if ref.startswith("multica://project-context/"):
-        return True
-    if ref.startswith("multica://issue/"):
-        return bool(re.fullmatch(r"multica://issue/(YZT-\d+|[0-9a-fA-F-]{36})", ref))
-    if ref.startswith("adr://"):
-        return adr_file(ref.split("://", 1)[1]) is not None
-    if ref.startswith("doc://"):
-        body = ref.split("://", 1)[1]
-        if not body.startswith("teachers-app1/"):
-            return False
-        return (Path(r"D:\AI\projects\teachers-app1") / body[len("teachers-app1/"):].split("@", 1)[0]).exists()
-    if ref.startswith("registry://"):
-        pid = ref.split("://", 1)[1]
-        return any(p["id"] == pid for p in read_yaml(TEAM / "registry" / "projects.yaml")["projects"])
-    if ref.startswith("repo://"):
-        return True
-    return False
 
 
 def main() -> int:
@@ -117,12 +83,6 @@ def main() -> int:
 
     for r in rules:
         errors += schema_check(r, "rule.schema.json", f"rule:{r['id']}")
-        if not r.get("authority_refs"):
-            errors.append(f"rule:{r['id']}: no authority_refs (D-10)")
-        else:
-            for ar in r["authority_refs"]:
-                if not authority_resolves(ar):
-                    errors.append(f"rule:{r['id']}: authority_ref unresolved: {ar}")
         if r["scope"]["type"] not in ("project", "team"):
             errors.append(f"rule:{r['id']}: illegal rule scope type")
         elif r["scope"]["type"] == "project" and r["scope"].get("project_id") not in ("app1", "web-imagegen"):
@@ -170,17 +130,62 @@ def main() -> int:
     counts = {"anchors": 2, "rules": len(rules), "facts": len(facts),
               "cases": len(cases), "checkpoints": len(checkpoints),
               "role_profiles": len(roles), "migration_findings": len(findings) + len(runtime_findings)}
+    all_objects_schema_valid = not errors
+    unresolved_scope = sum(1 for e in errors if "scope" in e.lower())
 
+    authority = evaluate_all_rules(rules)
+    errors += authority["errors"]
+    accounting = run_accounting()
+    errors += accounting.get("errors") or []
+    if accounting.get("silent_drop"):
+        errors.append(
+            "legacy silent_drop="
+            f"{accounting['silent_drop']}: {accounting.get('silent_drop_ids')}")
+    if not accounting.get("complete"):
+        errors.append(
+            "legacy accounting incomplete: "
+            f"accounted={accounting.get('legacy_objects_accounted_for')}% "
+            f"inventory={accounting.get('inventory_count')} "
+            f"mapped={accounting.get('mapped_count')}")
+    rule_without_valid_authority = authority["invalid_count"]
+    accounted = accounting["legacy_objects_accounted_for"]
+    silent_drop = accounting["silent_drop"]
+    missing = sorted(set((accounting.get("missing_evidence") or []) +
+                         (authority.get("missing_evidence") or [])))
+    valid = (
+        all_objects_schema_valid
+        and accounting.get("complete") is True
+        and silent_drop == 0
+        and unresolved_scope == 0
+        and rule_without_valid_authority == 0
+        and not missing
+        and not accounting.get("fail_closed")
+        and not authority.get("fail_closed")
+    )
     report = {
         "gate": "A0+A",
-        "valid": not errors,
-        "all_objects_schema_valid": not errors,
-        "legacy_objects_accounted_for": 100,
-        "silent_drop": 0,
-        "unresolved_scope": sum(1 for e in errors if "scope" in e),
-        "rule_without_valid_authority": sum(1 for e in errors if "authority" in e),
+        "valid": valid,
+        "all_objects_schema_valid": all_objects_schema_valid,
+        "legacy_objects_accounted_for": accounted,
+        "silent_drop": silent_drop,
+        "unresolved_scope": unresolved_scope,
+        "rule_without_valid_authority": rule_without_valid_authority,
         "errors": errors,
         "counts": counts,
+        "accounting": {
+            "inventory_source": accounting.get("inventory_source"),
+            "inventory_count": accounting.get("inventory_count"),
+            "mapped_count": accounting.get("mapped_count"),
+            "silent_drop_ids": accounting.get("silent_drop_ids"),
+            "map_only_ids": accounting.get("map_only_ids"),
+            "complete": accounting.get("complete"),
+        },
+        "authority": {
+            "rule_count": authority.get("rule_count"),
+            "invalid_count": authority.get("invalid_count"),
+            "fail_closed": authority.get("fail_closed"),
+        },
+        "missing_evidence": missing,
         "generated_at": datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"),
     }
     out = ROOT / "migration" / "gate-results" / "gate-a.json"
