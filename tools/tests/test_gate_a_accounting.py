@@ -8,13 +8,16 @@ import unittest
 from pathlib import Path
 
 TOOLS = Path(__file__).resolve().parents[1]
-if str(TOOLS) not in sys.path:
-    sys.path.insert(0, str(TOOLS))
+TESTS = Path(__file__).resolve().parent
+for _p in (TOOLS, TESTS):
+    if str(_p) not in sys.path:
+        sys.path.insert(0, str(_p))
 
 from caccount import (  # noqa: E402
     derived_inventory, mapped_legacy_ids, normalize_legacy, reconcile, run_accounting,
 )
 from yaml_mini import parse_yaml  # noqa: E402
+from failclosed_fixture import build_missing_evidence_root  # noqa: E402
 
 
 class AccountingUnitTests(unittest.TestCase):
@@ -96,12 +99,26 @@ class AccountingUnitTests(unittest.TestCase):
         self.assertGreaterEqual(len(items), 20)
 
     def test_real_map_does_not_silently_claim_100(self):
-        result = run_accounting()
-        # Signals are grouped in prose, not per-object legacy entries.
-        self.assertGreater(result["silent_drop"], 0)
-        self.assertNotEqual(result["legacy_objects_accounted_for"], 100)
-        self.assertFalse(result["complete"])
-        self.assertIn("migration/legacy-inventory.yaml", result["missing_evidence"])
+        """Isolated fixture: missing inventory + grouped-signal map must not claim 100%."""
+        with tempfile.TemporaryDirectory() as tmp:
+            root = build_missing_evidence_root(Path(tmp))
+            result = run_accounting(root=root)
+            # Signals are grouped in prose, not per-object legacy entries.
+            self.assertGreater(result["silent_drop"], 0)
+            self.assertEqual(
+                result["silent_drop_ids"],
+                ["sources/signal-a.json", "sources/signal-b.json"])
+            self.assertNotEqual(result["legacy_objects_accounted_for"], 100)
+            self.assertFalse(result["complete"])
+            self.assertIn("migration/legacy-inventory.yaml", result["missing_evidence"])
+            self.assertTrue(result["fail_closed"])
+
+            (root / "migration" / "migration-map.yaml").unlink()
+            missing_map = run_accounting(root=root)
+            self.assertTrue(missing_map["fail_closed"])
+            self.assertIn("migration/migration-map.yaml", missing_map["missing_evidence"])
+            self.assertNotEqual(missing_map["legacy_objects_accounted_for"], 100)
+            self.assertGreater(missing_map["silent_drop"], 0)
 
 
 if __name__ == "__main__":
