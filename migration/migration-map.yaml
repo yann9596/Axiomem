@@ -157,24 +157,75 @@ candidates:
     target: migration/findings/FIND-WIMG-MIG-000001.json
     disposition: pointer (F-3 staged repo-local V1.1 content)
 
+# Signals (YZT-43): per-object entries. YZT-40 recorded signals only as a
+# group-level action, which Gate A correctly rejects as not a per-object
+# disposition. Each of the 11 signals is an evidence record pointing at an
+# authoritative source; V1.1 canonical objects carry the equivalent source_refs
+# inline (doc://, repo://, adr://, multica://). Original V1 files remain in
+# sources/ until Cutover cleanup; no content is copied into V1.1 canonical as
+# a second truth. sha256 evidence: migration/legacy-inventory-evidence.yaml.
 signals:
-  action: reclassify_keep_as_evidence
-  note: >
-    All 11 external signals are evidence records pointing at authoritative
-    sources; V1.1 canonical objects carry the equivalent source_refs inline
-    (doc://, repo://, adr://, multica://). Original V1 files remain in
-    sources/ until Cutover cleanup; no content is copied into V1.1 canonical
-    as a second truth. Mapping (signal → used by):
-    - app1-lead-review-yzt22 → gate-B blocker test + RULE derivation evidence (YZT-22)
-    - app1-mvp-plan-v1-0 → authority for RULE-APP1-000001..000007 (doc@42f149a, blob 6b272a5)
-    - app1-project-context-2026-09-07 → anchor app1 authority
-    - app1-repo-state-2026-09-07 → FACT-APP1-000001 verification
-    - app1-voc-plan-v1-0 → methodology evidence for VOC facts/case
-    - app1-voc-round1-v0-1 / app1-voc-round2 → CASE-APP1-000001 evidence
-    - project-context-2026-09-06 → RULE-TEAM-000001 authority (workspace owner governance)
-    - web-imagegen-project-context → anchor web-imagegen authority
-    - web-imagegen-project-goal-update → anchor mission authority (owner-corrected)
-    - web-imagegen-repo-map-2026-09-06 → revalidation evidence for FACT-WIMG-000001 (superseded)
+  - legacy: sources/app1-lead-review-yzt22-2026-09-07.json
+    action: reclassify_keep_as_evidence
+    target: migration/replay/replay-yzt-22.yaml + tools/cgates.py app1 leak probe
+    disposition: retained_as_evidence
+    evidence_of: YZT-22 leak record (Lead review comment 01a077a7) reused as Gate B blocker probe terms
+  - legacy: sources/app1-mvp-plan-v1-0.json
+    action: reclassify_keep_as_evidence
+    target: RULE-APP1-000001..RULE-APP1-000007 (authority record of doc://teachers-app1/docs/App1-MVP-完整项目方案-v1.0-HarmonyOS.md@42f149a, blob 6b272a5)
+    disposition: retained_as_evidence
+    evidence_of: frozen T01/T02A plan text referenced by app1 rule source_refs
+  - legacy: sources/app1-project-context-2026-09-07.json
+    action: reclassify_keep_as_evidence
+    target: project-context/app1/project.yaml (anchor authority) + RULE-APP1 owner/constraint derivations
+    disposition: retained_as_evidence
+    evidence_of: owner durable context (Multica project c671779f, issues YZT-20/YZT-22)
+  - legacy: sources/app1-repo-state-2026-09-07.json
+    action: reclassify_keep_as_evidence
+    target: project-context/app1/facts/FACT-APP1-000001.yaml (verification of repo://teachers-app1@42f149a)
+    disposition: retained_as_evidence
+    evidence_of: direct git observation of teachers-app1 main@42f149a
+  - legacy: sources/app1-voc-plan-v1-0.json
+    action: reclassify_keep_as_evidence
+    target: project-context/app1/cases/CASE-APP1-000001.yaml (methodology: H1-H5, S0-S4) + project-context/app1/checkpoint.yaml cp-open-002
+    disposition: retained_as_evidence
+    evidence_of: VOC research design (repo://teachers-app1@42f149a blob b6ef221)
+  - legacy: sources/app1-voc-round1-v0-1.json
+    action: reclassify_keep_as_evidence
+    target: project-context/app1/cases/CASE-APP1-000001.yaml (H3 Unknown at Round 1)
+    disposition: retained_as_evidence
+    evidence_of: Round 1 VOC doc (repo://teachers-app1@42f149a blob 79c3afcc)
+  - legacy: sources/app1-voc-round2-2026-09-06.json
+    action: reclassify_keep_as_evidence
+    target: project-context/app1/cases/CASE-APP1-000001.yaml (H3 -> COUNTER) + RULE-APP1-000005 (silent-by-default tightening)
+    disposition: retained_as_evidence
+    evidence_of: Round 2 counterevidence doc (repo://teachers-app1@42f149a blob d27609fe)
+  - legacy: sources/project-context-2026-09-06.json
+    action: reclassify_keep_as_evidence
+    target: team-context/rules/RULE-TEAM-000001.yaml (authority record of the workspace owner six-role governance decision)
+    disposition: retained_as_evidence
+    evidence_of: owner durable context (Multica project Multica智能体团队V1落地; reliability=authoritative)
+  - legacy: sources/web-imagegen-project-context-2026-09-06.json
+    action: reclassify_keep_as_evidence
+    target: project-context/web-imagegen/project.yaml (anchor authority + non-negotiable hard constraints)
+    disposition: retained_as_evidence
+    evidence_of: owner durable context (Multica project 19a54e43)
+  - legacy: sources/web-imagegen-project-goal-update-2026-09-06.json
+    action: reclassify_keep_as_evidence
+    target: project-context/web-imagegen/project.yaml governance.mission (owner-corrected goal, human decision 2026-09-06)
+    disposition: retained_as_evidence
+    evidence_of: owner chat-updated project description (human decision signal)
+  - legacy: sources/web-imagegen-repo-map-2026-09-06.json
+    action: reclassify_keep_as_evidence
+    target: project-context/web-imagegen/facts/FACT-WIMG-000001.yaml (supersedes/drift_of record) + RULE-WIMG-000004/000005 revalidation input
+    disposition: retained_as_evidence (reality superseded by revalidation vs main@600225a)
+    evidence_of: README survey at 72db245; drift documented in FACT-WIMG-000001 supersedes_note
+
+signals_note: >
+  Group-level statement kept from YZT-40 for audit continuity: all 11 external
+  signals are evidence records pointing at authoritative sources; they are not
+  promoted into V1.1 canonical as second truths. The authoritative per-object
+  dispositions are the 11 list entries above (Gate A set reconciliation).
 
 metadata_field_migration:
   importance: dropped (legacy_metadata.importance kept in this file only for audit; no retrieval use)

@@ -1,6 +1,22 @@
-# Replay: YZT-22 — App1 project memory setup (the SCOPE LEAKAGE blocker probe)
-# Coverage: context/architecture task; the exact leak query terms from YZT-22
-# ("model core domain" pulled web-imagegen units into an App1 package in V1).
+# Replay: YZT-22 — Context V1｜建立 App1 项目记忆、注册与检索链
+# Rebuilt (YZT-43) from the authoritative issue YZT-22:
+# - CE task establishing App1 project memory/registration/retrieval;
+#   package must carry the frozen-baseline essentials (draft-only guardrail
+#   RULE-APP1-000006, Evidence-asset rule RULE-APP1-000002, domain-model fact
+#   FACT-APP1-000002, app1 anchor) — the issue's "至少覆盖产品目标/边界/
+#   冻结决策/未冻结项/Owner 边界，以及当前 repo map" requirement;
+# - SCOPE LEAKAGE blocker probe: the exact leak query terms from the YZT-22
+#   Lead review (recorded in sources/app1-lead-review-yzt22-2026-09-07.json):
+#   "model core domain" with no tag filter pulled web-imagegen units into an
+#   App1 package in V1. V1.1 must return zero web-imagegen objects.
+# - expected_conflicts=1 (YZT-43 correction, was 0): the role-aware builder
+#   (YZT-42) applies the CE retrieval policy whose baseline includes
+#   team.checkpoint, so the package surfaces the team checkpoint; that
+#   checkpoint holds exactly one conflicts entry (cp-team-conflict-001), a
+#   documented, resolved, non-blocking registry-path deviation. Surfacing it is
+#   correct CE visibility, not a hidden conflict; hidden_unresolved_conflict
+#   stays false and the YZT-22 stop condition (substantive product-baseline
+#   conflicts) remains at zero.
 task_id: replay-yzt-22
 role: context-engineer
 scope: project
@@ -22,7 +38,7 @@ expected:
     - rule:RULE-WIMG
     - fact:FACT-WIMG
   expected_case_search: none
-  expected_conflicts: 0
+  expected_conflicts: 1        # team checkpoint resolved-deviation record surfaced by CE baseline; zero app1 conflicts
   notes: >
     YZT-22 blocker test: with query terms model/core/domain (no tag filter),
     V1 mixed web-imagegen-project-context into the App1 package. V1.1 must

@@ -1,0 +1,27 @@
+{
+  "schema_version": "1.0",
+  "kind": "memory_candidate",
+  "id": "web-imagegen-repo-local-context-2026-09-06",
+  "proposed_title": "Web-ImageGen repo-local context files landed on feature branch",
+  "proposed_content": "Product repo Web-ImageGen now has Multica plan §35 repo-local context on branch agent/04-software-engineer/9fa1b3d39d37 commit a0a049b: .ai/context.yaml (project_id 19a54e43-57eb-4823-8bd2-4e026addcea7, repo_id web-imagegen, project_context local_path D:\\AI\\multica-memory, memory_chain web-imagegen-pilot) and docs/repo-context.md (repo role, module map, npm entrypoints, offline npm test, hard constraints matching README/ADR at base 72db245). Content intentionally excludes uncommitted dirty-tree GPT provider docs. Final merge to main reserved for Human. Related issue YZT-9.",
+  "dedupe_key": "web-imagegen-repo-local-context-files",
+  "classification": "project",
+  "importance": 2,
+  "confidence": 0.9,
+  "source_ids": [
+    "yzt-9-implementation-2026-09-06",
+    "web-imagegen-repo-map-2026-09-06"
+  ],
+  "relationships": [
+    {
+      "type": "related_to",
+      "target_id": "web-imagegen-repo-map",
+      "note": "Repo map should note .ai/context.yaml + docs/repo-context.md after main merge"
+    }
+  ],
+  "possible_conflicts": [],
+  "status": "candidate",
+  "captured_at": "2026-09-06T10:05:00Z",
+  "reviewed_at": null,
+  "review_note": ""
+}

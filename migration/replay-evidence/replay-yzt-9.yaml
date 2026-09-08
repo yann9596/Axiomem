@@ -1,0 +1,25 @@
+# Replay metric evidence — YZT-9 (replay-yzt-9). Frozen pre-run (YZT-43).
+# false_canonical: the audited web-imagegen canonical boundary is 5 rules
+# (RULE-WIMG-000001..000005) + 1 fact + 0 cases. The
+# web-imagegen-repo-local-context candidate was dispositioned pointer
+# (FIND-WIMG-MIG-000001.json, F-3): its content must stay staged under
+# migration/repo-local/ and never enter canonical. Refs below would indicate a
+# false canonicalization of that pointer content or of the repo-local task
+# itself.
+# must_retain: FACT-WIMG-000001 is the canonical repo reality the repo-local
+# files must be generated from; losing it would break the F-3 content source.
+# allowed_issue_refs: none — SE policy does not include the team checkpoint
+# and no web-imagegen checkpoint entry carries an issue ref, so the expected
+# blocker set is empty; any issue ref appearing is noise.
+schema_version: "1.1"
+kind: replay_metric_evidence
+task_id: replay-yzt-9
+false_canonical_refs:
+  - rule:RULE-WIMG-000006
+  - fact:FACT-WIMG-000002
+  - case:CASE-WIMG-000001
+  - fact:web-imagegen-repo-local-context-2026-09-06
+  - fact:web-imagegen-repo-local-context-files
+must_retain_refs:
+  - fact:FACT-WIMG-000001
+allowed_issue_refs: []

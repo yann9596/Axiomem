@@ -50,9 +50,16 @@ verification: verified
 authority_refs:
   - multica://project-context/web-imagegen
   - multica://issue/YZT-40
+  - multica://issue/YZT-22
 
 source_refs:
   - multica://project-context/web-imagegen
+  - multica://issue/YZT-22
 
 created_at: 2026-09-06T08:55:00Z
-updated_at: 2026-09-08T14:30:00Z
+updated_at: 2026-09-09T00:00:00Z
+# YZT-43 authority audit addition: multica://issue/YZT-22 ("不新增 Neo4j、
+# 向量数据库、全量聊天向量化或 embedding；V1 未选择 embedding model，禁止宣称
+# 启用。") is the authority for the embedding-interface-only clause; the anchor
+# hard_constraints cover the no-Neo4j/vectorization/auto-merge clause and YZT-40
+# R7 covers the derived-index clauses. Evidence: migration/authority-evidence.yaml.

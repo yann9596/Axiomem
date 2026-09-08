@@ -1,0 +1,33 @@
+# Replay metric evidence — YZT-22 (replay-yzt-22). Frozen pre-run (YZT-43).
+# false_canonical: the audited app1 canonical boundary is 8 rules
+# (RULE-APP1-000001..000008) + 4 facts + 1 case. Refs below would indicate the
+# V1.0 task-delivery candidates (t23/t24/t25, disposition=forget per
+# migration/findings/FIND-APP1-MIG-00000{2,3,4}.json) or unaudited content
+# became canonical.
+# must_retain: the unfrozen-items guardrail, Evidence-asset rule and the
+# six-object domain fact — the essentials YZT-22 established; losing any of
+# them would be a false forget of the transformed legacy units.
+# allowed_issue_refs: blockers visible to CE at app1 scope: team baseline
+# (YZT-40, from team.checkpoint in the CE policy) and the App1
+# implementation-reality open entry cp-open-003 (YZT-34/35/36).
+schema_version: "1.1"
+kind: replay_metric_evidence
+task_id: replay-yzt-22
+false_canonical_refs:
+  - fact:FACT-APP1-000005
+  - fact:FACT-APP1-000006
+  - fact:FACT-APP1-000007
+  - rule:RULE-APP1-000009
+  - case:CASE-APP1-000002
+  - fact:app1-t23-thread-projection-engine-delivery
+  - fact:app1-t24-state-projection-engine-delivery
+  - fact:app1-t25-followup-projection-engine-delivery
+must_retain_refs:
+  - rule:RULE-APP1-000006
+  - rule:RULE-APP1-000002
+  - fact:FACT-APP1-000002
+allowed_issue_refs:
+  - multica://issue/YZT-40
+  - multica://issue/YZT-34
+  - multica://issue/YZT-35
+  - multica://issue/YZT-36

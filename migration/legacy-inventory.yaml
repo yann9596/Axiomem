@@ -1,0 +1,102 @@
+# V1.0 legacy source inventory (YZT-43, machine-readable; Gate A input).
+# Exactly the 29 V1.0 objects: 10 memory units + 3 chains + 11 external
+# signals + 5 candidates. IDs are repo-relative paths and MUST match the
+# derived filesystem inventory (tools/caccount.py derived_inventory).
+# Snapshot source: tag context-v1.0-pre-v1.1-20260908 (main@61c6f0e).
+# Per-object sha256 / source / disposition / target evidence:
+# migration/legacy-inventory-evidence.yaml
+schema_version: "1.1"
+kind: legacy_inventory
+source_revision: context-v1.0-pre-v1.1-20260908 (main@61c6f0e)
+objects:
+  # --- 10 memory units ---
+  - id: memory/app1-context-consumption-contract.json
+    kind: unit
+    path: memory/app1-context-consumption-contract.json
+  - id: memory/app1-domain-model-scope-t02.json
+    kind: unit
+    path: memory/app1-domain-model-scope-t02.json
+  - id: memory/app1-frozen-baseline-t01-t02a.json
+    kind: unit
+    path: memory/app1-frozen-baseline-t01-t02a.json
+  - id: memory/app1-project-context.json
+    kind: unit
+    path: memory/app1-project-context.json
+  - id: memory/app1-repo-map.json
+    kind: unit
+    path: memory/app1-repo-map.json
+  - id: memory/app1-unfrozen-teacher-dependencies.json
+    kind: unit
+    path: memory/app1-unfrozen-teacher-dependencies.json
+  - id: memory/app1-voc-evidence-status.json
+    kind: unit
+    path: memory/app1-voc-evidence-status.json
+  - id: memory/governance-owner-boundaries.json
+    kind: unit
+    path: memory/governance-owner-boundaries.json
+  - id: memory/web-imagegen-project-context.json
+    kind: unit
+    path: memory/web-imagegen-project-context.json
+  - id: memory/web-imagegen-repo-map.json
+    kind: unit
+    path: memory/web-imagegen-repo-map.json
+  # --- 3 chains ---
+  - id: chains/app1-mvp.json
+    kind: chain
+    path: chains/app1-mvp.json
+  - id: chains/team-governance.json
+    kind: chain
+    path: chains/team-governance.json
+  - id: chains/web-imagegen-pilot.json
+    kind: chain
+    path: chains/web-imagegen-pilot.json
+  # --- 11 external signals ---
+  - id: sources/app1-lead-review-yzt22-2026-09-07.json
+    kind: signal
+    path: sources/app1-lead-review-yzt22-2026-09-07.json
+  - id: sources/app1-mvp-plan-v1-0.json
+    kind: signal
+    path: sources/app1-mvp-plan-v1-0.json
+  - id: sources/app1-project-context-2026-09-07.json
+    kind: signal
+    path: sources/app1-project-context-2026-09-07.json
+  - id: sources/app1-repo-state-2026-09-07.json
+    kind: signal
+    path: sources/app1-repo-state-2026-09-07.json
+  - id: sources/app1-voc-plan-v1-0.json
+    kind: signal
+    path: sources/app1-voc-plan-v1-0.json
+  - id: sources/app1-voc-round1-v0-1.json
+    kind: signal
+    path: sources/app1-voc-round1-v0-1.json
+  - id: sources/app1-voc-round2-2026-09-06.json
+    kind: signal
+    path: sources/app1-voc-round2-2026-09-06.json
+  - id: sources/project-context-2026-09-06.json
+    kind: signal
+    path: sources/project-context-2026-09-06.json
+  - id: sources/web-imagegen-project-context-2026-09-06.json
+    kind: signal
+    path: sources/web-imagegen-project-context-2026-09-06.json
+  - id: sources/web-imagegen-project-goal-update-2026-09-06.json
+    kind: signal
+    path: sources/web-imagegen-project-goal-update-2026-09-06.json
+  - id: sources/web-imagegen-repo-map-2026-09-06.json
+    kind: signal
+    path: sources/web-imagegen-repo-map-2026-09-06.json
+  # --- 5 candidates ---
+  - id: sources/candidates/app1-repo-local-context-pointer.json
+    kind: candidate
+    path: sources/candidates/app1-repo-local-context-pointer.json
+  - id: sources/candidates/app1-t23-thread-projection-engine-delivery.json
+    kind: candidate
+    path: sources/candidates/app1-t23-thread-projection-engine-delivery.json
+  - id: sources/candidates/app1-t24-state-projection-engine-delivery.json
+    kind: candidate
+    path: sources/candidates/app1-t24-state-projection-engine-delivery.json
+  - id: sources/candidates/app1-t25-followup-projection-engine-delivery.json
+    kind: candidate
+    path: sources/candidates/app1-t25-followup-projection-engine-delivery.json
+  - id: sources/candidates/web-imagegen-repo-local-context-2026-09-06.json
+    kind: candidate
+    path: sources/candidates/web-imagegen-repo-local-context-2026-09-06.json

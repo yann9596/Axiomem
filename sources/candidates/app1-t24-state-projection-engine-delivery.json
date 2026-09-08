@@ -1,0 +1,21 @@
+{
+  "schema_version": "1.0",
+  "kind": "memory_candidate",
+  "id": "app1-t24-state-projection-engine-delivery",
+  "proposed_title": "App1 T24 State Projection Engine 已在独立 worktree 交付（synthetic-only）",
+  "proposed_content": "YZT-35 / T24：分支 agent/04-software-engineer/yzt-35；run_start_commit=d6ada8cf9db4bb36e560e6430a4d82cfe418b3c7；通过 merge 继承 T23 tip bac3ae3761be5cf9b369c7c46c1716773e98f0c0。实现纯函数 StateEngine、TEST_ONLY_STATE_POLICY_V1 夹具、TopicPolicyRegistry 激活/回滚、Thread+State 原子 compare-and-publish、完整 explanation refs/reason/basis、版本失效与竞态/重启恢复。node --test tests/*.test.mjs = 41 pass / 0 fail（既有 33 + 新增 T24）。execution_mode=synthetic_only_fail_closed；real_data_mode=disabled；未触碰 D:\\AI\\projects\\teachers-app1 main@42f149a。TEST_ONLY 阈值不得当产品默认；FollowUp 仍为 T25；无远端 → 无 PR。",
+  "dedupe_key": "app1-t24-state-projection-engine-delivery",
+  "classification": "task",
+  "importance": 3,
+  "confidence": 0.9,
+  "source_ids": ["yzt-35-implementation"],
+  "relationships": [
+    {"type": "related_to", "target_id": "app1-repo-map", "note": "产品实现仍在独立 worktree，main 仍为 docs-only 基线"},
+    {"type": "related_to", "target_id": "app1-t23-thread-projection-engine-delivery", "note": "T24 继承 T23 Thread 投影原语"}
+  ],
+  "possible_conflicts": [],
+  "status": "candidate",
+  "captured_at": "2026-09-07T06:20:00Z",
+  "reviewed_at": null,
+  "review_note": ""
+}

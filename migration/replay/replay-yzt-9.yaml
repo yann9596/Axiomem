@@ -1,5 +1,14 @@
-# Replay: YZT-9 — Web-ImageGen repo-local context (.ai/context.yaml + docs/repo-context.md)
-# Coverage: cross-repo task (memory repo + product repo), repo-local pointer.
+# Replay: YZT-9 — 产品仓补齐 repo-local context（.ai/context.yaml + docs/repo-context.md）
+# Rebuilt (YZT-43) from the authoritative issue YZT-9:
+# - SE-only product-repo write in an independent worktree ("你是产品仓唯一
+#   写入 Owner。使用独立 worktree / feature branch"; "02 Context Engineer 对
+#   产品仓只读") → RULE-WIMG-000001 (integrity/worktree) and RULE-WIMG-000002
+#   (write ownership) must be present;
+# - content must come from already-existing facts ("内容必须来自已存在事实：
+#   产品仓 README、当前代码结构、以及记忆仓只读材料（web-imagegen-repo-map、
+#   web-imagegen-project-context）") → web-imagegen anchor digest and the
+#   repo-map fact FACT-WIMG-000001;
+# - no App1 memory may leak into a web-imagegen package.
 task_id: replay-yzt-9
 role: software-engineer
 scope: project

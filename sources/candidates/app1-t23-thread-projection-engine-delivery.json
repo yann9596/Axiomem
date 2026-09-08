@@ -1,0 +1,20 @@
+{
+  "schema_version": "1.0",
+  "kind": "memory_candidate",
+  "id": "app1-t23-thread-projection-engine-delivery",
+  "proposed_title": "App1 T23 Thread Projection Engine 已在独立 worktree 交付（synthetic-only）",
+  "proposed_content": "YZT-34 / T23：分支 agent/04-software-engineer/yzt-34 @ bac3ae3761be5cf9b369c7c46c1716773e98f0c0；run_start_commit=5d0e19ece0c6a00e9d80a8165a283f1a225b863d；通过 merge 继承 T22 tip 5ae435446ead2008a85e30d0cc4d0240339faee5。实现 AttentionThread membership 投影、dirty 消费、compare-and-publish、current absence、竞态/发布失败保留 dirty、重启恢复、旧 basis/page token fail closed。node --test tests/*.test.mjs = 33 pass / 0 fail（含既有 26 + 新增 T23）。execution_mode=synthetic_only_fail_closed；real_data_mode=disabled；未触碰 D:\\AI\\projects\\teachers-app1 main@42f149a。State/FollowUp 仍为 T21 synthetic slot，不是 T24。无远端 → 无 PR。",
+  "dedupe_key": "app1-t23-thread-projection-engine-delivery",
+  "classification": "task",
+  "importance": 3,
+  "confidence": 0.9,
+  "source_ids": ["yzt-34-implementation-bac3ae3"],
+  "relationships": [
+    {"type": "related_to", "target_id": "app1-repo-map", "note": "产品实现仍在独立 worktree，main 仍为 docs-only 基线"}
+  ],
+  "possible_conflicts": [],
+  "status": "candidate",
+  "captured_at": "2026-09-07T05:55:00Z",
+  "reviewed_at": null,
+  "review_note": ""
+}

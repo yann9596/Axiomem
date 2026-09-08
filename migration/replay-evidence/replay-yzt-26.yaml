@@ -1,0 +1,26 @@
+# Replay metric evidence — YZT-26 (replay-yzt-26). Frozen pre-run (YZT-43).
+# false_canonical: same audited app1 boundary as replay-yzt-22 (8 rules +
+# 4 facts + 1 case); refs below would indicate task progress or unaudited
+# content was canonicalized into the T06 design package.
+# must_retain: the VOC-refuted auto-reminder case (transformed from the
+# app1-voc-evidence-status unit) and the resulting silent-by-default rule —
+# forgetting either would erase the decision value YZT-26 relied on.
+# allowed_issue_refs: blockers visible to SA at app1 scope (SA policy does not
+# include the team checkpoint): the App1 implementation-reality open entry
+# cp-open-003 (YZT-34/35/36).
+schema_version: "1.1"
+kind: replay_metric_evidence
+task_id: replay-yzt-26
+false_canonical_refs:
+  - fact:FACT-APP1-000005
+  - fact:FACT-APP1-000006
+  - fact:FACT-APP1-000007
+  - rule:RULE-APP1-000009
+  - case:CASE-APP1-000002
+must_retain_refs:
+  - case:CASE-APP1-000001
+  - rule:RULE-APP1-000005
+allowed_issue_refs:
+  - multica://issue/YZT-34
+  - multica://issue/YZT-35
+  - multica://issue/YZT-36

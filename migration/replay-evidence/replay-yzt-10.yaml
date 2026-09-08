@@ -1,0 +1,26 @@
+# Replay metric evidence — YZT-10 (replay-yzt-10). Frozen pre-run (YZT-43).
+# false_canonical: any ref below appearing in the actual package indicates
+# task progress or unaudited content was canonicalized. The audited V1.1
+# canonical boundary for this domain is exactly RULE-TEAM-000001 (1 team rule;
+# no team facts/cases exist); any other team-scope canonical ref would be a
+# false canonical.
+# must_retain: the owner-boundary rule must survive the chains
+# deprecate+reclassify disposition (it is the only team-scope canonical rule).
+# allowed_issue_refs: blockers legitimately visible at team scope: the
+# migration umbrella (team checkpoint) and the App1 implementation-reality
+# open entries (YZT-34/35/36).
+schema_version: "1.1"
+kind: replay_metric_evidence
+task_id: replay-yzt-10
+false_canonical_refs:
+  - rule:RULE-TEAM-000002
+  - fact:FACT-TEAM-000001
+  - case:CASE-TEAM-000001
+  - fact:memory-cli-governance-loop
+must_retain_refs:
+  - rule:RULE-TEAM-000001
+allowed_issue_refs:
+  - multica://issue/YZT-40
+  - multica://issue/YZT-34
+  - multica://issue/YZT-35
+  - multica://issue/YZT-36

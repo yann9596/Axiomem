@@ -1,0 +1,31 @@
+# Replay metric evidence — YZT-39 (replay-yzt-39). Frozen pre-run (YZT-43).
+# false_canonical: at cross-project scope the audited canonical boundary is
+# the union of both projects' audited sets (app1: 8 rules/4 facts/1 case;
+# web-imagegen: 5 rules/1 fact/0 cases) plus the single team rule. Refs below
+# would indicate migration-planning task progress itself was canonicalized
+# (the classic self-reference error this replay guards against).
+# must_retain: the owner-boundary rule must remain visible to the migration
+# planning task (it constrains who writes the plan's outputs).
+# allowed_issue_refs: blockers visible at cross_project scope: team checkpoint
+# entries (YZT-40) and App1 implementation-reality entries (YZT-34/35/36).
+schema_version: "1.1"
+kind: replay_metric_evidence
+task_id: replay-yzt-39
+false_canonical_refs:
+  - rule:RULE-TEAM-000002
+  - fact:FACT-TEAM-000001
+  - case:CASE-TEAM-000001
+  - fact:FACT-APP1-000005
+  - rule:RULE-APP1-000009
+  - case:CASE-APP1-000002
+  - rule:RULE-WIMG-000006
+  - fact:FACT-WIMG-000002
+  - case:CASE-WIMG-000001
+  - fact:v1-1-migration-plan
+must_retain_refs:
+  - rule:RULE-TEAM-000001
+allowed_issue_refs:
+  - multica://issue/YZT-40
+  - multica://issue/YZT-34
+  - multica://issue/YZT-35
+  - multica://issue/YZT-36

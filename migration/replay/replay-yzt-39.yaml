@@ -1,6 +1,14 @@
-# Replay: YZT-39 — Context & Memory System migration planning
-# Coverage: cross-project scope task with explicit projects list; case search
-# enabled but no match expected (no case exists for memory-system design).
+# Replay: YZT-39 — 重构记忆系统01 (R0/R1/R2 migration planning umbrella)
+# Rebuilt (YZT-43) from the authoritative issue YZT-39:
+# - cross-project read-only盘点/规划 task explicitly spanning both registered
+#   projects ("当前涉及的 Context Repo；... 所有 Project Context Repo"), so
+#   cross_project scope with an explicit two-project list; implicit
+#   cross-project access must stay impossible;
+# - package must show both project anchor digests (app1 + web-imagegen) and
+#   the team owner-boundary rule (the umbrella carries the owner model);
+# - case search executes (migration trigger in CE case_search_triggers) but
+#   activates nothing: no case exists for memory-system design, and none may
+#   be invented.
 task_id: replay-yzt-39
 role: context-engineer
 scope: cross_project

@@ -1,5 +1,14 @@
-# Replay: YZT-36 — T25 synthetic-only Follow-up Projection Engine
-# Coverage: normal implementation task in App1 (incubation), guardrail rules.
+# Replay: YZT-36 — T25｜实现 synthetic-only Follow-up Projection Engine
+# Rebuilt (YZT-43) from the authoritative issue YZT-36:
+# - normal implementation task in App1 (incubation phase), independent
+#   worktree, synthetic_only_fail_closed execution fixed by the issue;
+# - must include the TEST_ONLY guardrail extracted from the forgotten
+#   T23/T24/T25 delivery candidates (RULE-APP1-000008 — "不得成为产品默认
+#   Policy、种子数据或教师事实"), the Evidence-recompute rule (RULE-APP1-
+#   000002), the draft-only guardrail (RULE-APP1-000006) and the frozen
+#   five-state fact (FACT-APP1-000003);
+# - rule/fact coverage suffices: case activation stays off (D-16/17) — the
+#   issue inherits the accepted T06 contract rather than re-deciding it.
 task_id: replay-yzt-36
 role: software-engineer
 scope: project

@@ -1,4 +1,13 @@
 # Replay: YZT-10 — Memory CLI governance loop (get/promote/challenge)
+# Rebuilt (YZT-43) from the authoritative issue YZT-10 ("Memory CLI：补齐
+# get / promote / challenge（治理闭环最小集）"):
+# - team-scope infra task in the memory repo (no project memory involved);
+#   owner boundaries rule must be present (promote requires CE role,
+#   challenge must never overwrite);
+# - must NOT see any project-scoped canonical object (no app1/wimg rules,
+#   facts or cases);
+# - the one team-checkpoint conflicts entry (documented, non-blocking
+#   registry-path deviation) is surfaced, not hidden.
 # Coverage: normal implementation task, team scope.
 task_id: replay-yzt-10
 role: software-engineer
@@ -21,7 +30,7 @@ expected:
     - fact:FACT-WIMG
     - case:CASE-APP1
   expected_case_search: none
-  expected_conflicts: 1        # team checkpoint conflict (registry path) is surfaced, non-blocking
+  expected_conflicts: 1        # team checkpoint conflict record (registry path) is surfaced, non-blocking
   notes: >
     Team-scope infra task; must see owner-boundary rule + team checkpoint state;
     must NOT see any project memory.

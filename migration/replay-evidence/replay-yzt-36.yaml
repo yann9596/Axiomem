@@ -1,0 +1,30 @@
+# Replay metric evidence — YZT-36 (replay-yzt-36). Frozen pre-run (YZT-43).
+# false_canonical: the three T23/T24/T25 delivery candidates were dispositioned
+# forget (FIND-APP1-MIG-00000{2,3,4}.json): task progress must NOT appear as
+# canonical. Refs below cover both forms a wrong promotion could take
+# (next-sequence app1 ids, or candidate ids promoted verbatim V1-style).
+# must_retain: RULE-APP1-000008 is the non-task-progress extract of the
+# forgotten candidates (TEST_ONLY guardrail); if the forget had swallowed it,
+# the delivery candidates' only durable value would be lost.
+# allowed_issue_refs: blockers visible to SE at app1 scope: cp-open-003
+# (YZT-34/35/36 — the implementation-reality entries referencing this task
+# chain). YZT-36 itself is among them: the replayed task's own issue appearing
+# as a checkpoint ref is expected, not noise.
+schema_version: "1.1"
+kind: replay_metric_evidence
+task_id: replay-yzt-36
+false_canonical_refs:
+  - fact:FACT-APP1-000005
+  - fact:FACT-APP1-000006
+  - fact:FACT-APP1-000007
+  - rule:RULE-APP1-000009
+  - case:CASE-APP1-000002
+  - fact:app1-t23-thread-projection-engine-delivery
+  - fact:app1-t24-state-projection-engine-delivery
+  - fact:app1-t25-followup-projection-engine-delivery
+must_retain_refs:
+  - rule:RULE-APP1-000008
+allowed_issue_refs:
+  - multica://issue/YZT-34
+  - multica://issue/YZT-35
+  - multica://issue/YZT-36

@@ -58,11 +58,21 @@ status: active
 verification: verified
 
 authority_refs:
-  - multica://project-context/multica-agent-team-v1
+  - multica://issue/YZT-39
+  - repo://multica-memory@61c6f0e/sources/project-context-2026-09-06.json
 
 source_refs:
-  - multica://project-context/multica-agent-team-v1
+  - multica://issue/YZT-39
+  - repo://multica-memory@61c6f0e/sources/project-context-2026-09-06.json
   - repo://multica-memory@61c6f0e/memory/governance-owner-boundaries.json
 
 created_at: 2026-09-06T00:00:00Z
-updated_at: 2026-09-08T14:30:00Z
+updated_at: 2026-09-09T00:00:00Z
+# YZT-43 authority audit correction: the previous authority_ref
+# multica://project-context/multica-agent-team-v1 did not resolve (team-level
+# rule pointing at the project-context URI family; "multica-agent-team-v1" is
+# not a registered project). Re-pointed to the artifacts that actually carry
+# the owner decision: user-authored umbrella issue YZT-39 ("Owner 模型：..."
+# verbatim) and the authoritative workspace-governance signal captured in V1
+# (sources/project-context-2026-09-06.json, reliability=authoritative).
+# Claim text unchanged. Evidence: migration/authority-evidence.yaml.

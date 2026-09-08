@@ -1,0 +1,21 @@
+{
+  "schema_version": "1.0",
+  "kind": "memory_candidate",
+  "id": "app1-t25-followup-projection-engine-delivery",
+  "proposed_title": "App1 T25 Follow-up Projection Engine 已在独立 worktree 交付（synthetic-only）",
+  "proposed_content": "YZT-36 / T25：分支 agent/04-software-engineer/yzt-36；run_start_commit=eb6a3823be92f39c12d5ff9e363e1be1ed330f3d；通过 merge 继承 T24 tip 543b6af2ebb82b6ca50ead646553ad6c2afafe55。实现纯函数 evaluateFollowUp、静态 FollowUpRuleRegistry、TEST_ONLY_FOLLOWUP_RULE_V1、Policy 同轮 nextEvidenceRuleRef 透传、Thread+State+FollowUp 原子 compare-and-publish、RULE_REF_ABSENT / NO_ACTIVE_EVIDENCE / STALE/UNAVAILABLE 分层、session-local dismiss。node --test tests/*.test.mjs = 53 pass / 0 fail（既有 41 + 新增 T25 12）。execution_mode=synthetic_only_fail_closed；real_data_mode=disabled；未触碰 D:\\AI\\projects\\teachers-app1 main@42f149a。TEST_ONLY rule/params/scene 不得当产品默认；真实 needed-evidence / 教师话术仍待反馈；无远端 → 无 PR。",
+  "dedupe_key": "app1-t25-followup-projection-engine-delivery",
+  "classification": "task",
+  "importance": 3,
+  "confidence": 0.9,
+  "source_ids": ["yzt-36-implementation"],
+  "relationships": [
+    {"type": "related_to", "target_id": "app1-repo-map", "note": "产品实现仍在独立 worktree，main 仍为 docs-only 基线"},
+    {"type": "related_to", "target_id": "app1-t24-state-projection-engine-delivery", "note": "T25 继承 T24 State 投影原语与 exact-basis bundle"}
+  ],
+  "possible_conflicts": [],
+  "status": "candidate",
+  "captured_at": "2026-09-07T06:30:00Z",
+  "reviewed_at": null,
+  "review_note": ""
+}

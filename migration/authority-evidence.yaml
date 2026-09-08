@@ -1,0 +1,508 @@
+# 14-Rule authority audit evidence (YZT-43). One claim per (rule_id, authority_ref).
+# Contract: schemas/authority-claim-evidence.schema.json. Resolvability is
+# checked by tools/cauthority.py; this file carries the semantic evidence:
+# a precise locator/excerpt inside the authority artifact, the support
+# relation, and an explicit authority-scope vs rule-scope coverage verdict.
+#
+# Audit corrections applied to canonical rules this pass (recorded in
+# migration/MIGRATION_VALIDATION_REPORT.md §Authority corrections):
+# - RULE-TEAM-000001: authority_ref multica://project-context/multica-agent-team-v1
+#   did not resolve (not a registered project; team-level rule pointing at a
+#   project-context URI family). Re-pointed to the two artifacts that actually
+#   carry the owner decision (user-authored umbrella issue YZT-39 + the
+#   authoritative workspace-governance signal captured in V1).
+# - RULE-WIMG-000003: added multica://issue/YZT-22 as authority for the
+#   embedding-interface-only clause (verbatim owner constraint), which neither
+#   the anchor nor YZT-40 states.
+schema_version: "1.1"
+kind: authority_claim_evidence
+claims:
+  # ---------- RULE-TEAM-000001 (team scope) ----------
+  - rule_id: RULE-TEAM-000001
+    authority_ref: multica://issue/YZT-39
+    claim_support:
+      supported: true
+      excerpt_or_pointer: >-
+        YZT-39 description, "Workspace Context" section (user-authored umbrella
+        issue, creator=workspace member): "Owner 模型：Engineering Lead 拥有项目、
+        范围、优先级、任务拆分与路由；Context Engineer 拥有 Context、Canonical
+        Memory 与 RAG；Solution Architect 拥有技术方案；Software Engineer 拥有实现；
+        Feature Reviewer 拥有用户/外部信号与功能正确性审查；QA 拥有里程碑质量结论。
+        任何角色可 Challenge，但不得静默接管其他 Owner。" and "跨角色分歧一次往返
+        仍未解决即停止互相提及并升级 Engineering Lead" — verbatim support for the
+        six-role owner model, challenge right, and one-round-trip escalation.
+      claim_relation: supports
+    scope_coverage:
+      covers: true
+      authority_scope: workspace/team-wide collaboration mandate for the Web-ImageGen six-role team (umbrella issue of the memory-system re-org)
+      rule_scope: team (all tasks involving ownership, canonical writes, cross-role handoff)
+  - rule_id: RULE-TEAM-000001
+    authority_ref: repo://multica-memory@61c6f0e/sources/project-context-2026-09-06.json
+    claim_support:
+      supported: true
+      excerpt_or_pointer: >-
+        V1 external signal captured 2026-09-06 from the owner's durable project
+        context ("Multica智能体团队V1落地"): locator="Multica project: Multica智能体团队V1落地",
+        summary="Project owner model and non-negotiable repository/memory constraints.",
+        reliability="authoritative". The decision content itself is verbatim in
+        multica://issue/YZT-39 (companion claim above); this artifact is the
+        owner-governance record the legacy unit cites (memory/governance-owner-boundaries.json
+        sources[0] = "project-context-2026-09-06").
+      claim_relation: supports
+    scope_coverage:
+      covers: true
+      authority_scope: workspace owner governance decision (team-level, durable project context)
+      rule_scope: team
+  # ---------- RULE-APP1-000001..000007 × 方案 v1.0@42f149a (primary) ----------
+  - rule_id: RULE-APP1-000001
+    authority_ref: doc://teachers-app1/docs/App1-MVP-完整项目方案-v1.0-HarmonyOS.md@42f149a
+    claim_support:
+      supported: true
+      excerpt_or_pointer: >-
+        §1 P16 (doc lines 121-124): "## P16｜本地优先是产品与技术共同约束 — 学生学情数据
+        默认保存在设备本地；核心闭环不能依赖登录、云同步或模型 API。涉及外部网络能力时，
+        只发送完成该功能所必需的最小数据。" plus §4.6 最低要求 1 (line 393): "学生 Evidence
+        默认仅保存在本机。"
+      claim_relation: supports
+    scope_coverage:
+      covers: true
+      authority_scope: teachers-app1 App1 MVP 方案 v1.0 frozen T01 product model + T02A tech baseline (project app1)
+      rule_scope: project app1 (storage/sync/backup/external-service design decisions)
+  - rule_id: RULE-APP1-000001
+    authority_ref: multica://issue/YZT-20
+    claim_support:
+      supported: true
+      excerpt_or_pointer: >-
+        YZT-20 description (user-approved umbrella, plan attached): "## Risks / stop
+        conditions — 不引入云同步、向量数据库、LLM 主链、强通知或学校管理能力。" —
+        execution-level reinforcement of local-first; the normative P16 wording
+        lives in the 方案 doc (primary claim above).
+      claim_relation: qualifies
+    scope_coverage:
+      covers: true
+      authority_scope: app1 MVP execution umbrella (Confirmed baseline + stop conditions, user-approved)
+      rule_scope: project app1
+  - rule_id: RULE-APP1-000002
+    authority_ref: doc://teachers-app1/docs/App1-MVP-完整项目方案-v1.0-HarmonyOS.md@42f149a
+    claim_support:
+      supported: true
+      excerpt_or_pointer: >-
+        §1 P6 (doc lines 82-84): "## P6｜Evidence 是核心资产 — 原始事实/结构化 Evidence
+        长期保留；State 为可重算派生结果。" plus §5.1 (lines 456-468): "存续 — 长期保留；
+        教师可纠正；不被下游 AI 输出反向覆盖。删除/修改 — 上游 Evidence 改动后，相关
+        Thread / State 必须重算。"
+      claim_relation: supports
+    scope_coverage:
+      covers: true
+      authority_scope: teachers-app1 App1 MVP 方案 v1.0 (project app1)
+      rule_scope: project app1 (Evidence/Thread/State/FollowUp semantics and pipelines)
+  - rule_id: RULE-APP1-000002
+    authority_ref: multica://issue/YZT-20
+    claim_support:
+      supported: true
+      excerpt_or_pointer: >-
+        YZT-20 description: "## Confirmed baseline — T01 产品母模型与 T02A HarmonyOS
+        技术基线已由方案冻结。" and "当前不依赖问卷的真实下一项是 T02"；the 方案 v1.0
+        (carrying §1 P6 / §5) is attached to YZT-20 as the authoritative input
+        ("!file[App1-MVP-完整项目方案-v1.0-HarmonyOS.md]"). Qualifies the claim's
+        frozen-baseline status for execution.
+      claim_relation: qualifies
+    scope_coverage:
+      covers: true
+      authority_scope: app1 MVP execution umbrella (user-approved)
+      rule_scope: project app1
+  - rule_id: RULE-APP1-000003
+    authority_ref: doc://teachers-app1/docs/App1-MVP-完整项目方案-v1.0-HarmonyOS.md@42f149a
+    claim_support:
+      supported: true
+      excerpt_or_pointer: >-
+        §4.1 原生应用技术路线 table (doc lines 251-263): 开发语言 ArkTS（固定）、UI ArkUI
+        声明式（固定）、应用模型 Stage Model（固定）、本地业务数据 ArkData relationalStore
+        （固定）、LLM 通过业务 Adapter 可插拔接入（固定架构，不锁厂商）；line 263: "业务数据层
+        统一使用当前维护的 relationalStore，不采用已停止维护的旧 @ohos.data.rdb 作为新代码
+        基线。" §4.2 (lines 289-297): "不得用 Preferences 承载 Evidence / Thread / State
+        主数据。" §4.3 硬约束 (lines 325-331): "StateEngine 不写在 ArkUI 页面事件中。
+        FollowUpEngine 不依赖 Notification Kit 才能运行。TopicPolicy 不与页面组件绑定。
+        Validation 必须可以纯 Domain 单元测试。Scene Pack 尽可能配置化。" §1 P14/P15
+        (lines 115-120): HarmonyOS 原生优先；核心领域层与平台能力解耦。
+      claim_relation: supports
+    scope_coverage:
+      covers: true
+      authority_scope: teachers-app1 App1 MVP 方案 v1.0 §4 T02A tech baseline (project app1)
+      rule_scope: project app1 (module layout, storage selection, platform coupling)
+  - rule_id: RULE-APP1-000003
+    authority_ref: multica://issue/YZT-20
+    claim_support:
+      supported: true
+      excerpt_or_pointer: >-
+        YZT-20 description: "## Confirmed baseline — T01 产品母模型与 T02A HarmonyOS
+        技术基线已由方案冻结。" — direct support that the T02A baseline (the rule's
+        content) is frozen for execution.
+      claim_relation: supports
+    scope_coverage:
+      covers: true
+      authority_scope: app1 MVP execution umbrella (user-approved)
+      rule_scope: project app1
+  - rule_id: RULE-APP1-000004
+    authority_ref: doc://teachers-app1/docs/App1-MVP-完整项目方案-v1.0-HarmonyOS.md@42f149a
+    claim_support:
+      supported: true
+      excerpt_or_pointer: >-
+        §1 P11 (lines 102-104): "## P11｜LLM 是可替换增强层 — 关闭 LLM 后，产品主闭环仍然
+        成立。" §1 P12 (lines 105-108): "## P12｜AI 解决语义，不决定学情成立。" §4.5 LLM
+        Adapter (lines 363-386): "Domain 层禁止：直接调用某模型商 SDK；把模型生成文本作为
+        State 的事实来源；因模型不可用导致 Evidence / Thread / Follow-up 主链失效。" §7.3
+        (lines 567-576): "上层只暴露业务能力：structureObservation() normalizeEvidence()
+        generateParentMessage() 不绑定具体模型商。"
+      claim_relation: supports
+    scope_coverage:
+      covers: true
+      authority_scope: teachers-app1 App1 MVP 方案 v1.0 §1/§4.5/§7 (project app1)
+      rule_scope: project app1 (LLM integration / adapter / AI-output consumption)
+  - rule_id: RULE-APP1-000004
+    authority_ref: multica://issue/YZT-20
+    claim_support:
+      supported: true
+      excerpt_or_pointer: >-
+        YZT-20 description: "## Risks / stop conditions — 不引入云同步、向量数据库、
+        LLM 主链、强通知或学校管理能力。" — the no-LLM-main-chain execution constraint;
+        the normative P11/P12 wording lives in the 方案 (primary claim above).
+      claim_relation: qualifies
+    scope_coverage:
+      covers: true
+      authority_scope: app1 MVP execution umbrella (user-approved)
+      rule_scope: project app1
+  - rule_id: RULE-APP1-000005
+    authority_ref: doc://teachers-app1/docs/App1-MVP-完整项目方案-v1.0-HarmonyOS.md@42f149a
+    claim_support:
+      supported: true
+      excerpt_or_pointer: >-
+        §4.4 Follow-up 与系统通知解耦 (doc lines 333-361): FollowUpEngine → FollowUp
+        Record → Recall Strategy（"Scene 内静默召回 ← MVP 默认；学生 / Thread 页召回 ← MVP
+        默认；首页静默呈现 ← 待 UX 验证；系统通知 Adapter ← 教师明确 opt-in"）；强通知原则：
+        "默认关闭；不产生'未完成数量'；不以完成率衡量教师；如后续需要定时提醒，通过
+        Notification / 代理提醒 Adapter 接入"。§5.4 (lines 489-491): "由系统自动维护，但不
+        默认强打扰。"
+      claim_relation: supports
+    scope_coverage:
+      covers: true
+      authority_scope: teachers-app1 App1 MVP 方案 v1.0 §4.4/§5.4 (project app1)
+      rule_scope: project app1 (follow-up presentation, recall, notification, home-page IA)
+  - rule_id: RULE-APP1-000005
+    authority_ref: multica://issue/YZT-20
+    claim_support:
+      supported: true
+      excerpt_or_pointer: >-
+        YZT-20 description: "## Risks / stop conditions — 不引入云同步、向量数据库、
+        LLM 主链、强通知或学校管理能力。" and "任何工作若需要先冻结 Scene、Topic、Evidence
+        Policy 或 Follow-up 具体话术，停止并记录为教师反馈依赖。" — execution constraint
+        consistent with the silent-by-default baseline; Round-2 VOC tightening is
+        evidenced by repo://teachers-app1@42f149a/docs/2026-09-06-app1-voc-round2-counterevidence.md
+        (rule source_ref).
+      claim_relation: qualifies
+    scope_coverage:
+      covers: true
+      authority_scope: app1 MVP execution umbrella (user-approved)
+      rule_scope: project app1
+  - rule_id: RULE-APP1-000006
+    authority_ref: doc://teachers-app1/docs/App1-MVP-完整项目方案-v1.0-HarmonyOS.md@42f149a
+    claim_support:
+      supported: true
+      excerpt_or_pointer: >-
+        §9 必须等待教师反馈后再冻结的内容 (doc lines 648-663): "以下项目现在可以做草案，
+        但不能视为定稿：1. Scene Pack 最终优先级 2. 每个 Scene 的高频 Topic 3. Topic 的
+        教师语言 4. Topic-specific Evidence Policy 5. Follow-up 最自然的场景入口 6. 首页是否
+        展示'近期关注' 7. Watchlist 默认规模与排序 8. 正向 Evidence 的交互方式 9. 家长沟通
+        Validation Gate 的具体话术 10. 班主任兼语文 vs 纯科任的首版 ICP 收窄程度" — the exact
+        10 unfrozen items the rule names. T20 deferral: §4.1 table row "API Level — 工程启动时
+        按目标设备与稳定 SDK 冻结（当前不锁死）"。
+      claim_relation: supports
+    scope_coverage:
+      covers: true
+      authority_scope: teachers-app1 App1 MVP 方案 v1.0 §9 + §4.1 (project app1)
+      rule_scope: project app1 (implementing/freezing anything from the unfrozen list)
+  - rule_id: RULE-APP1-000006
+    authority_ref: multica://issue/YZT-20
+    claim_support:
+      supported: true
+      excerpt_or_pointer: >-
+        YZT-20 description: "## Confirmed baseline — Scene/Topic/Evidence Policy 等
+        教师领域内容仍是草案，不能提前冻结。" and "## Risks / stop conditions — 任何工作若
+        需要先冻结 Scene、Topic、Evidence Policy 或 Follow-up 具体话术，停止并记录为教师
+        反馈依赖。"
+      claim_relation: supports
+    scope_coverage:
+      covers: true
+      authority_scope: app1 MVP execution umbrella (user-approved)
+      rule_scope: project app1
+  - rule_id: RULE-APP1-000007
+    authority_ref: doc://teachers-app1/docs/App1-MVP-完整项目方案-v1.0-HarmonyOS.md@42f149a
+    claim_support:
+      supported: true
+      excerpt_or_pointer: >-
+        §4.6 本地安全与隐私边界 最低要求 1-7 (doc lines 390-400): "1. 学生 Evidence 默认仅
+        保存在本机。2. 应用日志不得输出学生姓名、Evidence 正文、家长沟通正文等敏感内容。
+        3. 模型请求必须经过数据最小化层；默认不得上传完整学生档案。4. 数据库设计预留加密与
+        迁移能力。5. 需要自行管理密钥时优先使用 HarmonyOS HUKS 能力，不在代码中硬编码密钥。
+        6. 删除学生/班级时，必须定义关联 Evidence / Thread / State / Follow-up 的清除策略。
+        7. 备份/导出不是 MVP 首发 UI 的硬要求，但 Schema 必须允许未来安全导出与恢复。"
+      claim_relation: supports
+    scope_coverage:
+      covers: true
+      authority_scope: teachers-app1 App1 MVP 方案 v1.0 §4.6 (project app1)
+      rule_scope: project app1 (logging, encryption, key management, deletion, backup schema)
+  - rule_id: RULE-APP1-000007
+    authority_ref: multica://issue/YZT-20
+    claim_support:
+      supported: true
+      excerpt_or_pointer: >-
+        YZT-20 description: "## Risks / stop conditions — 不引入云同步、向量数据库、
+        LLM 主链、强通知或学校管理能力。" + "## Mid term — T08 本地数据安全边界" listed as
+        upcoming within the umbrella; security baseline execution context for app1.
+      claim_relation: qualifies
+    scope_coverage:
+      covers: true
+      authority_scope: app1 MVP execution umbrella (user-approved)
+      rule_scope: project app1
+  # ---------- RULE-APP1-000008 (TEST_ONLY guardrail) ----------
+  - rule_id: RULE-APP1-000008
+    authority_ref: multica://issue/YZT-26
+    claim_support:
+      supported: true
+      excerpt_or_pointer: >-
+        YZT-26 (T06 Follow-up contract, accepted) description: "## Complexity guard —
+        没有教师验证的 next-evidence 规则时，合法结果是零 FollowUp；不得用通用催办、默认
+        dueAt、默认通知或测试 fixture 填空。" and "## Out of scope — 不冻结真实 Topic、
+        Scene Pack、needed-evidence 内容、候选场景优先级、教师语言、入口/呈现、Watchlist
+        规模或正向 Evidence 交互。"
+      claim_relation: supports
+    scope_coverage:
+      covers: true
+      authority_scope: accepted T06 architecture contract for App1 Follow-up (project app1)
+      rule_scope: project app1 (wiring projection engines / promoting fixture policies)
+  - rule_id: RULE-APP1-000008
+    authority_ref: multica://issue/YZT-36
+    claim_support:
+      supported: true
+      excerpt_or_pointer: >-
+        YZT-36 (T25 delivery task) description: "执行模式固定为 synthetic_only_fail_closed、
+        real_data_mode=disabled" and "## Scope — 实现最小本地静态、不可变、版本化的 Follow-up
+        rule registry/manifest 边界；仅用 TEST_ONLY_FOLLOWUP_RULE_V1 等价 fixture 证明框架。
+        所有 requirement/params/scene 只能留在测试 fixture 与文档警示中，不得成为产品默认
+        Policy、种子数据或教师事实。"
+      claim_relation: supports
+    scope_coverage:
+      covers: true
+      authority_scope: T25 implementation task contract (project app1; user-approved execution chain)
+      rule_scope: project app1
+  # ---------- RULE-WIMG-000001 (product repo integrity) ----------
+  - rule_id: RULE-WIMG-000001
+    authority_ref: multica://project-context/web-imagegen
+    claim_support:
+      supported: true
+      excerpt_or_pointer: >-
+        project-context/web-imagegen/project.yaml governance.hard_constraints (verbatim,
+        owner-approved project context, Multica project 19a54e43): "never clean, overwrite,
+        commit or discard the product repo's current uncommitted/untracked content";
+        "product tasks run in an independent worktree". Registered project dir exists
+        (tools/cauthority.py PROJECTS/web-imagegen + registry id web-imagegen).
+      claim_relation: supports
+    scope_coverage:
+      covers: true
+      authority_scope: web-imagegen project owner-approved durable context (Multica project 19a54e43, captured in sources/web-imagegen-project-context-2026-09-06.json)
+      rule_scope: project web-imagegen (any task touching/executed in the product repo)
+  - rule_id: RULE-WIMG-000001
+    authority_ref: multica://issue/YZT-40
+    claim_support:
+      supported: true
+      excerpt_or_pointer: >-
+        YZT-40 description: "基于已批准的：... 'YZT-39 Migration Plan v2.0' 执行 Context &
+        Memory System 从当前 V1.0 实际落地状态向 V1.1 的旁路重建与 Shadow Validation" and
+        "## 总体原则 ... Authority drives Norm / Governance ... ## Rule — 任何旧内容转 Rule
+        前必须逐条通过 Authority Gate"。YZT-40 is the adoption-execution record that carried
+        the owner-approved constraint into canonical (migration/migration-map.yaml rules
+        section); it is not the origin of the normative claim (the anchor above is).
+      claim_relation: qualifies
+    scope_coverage:
+      covers: true
+      authority_scope: V1.0→V1.1 bypass rebuild umbrella (both registered projects, user-approved plan)
+      rule_scope: project web-imagegen
+  # ---------- RULE-WIMG-000002 (write ownership) ----------
+  - rule_id: RULE-WIMG-000002
+    authority_ref: multica://project-context/web-imagegen
+    claim_support:
+      supported: true
+      excerpt_or_pointer: >-
+        project-context/web-imagegen/project.yaml governance.hard_constraints (verbatim):
+        "product code writes owned solely by Software Engineer"; "canonical memory writes
+        owned solely by Context Engineer"; "QA must not modify the implementation and then
+        self-PASS"; "final merge reserved for a human"; plus the platform permissions note
+        mirrored from the owner context: "Platform permissions are not hard isolation..."
+        (owner non-negotiable collaboration constraints, Multica project 19a54e43).
+      claim_relation: supports
+    scope_coverage:
+      covers: true
+      authority_scope: web-imagegen project owner-approved durable context
+      rule_scope: project web-imagegen (writes, review, merge)
+  - rule_id: RULE-WIMG-000002
+    authority_ref: multica://issue/YZT-40
+    claim_support:
+      supported: true
+      excerpt_or_pointer: >-
+        YZT-40 description: "基于已批准的 ... 'YZT-39 Migration Plan v2.0' 执行 ... 旁路重建"
+        + "Authority drives Norm / Governance"。Adoption-execution record for the rule's
+        entry into V1.1 canonical (migration-map.yaml rules section); origin of the claim
+        is the owner-approved anchor above.
+      claim_relation: qualifies
+    scope_coverage:
+      covers: true
+      authority_scope: V1.0→V1.1 bypass rebuild umbrella (both registered projects)
+      rule_scope: project web-imagegen
+  # ---------- RULE-WIMG-000003 (memory-system construction boundaries) ----------
+  - rule_id: RULE-WIMG-000003
+    authority_ref: multica://project-context/web-imagegen
+    claim_support:
+      supported: true
+      excerpt_or_pointer: >-
+        project-context/web-imagegen/project.yaml governance.hard_constraints (verbatim,
+        owner-approved): "no Neo4j, no full-chat vectorization, no fully automatic merge"。
+        Covers the headline construction boundaries of the rule.
+      claim_relation: supports
+    scope_coverage:
+      covers: true
+      authority_scope: web-imagegen project owner-approved durable context
+      rule_scope: project web-imagegen (memory-system construction/operation tasks)
+  - rule_id: RULE-WIMG-000003
+    authority_ref: multica://issue/YZT-40
+    claim_support:
+      supported: true
+      excerpt_or_pointer: >-
+        YZT-40 description "## R7 — Derived Layer Rebuild": "Derived Layer 必须从新的
+        Canonical 零重建。不得迁移旧 SQLite 内容作为事实。" and "Index 不得继续 Git 跟踪。"
+        — verbatim support for the rule's "derived index is never canonical and is never
+        git-tracked" clause; also the adoption-execution record (Authority drives Norm /
+        Governance) under the approved plan.
+      claim_relation: supports
+    scope_coverage:
+      covers: true
+      authority_scope: V1.0→V1.1 rebuild R7 contract (derived layer semantics, both projects)
+      rule_scope: project web-imagegen (memory-system construction/operation tasks)
+  - rule_id: RULE-WIMG-000003
+    authority_ref: multica://issue/YZT-22
+    claim_support:
+      supported: true
+      excerpt_or_pointer: >-
+        YZT-22 description "## Hard boundaries" (verbatim): "不新增 Neo4j、向量数据库、
+        全量聊天向量化或 embedding；V1 未选择 embedding model，禁止宣称启用。" — the owner
+        constraint the rule restates as "embedding stays interface-only (disabled until a
+        model is selected) and must never be claimed as active". Added as an authority_ref
+        in this audit (YZT-43) because neither the anchor hard_constraints nor YZT-40
+        states the embedding clause.
+      claim_relation: supports
+    scope_coverage:
+      covers: true
+      authority_scope: owner-set memory-system hard boundaries (V1 build; constraint carried into V1.1 semantics unchanged)
+      rule_scope: project web-imagegen (memory-system construction/operation tasks)
+  # ---------- RULE-WIMG-000004 (provider exclusivity) ----------
+  - rule_id: RULE-WIMG-000004
+    authority_ref: adr://0002
+    claim_support:
+      supported: true
+      excerpt_or_pointer: >-
+        docs/adr/0002-switch-image-generation-providers-globally.md (status: accepted):
+        "Web ImageGen uses an explicit global Generation Provider switch rather than
+        prompt-routed or fallback backends. ... a user-invoked switch enables exactly one
+        path in Codex configuration and then requires a Codex restart. Future provider
+        integrations may add explicit switch values, but they must preserve mutual
+        exclusion, supplier-specific boundaries, and visible failures."
+      claim_relation: supports
+    scope_coverage:
+      covers: true
+      authority_scope: web-imagegen provider-selection architecture decision (project ADR record)
+      rule_scope: project web-imagegen (provider selection, skill routing, new providers)
+  - rule_id: RULE-WIMG-000004
+    authority_ref: adr://0003
+    claim_support:
+      supported: true
+      excerpt_or_pointer: >-
+        docs/adr/0003-route-browser-providers-through-one-web-imagegen-skill.md
+        (status: proposed, implemented reality confirmed by README at 600225a):
+        "Keep Grok and the planned GPT Web integration behind one installed Web ImageGen
+        Skill instead of creating one globally discoverable Skill per browser provider.
+        The global switch exposes default | grok | gpt: ... each job freezes that provider
+        for its lifetime." Implementation evidence: README lines 12-14/37-40 (single global
+        Web ImageGen Skill, npm run skill:install).
+      claim_relation: supports
+    scope_coverage:
+      covers: true
+      authority_scope: web-imagegen skill-routing architecture decision (single-skill boundary)
+      rule_scope: project web-imagegen (skill routing / provider integrations)
+  - rule_id: RULE-WIMG-000004
+    authority_ref: repo://web-imagegen@600225a/README.md
+    claim_support:
+      supported: true
+      excerpt_or_pointer: >-
+        README.md @ main 600225a: line 19 "规范 provider 值为 default | grok | gpt"；
+        line 20 "官方 OpenAI ImageGen 与 Web ImageGen Skill 全局互斥，不靠提示词路由"；
+        line 67 "切换后重启 Codex"；line 112 "新增供应商时，应增加独立的供应商编排和显式
+        provider 值，并复用本地状态、校验和落盘核心。不得把多个供应商同时启用、按提示词猜测
+        供应商，或在失败后静默切换供应商。"
+      claim_relation: supports
+    scope_coverage:
+      covers: true
+      authority_scope: web-imagegen product repo main@600225a implementation reality (PR#1 merged)
+      rule_scope: project web-imagegen
+  # ---------- RULE-WIMG-000005 (browser boundary) ----------
+  - rule_id: RULE-WIMG-000005
+    authority_ref: adr://0001
+    claim_support:
+      supported: true
+      excerpt_or_pointer: >-
+        docs/adr/0001-use-codex-chrome-as-the-only-browser-boundary.md (status: accepted):
+        "Browser interaction is owned by Codex's existing Chrome capability and is limited
+        to the Grok tab the user explicitly supplies; the workflow does not search for or
+        open a replacement tab. Authenticated image bytes may be materialized only from the
+        verified current Post through Chrome's media or page-asset surfaces ... the
+        integration never replays raw Grok HTTP requests or reads cookies or browser
+        storage. An existing download may be reused only when its provider filename
+        uniquely contains the exact frozen Post identity and its bytes pass the same hard
+        validation ... no MCP server, HTTP daemon, self-managed Chromium or profile, CDP
+        connection, second browser backend, compatibility layer, or fallback to another
+        provider ... provider failures must remain visible." (Grok path verbatim; the gpt
+        generalization is supported by README@600225a line 5.)
+      claim_relation: supports
+    scope_coverage:
+      covers: true
+      authority_scope: web-imagegen browser-boundary architecture decision (Grok path; generalization carried by README)
+      rule_scope: project web-imagegen (browser interaction, download reuse, privacy-sensitive output)
+  - rule_id: RULE-WIMG-000005
+    authority_ref: adr://0003
+    claim_support:
+      supported: true
+      excerpt_or_pointer: >-
+        docs/adr/0003-route-browser-providers-through-one-web-imagegen-skill.md: single
+        installed Web ImageGen Skill for grok and the planned GPT Web integration —
+        supports the rule's "Browser provider integrations route through one installed Web
+        ImageGen Skill (no per-provider globally discoverable skills)" clause; implemented
+        per README@600225a.
+      claim_relation: supports
+    scope_coverage:
+      covers: true
+      authority_scope: web-imagegen skill-routing architecture decision
+      rule_scope: project web-imagegen
+  - rule_id: RULE-WIMG-000005
+    authority_ref: repo://web-imagegen@600225a/README.md
+    claim_support:
+      supported: true
+      excerpt_or_pointer: >-
+        README.md @ main 600225a: line 5 "当前版本实现 grok 与 gpt 两条 Web 供应商路径：Codex
+        接管用户明确指定、已经登录的 Chrome 标签页完成生图"；line 22 "不使用 MCP、Playwright、
+        CDP、自管 Chromium、独立 profile 或 HTTP daemon"；line 23 "Chrome、Grok 或下载失败时
+        直接报告失败，不回退到其他供应商"；line 24 "不读取或管理 Cookie、浏览器存储、密码或
+        profile"；line 104 "供应商候选保存经 Chrome 媒体表面物化并通过本地硬校验的真实原始
+        字节；不重放 Grok HTTP 请求或读取 Cookie"。
+      claim_relation: supports
+    scope_coverage:
+      covers: true
+      authority_scope: web-imagegen product repo main@600225a implementation reality (both provider paths)
+      rule_scope: project web-imagegen

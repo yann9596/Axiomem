@@ -1,5 +1,13 @@
-# Replay: YZT-26 — T06 Follow-up working contract (architecture design; CASE ACTIVATION)
-# Coverage: architecture-design task where the historical VOC case must activate.
+# Replay: YZT-26 — T06｜定义 Follow-up Engine 派生、同 basis 与恢复契约
+# Rebuilt (YZT-43) from the authoritative issue YZT-26:
+# - T06 architecture-design task (Solution Architect owner) on follow-up
+#   presentation / recall / notification boundaries;
+# - the historical VOC case must activate (positive case-activation path):
+#   the issue's own out-of-scope and complexity-guard sections ("不得用通用
+#   催办、默认 dueAt、默认通知或测试 fixture 填空"; "不设计 Notification、
+#   强提醒…") are exactly what CASE-APP1-000001 (auto-reminder refuted by
+#   VOC) and RULE-APP1-000005 (silent-by-default) guard;
+# - normal rules/facts coverage, no cross-project memory.
 task_id: replay-yzt-26
 role: solution-architect
 scope: project
