@@ -1,0 +1,15 @@
+# YZT-43: byte-stability for hash-locked migration evidence.
+# The replay expectation lock (migration/replay-expectation.lock.yaml) and the
+# per-object inventory evidence record SHA-256 over exact file bytes. Line-
+# ending conversion on checkout (core.autocrlf) would make clean-checkout
+# bytes differ from the locked/recorded hashes, so these paths are pinned
+# binary (-text): git stores and checks out their bytes verbatim.
+migration/replay/*.yaml -text
+migration/replay-evidence/*.yaml -text
+migration/replay-expectation.lock.yaml -text
+migration/legacy-inventory.yaml -text
+migration/legacy-inventory-evidence.yaml -text
+memory/*.json -text
+chains/*.json -text
+sources/*.json -text
+sources/candidates/*.json -text

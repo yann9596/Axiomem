@@ -1,9 +1,16 @@
 # Per-object evidence for the 29 V1.0 legacy objects (YZT-43).
 # Companion to migration/legacy-inventory.yaml (the Gate A input; that file is
 # schema-constrained to id/kind/path, so sha256/source/disposition/target
-# evidence lives here). Hashes are SHA-256 of the exact file content at
-# branch yzt-43-evidence; units/chains/signals/committed-candidate are the
-# same bytes as snapshot tag context-v1.0-pre-v1.1-20260908 (main@61c6f0e).
+# evidence lives here).
+#
+# sha256 basis (YZT-43 correction): hash of the GIT BLOB content (LF, as
+# stored in the object database) — checkout-independent and reproducible on
+# any platform via:
+#   git cat-file blob <rev>:<path>            # pipe into sha256sum / hashlib
+#   e.g. git cat-file blob HEAD:memory/app1-repo-map.json | sha256sum
+# (.gitattributes pins -text for these paths, so fresh checkouts also yield
+# identical on-disk bytes.) The 4 post-snapshot candidates were untracked
+# LF files; their blob content equals their original on-disk bytes.
 # Dispositions/targets cite migration/migration-map.yaml sections.
 schema_version: "1.1"
 kind: legacy_inventory_evidence
@@ -13,181 +20,181 @@ note_untracked_candidates: >
   4 post-snapshot candidates were untracked in the main worktree
   D:\AI\multica-memory (recorded in migration/snapshot.yaml
   working_tree_untracked and copied into the F-5 backup bundle). Byte-identical
-  copies were added to this evidence branch (commit yzt-43 evidence) so the
+  copies were added to this evidence branch (commit 71b7e96) so the
   29-object set reconciliation is reproducible from a clean checkout. The
   originals in the main worktree were not modified, staged, or deleted.
 objects:
   - id: memory/app1-context-consumption-contract.json
     kind: unit
-    sha256: 2c2f959c84b33d40171d9c007e0e96009fac8ef186cf80d2d283cae27f975b70
+    sha256: 6ddfcca9d8054aa54c9e35b0d3c4e08cb09d7b1e66129d1b24d9f7930f32ad5e
     source: repo://multica-memory@61c6f0e/memory/app1-context-consumption-contract.json
     disposition: deprecate_then_remove_after_cutover
     target: null (V1 tool-gap workaround; leak paths became Gate B blocker tests)
     map_section: rules
   - id: memory/app1-domain-model-scope-t02.json
     kind: unit
-    sha256: 4e015ae0f627bedd7839e19666d7c49b317d5b3818b7e64cda8c0ae5fff3594b
+    sha256: 0434962bcb50391c5f653cf75fa2ca8e6aeeef2be91c2b3fa6059d1083f4f415
     source: repo://multica-memory@61c6f0e/memory/app1-domain-model-scope-t02.json
     disposition: transform (split by claim)
     target: FACT-APP1-000002 + RULE-APP1-000006 + project-context/app1/checkpoint.yaml (cp-open-001) + multica://issue/YZT-20
     map_section: rules
   - id: memory/app1-frozen-baseline-t01-t02a.json
     kind: unit
-    sha256: 596c7e2ad8a6799d970649e94bb1b25906d6d26304f019bcea404f383a0b29ba
+    sha256: 17122da20a522c769a5415586e8ced5e0c3fb320ae2b15bfd17d0411596a4d91
     source: repo://multica-memory@61c6f0e/memory/app1-frozen-baseline-t01-t02a.json
     disposition: transform (split by claim type)
     target: RULE-APP1-000001/000002/000003/000004/000005/000007 + FACT-APP1-000003/000004 + project-context/app1/project.yaml + project-context/app1/checkpoint.yaml
     map_section: rules
   - id: memory/app1-project-context.json
     kind: unit
-    sha256: 6557afe2cc37bbc83a5ae4fe97a32e331df18ed7b21b106cce784d00a8e70c11
+    sha256: b4449a16717c958c87c773b5c790729259391af810eb58173f1a8a960c370225
     source: repo://multica-memory@61c6f0e/memory/app1-project-context.json
     disposition: transform (governance part -> anchor; normative part -> rules)
     target: project-context/app1/project.yaml + RULE-APP1-000001/000002/000003/000004/000005/000006
     map_section: anchors + rules
   - id: memory/app1-repo-map.json
     kind: unit
-    sha256: 6e4394b5744d52f6240012971a75e4939f0ca4618bb8d162536ba8337cbb043c
+    sha256: 1613a81eb051b8abba452ab36fc94455154a6781a3e2e27ae9068d99e09a6261
     source: repo://multica-memory@61c6f0e/memory/app1-repo-map.json
     disposition: transform (baseline -> fact; file-list -> pointer)
     target: FACT-APP1-000001 (verified_against repo://teachers-app1@42f149a)
     map_section: rules
   - id: memory/app1-unfrozen-teacher-dependencies.json
     kind: unit
-    sha256: 41db7ffb3688fd2a71f3861fa24dcfac88512ca10908e7303a5272018802f294
+    sha256: fb63f29a5f0d906e9a146ac90b439adf928c4a7f422172cc339e131018b30d01
     source: repo://multica-memory@61c6f0e/memory/app1-unfrozen-teacher-dependencies.json
     disposition: transform
     target: RULE-APP1-000006/000005 + project-context/app1/checkpoint.yaml (cp-open-001, cp-open-004)
     map_section: rules
   - id: memory/app1-voc-evidence-status.json
     kind: unit
-    sha256: efe34a039a37fe985f7aabccb6732005034ef45a8fbadf50e4d1cc8d125aae93
+    sha256: e1bafad4f0736636b3001ba9fe69182a33ada55191a65c75c5f74f55a6b63ae6
     source: repo://multica-memory@61c6f0e/memory/app1-voc-evidence-status.json
     disposition: transform (historical scenario -> case; confidence 0.85 NOT upgraded)
     target: CASE-APP1-000001 (partially_verified) + project-context/app1/checkpoint.yaml (cp-open-002) + RULE-APP1-000005
     map_section: rules
   - id: memory/governance-owner-boundaries.json
     kind: unit
-    sha256: ebab836905fbfce4e6b19b7b1bb0261b09d1b21bed924142874baaf5caba4ab1
+    sha256: ec476febe0833c205212b8f28452f29598ff3fdda62ae3919f6d2e6f47d13314
     source: repo://multica-memory@61c6f0e/memory/governance-owner-boundaries.json
     disposition: transform
     target: team-context/rules/RULE-TEAM-000001.yaml
     map_section: rules
   - id: memory/web-imagegen-project-context.json
     kind: unit
-    sha256: 09dc23fb296dcf1b5110a3b51d06c125ec1bc0481d014bd40dec6da63b1fac6f
+    sha256: 6ff511bc65ecfd17aa1a1f73a27767ed8d0cd666f7f2c82e9d10ccfd72d93080
     source: repo://multica-memory@61c6f0e/memory/web-imagegen-project-context.json
     disposition: transform (split by claim: governance -> anchor, constraints -> rules)
     target: project-context/web-imagegen/project.yaml + RULE-WIMG-000001/000002/000003
     map_section: anchors + rules
   - id: memory/web-imagegen-repo-map.json
     kind: unit
-    sha256: a834a054347185cf38be582c983360a2b871c0b50f8256276dca69f402ec7b69
+    sha256: 5a460e3f1eb6b6aa6dd3f1d11d8b77a48fae63b07783cd0258f527fea4071715
     source: repo://multica-memory@61c6f0e/memory/web-imagegen-repo-map.json
     disposition: transform + revalidate (old verified@72db245 drifted vs main@600225a)
     target: RULE-WIMG-000004/000005 (normative boundaries) + FACT-WIMG-000001 (supersedes repo description)
     map_section: rules
   - id: chains/app1-mvp.json
     kind: chain
-    sha256: c42e188bb8c4806c0e03e595b968ce9eb7630b27c5281af6682b4beca3801f97
+    sha256: 0a491150dba02e358687a53de5a50acb1ef3520babf6281120b303305c5e8e3c
     source: repo://multica-memory@61c6f0e/chains/app1-mvp.json
     disposition: deprecate + reclassify
     target: team-context/roles/*.yaml baseline_context + checkpoint slices + builder default assembly
     map_section: chains
   - id: chains/team-governance.json
     kind: chain
-    sha256: 7a68660e89e5904be0cac372ed0225c258e7a36052777c21a1e6eee544489c17
+    sha256: 75cb36fe41c458404b34d4e92b788be4555e7adbea0f74d55a42b31a540a0fb9
     source: repo://multica-memory@61c6f0e/chains/team-governance.json
     disposition: deprecate + reclassify
     target: team-context/roles/*.yaml baseline_context (team roles)
     map_section: chains
   - id: chains/web-imagegen-pilot.json
     kind: chain
-    sha256: 068658eb282fb6b63e3557b5f73f85970bf1a696cbc26a9b6cc99f7d778613f5
+    sha256: f226f1834bc4c078ae0396008590d7aef4eaadee7ed574962683230cfe8ea278
     source: repo://multica-memory@61c6f0e/chains/web-imagegen-pilot.json
     disposition: deprecate + reclassify
     target: team-context/roles/*.yaml baseline_context + checkpoint slices + builder default assembly
     map_section: chains
   - id: sources/app1-lead-review-yzt22-2026-09-07.json
     kind: signal
-    sha256: 5ed1d60cdddbcedc5f1b7a3834726ade0c691b1a1243b66a7996af04f6eb211d
+    sha256: d2d53854648386da5ad706399f649337d0f6ad13799d2bfff5cc015b273cfbf4
     source: repo://multica-memory@61c6f0e/sources/app1-lead-review-yzt22-2026-09-07.json
     disposition: reclassify_keep_as_evidence
     target: migration/replay/replay-yzt-22.yaml (Gate B blocker probe query terms) + YZT-22 leak record
     map_section: signals
   - id: sources/app1-mvp-plan-v1-0.json
     kind: signal
-    sha256: 630fa36b273feb7d838b5fab03cd3efe2a2821a5d742b597ab9b06ab107d325c
+    sha256: 38a10f51f01d15dc51db6b90e76e179a719245acd3854ba44589c1236fd66d08
     source: repo://multica-memory@61c6f0e/sources/app1-mvp-plan-v1-0.json (points at repo://teachers-app1@42f149a blob 6b272a5)
     disposition: reclassify_keep_as_evidence
     target: authority record for RULE-APP1-000001..000007 (doc://teachers-app1/docs/App1-MVP-完整项目方案-v1.0-HarmonyOS.md@42f149a)
     map_section: signals
   - id: sources/app1-project-context-2026-09-07.json
     kind: signal
-    sha256: d1448af9b5f904025da67144ade69fd57a027e210618e664bed2e0b2a5843b28
+    sha256: fb9d8bc1fe03a4c5a8a368bf4eb28a4738f5ea056d056978b411476bb0314aca
     source: repo://multica-memory@61c6f0e/sources/app1-project-context-2026-09-07.json (owner durable context, Multica project c671779f)
     disposition: reclassify_keep_as_evidence
     target: project-context/app1/project.yaml (anchor authority) + RULE-APP1 owner/constraint derivations
     map_section: signals
   - id: sources/app1-repo-state-2026-09-07.json
     kind: signal
-    sha256: f73db4098534368da5980e57285acf6bbc971e13e562cd95ef68523fe50b7d57
+    sha256: a8bbfd58f484921f0c358ec01693593f383843a6d60d7f3ca32c17ba6b89585e
     source: repo://multica-memory@61c6f0e/sources/app1-repo-state-2026-09-07.json (direct git observation)
     disposition: reclassify_keep_as_evidence
     target: FACT-APP1-000001 verification (repo://teachers-app1@42f149a)
     map_section: signals
   - id: sources/app1-voc-plan-v1-0.json
     kind: signal
-    sha256: 1a82fb0b88b1fdc7e7eae093e931f0727f0d63de0a8507445190742ef113c489
+    sha256: 7e9d7c97262d480289445536fe0d6c51e6c2ca8a933288799d92224710a9aa70
     source: repo://multica-memory@61c6f0e/sources/app1-voc-plan-v1-0.json (points at repo://teachers-app1@42f149a blob b6ef221)
     disposition: reclassify_keep_as_evidence
     target: CASE-APP1-000001 methodology evidence (H1-H5/S0-S4 framework) + cp-open-002
     map_section: signals
   - id: sources/app1-voc-round1-v0-1.json
     kind: signal
-    sha256: bbfd6f5b3eb3e5557900a45cb8df27e427a548aac36b860f855d415dfc176b29
+    sha256: d3ef7497e3c78c9bac4b51f67a415b3f140399819b0c1c425de057dc9a6118d2
     source: repo://multica-memory@61c6f0e/sources/app1-voc-round1-v0-1.json (points at repo://teachers-app1@42f149a blob 79c3afcc)
     disposition: reclassify_keep_as_evidence
     target: CASE-APP1-000001 evidence (H3 Unknown at Round 1)
     map_section: signals
   - id: sources/app1-voc-round2-2026-09-06.json
     kind: signal
-    sha256: 72ae8da06be8cee6e00e676763fac4e5cdd5d4e937e6cc8bc943ea29c08a65f2
+    sha256: 2ccaa1fac91bf4e0dc792ce25ee0ba396d3902c3c8f13ce3dc799f2a1dd144e8
     source: repo://multica-memory@61c6f0e/sources/app1-voc-round2-2026-09-06.json (points at repo://teachers-app1@42f149a blob d27609fe)
     disposition: reclassify_keep_as_evidence
     target: CASE-APP1-000001 evidence (H3 -> COUNTER) + RULE-APP1-000005 tightening
     map_section: signals
   - id: sources/project-context-2026-09-06.json
     kind: signal
-    sha256: 19447567ec84dc90dc73ef1b7ca16a1d922001182d9c3df9cb92f596104c4183
+    sha256: 005e5d6abab0aa4ba64d640ffe3b9c244e96b4ffac2b807b0ab7a78e5f53e798
     source: repo://multica-memory@61c6f0e/sources/project-context-2026-09-06.json (owner durable context, Multica project "Multica智能体团队V1落地")
     disposition: reclassify_keep_as_evidence
     target: team-context/rules/RULE-TEAM-000001.yaml (authority record; six-role owner model)
     map_section: signals
   - id: sources/web-imagegen-project-context-2026-09-06.json
     kind: signal
-    sha256: 1302eb5b588e2630a9b6a7c92f52ccc5cc4b18bb6e4bc56e0a4bed60d725d8e9
+    sha256: 174cf12a71ce9b2590a45ccc6bd2a827b1156c5c8d5d650aa5697e385f38ad4a
     source: repo://multica-memory@61c6f0e/sources/web-imagegen-project-context-2026-09-06.json (owner durable context, Multica project 19a54e43)
     disposition: reclassify_keep_as_evidence
-    target: project-context/web-imagegen/project.yaml (anchor authority + hard constraints)
+    target: project-context/web-imagegen/project.yaml (anchor authority + non-negotiable hard constraints)
     map_section: signals
   - id: sources/web-imagegen-project-goal-update-2026-09-06.json
     kind: signal
-    sha256: b4b3bed5fd293a647e8c31d232d1579529a3b8ec08645638bc819d437a269c6e
+    sha256: 05218ccdcca6c85f51824f20b9f4de981b75b99c088949646b7b46b0748de7bc
     source: repo://multica-memory@61c6f0e/sources/web-imagegen-project-goal-update-2026-09-06.json (human decision: owner-corrected goal)
     disposition: reclassify_keep_as_evidence
     target: project-context/web-imagegen/project.yaml governance.mission (owner-corrected 2026-09-06)
     map_section: signals
   - id: sources/web-imagegen-repo-map-2026-09-06.json
     kind: signal
-    sha256: 857e9726fd884b336871dd70558d23d6055728c28adb8c9e8e4f0d76582ff37c
+    sha256: 8547752005b0a482e4763ceaa171a98d472b96e407883bea2cee0acb0213cbe5
     source: repo://multica-memory@61c6f0e/sources/web-imagegen-repo-map-2026-09-06.json (README survey @72db245)
-    disposition: reclassify_keep_as_evidence (superseded as reality by revalidation vs main@600225a)
+    disposition: reclassify_keep_as_evidence (reality superseded by revalidation vs main@600225a)
     target: FACT-WIMG-000001 (supersedes record, drift_of=web-imagegen-repo-map) + RULE-WIMG-000004/000005 revalidation
     map_section: signals
   - id: sources/candidates/app1-repo-local-context-pointer.json
     kind: candidate
-    sha256: ca99f6d58675e2560946725f3845e9f33fa05e79d66511756504e524f2d5bcad
+    sha256: 2f7d98fa196c69699a991aba70bbab0d129421e407826e5214d2bd6bc4448c66
     source: repo://multica-memory@61c6f0e/sources/candidates/app1-repo-local-context-pointer.json (tracked in V1.0)
     disposition: finding_ingest / absorbed_by_existing
     target: migration/findings/FIND-APP1-MIG-000001.json (processed)
