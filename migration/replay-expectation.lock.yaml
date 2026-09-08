@@ -1,0 +1,35 @@
+# Replay expectation freeze lock (YZT-43).
+# Immutable pre-run record: sha256 of the 6 rebuilt expectation manifests and
+# the 6 metric-evidence inputs, as committed in the expectation-freeze commit
+# recorded below. Gate C (tools/cmetrics.verify_expectation_lock) recomputes
+# these hashes at run time; any post-freeze modification fails the gate.
+# Git history proves ordering: freeze commit < this lock commit < result
+# commit (the lock must never be committed after the results it governs).
+schema_version: "1.1"
+kind: replay_expectation_lock
+committed_at_revision: 71b7e967448beb369c5b976140feda1d5794624e
+files:
+  - path: migration/replay/replay-yzt-9.yaml
+    sha256: c28f70053e9706a3a3b556862c12c339f798edcba8f7a3433fdac298c79e2d1e
+  - path: migration/replay/replay-yzt-10.yaml
+    sha256: 4efb87eaaa06a274bb20ccb6a740e0f0fc0e9dce6119119286b3309d7303d76c
+  - path: migration/replay/replay-yzt-22.yaml
+    sha256: 5ff38b3e9a62f8d7e17877fe989a1e457aa8de7431e8c3646acd93458bb68e96
+  - path: migration/replay/replay-yzt-26.yaml
+    sha256: 54f072d22188fac28457fb3bc1e858443fed7c6384c08df99217269b7fdf62e5
+  - path: migration/replay/replay-yzt-36.yaml
+    sha256: 92b3c571c9bce2dc76d6b2687b4f15ad36132ed9dc80d4ad6f66f0d7ecff6183
+  - path: migration/replay/replay-yzt-39.yaml
+    sha256: 3fe1a81dd4068f67c4c88d90285d41d26d43a51764bfa9e5e0a56bd20c0ae125
+  - path: migration/replay-evidence/replay-yzt-9.yaml
+    sha256: 5d65062de4c124777478ceaee3a2f18386996ac312f2d59c08174ff99b4d96c9
+  - path: migration/replay-evidence/replay-yzt-10.yaml
+    sha256: f369829b43aea689e0f8704dca0b5d8a06d0df995e30ec61f8129eb7470abfd5
+  - path: migration/replay-evidence/replay-yzt-22.yaml
+    sha256: b602eecc2fb41b0f3801062775169d8c6fed5277766ea7f5cdcc9539e364637c
+  - path: migration/replay-evidence/replay-yzt-26.yaml
+    sha256: 6c52d546053d288d8b461ee8bd98888e19079647e038b40b2b4ef279d5a7d4dc
+  - path: migration/replay-evidence/replay-yzt-36.yaml
+    sha256: 4d5e347d81c3fea9cfba3c0c14b5d9dd47f07fa8a7461a5cad8f54350f7fa60e
+  - path: migration/replay-evidence/replay-yzt-39.yaml
+    sha256: 8f67f4a63c841da9a95d4d629046099e15316d523349a13857c3c5cefcdc6353
