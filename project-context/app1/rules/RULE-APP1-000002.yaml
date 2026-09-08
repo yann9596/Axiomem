@@ -1,0 +1,59 @@
+schema_version: "1.1"
+kind: rule
+id: RULE-APP1-000002
+legacy_ids: []
+
+title: Evidence is the fact asset; derived state must be recomputable
+statement: >
+  Evidence 是核心资产：原始事实长期保留，教师可纠正，不被下游 AI 输出反向覆盖。
+  State/FollowUp/AttentionThread 是可重算的派生结果：可清空后从 Evidence 全量
+  重算；改 Policy/阈值/模型不需教师重录。上游 Evidence 改动 → 相关
+  Thread/State/FollowUp 必须重算。没有新 Evidence 不能自动认定改善。
+
+scope:
+  type: project
+  project_id: app1
+  projects: []
+  task_id: null
+
+modality: MUST
+
+domains:
+  - domain-model
+  - data-lifecycle
+
+applicability:
+  deterministic:
+    project_phases: [incubation, active_development, maintenance]
+    repos: [teachers-app1]
+    task_types: []
+  semantic:
+    applicable_when:
+      - designing or changing Evidence / Thread / State / FollowUp semantics or pipelines
+    not_applicable_when: []
+
+relevant_roles:
+  - solution-architect
+  - software-engineer
+  - qa
+
+exception_policy: none
+
+relations:
+  exception_of: null
+  supersedes: []
+  conflicts_with: []
+
+status: active
+verification: verified
+
+authority_refs:
+  - doc://teachers-app1/docs/App1-MVP-完整项目方案-v1.0-HarmonyOS.md@42f149a
+  - multica://issue/YZT-20
+
+source_refs:
+  - repo://teachers-app1@42f149a/docs/App1-MVP-完整项目方案-v1.0-HarmonyOS.md#§1/P6
+  - repo://teachers-app1@42f149a/docs/App1-MVP-完整项目方案-v1.0-HarmonyOS.md#§5
+
+created_at: 2026-09-06T16:51:00Z
+updated_at: 2026-09-08T14:30:00Z

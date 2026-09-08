@@ -1,5 +1,6 @@
 index/memory.db-shm
 index/memory.db-wal
+index/v1.1/
+runtime/v1.1/
 __pycache__/
 *.pyc
-

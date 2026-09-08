@@ -1,0 +1,455 @@
+{
+  "gate": "C",
+  "passed": true,
+  "replays": [
+    {
+      "task_id": "replay-yzt-10",
+      "coverage": "",
+      "expected": {
+        "scope": "team",
+        "must_include": [
+          "rule:RULE-TEAM-000001"
+        ],
+        "must_exclude": [
+          "rule:RULE-APP1",
+          "rule:RULE-WIMG",
+          "fact:FACT-APP1",
+          "fact:FACT-WIMG",
+          "case:CASE-APP1"
+        ],
+        "expected_case_search": "none",
+        "expected_conflicts": 1
+      },
+      "actual": {
+        "scope": "team",
+        "phase": null,
+        "refs": [
+          "rule:RULE-TEAM-000001"
+        ],
+        "cases_search_performed": false,
+        "conflicts": 1,
+        "blocked_by": [
+          "multica://issue/YZT-40",
+          "multica://issue/YZT-34",
+          "multica://issue/YZT-35",
+          "multica://issue/YZT-36"
+        ],
+        "trace": {
+          "scope_resolved": true,
+          "case_search_performed": false,
+          "case_search_trigger": null,
+          "role_policy_applied": "software-engineer",
+          "filters_applied": [
+            "strict_scope_filter",
+            "lifecycle_active_only",
+            "case_activation_default_off",
+            "context_budget"
+          ],
+          "excluded_counts": {
+            "other_project": 21,
+            "not_active": 0
+          },
+          "generated_at": "2026-09-08T16:19:02Z"
+        }
+      },
+      "result": {
+        "scope_pollution": [],
+        "false_canonical": false,
+        "hidden_unresolved_conflict": false,
+        "invalid_rule_authority": false,
+        "false_activation": [],
+        "missing_context": [],
+        "unexpected_context": [],
+        "reinvestigation_cost": 0,
+        "issue_noise": 0,
+        "context_density": 0.05,
+        "context_size": 1,
+        "case_search_ok": true,
+        "conflicts_ok": true
+      }
+    },
+    {
+      "task_id": "replay-yzt-22",
+      "coverage": "",
+      "expected": {
+        "scope": "project",
+        "must_include": [
+          "anchor:app1",
+          "rule:RULE-APP1-000006",
+          "rule:RULE-APP1-000002",
+          "fact:FACT-APP1-000002"
+        ],
+        "must_exclude": [
+          "rule:RULE-WIMG",
+          "fact:FACT-WIMG"
+        ],
+        "expected_case_search": "none",
+        "expected_conflicts": 0
+      },
+      "actual": {
+        "scope": "project",
+        "phase": "incubation",
+        "refs": [
+          "rule:RULE-TEAM-000001",
+          "rule:RULE-APP1-000001",
+          "rule:RULE-APP1-000002",
+          "rule:RULE-APP1-000003",
+          "rule:RULE-APP1-000004",
+          "rule:RULE-APP1-000005",
+          "rule:RULE-APP1-000006",
+          "rule:RULE-APP1-000007",
+          "fact:FACT-APP1-000001",
+          "fact:FACT-APP1-000002",
+          "fact:FACT-APP1-000003",
+          "fact:FACT-APP1-000004"
+        ],
+        "cases_search_performed": false,
+        "conflicts": 0,
+        "blocked_by": [
+          "multica://issue/YZT-34",
+          "multica://issue/YZT-35",
+          "multica://issue/YZT-36"
+        ],
+        "trace": {
+          "scope_resolved": true,
+          "case_search_performed": false,
+          "case_search_trigger": null,
+          "role_policy_applied": "context-engineer",
+          "filters_applied": [
+            "strict_scope_filter",
+            "lifecycle_active_only",
+            "case_activation_default_off",
+            "context_budget"
+          ],
+          "excluded_counts": {
+            "other_project": 7,
+            "not_active": 0
+          },
+          "generated_at": "2026-09-08T16:19:02Z"
+        }
+      },
+      "result": {
+        "scope_pollution": [],
+        "false_canonical": false,
+        "hidden_unresolved_conflict": false,
+        "invalid_rule_authority": false,
+        "false_activation": [],
+        "missing_context": [],
+        "unexpected_context": [],
+        "reinvestigation_cost": 0,
+        "issue_noise": 0,
+        "context_density": 0.63,
+        "context_size": 12,
+        "case_search_ok": true,
+        "conflicts_ok": true
+      }
+    },
+    {
+      "task_id": "replay-yzt-26",
+      "coverage": "",
+      "expected": {
+        "scope": "project",
+        "must_include": [
+          "case:CASE-APP1-000001",
+          "rule:RULE-APP1-000005"
+        ],
+        "must_exclude": [
+          "rule:RULE-WIMG",
+          "fact:FACT-WIMG"
+        ],
+        "expected_case_search": "performed",
+        "expected_conflicts": 0
+      },
+      "actual": {
+        "scope": "project",
+        "phase": "incubation",
+        "refs": [
+          "rule:RULE-APP1-000001",
+          "rule:RULE-APP1-000002",
+          "rule:RULE-APP1-000003",
+          "rule:RULE-APP1-000004",
+          "rule:RULE-APP1-000005",
+          "rule:RULE-APP1-000006",
+          "rule:RULE-APP1-000007",
+          "rule:RULE-APP1-000008",
+          "fact:FACT-APP1-000001",
+          "fact:FACT-APP1-000002",
+          "fact:FACT-APP1-000003",
+          "fact:FACT-APP1-000004",
+          "case:CASE-APP1-000001"
+        ],
+        "cases_search_performed": true,
+        "conflicts": 0,
+        "blocked_by": [
+          "multica://issue/YZT-34",
+          "multica://issue/YZT-35",
+          "multica://issue/YZT-36"
+        ],
+        "trace": {
+          "scope_resolved": true,
+          "case_search_performed": true,
+          "case_search_trigger": "architecture_design",
+          "role_policy_applied": "solution-architect",
+          "filters_applied": [
+            "strict_scope_filter",
+            "lifecycle_active_only",
+            "case_activation_default_off",
+            "context_budget",
+            "case_activation_scenario_match"
+          ],
+          "excluded_counts": {
+            "other_project": 7,
+            "not_active": 0
+          },
+          "generated_at": "2026-09-08T16:19:02Z"
+        }
+      },
+      "result": {
+        "scope_pollution": [],
+        "false_canonical": false,
+        "hidden_unresolved_conflict": false,
+        "invalid_rule_authority": false,
+        "false_activation": [],
+        "missing_context": [],
+        "unexpected_context": [],
+        "reinvestigation_cost": 0,
+        "issue_noise": 0,
+        "context_density": 0.65,
+        "context_size": 13,
+        "case_search_ok": true,
+        "conflicts_ok": true
+      }
+    },
+    {
+      "task_id": "replay-yzt-36",
+      "coverage": "",
+      "expected": {
+        "scope": "project",
+        "must_include": [
+          "rule:RULE-APP1-000008",
+          "rule:RULE-APP1-000002",
+          "rule:RULE-APP1-000006",
+          "fact:FACT-APP1-000003"
+        ],
+        "must_exclude": [
+          "rule:RULE-WIMG",
+          "fact:FACT-WIMG",
+          "case:CASE-APP1"
+        ],
+        "expected_case_search": "none",
+        "expected_conflicts": 0
+      },
+      "actual": {
+        "scope": "project",
+        "phase": "incubation",
+        "refs": [
+          "rule:RULE-APP1-000001",
+          "rule:RULE-APP1-000002",
+          "rule:RULE-APP1-000003",
+          "rule:RULE-APP1-000004",
+          "rule:RULE-APP1-000005",
+          "rule:RULE-APP1-000006",
+          "rule:RULE-APP1-000007",
+          "rule:RULE-APP1-000008",
+          "fact:FACT-APP1-000001",
+          "fact:FACT-APP1-000002",
+          "fact:FACT-APP1-000003",
+          "fact:FACT-APP1-000004"
+        ],
+        "cases_search_performed": false,
+        "conflicts": 0,
+        "blocked_by": [
+          "multica://issue/YZT-34",
+          "multica://issue/YZT-35",
+          "multica://issue/YZT-36"
+        ],
+        "trace": {
+          "scope_resolved": true,
+          "case_search_performed": false,
+          "case_search_trigger": null,
+          "role_policy_applied": "software-engineer",
+          "filters_applied": [
+            "strict_scope_filter",
+            "lifecycle_active_only",
+            "case_activation_default_off",
+            "context_budget"
+          ],
+          "excluded_counts": {
+            "other_project": 7,
+            "not_active": 0
+          },
+          "generated_at": "2026-09-08T16:19:02Z"
+        }
+      },
+      "result": {
+        "scope_pollution": [],
+        "false_canonical": false,
+        "hidden_unresolved_conflict": false,
+        "invalid_rule_authority": false,
+        "false_activation": [],
+        "missing_context": [],
+        "unexpected_context": [],
+        "reinvestigation_cost": 0,
+        "issue_noise": 0,
+        "context_density": 0.63,
+        "context_size": 12,
+        "case_search_ok": true,
+        "conflicts_ok": true
+      }
+    },
+    {
+      "task_id": "replay-yzt-39",
+      "coverage": "",
+      "expected": {
+        "scope": "cross_project",
+        "must_include": [
+          "rule:RULE-TEAM-000001",
+          "anchor:app1",
+          "anchor:web-imagegen"
+        ],
+        "must_exclude": [],
+        "expected_case_search": "performed_no_match",
+        "expected_conflicts": 1
+      },
+      "actual": {
+        "scope": "cross_project",
+        "phase": null,
+        "refs": [
+          "rule:RULE-TEAM-000001",
+          "rule:RULE-APP1-000002",
+          "rule:RULE-APP1-000003",
+          "rule:RULE-APP1-000004",
+          "rule:RULE-APP1-000005",
+          "rule:RULE-APP1-000006",
+          "rule:RULE-APP1-000007",
+          "rule:RULE-APP1-000008",
+          "fact:FACT-APP1-000001",
+          "fact:FACT-APP1-000002",
+          "fact:FACT-APP1-000003",
+          "fact:FACT-APP1-000004",
+          "fact:FACT-WIMG-000001"
+        ],
+        "cases_search_performed": true,
+        "conflicts": 1,
+        "blocked_by": [
+          "multica://issue/YZT-40",
+          "multica://issue/YZT-34",
+          "multica://issue/YZT-35",
+          "multica://issue/YZT-36"
+        ],
+        "trace": {
+          "scope_resolved": true,
+          "case_search_performed": true,
+          "case_search_trigger": "migration",
+          "role_policy_applied": "context-engineer",
+          "filters_applied": [
+            "strict_scope_filter",
+            "lifecycle_active_only",
+            "case_activation_default_off",
+            "context_budget",
+            "case_activation_scenario_match"
+          ],
+          "excluded_counts": {
+            "other_project": 0,
+            "not_active": 0
+          },
+          "generated_at": "2026-09-08T16:19:02Z"
+        }
+      },
+      "result": {
+        "scope_pollution": [],
+        "false_canonical": false,
+        "hidden_unresolved_conflict": false,
+        "invalid_rule_authority": false,
+        "false_activation": [],
+        "missing_context": [],
+        "unexpected_context": [],
+        "reinvestigation_cost": 0,
+        "issue_noise": 0,
+        "context_density": 1.0,
+        "context_size": 13,
+        "case_search_ok": true,
+        "conflicts_ok": true
+      }
+    },
+    {
+      "task_id": "replay-yzt-9",
+      "coverage": "",
+      "expected": {
+        "scope": "project",
+        "must_include": [
+          "anchor:web-imagegen",
+          "rule:RULE-WIMG-000001",
+          "rule:RULE-WIMG-000002",
+          "fact:FACT-WIMG-000001"
+        ],
+        "must_exclude": [
+          "rule:RULE-APP1",
+          "fact:FACT-APP1",
+          "case:CASE-APP1"
+        ],
+        "expected_case_search": "none",
+        "expected_conflicts": 0
+      },
+      "actual": {
+        "scope": "project",
+        "phase": "active_development",
+        "refs": [
+          "rule:RULE-TEAM-000001",
+          "rule:RULE-WIMG-000001",
+          "rule:RULE-WIMG-000002",
+          "rule:RULE-WIMG-000003",
+          "rule:RULE-WIMG-000005",
+          "fact:FACT-WIMG-000001"
+        ],
+        "cases_search_performed": false,
+        "conflicts": 0,
+        "blocked_by": [],
+        "trace": {
+          "scope_resolved": true,
+          "case_search_performed": false,
+          "case_search_trigger": null,
+          "role_policy_applied": "software-engineer",
+          "filters_applied": [
+            "strict_scope_filter",
+            "lifecycle_active_only",
+            "case_activation_default_off",
+            "context_budget"
+          ],
+          "excluded_counts": {
+            "other_project": 14,
+            "not_active": 0
+          },
+          "generated_at": "2026-09-08T16:19:02Z"
+        }
+      },
+      "result": {
+        "scope_pollution": [],
+        "false_canonical": false,
+        "hidden_unresolved_conflict": false,
+        "invalid_rule_authority": false,
+        "false_activation": [],
+        "missing_context": [],
+        "unexpected_context": [],
+        "reinvestigation_cost": 0,
+        "issue_noise": 0,
+        "context_density": 0.3,
+        "context_size": 6,
+        "case_search_ok": true,
+        "conflicts_ok": true
+      }
+    }
+  ],
+  "aggregate": {
+    "scope_pollution_total": 0,
+    "false_canonical": 0,
+    "false_activation_total": 0,
+    "missing_context_total": 0,
+    "false_forget": 0,
+    "reinvestigation_cost": 0,
+    "issue_noise": 0,
+    "context_density_avg": 0.54,
+    "context_size_avg": 9.5
+  },
+  "generated_at": "2026-09-08T16:19:02Z"
+}

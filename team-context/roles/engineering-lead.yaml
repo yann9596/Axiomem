@@ -1,0 +1,31 @@
+schema_version: "1.1"
+kind: role_context_profile
+role: engineering-lead
+responsibilities:
+  - own project scope, priority, task decomposition and routing
+  - decide project phase (writes the Project Registry via human/Lead decision)
+  - arbitrate unresolved cross-role disagreement after one round trip
+  - trigger milestone QA
+authority_boundary:
+  - owns governance semantics of project mission/scope (Anchor authority)
+  - cannot silently take over another Owner's domain
+  - canonical memory writes stay with Context Engineer
+retrieval_policy:
+  baseline_context:
+    - team.checkpoint.posture            # one-level project posture, phases derived from Registry
+    - current_project.anchor_digest
+    - blocking_issues.open_conflicts
+  preferred_memory:
+    - current_project.rules.relevant
+    - current_project.current_facts.relevant
+    - team.rules.relevant
+  conditional_memory:
+    - cross_project.memory.explicit_dependency
+    - team.checkpoint.task_relevant_slice
+    - current_project.cases.scenario_match
+  default_exclude:
+    - unrelated_project_memory
+    - project_internal_detail            # team posture, not project detail
+    - unrelated_history
+  priority: [rule, current_fact, checkpoint, case]
+  case_search_triggers: [governance_or_scope_conflict, cross_project_dependency_change]

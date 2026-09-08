@@ -1,0 +1,72 @@
+schema_version: "1.1"
+kind: checkpoint
+checkpoint_level: project
+scope:
+  type: project
+  project_id: web-imagegen
+  projects: []
+  task_id: null
+
+# phase = active_development (F-6, derived from Registry). Checkpoint focuses on
+# implementation reality, active design constraints, repo-local migration state.
+
+confirmed:
+  - id: cp-confirmed-001
+    summary: >
+      main@600225a：PR#1 已合并，provider:gpt 离线发布（Phase A–G 完成：job
+      schema v2、Provider Attempt、identity/download/resolvers、Skill 路由、
+      发布门）。规范 provider 值 default | grok | gpt；grok 已实现；gpt 真实
+      浏览器冒烟待 Phase H 授权。
+    refs:
+      - FACT-WIMG-000001
+      - RULE-WIMG-000004
+  - id: cp-confirmed-002
+    summary: >
+      活跃设计约束（ADR + README）：全局互斥 Provider 切换（adr://0002）、
+      Codex Chrome 唯一浏览器边界（adr://0001）、单 Skill 路由 default|grok|gpt
+      （adr://0003）、无 MCP/Playwright/CDP/daemon、不碰 Cookie/浏览器存储、
+      失败可见。
+    refs:
+      - RULE-WIMG-000004
+      - RULE-WIMG-000005
+      - adr://0001
+      - adr://0002
+      - adr://0003
+
+open:
+  - id: cp-open-001
+    summary: >
+      repo-local context 迁移未合并：旧 V1 版 .ai/context.yaml + docs/repo-context.md
+      在分支 agent/04-software-engineer/9fa1b3d39d37@a0a049b；按 F-3 不先合并旧版，
+      而是直接基于 main Reality 生成 V1.1 版（内容已产出，落仓属 Cutover 窗口
+      SE 写入 + 人工 Merge）。
+    refs:
+      - repo://web-imagegen@a0a049b/.ai/context.yaml
+      - migration/repo-local/web-imagegen
+  - id: cp-open-002
+    summary: >
+      repo-map revalidation 已完成：旧 repo-map（verified@72db245）相对
+      main@600225a 漂移，已由 FACT-WIMG-000001 supersede；gpt 路径、skill 路由、
+      provider 命令变更均已入新事实。
+    refs:
+      - FACT-WIMG-000001
+  - id: cp-open-003
+    summary: >
+      Phase H 真实浏览器冒烟（gpt 路径）待授权：需用户先授权提交次数后才执行；
+      属实现 blocker（外部许可），不阻塞离线工作。
+    refs:
+      - repo://web-imagegen@600225a/README.md
+
+# cp-conflict-001 (repo-map drift vs ADR) was resolved during migration by
+# FACT-WIMG-000001 supersedes; unresolved conflicts only live here (Spec §14)
+conflicts: []
+
+next:
+  - 等待 Cutover 决策后由 SE 在 Cutover 窗口提交 repo-local V1.1 文件（人工 Merge）
+  - Phase H 冒烟待用户授权后单独排期
+
+refs:
+  - project.yaml
+  - multica://issue/YZT-40
+
+updated_at: 2026-09-08T14:30:00Z

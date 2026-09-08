@@ -1,0 +1,29 @@
+# Replay: YZT-22 — App1 project memory setup (the SCOPE LEAKAGE blocker probe)
+# Coverage: context/architecture task; the exact leak query terms from YZT-22
+# ("model core domain" pulled web-imagegen units into an App1 package in V1).
+task_id: replay-yzt-22
+role: context-engineer
+scope: project
+projects: []
+project_id: app1
+decision: "为 App1 建立最小充分项目上下文系统并注册项目、建立检索链"
+query: "model core domain"
+case_trigger: null
+
+expected:
+  expected_scope: project
+  expected_role: context-engineer
+  must_include:
+    - anchor:app1
+    - rule:RULE-APP1-000006
+    - rule:RULE-APP1-000002
+    - fact:FACT-APP1-000002
+  must_exclude:
+    - rule:RULE-WIMG
+    - fact:FACT-WIMG
+  expected_case_search: none
+  expected_conflicts: 0
+  notes: >
+    YZT-22 blocker test: with query terms model/core/domain (no tag filter),
+    V1 mixed web-imagegen-project-context into the App1 package. V1.1 must
+    return zero web-imagegen objects.

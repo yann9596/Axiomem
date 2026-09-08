@@ -1,0 +1,26 @@
+# Replay: YZT-26 — T06 Follow-up working contract (architecture design; CASE ACTIVATION)
+# Coverage: architecture-design task where the historical VOC case must activate.
+task_id: replay-yzt-26
+role: solution-architect
+scope: project
+projects: []
+project_id: app1
+decision: "定义 T06 Follow-up working contract：呈现、召回与通知边界设计"
+query: "follow-up presentation reminder notification contract"
+case_trigger: architecture_design
+
+expected:
+  expected_scope: project
+  expected_role: solution-architect
+  must_include:
+    - case:CASE-APP1-000001
+    - rule:RULE-APP1-000005
+  must_exclude:
+    - rule:RULE-WIMG
+    - fact:FACT-WIMG
+  expected_case_search: performed
+  expected_conflicts: 0
+  notes: >
+    Case activation positive path: architecture design about follow-up
+    presentation must surface the auto-reminder VOC case with activation_reason,
+    plus the silent-by-default rule.

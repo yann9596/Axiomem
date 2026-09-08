@@ -1,0 +1,20 @@
+{
+  "gate": "A0+A",
+  "valid": true,
+  "all_objects_schema_valid": true,
+  "legacy_objects_accounted_for": 100,
+  "silent_drop": 0,
+  "unresolved_scope": 0,
+  "rule_without_valid_authority": 0,
+  "errors": [],
+  "counts": {
+    "anchors": 2,
+    "rules": 14,
+    "facts": 5,
+    "cases": 1,
+    "checkpoints": 3,
+    "role_profiles": 7,
+    "migration_findings": 5
+  },
+  "generated_at": "2026-09-08T16:19:01Z"
+}

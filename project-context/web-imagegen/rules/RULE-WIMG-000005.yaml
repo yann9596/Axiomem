@@ -1,0 +1,71 @@
+schema_version: "1.1"
+kind: rule
+id: RULE-WIMG-000005
+legacy_ids: []
+
+title: Browser boundary (Codex Chrome only; no credential access)
+statement: >
+  Browser provider interaction (grok / gpt) is owned by Codex's Chrome capability
+  and is limited to the user-supplied, already-logged-in tab explicitly handed to
+  Codex (@Chrome / tab mention). The workflow never searches for, opens, or
+  replaces tabs, and never reads or writes cookies, browser storage, passwords,
+  or profiles, nor replays raw provider HTTP requests. Authenticated image bytes
+  may be materialized only from the verified current post through Chrome's media
+  or page-asset surfaces, then passed to the local validator (an existing
+  download may be reused only when its provider filename uniquely contains the
+  exact frozen post identity and its bytes pass the same hard validation). No
+  MCP server, HTTP daemon, self-managed Chromium, independent profile, CDP
+  connection, second browser backend, compatibility layer, or fallback to
+  another provider. Provider failures remain visible.
+
+scope:
+  type: project
+  project_id: web-imagegen
+  projects: []
+  task_id: null
+
+modality: MUST_NOT
+
+domains:
+  - browser-boundary
+  - privacy
+
+applicability:
+  deterministic:
+    project_phases: [active_development, maintenance]
+    repos: [web-imagegen]
+    task_types: []
+  semantic:
+    applicable_when:
+      - any browser interaction, download reuse, or privacy-sensitive output path
+    not_applicable_when:
+      - offline tests that never touch a browser
+
+relevant_roles:
+  - software-engineer
+  - solution-architect
+  - feature-reviewer
+  - qa
+
+exception_policy: none
+
+relations:
+  exception_of: null
+  supersedes: []
+  conflicts_with: []
+
+status: active
+verification: verified
+
+authority_refs:
+  - adr://0001
+  - adr://0003
+  - repo://web-imagegen@600225a/README.md
+
+source_refs:
+  - repo://web-imagegen@600225a/docs/adr/0001-use-codex-chrome-as-the-only-browser-boundary.md
+  - repo://web-imagegen@600225a/docs/adr/0003-route-browser-providers-through-one-web-imagegen-skill.md
+  - repo://web-imagegen@600225a/README.md
+
+created_at: 2026-09-06T09:15:00Z
+updated_at: 2026-09-08T14:30:00Z

@@ -1,0 +1,60 @@
+schema_version: "1.1"
+kind: project_anchor
+project_id: app1
+status: active
+
+governance:
+  mission: >
+    App1（teachers-app1）是小学语文教师（Phase 1 优先班主任兼语文教师）个人的本地优先
+    “学生关注记忆系统”：帮助教师在日常教学中以极低成本记录少量真正值得关注的学生事实，
+    把跨时间的零散观察自动串成 Attention Thread，通过 Follow-up 推动后续复核，
+    形成更可信的学情判断，支持教学行动与家长沟通。核心闭环 Capture → Connect →
+    Follow → Validate → Act；Follow-up 是核心，强推送不是核心。
+  target_users:
+    - 小学语文教师（Phase 1 优先班主任兼语文教师）
+  scope:
+    - MVP 必做 A–H：Fast Capture、Evidence Store、Attention Thread、State Engine（统一五状态框架）、Follow-up Engine、Recall（学生页/Thread 页/Scene 内/首页近期关注静默区）、Validation Gate、家长反馈基础能力（无 LLM 用结构化 Evidence+模板）
+    - 三大价值点：录入负担低（≤3 次点击、不强迫全员）、学情准确率高（Evidence 事实资产、单次事件不升级为长期学情、对外输出前必须 Validation）、家长反馈合理（基于已有 Evidence+当前 State，LLM 只改善表达）
+  non_goals:
+    - 全班日更、学情完成率、学校管理后台、教导处报表
+    - 家长端、学生端、群发、家长已读、成绩/SIS
+    - OCR 批改、作文全文云、综合学生画像、性格/态度诊断
+    - 向量数据库/RAG/知识图谱、Agent 工作流、多端同步
+    - 强制推送提醒、AI 自动决定学情、通用 AI 聊天框首页
+  hard_constraints:
+    - 学生数据默认仅保存在设备本地（本地优先，P16）
+    - 无 LLM 主闭环必须成立（P11：LLM 是可替换增强层）
+    - 产品任务使用独立 worktree；产品代码仅由 Software Engineer 写入
+    - Canonical Memory 仅由 Context Engineer 写入；最终 Merge 保留给 Human
+    - 冻结基线（T01 产品母模型 P1–P16、T02A 技术基线）在方案 v1.0 已冻结，展开设计不得超出
+
+context:
+  repositories:
+    - repo_id: teachers-app1
+      role: product-repo-harmonyos-app
+      local_path: D:\AI\projects\teachers-app1
+  major_domains:
+    - student
+    - evidence
+    - attention-thread
+    - state
+    - follow-up
+    - action
+  repository_relationships:
+    - teachers-app1 (product code) ↔ multica-memory (canonical context, project-context/app1)
+  external_dependency_refs:
+    - doc://teachers-app1/docs/App1-MVP-完整项目方案-v1.0-HarmonyOS.md@42f149a
+
+authority_refs:
+  - multica://issue/YZT-20
+  - doc://teachers-app1/docs/App1-MVP-完整项目方案-v1.0-HarmonyOS.md@42f149a
+
+source_refs:
+  - repo://teachers-app1@42f149a/docs/App1-MVP-完整项目方案-v1.0-HarmonyOS.md
+  - multica://project-context/teachers-app1
+
+review:
+  reason: null
+  triggered_at: null
+
+updated_at: 2026-09-08T14:30:00Z

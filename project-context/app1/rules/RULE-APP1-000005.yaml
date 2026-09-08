@@ -1,0 +1,65 @@
+schema_version: "1.1"
+kind: rule
+id: RULE-APP1-000005
+legacy_ids: []
+
+title: Follow-up stays silent-by-default and decoupled from system notifications
+statement: >
+  Follow-up 与系统通知完全解耦（方案 §4.4）：Engine → Record → Recall
+  Strategy（Scene 内静默 / 学生页 / Thread 页默认；首页"近期关注"静默区待
+  UX 验证）。系统通知仅经 Adapter 且教师明确 opt-in。Round 2 VOC 收紧：
+  禁止默认推送、禁止"今天待跟进"作为首页第一信息；实验仅限个人 opt-in、
+  批次/静默、嵌入手动复盘仪式。任何把默认推送/催办美学引入 Follow-up 呈现的
+  设计违反基线。
+
+scope:
+  type: project
+  project_id: app1
+  projects: []
+  task_id: null
+
+modality: MUST_NOT
+
+domains:
+  - follow-up
+  - notifications
+  - ux-constraints
+
+applicability:
+  deterministic:
+    project_phases: [incubation, active_development, maintenance]
+    repos: [teachers-app1]
+    task_types: []
+  semantic:
+    applicable_when:
+      - designing follow-up presentation, recall, notification, or home-page information architecture
+    not_applicable_when:
+      - manual (user-initiated) recall flows without push semantics
+
+relevant_roles:
+  - solution-architect
+  - software-engineer
+  - feature-reviewer
+  - qa
+
+exception_policy: none
+
+relations:
+  exception_of: null
+  supersedes: []
+  conflicts_with: []
+
+status: active
+verification: verified
+
+authority_refs:
+  - doc://teachers-app1/docs/App1-MVP-完整项目方案-v1.0-HarmonyOS.md@42f149a
+  - multica://issue/YZT-20
+
+source_refs:
+  - repo://teachers-app1@42f149a/docs/App1-MVP-完整项目方案-v1.0-HarmonyOS.md#§4.4
+  - repo://teachers-app1@42f149a/docs/2026-09-06-app1-voc-round2-counterevidence.md
+  - repo://multica-memory@61c6f0e/memory/app1-unfrozen-teacher-dependencies.json
+
+created_at: 2026-09-06T16:51:00Z
+updated_at: 2026-09-08T14:30:00Z

@@ -1,0 +1,47 @@
+# Policy: Case Activation (V1.1)
+# Authority: design §17 (D-16, D-17); Spec §18
+# Case retention ≠ case activation. Precision over recall; uncertain ⇒ no_match.
+
+policy_id: case-activation
+policy_version: 1.1
+
+normal_task_default:
+  case_count: 0
+  case_search_performed: false
+  note: "0 cases is a valid, normal result for ordinary tasks (D-16)."
+
+search_need:
+  default: false
+  enable_for:
+    - architecture_design
+    - major_technical_choice
+    - complex_cross_repo_change
+    - incident
+    - performance_problem
+    - migration
+    - repeated_problem
+    - explicit_historical_search
+    - multiple_reasonable_options
+
+risk_behavior:                            # risk changes breadth, never authority
+  low:  { search_scope: [current_project] }
+  normal: { search_scope: [current_project, team] }
+  high: { allow_expansion: [explicit_cross_project, archived_similar_cases] }
+
+hard_eligibility:
+  scope_match: required                   # strict scope filter first
+  status: active
+  lifecycle_allowed: true                 # archived project cases excluded by default
+
+scenario_match:
+  output: [match, no_match]
+  uncertain_default: no_match
+  llm_checks: [trigger_similarity, decision_type_similarity, constraint_similarity, not_applicable_when_hit]
+
+final_gate:
+  - rule_fact_coverage_check              # if rules/facts already suffice, skip case
+  - adds_decision_value
+  - context_budget
+
+activation_trace:
+  activation_reason: required             # recorded per activated case for false-activation calibration

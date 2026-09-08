@@ -1,0 +1,31 @@
+# Policy: Scope (V1.1)
+# Authority: Multica Context & Memory System V1.1 design §3.2, D-02; Spec §4.2, §15.1
+# Enforcement: deterministic (Policy Engine fixed rules), never LLM.
+
+policy_id: scope
+policy_version: 1.1
+enforcement: deterministic
+
+fixed_rules:
+  - task_scope_resolved_before_semantic_search     # no FTS/vector before scope resolution (D-02)
+  - project_scope_requires_registry_project        # project_id must exist in registry/projects.yaml
+  - unrelated_project_memory_denied                # project A task cannot retrieve project B memory
+  - cross_project_requires_explicit_projects_list  # cross_project access is never implicit
+  - task_scope_only_for_findings                   # task scope holds transient findings only
+  - scope_before_semantic_search                   # scope filter is applied before FTS/BM25 ranking
+
+scope_model:
+  types: [team, cross_project, project, task]
+  project: { project_id: required, projects: [], task_id: null }
+  team: { project_id: null, projects: [], task_id: null }
+  cross_project: { project_id: null, projects: min_2, task_id: null }
+  task: { project_id: required, task_id: required }
+
+resolution_order:
+  - read task/issue request (task_id, role, explicit project or projects)
+  - validate against team-context/registry/projects.yaml (deterministic)
+  - only then run retrieval within the resolved scope
+
+notes:
+  - Scope isolation is enforced by Canonical Scope + Policy + Retrieval Engine, not by Git repo count (F-2).
+  - Scope specificity never grants override authority (design §7.6): project rules do not auto-override team rules; conflicts are exposed, not silenced.

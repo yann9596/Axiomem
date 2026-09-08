@@ -1,0 +1,23 @@
+{
+  "schema_version": "1.1",
+  "kind": "finding",
+  "finding_id": "FIND-APP1-MIG-000003",
+  "legacy_ids": ["app1-t24-state-projection-engine-delivery"],
+  "project_id": "app1",
+  "task_id": "MIG-YZT-40",
+  "summary": "Legacy candidate: T24 State Projection Engine delivered in worktree branch agent/04-software-engineer/yzt-35 (synthetic-only, 41 tests pass; TEST_ONLY_STATE_POLICY_V1 fixture).",
+  "detail": "Task delivery record = task progress; not canonical. Durable part (TEST_ONLY guardrail) extracted into RULE-APP1-000008.",
+  "intent": "task_delivery",
+  "source_refs": [
+    "repo://multica-memory@61c6f0e/sources/candidates/app1-t24-state-projection-engine-delivery.json",
+    "multica://issue/YZT-35"
+  ],
+  "discovered_by": "software-engineer",
+  "status": "processed",
+  "verification": "partially_verified",
+  "disposition": "forget",
+  "disposition_note": "Same routing as FIND-APP1-MIG-000002: issue refs (YZT-34/35/36) + checkpoint cp-open-003; TEST_ONLY guardrail in RULE-APP1-000008.",
+  "disposition_refs": ["multica://issue/YZT-35", "RULE-APP1-000008"],
+  "processed_at": "2026-09-08T14:30:00Z",
+  "created_at": "2026-09-07T06:20:00Z"
+}

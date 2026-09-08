@@ -1,0 +1,72 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Multica Checkpoint V1.1",
+  "description": "Rolling cognitive recovery point. No lifecycle status. confirmed keeps only minimal recent premises needed to understand open/conflicts/next. Team checkpoint projects[].phase is derived from the Project Registry.",
+  "type": "object",
+  "required": ["schema_version", "kind", "scope", "confirmed", "open", "conflicts", "next", "refs", "updated_at"],
+  "properties": {
+    "schema_version": { "const": "1.1" },
+    "kind": { "const": "checkpoint" },
+    "checkpoint_level": { "enum": ["team", "project"] },
+    "scope": { "$ref": "evidence-ref.schema.json#/$defs/scope" },
+    "projects": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["project_id", "phase", "checkpoint_ref"],
+        "properties": {
+          "project_id": { "$ref": "project-registry.schema.json#/$defs/project_id" },
+          "phase": { "enum": ["incubation", "active_development", "maintenance", "deprecated", "archived"] },
+          "phase_ref": { "const": "registry" },
+          "context_status": { "enum": ["normal", "attention_required"] },
+          "checkpoint_ref": { "const": "project" }
+        },
+        "additionalProperties": false
+      }
+    },
+    "confirmed": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["id", "summary", "refs"],
+        "properties": {
+          "id": { "type": "string", "pattern": "^cp-confirmed-[0-9]{3}$" },
+          "summary": { "type": "string" },
+          "refs": { "type": "array", "items": { "type": "string" }, "minItems": 1 }
+        },
+        "additionalProperties": false
+      }
+    },
+    "open": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["id", "summary", "refs"],
+        "properties": {
+          "id": { "type": "string", "pattern": "^cp-(open|team-open)-[0-9]{3}$" },
+          "summary": { "type": "string" },
+          "projects": { "type": "array", "items": { "type": "string" } },
+          "refs": { "type": "array", "items": { "type": "string" }, "minItems": 1 }
+        },
+        "additionalProperties": false
+      }
+    },
+    "conflicts": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["id", "summary", "refs"],
+        "properties": {
+          "id": { "type": "string", "pattern": "^cp-(conflict|team-conflict)-[0-9]{3}$" },
+          "summary": { "type": "string" },
+          "refs": { "type": "array", "items": { "type": "string" }, "minItems": 1 }
+        },
+        "additionalProperties": false
+      }
+    },
+    "next": { "type": "array", "items": { "type": "string" } },
+    "refs": { "type": "array", "items": { "type": "string" } },
+    "updated_at": { "type": "string", "format": "date-time" }
+  },
+  "additionalProperties": false
+}

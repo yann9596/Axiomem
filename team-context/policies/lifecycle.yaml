@@ -1,0 +1,42 @@
+# Policy: Lifecycle (V1.1)
+# Authority: design §14.4 (D-09), §12.3 (D-15); Spec §7.2, §4.3, §54.1
+# Lifecycle / Verification / Relation / Multica Workflow are four separate dimensions.
+
+policy_id: lifecycle
+policy_version: 1.1
+
+object_status_enums:
+  project_anchor: [active, review_needed]
+  rule: [active, review_needed, superseded, revoked]
+  current_fact: [active, review_needed, superseded]
+  case: [active, review_needed]           # cases never use superseded
+  finding: [open, processed]
+  checkpoint: none                        # checkpoints carry no lifecycle status
+
+forbidden_statuses:                      # never written into memory status (D-09)
+  - candidate
+  - stale
+  - archived
+  - waiting_human
+  - blocked
+  - blocked_conflicted_waiting_human
+  - conflicted                            # conflicts belong to verification/relation/workflow
+
+blocked_state_routing:
+  blocked_by: multica://issue/<id>        # blocking lives in workflow refs, not in status
+  only_block_true_dependents: true
+
+project_phase:
+  canonical_source: team-context/registry/projects.yaml   # single phase authority (F-6)
+  allowed: [incubation, active_development, maintenance, deprecated, archived]
+  release_is_milestone_not_phase: true
+  phase_change_effects: [active_role_set, retrieval_profile, retention_policy, checkpoint_write_policy, grooming_promotion_trigger]
+  phase_change_never_batch_edits_memory_truth: true
+
+archived_project:
+  normal_active_retrieval: exclude
+  project_checkpoint_write: deny
+  fact_semantics: last_verified_reality_at_active_period
+  rule_semantics: historical_project_norm
+  case_search_default: exclude
+  no_batch_supersede_or_revoke: true

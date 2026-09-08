@@ -1,0 +1,68 @@
+schema_version: "1.1"
+kind: rule
+id: RULE-TEAM-000001
+legacy_ids:
+  - governance-owner-boundaries
+
+title: Team owner boundaries (six-role model)
+statement: >
+  Engineering Lead owns project scope, priority, task decomposition and routing.
+  Context Engineer is the sole normal write owner for Canonical Memory (project,
+  team, task context and RAG derived layer). Solution Architect owns technical
+  design; Software Engineer owns product implementation; Feature Reviewer owns
+  functional review and external/user signals; QA owns milestone quality
+  conclusions. Any role may challenge, but unresolved cross-role disagreement
+  escalates to Engineering Lead after one round trip. Any role may Challenge;
+  no role silently takes over another Owner's domain.
+
+scope:
+  type: team
+  project_id: null
+  projects: []
+  task_id: null
+
+modality: MUST
+
+domains:
+  - governance
+  - ownership
+
+applicability:
+  deterministic:
+    project_phases: [incubation, active_development, maintenance, deprecated]
+    repos: []
+    task_types: []
+  semantic:
+    applicable_when:
+      - any task involving role ownership, canonical memory writes or cross-role handoff
+    not_applicable_when:
+      - platform-managed runtime maintenance not touching team cognition
+
+relevant_roles:
+  - engineering-lead
+  - context-engineer
+  - solution-architect
+  - software-engineer
+  - feature-reviewer
+  - qa
+  - ops-sre
+
+exception_policy: explicit
+
+relations:
+  exception_of: null
+  supersedes: []
+  conflicts_with: []
+
+status: active
+verification: verified
+
+authority_refs:
+  - multica://project-context/multica-agent-team-v1
+
+source_refs:
+  - multica://project-context/multica-agent-team-v1
+  - repo://multica-memory@61c6f0e/memory/governance-owner-boundaries.json
+
+created_at: 2026-09-06T00:00:00Z
+updated_at: 2026-09-08T14:30:00Z

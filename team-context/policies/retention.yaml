@@ -1,0 +1,39 @@
+# Policy: Retention (V1.1)
+# Authority: design §8.2, §24; Spec §8, §19, §26
+
+policy_id: retention
+policy_version: 1.1
+
+finding_pipeline:
+  capture: [finding_id, project_id, task_id, summary, source_refs]
+  verify:
+    fixed: [source_exists, scope_matches, revision_valid]
+    llm: [evidence_supports_claim]
+  classify_claim_types: [governance, normative, current_reality, historical]
+
+retention_routes:
+  unresolved_current_work: carry_to_checkpoint
+  refuted_duplicate_noise_absorbed: forget
+  normative_with_authority: create_rule_or_anchor_update
+  normative_without_authority_worth_norm: issue_escalation      # never create pseudo authority (D-10)
+  normative_without_authority_not_worth_norm: fact_case_or_forget
+  current_reality_cross_task_hard_recoverable: create_fact
+  current_reality_easy_recoverable: pointer_or_forget
+  historical_with_scenario_value: create_case
+  otherwise: pointer_or_forget
+
+current_fact_gate:                        # three-gate (all required)
+  currently_verified: true
+  cross_task_value: true
+  low_cost_recoverable: false             # easy-recoverable facts stay at source as pointer
+
+case_gate:
+  requires: [historical_event, clear_scenario, applicable_when, not_applicable_when, future_decision_value]
+  vague_lessons_never_become_cases: true
+
+task_progress_never_enters_canonical: true   # issue != memory; task delivery = transient finding
+
+conservative_bias:
+  - uncertain_causes_demotion_not_promotion     # principle 27
+  - false_canonical_and_scope_pollution_rank_above_false_forget  # principle 28
+  - occasional_reinvestigation_is_acceptable

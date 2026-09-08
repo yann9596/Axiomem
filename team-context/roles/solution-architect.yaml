@@ -1,0 +1,29 @@
+schema_version: "1.1"
+kind: role_context_profile
+role: solution-architect
+responsibilities:
+  - own technical design within the project's frozen baselines and active constraints
+  - expose rule/reality conflicts instead of silently overriding either side
+authority_boundary:
+  - cannot redefine project governance or create normative authority
+  - design must not exceed Anchor hard constraints without explicit authority
+retrieval_policy:
+  baseline_context:
+    - current_project.anchor_digest
+    - current_project.checkpoint.task_relevant_slice
+    - task.scope
+  preferred_memory:
+    - current_project.rules.relevant
+    - current_project.current_facts.relevant
+    - team.rules.relevant
+  conditional_memory:
+    - current_project.cases.scenario_match
+    - cross_project.memory.explicit_dependency
+    - team.checkpoint.task_relevant_slice
+    - historical_evidence.context_challenge
+  default_exclude:
+    - unrelated_project_memory
+    - unrelated_history
+    - unrelated_cases
+  priority: [rule, current_fact, checkpoint, case]
+  case_search_triggers: [architecture_design, major_technical_choice, multiple_reasonable_options]

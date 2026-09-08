@@ -1,0 +1,57 @@
+{
+  "gate": "B",
+  "passed": true,
+  "checks": [
+    {
+      "test": "rebuild_from_zero",
+      "passed": true,
+      "detail": "22 objects rebuilt after deleting the index directory"
+    },
+    {
+      "test": "derived_index_not_canonical",
+      "passed": true,
+      "detail": "index dir deleted -> rebuilt 22 objects from zero; retrieval identical (True); 42 canonical files byte-identical (True)"
+    },
+    {
+      "test": "index_not_git_tracked",
+      "passed": true,
+      "detail": "git ls-files empty=True; check-ignore=True"
+    },
+    {
+      "test": "scope_filter_before_search",
+      "passed": true,
+      "detail": "unresolved scope raises before any retrieval (D-02)"
+    },
+    {
+      "test": "app1_cannot_retrieve_web_imagegen",
+      "passed": true,
+      "detail": "no leakage"
+    },
+    {
+      "test": "web_imagegen_cannot_retrieve_app1",
+      "passed": true,
+      "detail": "no leakage"
+    },
+    {
+      "test": "cross_project_access_without_explicit_condition",
+      "passed": true,
+      "detail": "implicit cross-project access denied"
+    },
+    {
+      "test": "role_profile_changes_context",
+      "passed": true,
+      "detail": "lead=engineering-lead se=software-engineer"
+    },
+    {
+      "test": "checkpoint_slice_is_task_relevant",
+      "passed": true,
+      "detail": "slice clean"
+    },
+    {
+      "test": "default_case_count_for_normal_task",
+      "passed": true,
+      "detail": "cases=0, search_performed=False"
+    }
+  ],
+  "generated_at": "2026-09-08T16:19:02Z"
+}

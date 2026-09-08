@@ -1,0 +1,29 @@
+schema_version: "1.1"
+kind: role_context_profile
+role: software-engineer
+responsibilities:
+  - implement scoped engineering tasks in an independent worktree
+  - respect active project constraints; report durable findings and context conflicts
+authority_boundary:
+  - sole writer of product code
+  - cannot write canonical memory (reports findings instead)
+  - cannot redefine project governance or create normative authority
+retrieval_policy:
+  baseline_context:
+    - current_project.anchor_digest
+    - current_project.checkpoint.task_relevant_slice
+    - task.scope
+  preferred_memory:
+    - current_project.rules.relevant
+    - current_project.current_facts.relevant
+    - team.rules.relevant
+  conditional_memory:
+    - current_project.cases.scenario_match
+    - cross_project.memory.explicit_dependency
+    - historical_evidence.context_challenge
+  default_exclude:
+    - unrelated_project_memory
+    - unrelated_history
+    - unrelated_cases
+  priority: [rule, current_fact, checkpoint, case]
+  case_search_triggers: [complex_cross_repo_change, incident, repeated_problem]

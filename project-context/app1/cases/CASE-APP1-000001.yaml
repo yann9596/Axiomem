@@ -1,0 +1,71 @@
+schema_version: "1.1"
+kind: case
+id: CASE-APP1-000001
+legacy_ids:
+  - app1-voc-evidence-status
+
+title: Auto follow-up reminders failed public VOC; default-off, opt-in experiment only
+scope:
+  type: project
+  project_id: app1
+  projects: []
+  task_id: null
+
+status: active
+verification: partially_verified
+verification_note: >
+  Two rounds of public-source VOC (S0–S3 cross-referenced); teacher survey /
+  interviews (Round 3) not yet conducted. Numeric confidence 0.85 from V1 was
+  NOT carried over as a pseudo score.
+
+context: >
+  App1 产品设计假设 H3（自动 Follow-up/场景提醒能提升 Follow-up 价值）在
+  2026-09-06 Round 1 公开 VOC 中未获证实（缺「忘了继续观察某学生」S0 原话），
+  Round 2 反证检索进一步给出负向证据：教师减负/指尖形式主义政策逆风
+  （教育部禁强制打卡、杜绝"手机响不停"，S1），成熟教师依赖纸质个人系统而非
+  自动提醒。
+
+problem_or_trigger: >
+  2026-09-06 设计任务：是否把自动 Follow-up 提醒（场景推送/首页待跟进）作为
+  Follow-up 价值主张的核心功能。
+
+action_or_behavior: >
+  Round 2 检索教师减负政策与公开教师工作记录；假设记分把 H3 从支持改为
+  MIXED、自动提醒偏 COUNTER；设计约束收进入基线（默认静默召回、通知仅
+  opt-in）。
+
+outcome: >
+  自动 Follow-up 提醒被判定证据不足偏 COUNTER：默认不做推送、"今天待跟进"
+  不得作为首页第一信息、实验仅限个人 opt-in/批次静默/嵌入手动复盘仪式；
+  Follow-up 语义保持"为学情准确性驱动取证"，不是任务催办。
+
+why_it_matters: >
+  未来任何涉及 Follow-up 呈现、提醒、通知、首页信息架构的决策必须先对照本
+  Case，避免重复引入已被证据反驳的默认推送设计。
+
+applicable_when:
+  - designing follow-up presentation, reminders, notifications or home-page "今天待跟进" style features
+  - evaluating H3-type engagement/reminder hypotheses for App1
+
+not_applicable_when:
+  - purely manual, user-initiated recall flows with no push semantics
+  - non-App1 projects or general notification infrastructure
+  - cases where a teacher-facing survey (Round 3) has since validated auto-reminders (would need Rule/Fact revalidation first)
+
+relevant_roles:
+  - solution-architect
+  - feature-reviewer
+  - qa
+
+domains:
+  - follow-up
+  - voc-evidence
+  - ux-constraints
+
+source_refs:
+  - repo://teachers-app1@42f149a/docs/2026-09-06-app1-voc-round2-counterevidence.md
+  - repo://teachers-app1@42f149a/docs/App1-第一次VOC-教师工作记录与信息漏失-v0.1.md
+  - repo://multica-memory@61c6f0e/memory/app1-voc-evidence-status.json
+
+created_at: 2026-09-06T16:51:00Z
+updated_at: 2026-09-08T14:30:00Z

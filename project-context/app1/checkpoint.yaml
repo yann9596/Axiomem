@@ -1,0 +1,77 @@
+schema_version: "1.1"
+kind: checkpoint
+checkpoint_level: project
+scope:
+  type: project
+  project_id: app1
+  projects: []
+  task_id: null
+
+# phase = incubation (F-6, derived from Registry). Checkpoint reflects that
+# governance/product boundaries are still forming: confirmed premises stay
+# minimal (design §11.3); NO implementation-progress tracking (≠ progress tracker).
+
+confirmed:
+  - id: cp-confirmed-001
+    summary: >
+      T01 产品母模型（P1–P16）与 T02A 技术基线已在方案 v1.0 冻结——这是当前
+      所有展开设计的必要前提（理解 open/conflicts 所需的最小前提集）。
+    refs:
+      - RULE-APP1-000001
+      - RULE-APP1-000002
+      - RULE-APP1-000003
+      - RULE-APP1-000004
+      - FACT-APP1-000002
+      - FACT-APP1-000003
+  - id: cp-confirmed-002
+    summary: >
+      未冻结项守则已确立：教师反馈依赖内容 draft-only、配置化/Adapter、不硬编码；
+      TEST_ONLY 投影策略不得当产品默认。
+    refs:
+      - RULE-APP1-000006
+      - RULE-APP1-000008
+
+open:
+  - id: cp-open-001
+    summary: >
+      10 项教师反馈依赖内容未冻结（Scene Pack 优先级、高频 Topic、Topic 教师
+      语言、Topic-specific Evidence Policy、Follow-up 入口、首页近期关注、
+      Watchlist 规模、正向 Evidence 交互、Validation 话术、ICP 收窄）；依赖链
+      教师问卷 T11→T12→T13→T14→T15→T16→T17→T26→T27–T30。
+    refs:
+      - RULE-APP1-000006
+      - repo://multica-memory@61c6f0e/memory/app1-unfrozen-teacher-dependencies.json
+  - id: cp-open-002
+    summary: >
+      VOC Round 3 证据缺口未决：「忘了继续观察」S0 原话、电子档案仍用私人记录
+      配对、拒用理由、个人自动提醒反感度、样本纯度（小学确认）、watchlist 人数
+      定量、纯科任时间预算。
+    refs:
+      - CASE-APP1-000001
+  - id: cp-open-003
+    summary: >
+      产品实现进行中：T23/T24/T25 已在独立 worktree 分支交付
+      （synthetic_only_fail_closed，53 tests pass），main 仍 docs-only；
+      最终 Merge 留给 Human。此为实现现实认知，不是进度账本。
+    refs:
+      - multica://issue/YZT-34
+      - multica://issue/YZT-35
+      - multica://issue/YZT-36
+      - RULE-APP1-000008
+  - id: cp-open-004
+    summary: T20（目标 API Level/设备兼容范围）推迟到工程实现启动前冻结。
+    refs:
+      - RULE-APP1-000006
+
+conflicts: []
+
+next:
+  - 推进教师问卷（T11）以解冻 10 项依赖
+  - 推进不依赖问卷项：T08 本地数据安全边界、T09 IA 骨架、T10 三个 Scene Pack v0 草案、T18 狗粮指标
+  - T02 领域关系/不变量设计继续在冻结基线内展开
+
+refs:
+  - project.yaml
+  - multica://issue/YZT-20
+
+updated_at: 2026-09-08T14:30:00Z

@@ -1,0 +1,56 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Multica Evidence / Source Ref V1.1",
+  "description": "Evidence is a pointer to a traceable source, not a copy. Embedded inline in canonical objects as source_refs / verified_against entries.",
+  "type": "object",
+  "required": ["source_ref", "source_type", "revision_or_version", "observed_at", "claim_relation"],
+  "properties": {
+    "source_ref": { "$ref": "#/$defs/ref_string" },
+    "source_type": { "enum": ["code", "config", "runtime", "test", "adr", "contract", "specification", "issue", "git_history", "docs", "human_decision", "project_context", "research_finding", "research_methodology", "lead_review", "repo_state_observation", "memory_challenge", "agent_inference"] },
+    "scope": { "$ref": "#/$defs/scope" },
+    "revision_or_version": { "type": "string" },
+    "observed_at": { "type": "string", "format": "date-time" },
+    "claim_relation": { "enum": ["supports", "contradicts", "qualifies"] },
+    "note": { "type": ["string", "null"] }
+  },
+  "additionalProperties": false,
+  "$defs": {
+    "ref_string": {
+      "type": "string",
+      "description": "URI-ish authority/evidence pointer. Forms: multica://issue/<id-or-YZT-n>, multica://project-context/<project>, adr://<n>, doc://<repo>/<path>@<revision>, repo://<repo>@<revision>/<path>, registry://<project-id>, project://<project-id>/checkpoint",
+      "pattern": "^(multica|adr|doc|repo|registry|project|git)://\\S+$"
+    },
+    "scope": {
+      "type": "object",
+      "required": ["type"],
+      "properties": {
+        "type": { "enum": ["team", "cross_project", "project", "task"] },
+        "project_id": { "type": ["string", "null"] },
+        "projects": { "type": "array", "items": { "type": "string" } },
+        "task_id": { "type": ["string", "null"] }
+      },
+      "allOf": [
+        {
+          "if": { "properties": { "type": { "const": "project" } }, "required": ["type"] },
+          "then": { "properties": { "project_id": { "type": "string" }, "projects": { "maxItems": 0 }, "task_id": { "type": "null" } } }
+        },
+        {
+          "if": { "properties": { "type": { "const": "team" } }, "required": ["type"] },
+          "then": { "properties": { "project_id": { "type": "null" }, "projects": { "maxItems": 0 }, "task_id": { "type": "null" } } }
+        },
+        {
+          "if": { "properties": { "type": { "const": "cross_project" } }, "required": ["type"] },
+          "then": { "properties": { "project_id": { "type": "null" }, "projects": { "minItems": 2 }, "task_id": { "type": "null" } } }
+        },
+        {
+          "if": { "properties": { "type": { "const": "task" } }, "required": ["type"] },
+          "then": { "properties": { "project_id": { "type": "string" }, "task_id": { "type": "string" } } }
+        }
+      ]
+    },
+    "verification": {
+      "enum": ["verified", "partially_verified", "unverified", "conflicted", "refuted"],
+      "description": "No numeric confidence is permitted (no pseudo-precision scores)."
+    }
+  }
+}

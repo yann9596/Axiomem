@@ -1,0 +1,66 @@
+schema_version: "1.1"
+kind: project_registry
+updated_at: 2026-09-08T14:30:00Z
+authority_ref: multica://issue/YZT-40
+notes: >
+  Project Registry is the ONLY canonical source of project phase (F-6).
+  Team Checkpoint phases are derived presentation only. Context repo topology:
+  single Git repo with team/project dual logical roots (F-2); scope isolation
+  is enforced by Canonical Scope + Policy + Retrieval Engine, not repo count.
+  Project ids are stable short ids; multica_project_id keeps the Multica
+  workspace identity for traceability.
+
+projects:
+  - id: app1
+    name: teachers-app1
+    phase: incubation
+    multica_project_id: c671779f-059a-41b7-af11-95636de809ec
+    context_repo:
+      repo: multica-memory
+      local_path: D:\AI\multica-memory
+      subtree: project-context/app1
+    product_repos:
+      - id: teachers-app1
+        url: null
+        default_branch: main
+        local_path: D:\AI\projects\teachers-app1
+        has_remote: false
+        execution_mode: worktree
+    active_roles:
+      - engineering-lead
+      - context-engineer
+      - solution-architect
+      - software-engineer
+      - feature-reviewer
+    on_demand_roles:
+      - qa
+      - ops-sre
+    updated_at: 2026-09-08T14:30:00Z
+    authority_ref: multica://issue/YZT-40
+
+  - id: web-imagegen
+    name: Web-ImageGen
+    phase: active_development
+    multica_project_id: 19a54e43-57eb-4823-8bd2-4e026addcea7
+    context_repo:
+      repo: multica-memory
+      local_path: D:\AI\multica-memory
+      subtree: project-context/web-imagegen
+    product_repos:
+      - id: web-imagegen
+        url: https://github.com/yann9596/Web-ImageGen.git
+        default_branch: main
+        local_path: D:\AI\projects\opencode-web-imagegen
+        has_remote: true
+        execution_mode: worktree
+    active_roles:
+      - engineering-lead
+      - context-engineer
+      - software-engineer
+    on_demand_roles:
+      - solution-architect
+      - feature-reviewer
+      - qa
+      - ops-sre
+    updated_at: 2026-09-08T14:30:00Z
+    authority_ref: multica://issue/YZT-40

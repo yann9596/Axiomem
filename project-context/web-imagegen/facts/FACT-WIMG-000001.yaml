@@ -1,0 +1,65 @@
+schema_version: "1.1"
+kind: current_fact
+id: FACT-WIMG-000001
+legacy_ids:
+  - web-imagegen-repo-map
+
+title: Web-ImageGen repo map at main@600225a (providers default|grok|gpt)
+statement: >
+  Product repo D:\AI\projects\opencode-web-imagegen main@600225a（PR#1 已合并，含
+  provider:gpt 离线发布）：规范 provider 值 default | grok | gpt；grok（已实现）与
+  gpt（离线已发布、真实浏览器冒烟待 Phase H 授权）两条浏览器路径都经 Codex Chrome
+  接管用户明确指定的已登录标签页；共享本地状态/校验/落盘 CLI；官方 ImageGen Skill
+  与 Web ImageGen Skill 全局互斥；无 MCP/Playwright/CDP/自管 Chromium/独立
+  profile/HTTP daemon；provider 切换命令 provider:default|grok|gpt（provider:openai
+  已退役），切换后重启 Codex；输出结构 imagine/<日期_任务>/<生成目标>/
+  （job.json + 1.<orig> + 2.<orig> + chosen.jpg），重画用 -V2 版本目录不覆盖旧批次；
+  调试只记录脱敏状态/尺寸/MIME；不保存 HTML/Cookie/账号信息；npm test 全离线，
+  真实浏览器冒烟单独授权运行。revalidation 记录：旧 repo-map verified@72db245
+  相对 main@600225a 已漂移（gpt 路径与 skill 路由并入 main），本事实 supersedes 之。
+
+scope:
+  type: project
+  project_id: web-imagegen
+  projects: []
+  task_id: null
+
+domains:
+  - repo-map
+  - architecture
+
+repositories:
+  - web-imagegen
+
+status: active
+verification: verified
+
+verified_against:
+  - source_ref: repo://web-imagegen@600225a/README.md
+    revision: 600225a
+    paths:
+      - README.md
+      - docs/adr/
+      - skill/
+
+source_refs:
+  - repo://web-imagegen@600225a/README.md
+  - repo://web-imagegen@600225a/DESIGN.md
+  - repo://web-imagegen@600225a/docs/adr/0002-switch-image-generation-providers-globally.md
+  - repo://web-imagegen@600225a/docs/adr/0003-route-browser-providers-through-one-web-imagegen-skill.md
+  - multica://issue/YZT-40
+
+relations:
+  conflicts_with: []
+  supersedes: []
+  supersedes_note: legacy unit web-imagegen-repo-map (verified@72db245) superseded; its architecture boundaries survive in RULE-WIMG-000004/000005, its repo description is replaced by this fact
+  drift_of: web-imagegen-repo-map
+  norm_reality_conflict: []
+
+review:
+  reason: null
+  triggered_at: null
+
+created_at: 2026-09-08T14:30:00Z
+verified_at: 2026-09-08T14:30:00Z
+updated_at: 2026-09-08T14:30:00Z

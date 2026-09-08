@@ -1,0 +1,54 @@
+schema_version: "1.1"
+kind: current_fact
+id: FACT-APP1-000001
+legacy_ids:
+  - app1-repo-map
+
+title: App1 product repo baseline is docs-only at main@42f149a
+statement: >
+  产品仓 D:\AI\projects\teachers-app1 基线 main@42f149a31136e85ee17847802060f8bb5dd66a93
+  （2026-09-07 提交），无远端；快照时工作树干净；仅跟踪 docs/ 下 4 份源材料
+  （MVP 方案 v1.0、VOC 研究方案 v1.0、Round 1 VOC、Round 2 反证），无产品代码。
+  产品实现任务在独立 worktree 分支进行（T23–T25 已交付 synthetic-only，main 未变）。
+  文件级明细属易恢复事实（git 直接可查），留作 Pointer 不复制正文。
+
+scope:
+  type: project
+  project_id: app1
+  projects: []
+  task_id: null
+
+domains:
+  - repo-map
+  - baseline
+
+repositories:
+  - teachers-app1
+
+status: active
+verification: verified
+
+verified_against:
+  - source_ref: repo://teachers-app1@42f149a
+    revision: 42f149a31136e85ee17847802060f8bb5dd66a93
+    paths:
+      - docs/
+
+source_refs:
+  - repo://teachers-app1@42f149a/docs/App1-MVP-完整项目方案-v1.0-HarmonyOS.md
+  - multica://issue/YZT-22
+
+relations:
+  conflicts_with: []
+  supersedes: []
+  supersedes_note: legacy app1-repo-map unit partially absorbed (baseline portion); file-list portion demoted to pointer (easy recoverable via git)
+  drift_of: null
+  norm_reality_conflict: []
+
+review:
+  reason: null
+  triggered_at: null
+
+created_at: 2026-09-06T16:51:00Z
+verified_at: 2026-09-08T14:30:00Z
+updated_at: 2026-09-08T14:30:00Z

@@ -1,0 +1,25 @@
+# Replay: YZT-39 — Context & Memory System migration planning
+# Coverage: cross-project scope task with explicit projects list; case search
+# enabled but no match expected (no case exists for memory-system design).
+task_id: replay-yzt-39
+role: context-engineer
+scope: cross_project
+projects: [app1, web-imagegen]
+project_id: null
+decision: "盘点现有 V1 记忆系统并制定向 V1.1 的旁路迁移计划"
+query: "memory system migration registry checkpoint retrieval"
+case_trigger: migration
+
+expected:
+  expected_scope: cross_project
+  expected_role: context-engineer
+  must_include:
+    - rule:RULE-TEAM-000001
+    - anchor:app1
+    - anchor:web-imagegen
+  must_exclude: []
+  expected_case_search: performed_no_match
+  expected_conflicts: 1
+  notes: >
+    Cross-project scope must be explicit (both projects); case search runs
+    (migration trigger) but activates nothing (no case exists for this domain).

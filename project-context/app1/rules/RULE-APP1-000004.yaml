@@ -1,0 +1,60 @@
+schema_version: "1.1"
+kind: rule
+id: RULE-APP1-000004
+legacy_ids: []
+
+title: LLM as replaceable enhancement behind an Adapter
+statement: >
+  LLM 是可替换增强层（P11）：关闭后主闭环仍成立。Domain 禁止直连模型 SDK；
+  模型文本不得作为 State 事实来源；不得因模型不可用断掉主链。LLM 能力
+  （structureObservation / normalizeEvidence / generateParentMessage）一律经
+  Adapter 接入。AI 解决语义，不决定学情成立（P12）。
+
+scope:
+  type: project
+  project_id: app1
+  projects: []
+  task_id: null
+
+modality: MUST
+
+domains:
+  - ai-integration
+  - architecture
+
+applicability:
+  deterministic:
+    project_phases: [incubation, active_development, maintenance]
+    repos: [teachers-app1]
+    task_types: []
+  semantic:
+    applicable_when:
+      - any LLM integration, adapter design, or AI-output consumption decision
+    not_applicable_when:
+      - no-LLM structural work
+
+relevant_roles:
+  - solution-architect
+  - software-engineer
+  - feature-reviewer
+
+exception_policy: none
+
+relations:
+  exception_of: null
+  supersedes: []
+  conflicts_with: []
+
+status: active
+verification: verified
+
+authority_refs:
+  - doc://teachers-app1/docs/App1-MVP-完整项目方案-v1.0-HarmonyOS.md@42f149a
+  - multica://issue/YZT-20
+
+source_refs:
+  - repo://teachers-app1@42f149a/docs/App1-MVP-完整项目方案-v1.0-HarmonyOS.md#§4.5/§7
+  - repo://teachers-app1@42f149a/docs/App1-MVP-完整项目方案-v1.0-HarmonyOS.md#§1/P11/P12
+
+created_at: 2026-09-06T16:51:00Z
+updated_at: 2026-09-08T14:30:00Z

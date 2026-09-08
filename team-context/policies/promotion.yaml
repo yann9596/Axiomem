@@ -1,0 +1,36 @@
+# Policy: Promotion (V1.1)
+# Authority: design §18 (D-18, D-19, D-20); Spec §23
+
+policy_id: promotion
+policy_version: 1.1
+
+three_distinct_actions:
+  - canonicalization            # finding → canonical (not a scope promotion)
+  - scope_promotion_correction  # project → team; team → cross_project correction
+  - semantic_transition         # e.g. current_fact → case
+
+scope_promotion:
+  project_to_team:
+    requires:
+      - claim_validity
+      - scope_validity
+      - project_specific_conditions_removed_or_explicit
+      - future_cross_project_decision_value
+    repeat_count_alone_is_not_sufficient: true
+    threshold_higher_than_retention: true     # D-18
+  cross_project_is_scope_not_promotion_level: true   # D-19
+
+rule_scope_expansion:
+  requires_team_authority: true               # design §18.3; else Multica Issue
+
+fact_case_scope_expansion:
+  auto_allowed_when_scope_evidence_sufficient: true
+  strict_scope_pollution_prevention: true
+
+scope_correction:
+  example: { from: team, to: cross_project, projects: [project-a, project-b] }
+
+after_promotion:
+  single_canonical_source: true               # D-20
+  old_scope_keeps_reference_only: true
+  project_specific_semantics_stay_as_exception_or_special_fact: true

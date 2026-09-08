@@ -1,0 +1,57 @@
+schema_version: "1.1"
+kind: rule
+id: RULE-APP1-000007
+legacy_ids: []
+
+title: Data security minimum requirements
+statement: >
+  Evidence 默认仅本机；日志不得输出学生姓名、Evidence 正文、家长沟通正文；
+  模型请求经数据最小化层；数据库预留加密与迁移；密钥优先 HUKS、不得硬编码；
+  删除学生/班级必须定义关联数据清除策略；备份导出非首发硬要求但 Schema 预留。
+
+scope:
+  type: project
+  project_id: app1
+  projects: []
+  task_id: null
+
+modality: MUST
+
+domains:
+  - security
+  - privacy
+
+applicability:
+  deterministic:
+    project_phases: [incubation, active_development, maintenance]
+    repos: [teachers-app1]
+    task_types: []
+  semantic:
+    applicable_when:
+      - logging, encryption, key management, data deletion or backup schema work
+    not_applicable_when: []
+
+relevant_roles:
+  - solution-architect
+  - software-engineer
+  - qa
+
+exception_policy: none
+
+relations:
+  exception_of: null
+  supersedes: []
+  conflicts_with: []
+
+status: active
+verification: verified
+
+authority_refs:
+  - doc://teachers-app1/docs/App1-MVP-完整项目方案-v1.0-HarmonyOS.md@42f149a
+  - multica://issue/YZT-20
+
+source_refs:
+  - repo://teachers-app1@42f149a/docs/App1-MVP-完整项目方案-v1.0-HarmonyOS.md#§4.6
+
+created_at: 2026-09-06T16:51:00Z
+updated_at: 2026-09-08T14:30:00Z

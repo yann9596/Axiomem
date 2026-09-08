@@ -1,0 +1,69 @@
+schema_version: "1.1"
+kind: rule
+id: RULE-WIMG-000004
+legacy_ids: []
+
+title: Provider exclusivity (explicit global switch)
+statement: >
+  Web ImageGen uses an explicit global Generation Provider switch, never
+  prompt-routed or fallback backends. Provider values are default | grok | gpt;
+  the official OpenAI ImageGen Skill and the Web ImageGen Skill are globally
+  mutually exclusive; a user-invoked switch enables exactly one path and then
+  requires a Codex restart. Each job freezes its provider for its lifetime.
+  Future provider integrations may add explicit switch values but must preserve
+  mutual exclusion, supplier-specific boundaries, and visible failures. New
+  providers must not be enabled simultaneously, guessed from prompts, or
+  silently switched after failure. Browser provider integrations route through
+  one installed Web ImageGen Skill (no per-provider globally discoverable
+  skills).
+
+scope:
+  type: project
+  project_id: web-imagegen
+  projects: []
+  task_id: null
+
+modality: MUST
+
+domains:
+  - provider-routing
+  - architecture
+
+applicability:
+  deterministic:
+    project_phases: [active_development, maintenance]
+    repos: [web-imagegen]
+    task_types: []
+  semantic:
+    applicable_when:
+      - changing provider selection, skill routing, or adding a provider
+    not_applicable_when:
+      - pure local-state or validation changes with no provider semantics
+
+relevant_roles:
+  - solution-architect
+  - software-engineer
+  - feature-reviewer
+
+exception_policy: none
+
+relations:
+  exception_of: null
+  supersedes: []
+  conflicts_with: []
+
+status: active
+verification: verified
+
+authority_refs:
+  - adr://0002
+  - adr://0003
+  - repo://web-imagegen@600225a/README.md
+
+source_refs:
+  - repo://web-imagegen@600225a/docs/adr/0002-switch-image-generation-providers-globally.md
+  - repo://web-imagegen@600225a/docs/adr/0003-route-browser-providers-through-one-web-imagegen-skill.md
+  - repo://web-imagegen@600225a/README.md
+
+created_at: 2026-09-08T14:30:00Z
+updated_at: 2026-09-08T14:30:00Z

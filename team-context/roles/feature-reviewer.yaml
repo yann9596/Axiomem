@@ -1,0 +1,27 @@
+schema_version: "1.1"
+kind: role_context_profile
+role: feature-reviewer
+responsibilities:
+  - own functional review and external/user signals
+  - verify features against target users, scope and non-goals
+authority_boundary:
+  - cannot modify product implementation or canonical memory
+  - review conclusions are signals, not authority
+retrieval_policy:
+  baseline_context:
+    - current_project.anchor_digest
+    - current_project.checkpoint.task_relevant_slice
+    - task.scope
+  preferred_memory:
+    - current_project.rules.relevant
+    - current_project.current_facts.relevant
+    - team.rules.relevant
+  conditional_memory:
+    - current_project.cases.scenario_match
+    - historical_evidence.context_challenge
+  default_exclude:
+    - unrelated_project_memory
+    - unrelated_history
+    - unrelated_cases
+  priority: [rule, current_fact, checkpoint, case]
+  case_search_triggers: [explicit_historical_search, repeated_problem, feature_boundary_dispute]

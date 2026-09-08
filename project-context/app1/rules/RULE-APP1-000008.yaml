@@ -1,0 +1,62 @@
+schema_version: "1.1"
+kind: rule
+id: RULE-APP1-000008
+legacy_ids: []
+
+title: TEST_ONLY policies and rules are never product defaults
+statement: >
+  synthetic_only_fail_closed 交付中的 TEST_ONLY 状态策略（TEST_ONLY_STATE_POLICY_V1）、
+  TEST_ONLY follow-up 规则（TEST_ONLY_FOLLOWUP_RULE_V1）及其 params/scene 不得
+  作为产品默认；真实 needed-evidence 规则与教师话术仍待教师反馈。execution
+  mode 固定为 synthetic_only_fail_closed 且 real_data_mode=disabled 直到被显式
+  决策替代。
+
+scope:
+  type: project
+  project_id: app1
+  projects: []
+  task_id: null
+
+modality: MUST_NOT
+
+domains:
+  - implementation-guardrail
+  - test-policy
+
+applicability:
+  deterministic:
+    project_phases: [incubation, active_development, maintenance]
+    repos: [teachers-app1]
+    task_types: [implementation, test, policy-wiring]
+  semantic:
+    applicable_when:
+      - wiring projection engines (Thread/State/FollowUp) or promoting fixture policies
+    not_applicable_when:
+      - explicit human decision replaces a TEST_ONLY default
+
+relevant_roles:
+  - software-engineer
+  - qa
+  - solution-architect
+
+exception_policy: none
+
+relations:
+  exception_of: null
+  supersedes: []
+  conflicts_with: []
+
+status: active
+verification: verified
+
+authority_refs:
+  - multica://issue/YZT-26
+  - multica://issue/YZT-36
+
+source_refs:
+  - repo://multica-memory@61c6f0e/sources/candidates/app1-t23-thread-projection-engine-delivery.json
+  - repo://multica-memory@61c6f0e/sources/candidates/app1-t24-state-projection-engine-delivery.json
+  - repo://multica-memory@61c6f0e/sources/candidates/app1-t25-followup-projection-engine-delivery.json
+
+created_at: 2026-09-08T14:30:00Z
+updated_at: 2026-09-08T14:30:00Z

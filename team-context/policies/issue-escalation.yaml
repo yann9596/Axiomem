@@ -1,0 +1,41 @@
+# Policy: Issue Escalation (V1.1)
+# Authority: design §15 (D-08); Spec §20
+# No independent Decision Queue: unresolved governance goes through Multica Issues.
+
+policy_id: issue-escalation
+policy_version: 1.1
+
+triggers:
+  - unresolved_rule_conflict
+  - authority_needed                       # normative claim without valid authority source
+  - governance_ambiguity
+  - evidence_conflict_blocking_task
+  - project_scope_unresolved
+  - high_impact_exception_request
+
+pre_issue:
+  - deduplicate
+  - merge_related_questions
+  - determine_actual_dependency
+  - assign_priority
+
+blocking:
+  only_block_true_dependents: true         # one local issue never blocks a whole project (design §15.2)
+
+issue_body:
+  - question
+  - why_machine_cannot_safely_decide
+  - evidence
+  - conflicts
+  - impact
+  - options
+  - ai_recommendation
+  - dependent_tasks
+
+resolution:
+  require_explicit_decision_outcome: true  # issue closed ≠ approved by default (design §15.4)
+  no_clear_outcome: remain_unresolved
+
+human_decision_as_authority:
+  resolved_multica_human_decision_can_become_rule_authority: true   # design §15.5
+  human_decision_cannot_change_physical_reality_without_evidence: true

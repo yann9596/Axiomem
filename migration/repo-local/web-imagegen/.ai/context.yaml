@@ -1,0 +1,35 @@
+schema_version: "1.1"
+
+project_id: web-imagegen
+repo_id: web-imagegen
+
+repo_role:
+  - product-repo-codex-skill-and-cli
+
+project_context:
+  repo: multica-memory
+  local_path: D:\AI\multica-memory
+  subtree: project-context/web-imagegen
+
+team_context:
+  repo: multica-memory
+  local_path: D:\AI\multica-memory
+  subtree: team-context
+
+key_domains:
+  - provider-switch
+  - browser-attempt-workflow
+  - image-validation
+  - batch-artifacts
+
+source_change_watch:
+  enabled: true
+
+notes: >
+  V1.1 repo-local context (F-3 decision, YZT-40): generated directly from
+  main@600225a reality; the old V1 branch files
+  (agent/04-software-engineer/9fa1b3d39d37 @ a0a049b) were used only as
+  migration evidence, not merged first. Repo-local context never stores
+  project-wide Rule/Fact bodies; canonical knowledge lives in the context
+  system. Landing these files in the product repo is a Cutover-window
+  Software Engineer write; final merge reserved for Human.

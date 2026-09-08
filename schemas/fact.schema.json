@@ -1,0 +1,57 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Multica Current Fact V1.1",
+  "description": "Currently verified, cross-task-valuable, hard-to-recover scoped reality. No importance/confidence/freshness fields.",
+  "type": "object",
+  "required": ["schema_version", "kind", "id", "title", "statement", "scope", "domains", "status", "verification", "source_refs", "created_at", "updated_at"],
+  "properties": {
+    "schema_version": { "const": "1.1" },
+    "kind": { "const": "current_fact" },
+    "id": { "$ref": "rule.schema.json#/$defs/object_id" },
+    "legacy_ids": { "type": "array", "items": { "type": "string" } },
+    "title": { "type": "string" },
+    "statement": { "type": "string" },
+    "scope": { "$ref": "evidence-ref.schema.json#/$defs/scope" },
+    "domains": { "type": "array", "items": { "type": "string" }, "minItems": 1 },
+    "repositories": { "type": "array", "items": { "type": "string" } },
+    "status": { "enum": ["active", "review_needed", "superseded"] },
+    "verification": { "$ref": "evidence-ref.schema.json#/$defs/verification" },
+    "verified_against": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["source_ref", "revision"],
+        "properties": {
+          "source_ref": { "$ref": "evidence-ref.schema.json#/$defs/ref_string" },
+          "revision": { "type": "string" },
+          "paths": { "type": "array", "items": { "type": "string" } }
+        },
+        "additionalProperties": false
+      }
+    },
+    "source_refs": { "type": "array", "items": { "$ref": "evidence-ref.schema.json#/$defs/ref_string" } },
+    "relations": {
+      "type": "object",
+      "properties": {
+        "conflicts_with": { "type": "array", "items": { "type": "string" } },
+        "supersedes": { "type": "array", "items": { "type": "string" } },
+        "supersedes_note": { "type": ["string", "null"] },
+        "drift_of": { "type": ["string", "null"] },
+        "norm_reality_conflict": { "type": "array", "items": { "type": "string" } }
+      },
+      "additionalProperties": false
+    },
+    "review": {
+      "type": "object",
+      "properties": {
+        "reason": { "type": ["string", "null"] },
+        "triggered_at": { "type": ["string", "null"], "format": "date-time" }
+      },
+      "additionalProperties": false
+    },
+    "created_at": { "type": "string", "format": "date-time" },
+    "verified_at": { "type": ["string", "null"], "format": "date-time" },
+    "updated_at": { "type": "string", "format": "date-time" }
+  },
+  "additionalProperties": false
+}

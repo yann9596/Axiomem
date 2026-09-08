@@ -1,0 +1,27 @@
+# Replay: YZT-10 — Memory CLI governance loop (get/promote/challenge)
+# Coverage: normal implementation task, team scope.
+task_id: replay-yzt-10
+role: software-engineer
+scope: team
+projects: []
+project_id: null
+decision: "在记忆仓补齐治理闭环最小 CLI：get/promote/challenge，不扩大为全量 schema 改造"
+query: "memory cli governance canonical"
+case_trigger: null
+
+expected:
+  expected_scope: team
+  expected_role: software-engineer
+  must_include:
+    - rule:RULE-TEAM-000001
+  must_exclude:
+    - rule:RULE-APP1
+    - rule:RULE-WIMG
+    - fact:FACT-APP1
+    - fact:FACT-WIMG
+    - case:CASE-APP1
+  expected_case_search: none
+  expected_conflicts: 1        # team checkpoint conflict (registry path) is surfaced, non-blocking
+  notes: >
+    Team-scope infra task; must see owner-boundary rule + team checkpoint state;
+    must NOT see any project memory.

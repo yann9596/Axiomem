@@ -1,0 +1,81 @@
+schema_version: "1.1"
+kind: checkpoint
+checkpoint_level: team
+scope:
+  type: team
+  project_id: null
+  projects: []
+  task_id: null
+
+# projects[].phase is DERIVED from team-context/registry/projects.yaml (F-6).
+# Not a second phase authority. One-level posture only; no project internals.
+projects:
+  - project_id: app1
+    phase: incubation
+    phase_ref: registry
+    context_status: normal
+    checkpoint_ref: project
+  - project_id: web-imagegen
+    phase: active_development
+    phase_ref: registry
+    context_status: normal
+    checkpoint_ref: project
+
+confirmed:
+  - id: cp-confirmed-001
+    summary: >
+      Context & Memory System 正在按 V1.1 旁路重建（migration branch
+      context-v1.1-rebuild）；V1.0 canonical 在迁移与 Replay 期间保持可恢复
+      （tag context-v1.0-pre-v1.1-20260908 + bundle）。回滚基线已验证可恢复。
+    refs:
+      - multica://issue/YZT-40
+      - migration/README.md
+  - id: cp-confirmed-002
+    summary: >
+      人类已裁决的迁移拓扑：单 Git Repo + Team/Project 双根逻辑分区（F-2）；
+      repo-local context 直接基于 main Reality 生成 V1.1 版（F-3）；项目
+      lifecycle 为 app1=incubation、web-imagegen=active_development（F-6）。
+    refs:
+      - multica://issue/YZT-40
+      - registry://app1
+      - registry://web-imagegen
+
+open:
+  - id: cp-team-open-001
+    summary: >
+      V1.1 R10 Cutover GO / NO-GO 待用户决策；决策前严禁 merge migration
+      branch、冻结 V1 writer 或切换 GET_CONTEXT。
+    projects: [app1, web-imagegen]
+    refs:
+      - multica://issue/YZT-40
+  - id: cp-team-open-002
+    summary: >
+      Workspace/Agent Instructions 与 Skills 中的动态 Project Knowledge 剥离
+      （R6）属于平台侧更新，随 Cutover 窗口执行；当前运行时 Instructions 仍
+      携带项目指针（V1 形态）。
+    projects: [app1, web-imagegen]
+    refs:
+      - multica://issue/YZT-40
+      - team-context/roles
+
+conflicts:
+  - id: cp-team-conflict-001
+    summary: >
+      Registry 物理路径：设计文档 §4.1 给出 team-context/projects/registry.yaml，
+      Spec §3.1（实施合同）给出 registry/projects.yaml —— 已按"设计概念权威 /
+      Spec 实施合同"原则采用 Spec 路径并在 schemas/README.md 记录偏差；非阻塞。
+    refs:
+      - multica://issue/YZT-40
+      - schemas/README.md
+
+next:
+  - 用户对 YZT-40 做 Cutover GO / NO-GO 决策（R10 之前 STOP）
+  - 若 GO：按 Spec §42–45 执行 delta 迁移 + 冻结 V1 writer + merge + 零重建 + 切换
+  - 若 NO-GO：保持 V1 运行，V1.1 停留在 migration branch
+
+refs:
+  - migration/README.md
+  - migration/snapshot.yaml
+  - team-context/registry/projects.yaml
+
+updated_at: 2026-09-08T14:30:00Z

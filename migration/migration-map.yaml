@@ -1,0 +1,187 @@
+# Migration Map — every legacy object → V1.1 target / disposition (YZT-40 R4)
+# Gate A: legacy_objects_accounted_for = 100%, silent_drop = 0.
+# Order followed: Registry → Anchor → Rule → Current Fact → Case → Finding → legacy mapping.
+
+migration_id: MIG-2026-09-08-YZT40
+source_units: 10
+source_chains: 3
+source_candidates: 5
+source_signals: 11
+
+registry:
+  - legacy: registry/projects.yaml (V1 simplified)
+    action: transform
+    target: team-context/registry/projects.yaml
+    changes:
+      - ids normalized to stable short ids (app1, web-imagegen) with multica_project_id kept for traceability
+      - phase fields added per F-6 (app1=incubation, web-imagegen=active_development); phase authority = Registry only
+      - consumption_contract field dropped — replaced by V1.1 scope-first retrieval engine (Gate A evidence: two YZT-22 leaks became blocker tests)
+      - current_commit snapshot fields dropped from canonical (git-observable; snapshot recorded in migration/snapshot.yaml)
+      - authority_ref added (multica://issue/YZT-40)
+
+anchors:
+  - legacy: memory/app1-project-context.json (governance part)
+    action: transform
+    target: project-context/app1/project.yaml
+    notes: mission/target_users/scope/non_goals/hard_constraints extracted; governance vs context fields separated; repo paths -> context.repositories; owner-boundary paragraph replaced by reference to RULE-TEAM-000001 (no duplication, D-20)
+  - legacy: memory/web-imagegen-project-context.json (governance part)
+    action: transform
+    target: project-context/web-imagegen/project.yaml
+    notes: owner-corrected goal (2026-09-06 human decision) = mission; 7 non-negotiable constraints = hard_constraints with rule cross-refs; repo-local memory-entry paragraph superseded by V1.1 context topology (F-2/F-3)
+
+rules:
+  - legacy: memory/governance-owner-boundaries.json (normative+governance claim)
+    action: transform
+    target: team-context/rules/RULE-TEAM-000001.yaml
+    authority_gate: PASS
+    authority: multica://project-context/multica-agent-team-v1 (workspace owner governance decision, durable project context)
+
+  - legacy: memory/web-imagegen-project-context.json (normative constraints)
+    action: transform (split by claim)
+    targets:
+      - RULE-WIMG-000001 (product repo integrity + worktree)  # authority: multica://project-context/web-imagegen + YZT-40
+      - RULE-WIMG-000002 (write ownership: SE code / CE memory / QA no self-PASS / human merge)
+      - RULE-WIMG-000003 (memory-system construction boundaries: no Neo4j / full-chat vectorization / auto-merge; embedding interface-only)
+
+  - legacy: memory/web-imagegen-repo-map.json (normative architecture boundaries)
+    action: transform + revalidate
+    targets:
+      - RULE-WIMG-000004 (provider exclusivity; explicit global switch; one skill routing)  # authority: adr://0002 + adr://0003 + README@600225a
+      - RULE-WIMG-000005 (browser boundary: Codex Chrome only; no cookie/browser-storage access; no MCP/Playwright/CDP/daemon; no HTTP replay)  # authority: adr://0001 + adr://0003 + README@600225a
+    revalidation: >
+      Old unit was verified against 72db245 but main moved to 600225a (PR#1, gpt
+      provider + skill routing). Targeted revalidation against main@600225a
+      executed; boundaries still hold (now three provider values, one skill),
+      so the normative content survives in the two rules, updated.
+
+  - legacy: memory/app1-project-context.json (normative/governance parts)
+    action: transform
+    targets:
+      - RULE-APP1-000001 (local-first data residency)        # authority: 方案 v1.0 §1 P16 + §4.6
+      - RULE-APP1-000002 (Evidence fact-asset / recomputable derivations)  # §1 P6 + §5
+      - RULE-APP1-000003 (T02A tech baseline + layering)     # §4.1–4.8
+      - RULE-APP1-000004 (LLM behind Adapter; P11/P12)       # §4.5/§7
+      - RULE-APP1-000005 (follow-up silent-by-default; notification opt-in)  # §4.4 + Round 2 + YZT-20
+      - project-context/app1/project.yaml (anchor; MVP must/must-not lists = scope/non_goals)
+
+  - legacy: memory/app1-frozen-baseline-t01-t02a.json (frozen baseline: normative + current reality)
+    action: transform (largest unit, split by claim type)
+    targets:
+      - RULE-APP1-000001 (P16 local-first)
+      - RULE-APP1-000002 (Evidence asset / recomputability)
+      - RULE-APP1-000003 (T02A stack + layering + ArkData + Preferences boundary)
+      - RULE-APP1-000004 (LLM adapter)
+      - RULE-APP1-000005 (notification decoupling)
+      - RULE-APP1-000007 (data security minimums)
+      - FACT-APP1-000003 (five-state framework frozen / thresholds unfrozen — current reality of what is frozen)
+      - FACT-APP1-000004 (ArkData selection as verified fact)
+      - project-context/app1/project.yaml (GO decision + not-GO list = governance/anchor scope)
+      - project-context/app1/checkpoint.yaml (GO/NO-GO posture kept in checkpoint, not in canonical rules)
+
+  - legacy: memory/app1-domain-model-scope-t02.json (current reality + normative guardrail)
+    action: transform
+    targets:
+      - FACT-APP1-000002 (six objects + Evidence fields)
+      - RULE-APP1-000006 (draft-only guardrail)              # authority: 方案 §9
+      - project-context/app1/checkpoint.yaml cp-open-001 (unfrozen topic thresholds)
+      - multica://issue/YZT-20 (T02 task definition stays in the issue, not memory)
+
+  - legacy: memory/app1-unfrozen-teacher-dependencies.json (unresolved cognition)
+    action: transform
+    targets:
+      - RULE-APP1-000006 (draft-only guardrail — the normative part)
+      - project-context/app1/checkpoint.yaml cp-open-001 (10 unfrozen items + T11→T30 dependency chain)
+      - project-context/app1/checkpoint.yaml cp-open-004 (T20 deferred)
+      - RULE-APP1-000005 (Round-2 tightening constraint)
+
+  - legacy: memory/app1-voc-evidence-status.json (historical evidence + partially verified reality)
+    action: transform
+    targets:
+      - CASE-APP1-000001 (auto follow-up reminder refuted by VOC — historical scenario with decision value)
+      - project-context/app1/checkpoint.yaml cp-open-002 (Round 3 evidence gaps)
+      - RULE-APP1-000005 (the resulting design constraint, authority: 方案 §9 + owner baseline decision)
+    notes: legacy confidence 0.85 NOT mapped to any pseudo-verified status; case verification = partially_verified
+
+  - legacy: memory/app1-repo-map.json (current reality)
+    action: transform
+    targets:
+      - FACT-APP1-000001 (minimal baseline fact, verified_against repo://teachers-app1@42f149a)
+      - file-list portion → pointer (easy recoverable via git; principle 3)
+      - worktree/no-touch constraints already covered by registry + RULE-WIMG analogues in RULE-APP1-000001/000006
+
+  - legacy: memory/app1-context-consumption-contract.json
+    action: deprecate_then_remove_after_cutover
+    target: null (V1 tool-gap workaround)
+    notes: >
+      V1-specific safe-consumption contract for the known FTS/candidate-channel
+      isolation gaps (YZT-22). V1.1 scope-first retrieval eliminates the gap;
+      both leak paths became Gate B blocker tests (replay-yzt-22). The unit file
+      stays readable in V1 dirs until Cutover cleanup; it is NOT migrated into
+      V1.1 canonical (would pollute the target schema with a V1 workaround).
+
+chains:
+  - legacy: chains/app1-mvp.json (assembly manifest, not business knowledge)
+    action: deprecate + reclassify
+    targets: role baselines (team-context/roles/*.yaml baseline_context) + checkpoint slices + builder default assembly
+  - legacy: chains/web-imagegen-pilot.json
+    action: deprecate + reclassify
+    targets: same
+  - legacy: chains/team-governance.json
+    action: deprecate + reclassify
+    targets: same (team roles baseline)
+  notes: >
+    No chain contained code-derived call graphs or non-recoverable business
+    semantics (all members were assembly pointers to canonical units), so no
+    Fact/Case extraction from chains was required (Spec §25: chains are not
+    first-class V1.1 objects; nothing hard-recoverable was lost).
+
+candidates:
+  - legacy: sources/candidates/app1-repo-local-context-pointer.json
+    action: finding_ingest
+    target: migration/findings/FIND-APP1-MIG-000001.json
+    disposition: absorbed_by_existing (V1.1 repo-local policy)
+  - legacy: sources/candidates/app1-t23-thread-projection-engine-delivery.json
+    action: finding_ingest
+    target: migration/findings/FIND-APP1-MIG-000002.json
+    disposition: forget (task progress; issue refs preserved)
+  - legacy: sources/candidates/app1-t24-state-projection-engine-delivery.json
+    action: finding_ingest
+    target: migration/findings/FIND-APP1-MIG-000003.json
+    disposition: forget
+  - legacy: sources/candidates/app1-t25-followup-projection-engine-delivery.json
+    action: finding_ingest
+    target: migration/findings/FIND-APP1-MIG-000004.json
+    disposition: forget
+  - legacy: sources/candidates/web-imagegen-repo-local-context-2026-09-06.json
+    action: finding_ingest
+    target: migration/findings/FIND-WIMG-MIG-000001.json
+    disposition: pointer (F-3 staged repo-local V1.1 content)
+
+signals:
+  action: reclassify_keep_as_evidence
+  note: >
+    All 11 external signals are evidence records pointing at authoritative
+    sources; V1.1 canonical objects carry the equivalent source_refs inline
+    (doc://, repo://, adr://, multica://). Original V1 files remain in
+    sources/ until Cutover cleanup; no content is copied into V1.1 canonical
+    as a second truth. Mapping (signal → used by):
+    - app1-lead-review-yzt22 → gate-B blocker test + RULE derivation evidence (YZT-22)
+    - app1-mvp-plan-v1-0 → authority for RULE-APP1-000001..000007 (doc@42f149a, blob 6b272a5)
+    - app1-project-context-2026-09-07 → anchor app1 authority
+    - app1-repo-state-2026-09-07 → FACT-APP1-000001 verification
+    - app1-voc-plan-v1-0 → methodology evidence for VOC facts/case
+    - app1-voc-round1-v0-1 / app1-voc-round2 → CASE-APP1-000001 evidence
+    - project-context-2026-09-06 → RULE-TEAM-000001 authority (workspace owner governance)
+    - web-imagegen-project-context → anchor web-imagegen authority
+    - web-imagegen-project-goal-update → anchor mission authority (owner-corrected)
+    - web-imagegen-repo-map-2026-09-06 → revalidation evidence for FACT-WIMG-000001 (superseded)
+
+metadata_field_migration:
+  importance: dropped (legacy_metadata.importance kept in this file only for audit; no retrieval use)
+  confidence: dropped; verification enum carries meaning (numeric 0.85/0.9/0.6 never upgraded to pseudo-verified)
+  freshness_stale_archived: no data existed; no migration burden; new lifecycle policy in team-context/policies/lifecycle.yaml
+  status: canonical→active per target type; candidate→finding open/processed+disposition
+  scope: coarse enum → four-type struct with deterministic validation; tags → domains[] extraction; legacy tags kept only in legacy files
+  sources: → source_refs / verified_against with claim_relation
+  verified_at_by: → verification + verified_at (verification value recomputed during migration revalidation, not copied)
+  relationships: related_to mostly dropped (chain/assembly semantics moved to roles/checkpoints); depends_on kept only where stable semantic (RULE dependencies recorded via refs); conflicts_with/supersedes enter the new relation model (fact.relations.supersedes, drift_of)

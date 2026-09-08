@@ -1,0 +1,34 @@
+# Policy: Revalidation (V1.1)
+# Authority: design §20 (D-21, D-22); Spec §21
+
+policy_id: revalidation
+policy_version: 1.1
+
+principle:
+  targeted_narrowing_not_mass_stale: true     # repo commit ⇒ NOT all related facts stale (§31 boundary 8)
+  retrieval_does_not_full_reverify: true      # active memory trusts last valid verification (D-22)
+
+source_change_pipeline:
+  input: [repo, revision, changed_paths, changed_symbols_optional]
+  deterministic_narrowing:
+    - match_verified_against_repo
+    - match_paths_or_contracts
+    - exclude_non_semantic_change_when_known
+  semantic_impact_check: llm_bounded
+  affected_fact: { status: review_needed }
+  affected_rule: { condition: authority_or_applicability_source_changed, action: review_needed }
+  unaffected_memory: unchanged
+
+revalidation_outcomes:
+  still_true: active
+  new_reality: { old: superseded, new: active }
+  historical_value: convert_to_case
+  no_future_value: pointer_or_forget
+  conflict_unresolved: checkpoint_or_multica_issue
+
+context_challenge_flow:                    # Spec §50
+  input: [object_ref, reason, source_refs, impact]
+  handling: targeted_revalidation
+  outcomes: [confirm, review_needed, supersede, conflict]
+  unresolved: checkpoint_or_issue
+  canonical_object_never_silently_overwritten: true

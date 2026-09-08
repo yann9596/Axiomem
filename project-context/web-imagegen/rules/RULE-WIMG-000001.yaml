@@ -1,0 +1,57 @@
+schema_version: "1.1"
+kind: rule
+id: RULE-WIMG-000001
+legacy_ids: []
+
+title: Product repo integrity and worktree isolation
+statement: >
+  Never clean, overwrite, commit or discard the product repo's current uncommitted
+  and untracked content. Product tasks run in an independent worktree; the main
+  working tree is never used as the execution workspace.
+
+scope:
+  type: project
+  project_id: web-imagegen
+  projects: []
+  task_id: null
+
+modality: MUST_NOT
+
+domains:
+  - governance
+  - git-safety
+
+applicability:
+  deterministic:
+    project_phases: [active_development, maintenance]
+    repos: [web-imagegen]
+    task_types: []
+  semantic:
+    applicable_when:
+      - any task touching or executed in D:\AI\projects\opencode-web-imagegen
+    not_applicable_when: []
+
+relevant_roles:
+  - software-engineer
+  - context-engineer
+  - solution-architect
+
+exception_policy: none
+
+relations:
+  exception_of: null
+  supersedes: []
+  conflicts_with: []
+
+status: active
+verification: verified
+
+authority_refs:
+  - multica://project-context/web-imagegen
+  - multica://issue/YZT-40
+
+source_refs:
+  - multica://project-context/web-imagegen
+
+created_at: 2026-09-06T08:55:00Z
+updated_at: 2026-09-08T14:30:00Z

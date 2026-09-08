@@ -1,0 +1,60 @@
+schema_version: "1.1"
+kind: rule
+id: RULE-APP1-000003
+legacy_ids: []
+
+title: HarmonyOS tech baseline and layering hard constraints (T02A)
+statement: >
+  ArkTS + ArkUI 声明式 + Stage Model 固定；业务主数据用 ArkData relationalStore
+  （不用已停止维护的 @ohos.data.rdb；不用 JSON/KV 再迁移）；Preferences 仅 UI
+  偏好/默认 Scene 等轻配置，不得承载 Evidence/Thread/State 主数据。分层硬约束：
+  StateEngine 不写在 ArkUI 页面事件、FollowUpEngine 不依赖 Notification Kit、
+  TopicPolicy 不绑页面组件、Validation 可纯 Domain 单元测试、Scene Pack 尽可能
+  配置化。HarmonyOS 原生优先（P14）；核心领域层与平台能力解耦（P15）。
+
+scope:
+  type: project
+  project_id: app1
+  projects: []
+  task_id: null
+
+modality: MUST
+
+domains:
+  - architecture
+  - tech-baseline
+
+applicability:
+  deterministic:
+    project_phases: [incubation, active_development, maintenance]
+    repos: [teachers-app1]
+    task_types: []
+  semantic:
+    applicable_when:
+      - any module layout, storage selection, or platform coupling decision
+    not_applicable_when:
+      - documentation-only tasks
+
+relevant_roles:
+  - solution-architect
+  - software-engineer
+
+exception_policy: none
+
+relations:
+  exception_of: null
+  supersedes: []
+  conflicts_with: []
+
+status: active
+verification: verified
+
+authority_refs:
+  - doc://teachers-app1/docs/App1-MVP-完整项目方案-v1.0-HarmonyOS.md@42f149a
+  - multica://issue/YZT-20
+
+source_refs:
+  - repo://teachers-app1@42f149a/docs/App1-MVP-完整项目方案-v1.0-HarmonyOS.md#§4.1-§4.8
+
+created_at: 2026-09-06T16:51:00Z
+updated_at: 2026-09-08T14:30:00Z

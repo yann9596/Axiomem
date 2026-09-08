@@ -1,0 +1,65 @@
+schema_version: "1.1"
+kind: project_anchor
+project_id: web-imagegen
+status: active
+
+governance:
+  mission: >
+    为 Codex 提供供应商中立的生图能力（Web ImageGen）——任一时刻仅激活一个
+    Generation Provider（default | grok | gpt）；浏览器供应商（grok / gpt）经
+    Codex Chrome 接管用户已登录的对应标签页生图，使用用户自己的浏览器会话与
+    账号额度，不占用平台订阅生图额度；不做隐式供应商路由或失败降级。
+  target_users:
+    - Codex 用户（在用户本机 ChatGPT 桌面 Codex 中生图，使用用户自己的浏览器会话与账号额度）
+  scope:
+    - 全局 Provider 切换（default | grok | gpt），官方 ImageGen Skill 与 Web ImageGen Skill 全局互斥
+    - grok 与 gpt 两条浏览器供应商路径；共享本地状态/校验/落盘 CLI
+    - 批次状态、图片硬校验、二选一选择、项目落盘（imagine/<日期_任务>/<生成目标>/）
+  non_goals:
+    - 不做隐式供应商路由、按提示词猜测供应商或失败后静默切换
+    - 无 MCP、Playwright、CDP、自管 Chromium、独立 profile、HTTP daemon
+    - 不读取或管理 Cookie、浏览器存储、密码或 profile
+  hard_constraints:
+    - never clean, overwrite, commit or discard the product repo's current uncommitted/untracked content
+    - product tasks run in an independent worktree
+    - product code writes owned solely by Software Engineer
+    - canonical memory writes owned solely by Context Engineer
+    - QA must not modify the implementation and then self-PASS
+    - no Neo4j, no full-chat vectorization, no fully automatic merge
+    - final merge reserved for a human
+
+context:
+  repositories:
+    - repo_id: web-imagegen
+      role: product-repo-codex-skill-and-cli
+      local_path: D:\AI\projects\opencode-web-imagegen
+  major_domains:
+    - provider-switch
+    - browser-attempt-workflow
+    - image-validation
+    - batch-artifacts
+  repository_relationships:
+    - web-imagegen (product code) ↔ multica-memory (canonical context, project-context/web-imagegen)
+  external_dependency_refs:
+    - repo://web-imagegen@600225a/README.md
+    - adr://0001
+    - adr://0002
+    - adr://0003
+
+authority_refs:
+  - multica://project-context/web-imagegen
+  - multica://issue/YZT-40
+  - adr://0001
+  - adr://0002
+
+source_refs:
+  - repo://web-imagegen@600225a/README.md
+  - repo://web-imagegen@600225a/DESIGN.md
+  - repo://web-imagegen@a0a049b/.ai/context.yaml
+  - repo://web-imagegen@a0a049b/docs/repo-context.md
+
+review:
+  reason: null
+  triggered_at: null
+
+updated_at: 2026-09-08T14:30:00Z

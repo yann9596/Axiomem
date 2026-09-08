@@ -1,0 +1,55 @@
+schema_version: "1.1"
+kind: current_fact
+id: FACT-APP1-000002
+legacy_ids:
+  - app1-domain-model-scope-t02
+
+title: Six core domain objects and Evidence minimum fields (frozen naming, unfrozen relations)
+statement: >
+  基线命名六个核心领域对象：Student；Evidence；AttentionThread；State；FollowUp；
+  Action（名称来自冻结基线，精确关系属 T02，尚未冻结）。Evidence 最少字段
+  （方案 §3.1B）：student_id、scene、topic、direction、timestamp、task?（可选）、
+  note?（可选）、source（manual/AI_structured）、created_at。AttentionThread 按
+  student+normalized_topic 自动组织历史 Evidence，维度 Student×Topic×Time；Thread
+  不等于人格画像。State 由 Evidence+Topic Policy 派生；FollowUp 每个未充分确认的
+  Thread 维护"下一步最好获得什么证据"；Action MVP 首要为继续教学观察、家长沟通。
+
+scope:
+  type: project
+  project_id: app1
+  projects: []
+  task_id: null
+
+domains:
+  - domain-model
+
+repositories:
+  - teachers-app1
+
+status: active
+verification: verified
+
+verified_against:
+  - source_ref: doc://teachers-app1/docs/App1-MVP-完整项目方案-v1.0-HarmonyOS.md@42f149a
+    revision: 42f149a31136e85ee17847802060f8bb5dd66a93
+    paths:
+      - docs/App1-MVP-完整项目方案-v1.0-HarmonyOS.md
+
+source_refs:
+  - repo://teachers-app1@42f149a/docs/App1-MVP-完整项目方案-v1.0-HarmonyOS.md#§4.2/§5
+  - repo://multica-memory@61c6f0e/memory/app1-frozen-baseline-t01-t02a.json
+
+relations:
+  conflicts_with: []
+  supersedes: []
+  supersedes_note: null
+  drift_of: null
+  norm_reality_conflict: []
+
+review:
+  reason: null
+  triggered_at: null
+
+created_at: 2026-09-06T16:51:00Z
+verified_at: 2026-09-08T14:30:00Z
+updated_at: 2026-09-08T14:30:00Z

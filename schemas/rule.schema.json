@@ -1,0 +1,70 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Multica Rule V1.1",
+  "description": "Normative canonical knowledge. A Rule MUST carry at least one resolvable authority_ref; modality is constraint strength, not authority.",
+  "type": "object",
+  "required": ["schema_version", "kind", "id", "title", "statement", "scope", "modality", "domains", "applicability", "relevant_roles", "exception_policy", "status", "verification", "authority_refs", "created_at", "updated_at"],
+  "properties": {
+    "schema_version": { "const": "1.1" },
+    "kind": { "const": "rule" },
+    "id": { "$ref": "#/$defs/object_id" },
+    "legacy_ids": { "type": "array", "items": { "type": "string" } },
+    "title": { "type": "string" },
+    "statement": { "type": "string" },
+    "scope": { "$ref": "evidence-ref.schema.json#/$defs/scope" },
+    "modality": { "enum": ["MUST", "MUST_NOT", "SHOULD", "SHOULD_NOT"] },
+    "domains": { "type": "array", "items": { "type": "string" }, "minItems": 1 },
+    "applicability": {
+      "type": "object",
+      "properties": {
+        "deterministic": {
+          "type": "object",
+          "properties": {
+            "project_phases": { "type": "array", "items": { "enum": ["incubation", "active_development", "maintenance", "deprecated", "archived"] } },
+            "repos": { "type": "array", "items": { "type": "string" } },
+            "task_types": { "type": "array", "items": { "type": "string" } }
+          },
+          "additionalProperties": false
+        },
+        "semantic": {
+          "type": "object",
+          "properties": {
+            "applicable_when": { "type": "array", "items": { "type": "string" } },
+            "not_applicable_when": { "type": "array", "items": { "type": "string" } }
+          },
+          "additionalProperties": false
+        }
+      },
+      "additionalProperties": false
+    },
+    "relevant_roles": { "type": "array", "items": { "$ref": "project-registry.schema.json#/$defs/role_id" } },
+    "exception_policy": { "enum": ["none", "explicit"] },
+    "relations": {
+      "type": "object",
+      "properties": {
+        "exception_of": { "type": ["string", "null"] },
+        "supersedes": { "type": "array", "items": { "type": "string" } },
+        "conflicts_with": { "type": "array", "items": { "type": "string" } }
+      },
+      "additionalProperties": false
+    },
+    "status": { "enum": ["active", "review_needed", "superseded", "revoked"] },
+    "verification": { "$ref": "evidence-ref.schema.json#/$defs/verification" },
+    "authority_refs": { "type": "array", "items": { "$ref": "evidence-ref.schema.json#/$defs/ref_string" }, "minItems": 1 },
+    "source_refs": { "type": "array", "items": { "$ref": "evidence-ref.schema.json#/$defs/ref_string" } },
+    "review": {
+      "type": "object",
+      "properties": {
+        "reason": { "type": ["string", "null"] },
+        "triggered_at": { "type": ["string", "null"], "format": "date-time" }
+      },
+      "additionalProperties": false
+    },
+    "created_at": { "type": "string", "format": "date-time" },
+    "updated_at": { "type": "string", "format": "date-time" }
+  },
+  "$defs": {
+    "object_id": { "type": "string", "pattern": "^(RULE|FACT|CASE)-[A-Z0-9]{1,10}-[0-9]{6}$" }
+  },
+  "additionalProperties": false
+}

@@ -1,0 +1,28 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Multica Finding V1.1",
+  "description": "Task-scoped discovery awaiting retention decision. Runtime/task workspace artifact, not long-term memory. Lifecycle: open/processed.",
+  "type": "object",
+  "required": ["schema_version", "kind", "finding_id", "project_id", "task_id", "summary", "status", "verification", "created_at"],
+  "properties": {
+    "schema_version": { "const": "1.1" },
+    "kind": { "const": "finding" },
+    "finding_id": { "type": "string", "pattern": "^FIND-[A-Z0-9]{1,12}-[A-Z0-9]{1,12}-[0-9]{6}$" },
+    "legacy_ids": { "type": "array", "items": { "type": "string" } },
+    "project_id": { "$ref": "project-registry.schema.json#/$defs/project_id" },
+    "task_id": { "type": "string" },
+    "summary": { "type": "string" },
+    "detail": { "type": ["string", "null"] },
+    "intent": { "enum": ["observation", "durable_candidate", "context_challenge", "task_delivery", null] },
+    "source_refs": { "type": "array", "items": { "$ref": "evidence-ref.schema.json#/$defs/ref_string" } },
+    "discovered_by": { "$ref": "project-registry.schema.json#/$defs/role_id" },
+    "status": { "enum": ["open", "processed"] },
+    "verification": { "$ref": "evidence-ref.schema.json#/$defs/verification" },
+    "disposition": { "enum": ["create_rule", "create_fact", "create_case", "carry_to_checkpoint", "pointer", "forget", "issue_escalation", "absorbed_by_existing", null] },
+    "disposition_note": { "type": ["string", "null"] },
+    "disposition_refs": { "type": "array", "items": { "type": "string" } },
+    "processed_at": { "type": ["string", "null"], "format": "date-time" },
+    "created_at": { "type": "string", "format": "date-time" }
+  },
+  "additionalProperties": false
+}

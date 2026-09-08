@@ -1,0 +1,58 @@
+schema_version: "1.1"
+kind: rule
+id: RULE-WIMG-000003
+legacy_ids: []
+
+title: Memory system construction boundaries
+statement: >
+  Do not build Neo4j, full-chat vectorization, or fully automatic merge. RAG V1
+  uses SQLite FTS plus metadata and limited relations; embedding stays
+  interface-only (disabled until a model is selected) and must never be claimed
+  as active. The derived index is never canonical and is never git-tracked.
+
+scope:
+  type: project
+  project_id: web-imagegen
+  projects: []
+  task_id: null
+
+modality: MUST_NOT
+
+domains:
+  - memory-system
+  - architecture
+
+applicability:
+  deterministic:
+    project_phases: [active_development, maintenance]
+    repos: []
+    task_types: []
+  semantic:
+    applicable_when:
+      - any task extending or operating the context/memory system
+    not_applicable_when: []
+
+relevant_roles:
+  - engineering-lead
+  - context-engineer
+  - software-engineer
+
+exception_policy: none
+
+relations:
+  exception_of: null
+  supersedes: []
+  conflicts_with: []
+
+status: active
+verification: verified
+
+authority_refs:
+  - multica://project-context/web-imagegen
+  - multica://issue/YZT-40
+
+source_refs:
+  - multica://project-context/web-imagegen
+
+created_at: 2026-09-06T08:55:00Z
+updated_at: 2026-09-08T14:30:00Z

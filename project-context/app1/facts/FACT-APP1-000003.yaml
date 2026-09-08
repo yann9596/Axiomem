@@ -1,0 +1,52 @@
+schema_version: "1.1"
+kind: current_fact
+id: FACT-APP1-000003
+legacy_ids:
+  - app1-frozen-baseline-t01-t02a
+
+title: Unified five-state framework frozen; thresholds unfrozen
+statement: >
+  统一 State 框架五状态已冻结：待复核 / 重复出现 / 持续关注 / 改善待确认 / 已缓解；
+  具体升级降级规则由 Topic Policy 决定（未冻结）。当前项目决策 GO（设计/原型阶段）；
+  明确不 GO：全班量表、学校台账、强推送 Follow-up、AI 自由学生画像、大而全学情平台。
+
+scope:
+  type: project
+  project_id: app1
+  projects: []
+  task_id: null
+
+domains:
+  - state-engine
+  - baseline
+
+repositories:
+  - teachers-app1
+
+status: active
+verification: verified
+
+verified_against:
+  - source_ref: doc://teachers-app1/docs/App1-MVP-完整项目方案-v1.0-HarmonyOS.md@42f149a
+    revision: 42f149a31136e85ee17847802060f8bb5dd66a93
+    paths:
+      - docs/App1-MVP-完整项目方案-v1.0-HarmonyOS.md
+
+source_refs:
+  - repo://teachers-app1@42f149a/docs/App1-MVP-完整项目方案-v1.0-HarmonyOS.md#§1/§5.3
+  - repo://multica-memory@61c6f0e/memory/app1-frozen-baseline-t01-t02a.json
+
+relations:
+  conflicts_with: []
+  supersedes: []
+  supersedes_note: null
+  drift_of: null
+  norm_reality_conflict: []
+
+review:
+  reason: null
+  triggered_at: null
+
+created_at: 2026-09-06T16:51:00Z
+verified_at: 2026-09-08T14:30:00Z
+updated_at: 2026-09-08T14:30:00Z

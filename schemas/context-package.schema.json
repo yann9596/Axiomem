@@ -1,15 +1,104 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://multica.local/schemas/context-package.schema.json",
-  "title": "Context Package",
+  "title": "Multica Task Context Package V1.1",
+  "description": "Runtime artifact, never canonical. Scope is resolved before any semantic retrieval (assembly_trace.scope_resolved). Cases carry activation_reason; 0 cases is a valid normal result.",
   "type": "object",
-  "additionalProperties": false,
-  "required": ["schema_version", "kind", "task_id", "role", "decision", "known_facts", "relevant_memory", "confidence", "conflicts", "missing_context", "memory_candidates", "generated_at"],
+  "required": ["schema_version", "kind", "request", "scope", "project_phase", "anchor_digest", "team_state_slice", "project_state_slice", "rules", "current_facts", "cases", "open_conflicts", "blocked_by", "task_evidence", "source_refs", "assembly_trace", "generated_at"],
   "properties": {
-    "schema_version": {"const": "1.0"}, "kind": {"const": "context_package"}, "task_id": {"type": "string", "minLength": 1}, "role": {"type": "string", "minLength": 1}, "decision": {"type": "string", "minLength": 1},
-    "known_facts": {"type": "array", "items": {"type": "object", "required": ["fact", "source", "confidence"], "properties": {"fact": {"type": "string"}, "source": {"type": "string"}, "confidence": {"type": "number", "minimum": 0, "maximum": 1}}}},
-    "relevant_memory": {"type": "array", "items": {"type": "object", "required": ["memory_id", "reason"], "properties": {"memory_id": {"type": "string"}, "reason": {"type": "string"}}}},
-    "confidence": {"type": "number", "minimum": 0, "maximum": 1}, "conflicts": {"type": "array", "items": {"type": "string"}}, "missing_context": {"type": "array", "items": {"type": "string"}}, "memory_candidates": {"type": "array", "items": {"type": "string"}}, "generated_at": {"type": "string", "format": "date-time"}
-  }
+    "schema_version": { "const": "1.1" },
+    "kind": { "const": "context_package" },
+    "request": {
+      "type": "object",
+      "required": ["task_id", "role", "project_id"],
+      "properties": {
+        "task_id": { "type": "string" },
+        "role": { "type": "string" },
+        "project_id": { "type": ["string", "null"] }
+      },
+      "additionalProperties": false
+    },
+    "scope": { "$ref": "evidence-ref.schema.json#/$defs/scope" },
+    "project_phase": { "enum": ["incubation", "active_development", "maintenance", "deprecated", "archived", null] },
+    "anchor_digest": {
+      "type": "object",
+      "properties": {
+        "mission": { "type": ["string", "null"] },
+        "target_users": { "type": "array", "items": { "type": "string" } },
+        "relevant_scope": { "type": ["string", "null"] },
+        "relevant_constraints": { "type": "array", "items": { "type": "string" } },
+        "non_goals": { "type": "array", "items": { "type": "string" } },
+        "projects": { "type": "array", "items": { "type": "string" } }
+      },
+      "additionalProperties": false
+    },
+    "team_state_slice": { "type": "array", "items": { "type": "object" } },
+    "project_state_slice": { "type": "array", "items": { "type": "object" } },
+    "rules": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["ref", "statement", "modality", "status", "verification", "authority_refs"],
+        "properties": {
+          "ref": { "$ref": "evidence-ref.schema.json#/$defs/ref_string" },
+          "statement": { "type": "string" },
+          "modality": { "enum": ["MUST", "MUST_NOT", "SHOULD", "SHOULD_NOT"] },
+          "status": { "enum": ["active", "review_needed", "superseded", "revoked"] },
+          "verification": { "$ref": "evidence-ref.schema.json#/$defs/verification" },
+          "authority_refs": { "type": "array", "items": { "type": "string" }, "minItems": 1 },
+          "activation_reason": { "type": "string" }
+        },
+        "additionalProperties": false
+      }
+    },
+    "current_facts": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["ref", "statement", "status", "verification"],
+        "properties": {
+          "ref": { "$ref": "evidence-ref.schema.json#/$defs/ref_string" },
+          "statement": { "type": "string" },
+          "status": { "enum": ["active", "review_needed", "superseded"] },
+          "verification": { "$ref": "evidence-ref.schema.json#/$defs/verification" },
+          "source_refs": { "type": "array", "items": { "type": "string" } },
+          "activation_reason": { "type": "string" }
+        },
+        "additionalProperties": false
+      }
+    },
+    "cases": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["ref", "activation_reason"],
+        "properties": {
+          "ref": { "$ref": "evidence-ref.schema.json#/$defs/ref_string" },
+          "activation_reason": { "type": "string" },
+          "why_it_matters": { "type": "string" }
+        },
+        "additionalProperties": false
+      }
+    },
+    "open_conflicts": { "type": "array", "items": { "type": "object" } },
+    "blocked_by": { "type": "array", "items": { "type": "string" } },
+    "task_evidence": { "type": "array", "items": { "type": "object" } },
+    "source_refs": { "type": "array", "items": { "type": "string" } },
+    "repo_local_pointers": { "type": "array", "items": { "type": "string" } },
+    "assembly_trace": {
+      "type": "object",
+      "required": ["scope_resolved", "case_search_performed", "generated_at"],
+      "properties": {
+        "scope_resolved": { "type": "boolean" },
+        "case_search_performed": { "type": "boolean" },
+        "case_search_trigger": { "type": ["string", "null"] },
+        "role_policy_applied": { "type": "string" },
+        "filters_applied": { "type": "array", "items": { "type": "string" } },
+        "excluded_counts": { "type": "object" },
+        "generated_at": { "type": "string", "format": "date-time" }
+      },
+      "additionalProperties": false
+    },
+    "generated_at": { "type": "string", "format": "date-time" }
+  },
+  "additionalProperties": false
 }
-

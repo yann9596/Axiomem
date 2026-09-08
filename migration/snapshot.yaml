@@ -1,0 +1,62 @@
+migration_id: MIG-2026-09-08-YZT40
+created_at: 2026-09-08T14:30:00Z
+source_version: v1.0-actual
+target_version: v1.1
+mode: bypass_rebuild_on_migration_branch
+
+source_git_refs:
+  team_context:
+    path: D:\AI\multica-memory
+    branch: main
+    head: 61c6f0e            # 2026-09-07; 8 commits since fbc22d3
+    tag: context-v1.0-pre-v1.1-20260908
+    working_tree_untracked:
+      - sources/candidates/app1-t23-thread-projection-engine-delivery.json
+      - sources/candidates/app1-t24-state-projection-engine-delivery.json
+      - sources/candidates/app1-t25-followup-projection-engine-delivery.json
+      - sources/candidates/web-imagegen-repo-local-context-2026-09-06.json
+
+product_repo_refs:
+  teachers-app1:
+    local_path: D:\AI\projects\teachers-app1
+    main: 42f149a31136e85ee17847802060f8bb5dd66a93   # docs-only, clean tree, no remote
+  web-imagegen:
+    local_path: D:\AI\projects\opencode-web-imagegen
+    main: 600225a           # PR#1 merged (provider:gpt published after offline gate); clean tree
+
+backup:
+  bundle: D:\AI\context-backups\multica-memory-pre-v1.1-20260908.bundle
+  untracked_candidates_copied: true
+  remote: null               # F-5: no private remote required
+
+human_decisions_applied:
+  F-2: single git repo, team/project dual logical roots
+  F-3: repo-local context generated directly from main reality + old branch as evidence
+  F-5: tag + bundle rollback baseline (done)
+  F-6: registry phases app1=incubation, web-imagegen=active_development
+
+runtime_index_manifest:
+  v1_legacy:
+    path: index/memory.db
+    type: sqlite_fts5
+    tracked_in_git: true     # V1 deviation, cleaned up at Cutover
+    units: 10
+    chains: 3
+    chain_members: 12
+    relationships: 17
+    source_refs: 16
+    embedding_provider: disabled
+  v1_1_new:
+    path: index/v1.1/memory.db
+    git_tracked: false       # .gitignore'd; rebuilt from zero from V1.1 canonical
+    schema_tables:
+      - memory_object
+      - memory_scope
+      - memory_domain
+      - memory_repo
+      - memory_role_hint
+      - memory_source_ref
+      - memory_relation
+      - checkpoint_entry
+      - project_registry_cache
+      - fts_content

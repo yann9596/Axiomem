@@ -1,0 +1,43 @@
+# Policy: Grooming (V1.1)
+# Authority: design §19; Spec §22
+
+policy_id: grooming
+policy_version: 1.1
+
+definition: >
+  Validate, merge, supersede, demote, compress and scope-adjust canonical
+  memory so that retrievable cognition stays high-precision. Grooming does not
+  capture findings; correctness (source change) and hygiene (grooming) are
+  separated (D-21).
+
+triggers:
+  - project_phase_transition
+  - major_refactor
+  - major_adr_or_contract_change
+  - repeated_false_activation
+  - repeated_context_challenge
+  - semantic_duplicate_accumulation
+  - archived_project_review
+  - low_frequency_periodic_hygiene
+
+actions:
+  - validate
+  - merge
+  - supersede
+  - demote
+  - compress
+  - pointer_or_forget
+  - promote_scope
+
+authority_boundary:
+  reality_retention_changes: bounded_auto
+  normative_governance_changes: authority_required   # grooming never self-grants Authority (§19.4)
+  rule_anchor_semantics_never_auto_changed: true
+
+case_grooming_focus:
+  - authenticity
+  - scenario_boundary
+  - duplicates
+  - rule_coverage
+  - false_activation
+  - independent_explanatory_value

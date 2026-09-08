@@ -1,0 +1,28 @@
+# Replay: YZT-36 — T25 synthetic-only Follow-up Projection Engine
+# Coverage: normal implementation task in App1 (incubation), guardrail rules.
+task_id: replay-yzt-36
+role: software-engineer
+scope: project
+projects: []
+project_id: app1
+decision: "实现 T25 synthetic-only Follow-up Projection Engine，不冻结真实 needed-evidence 规则"
+query: "follow-up projection engine synthetic state policy"
+case_trigger: null
+
+expected:
+  expected_scope: project
+  expected_role: software-engineer
+  must_include:
+    - rule:RULE-APP1-000008
+    - rule:RULE-APP1-000002
+    - rule:RULE-APP1-000006
+    - fact:FACT-APP1-000003
+  must_exclude:
+    - rule:RULE-WIMG
+    - fact:FACT-WIMG
+    - case:CASE-APP1
+  expected_case_search: none
+  expected_conflicts: 0
+  notes: >
+    T25 follows the accepted T06 contract; rules+facts must suffice —
+    case activation stays off (rule/fact coverage check, D-16/17).

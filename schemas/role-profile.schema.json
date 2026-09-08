@@ -1,0 +1,28 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Multica Role Context Profile V1.1",
+  "description": "Stable role policy. Roles never carry dynamic project knowledge (D-03). Only responsibilities / authority_boundary / retrieval_policy.",
+  "type": "object",
+  "required": ["schema_version", "kind", "role", "responsibilities", "authority_boundary", "retrieval_policy"],
+  "properties": {
+    "schema_version": { "const": "1.1" },
+    "kind": { "const": "role_context_profile" },
+    "role": { "$ref": "project-registry.schema.json#/$defs/role_id" },
+    "responsibilities": { "type": "array", "items": { "type": "string" }, "minItems": 1 },
+    "authority_boundary": { "type": "array", "items": { "type": "string" }, "minItems": 1 },
+    "retrieval_policy": {
+      "type": "object",
+      "required": ["baseline_context", "preferred_memory", "conditional_memory", "default_exclude", "priority"],
+      "properties": {
+        "baseline_context": { "type": "array", "items": { "type": "string" }, "minItems": 1 },
+        "preferred_memory": { "type": "array", "items": { "type": "string" }, "minItems": 1 },
+        "conditional_memory": { "type": "array", "items": { "type": "string" }, "minItems": 1 },
+        "default_exclude": { "type": "array", "items": { "type": "string" }, "minItems": 1 },
+        "priority": { "type": "array", "items": { "enum": ["rule", "current_fact", "checkpoint", "case"] }, "minItems": 1 },
+        "case_search_triggers": { "type": "array", "items": { "type": "string" } }
+      },
+      "additionalProperties": false
+    }
+  },
+  "additionalProperties": false
+}

@@ -1,0 +1,62 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Multica Project Registry V1.1",
+  "description": "Canonical source of project id/name/phase and context topology. Phase authority lives ONLY here; team checkpoint phases are derived presentation.",
+  "type": "object",
+  "required": ["schema_version", "kind", "projects"],
+  "properties": {
+    "schema_version": { "const": "1.1" },
+    "kind": { "const": "project_registry" },
+    "updated_at": { "type": "string", "format": "date-time" },
+    "authority_ref": { "$ref": "evidence-ref.schema.json#/$defs/ref_string" },
+    "notes": { "type": "string" },
+    "projects": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["id", "name", "phase", "context_repo", "product_repos", "updated_at", "authority_ref"],
+        "properties": {
+          "id": { "$ref": "#/$defs/project_id" },
+          "name": { "type": "string" },
+          "phase": { "enum": ["incubation", "active_development", "maintenance", "deprecated", "archived"] },
+          "multica_project_id": { "type": "string" },
+          "context_repo": {
+            "type": "object",
+            "required": ["repo", "local_path"],
+            "properties": {
+              "repo": { "type": "string" },
+              "local_path": { "type": "string" },
+              "subtree": { "type": "string" }
+            }
+          },
+          "product_repos": {
+            "type": "array",
+            "minItems": 1,
+            "items": {
+              "type": "object",
+              "required": ["id", "local_path", "default_branch"],
+              "properties": {
+                "id": { "type": "string" },
+                "url": { "type": ["string", "null"] },
+                "default_branch": { "type": "string" },
+                "local_path": { "type": "string" },
+                "has_remote": { "type": "boolean" },
+                "execution_mode": { "type": "string" }
+              }
+            }
+          },
+          "active_roles": { "type": "array", "items": { "$ref": "#/$defs/role_id" } },
+          "on_demand_roles": { "type": "array", "items": { "$ref": "#/$defs/role_id" } },
+          "updated_at": { "type": "string", "format": "date-time" },
+          "authority_ref": { "$ref": "evidence-ref.schema.json#/$defs/ref_string" }
+        },
+        "additionalProperties": false
+      }
+    }
+  },
+  "$defs": {
+    "project_id": { "type": "string", "pattern": "^[a-z0-9][a-z0-9-]{1,62}$" },
+    "role_id": { "enum": ["engineering-lead", "context-engineer", "solution-architect", "software-engineer", "feature-reviewer", "qa", "ops-sre"] }
+  },
+  "additionalProperties": false
+}

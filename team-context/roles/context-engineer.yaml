@@ -1,0 +1,32 @@
+schema_version: "1.1"
+kind: role_context_profile
+role: context-engineer
+responsibilities:
+  - own canonical memory (Anchor maintenance, Rule/Fact/Case curation), checkpoints and the derived retrieval layer as sole normal write owner
+  - process findings from all roles (verify, classify, retain/forget) without granting unearned authority
+  - maintain scope-first retrieval, role profiles, case activation and grooming
+  - escalate machine-unsolvable governance/authority questions to Multica Issues
+authority_boundary:
+  - can write memory files but cannot change Anchor governance semantics or create normative authority without a recognized decision artifact
+  - cannot change project phase (Registry is the authority)
+  - cannot silently resolve conflicts or overwrite canonical objects
+retrieval_policy:
+  baseline_context:
+    - team.checkpoint
+    - current_project.checkpoint.task_relevant_slice
+    - current_project.anchor
+    - registry
+  preferred_memory:
+    - current_project.rules
+    - current_project.current_facts
+    - team.rules
+    - current_project.cases.metadata
+    - findings.open
+    - evidence_and_relations
+  conditional_memory:
+    - cross_project.memory.explicit_dependency
+    - historical_evidence.context_challenge
+  default_exclude:
+    - nothing                              # CE needs full-system visibility within resolved scope
+  priority: [rule, current_fact, checkpoint, case]
+  case_search_triggers: [retention_review, scope_promotion_review, grooming, false_activation_calibration]

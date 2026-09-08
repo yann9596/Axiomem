@@ -1,0 +1,62 @@
+schema_version: "1.1"
+kind: rule
+id: RULE-APP1-000006
+legacy_ids: []
+
+title: Unfrozen items stay draft-only and configurable
+statement: >
+  方案 v1.0 §9 列明的 10 项教师反馈依赖内容（Scene Pack 优先级、高频 Topic、
+  Topic 教师语言、Topic-specific Evidence Policy、Follow-up 入口、首页近期关注、
+  Watchlist 规模、正向 Evidence 交互、Validation 话术、ICP 收窄）在获得教师
+  反馈前不得升级为事实、不得写死进代码或记忆。未冻结期间所有 Scene/Topic/
+  Policy/呈现必须保持配置化或走 Adapter；任何实现不得把教师领域内容硬编码。
+  T20（目标 API Level/设备兼容范围）推迟到工程实现启动前，不阻塞 Domain 设计。
+
+scope:
+  type: project
+  project_id: app1
+  projects: []
+  task_id: null
+
+modality: MUST
+
+domains:
+  - governance
+  - design-freeze
+
+applicability:
+  deterministic:
+    project_phases: [incubation, active_development, maintenance]
+    repos: [teachers-app1]
+    task_types: []
+  semantic:
+    applicable_when:
+      - implementing or freezing anything from the unfrozen teacher-feedback list
+    not_applicable_when:
+      - items explicitly moved into a frozen baseline by a later decision
+
+relevant_roles:
+  - engineering-lead
+  - solution-architect
+  - software-engineer
+  - context-engineer
+
+exception_policy: none
+
+relations:
+  exception_of: null
+  supersedes: []
+  conflicts_with: []
+
+status: active
+verification: verified
+
+authority_refs:
+  - doc://teachers-app1/docs/App1-MVP-完整项目方案-v1.0-HarmonyOS.md@42f149a
+  - multica://issue/YZT-20
+
+source_refs:
+  - repo://teachers-app1@42f149a/docs/App1-MVP-完整项目方案-v1.0-HarmonyOS.md#§9
+
+created_at: 2026-09-06T16:51:00Z
+updated_at: 2026-09-08T14:30:00Z

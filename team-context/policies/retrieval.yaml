@@ -1,0 +1,44 @@
+# Policy: Retrieval (V1.1)
+# Authority: design §21, §22; Spec §16, §17
+# Pipeline: scope first, then lifecycle/verification filters, then typed retrieval.
+
+policy_id: retrieval
+policy_version: 1.1
+
+assembly_pipeline:
+  - resolve_task_scope                    # deterministic; failure => stop, escalate if blocking (never global-then-guess)
+  - read_project_phase_from_registry      # phase read-only from Registry (F-6)
+  - resolve_active_role
+  - load_role_context_profile
+  - load_project_anchor_digest
+  - load_project_checkpoint_slice         # task-relevant slice only
+  - load_team_checkpoint_slice_if_relevant
+  - strict_scope_filter                   # hard boundary: excludes other projects' objects
+  - lifecycle_and_verification_filter     # active only; review_needed/superseded excluded by default
+  - retrieve_applicable_rules
+  - retrieve_relevant_current_facts
+  - decide_case_search_need               # default false (see case-activation policy)
+  - attach_task_evidence
+  - attach_open_conflicts_and_blocking_issue_refs
+  - authority_and_type_priority
+  - apply_context_budget
+  - assemble_context_package
+
+retrieval_implementation:
+  stack: [metadata, fts_bm25, explicit_refs, bounded_llm_semantic_match]
+  vector: optional_later                  # never before scope resolver (Spec §17)
+  ranking_priority: [authority_type_relevance, task_relevance, role_relevance, scenario_relevance, source_verification_validity, context_budget]
+  forbidden_ranking_formulas:
+    - importance × confidence × freshness # V1.0 scoring is retired
+    - numeric confidence weights
+  role_filter_is_default_policy_not_acl: true
+
+defaults:
+  - active_canonical_memory_trusts_last_valid_verification   # no full re-verification per retrieval (D-22)
+  - normal_retrieval_checks: [status, scope, source_metadata_revision_hook, applicability]
+  - full_evidence_revalidation_only_when: [review_needed, source_change_impact, context_challenge, high_risk_decision, explicit_verification_task, conflicting_evidence]
+  - cases: 0 for normal tasks (see case-activation policy)
+
+context_budget:
+  mode: bounded                           # no complex token budget algorithm in v1
+  prefer: smallest sufficient package

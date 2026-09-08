@@ -1,0 +1,25 @@
+# Replay: YZT-9 — Web-ImageGen repo-local context (.ai/context.yaml + docs/repo-context.md)
+# Coverage: cross-repo task (memory repo + product repo), repo-local pointer.
+task_id: replay-yzt-9
+role: software-engineer
+scope: project
+projects: []
+project_id: web-imagegen
+decision: "产品仓补齐 repo-local context 文件，内容来自已存在事实，不动产品行为"
+query: "repo local context yaml repo map architecture"
+case_trigger: null
+
+expected:
+  expected_scope: project
+  expected_role: software-engineer
+  must_include:
+    - anchor:web-imagegen
+    - rule:RULE-WIMG-000001
+    - rule:RULE-WIMG-000002
+    - fact:FACT-WIMG-000001
+  must_exclude:
+    - rule:RULE-APP1
+    - fact:FACT-APP1
+    - case:CASE-APP1
+  expected_case_search: none
+  expected_conflicts: 0
