@@ -2,7 +2,7 @@
   "gate": "A0+A",
   "valid": true,
   "all_objects_schema_valid": true,
-  "legacy_objects_accounted_for": 100,
+  "legacy_objects_accounted_for": 100.0,
   "silent_drop": 0,
   "unresolved_scope": 0,
   "rule_without_valid_authority": 0,
@@ -16,5 +16,21 @@
     "role_profiles": 7,
     "migration_findings": 5
   },
-  "generated_at": "2026-09-08T16:19:01Z"
+  "accounting": {
+    "inventory_source": "explicit_legacy_inventory",
+    "inventory_count": 29,
+    "mapped_count": 30,
+    "silent_drop_ids": [],
+    "map_only_ids": [
+      "registry/projects.yaml"
+    ],
+    "complete": true
+  },
+  "authority": {
+    "rule_count": 14,
+    "invalid_count": 0,
+    "fail_closed": false
+  },
+  "missing_evidence": [],
+  "generated_at": "2026-09-08T17:34:05Z"
 }
