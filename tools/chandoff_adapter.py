@@ -29,10 +29,12 @@ Boundary approved by YZT-58 (owner: 02 Context Engineer):
 - no LLM/model call, no network library, no Canonical write, no Memory
   rebuild. Errors are bounded AdapterError codes; nothing is guessed.
 
-CLI compatibility (approved implementation plan §30.4): the deployed CLI at
-capture time is v0.4.41 (`multica version`). The adapter validates the
-returned issue JSON against its required contract field set and stops
-bounded (`incompatible_cli_contract`) when a future/older CLI drifts.
+CLI compatibility (approved implementation plan §30.4): contract-based,
+never version-pinned. The adapter validates the returned issue JSON
+against its required contract field set and stops bounded
+(`incompatible_cli_contract`) when a deployed CLI drifts; the observed
+deployed version is recorded in the trace (historical capture provenance:
+v0.4.41 at YZT-58).
 """
 from __future__ import annotations
 

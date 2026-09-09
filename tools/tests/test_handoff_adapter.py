@@ -11,6 +11,7 @@ import ast
 import hashlib
 import json
 import shutil
+import subprocess
 import sys
 import unittest
 from pathlib import Path
@@ -564,12 +565,40 @@ class OfflineFixtureTests(unittest.TestCase):
 
 @unittest.skipUnless(shutil.which("multica"), "deployed multica CLI not available")
 class LiveDeployedCliTests(unittest.TestCase):
-    """Read-only evidence against the deployed CLI (v0.4.41)."""
+    """Read-only evidence against the deployed CLI (version-agnostic).
+
+    The trace must report the independently observed deployed CLI version;
+    no historical version is pinned. Response-contract drift stays
+    fail-closed through the required field/shape checks, never a version
+    allow-list.
+    """
+
+    def observe_deployed_version(self) -> str:
+        """Observe `multica version` outside the adapter, so the trace
+        assertion cannot be satisfied by the adapter's own parsing."""
+        try:
+            proc = subprocess.run(["multica", "version", "--output", "json"],
+                                  capture_output=True, text=True,
+                                  encoding="utf-8", timeout=60)
+        except OSError as exc:
+            self.fail(f"multica version invocation failed: {exc}")
+        if proc.returncode != 0:
+            self.fail(f"multica version failed (exit {proc.returncode}): "
+                      f"{proc.stderr.strip()[:200]}")
+        try:
+            data = json.loads(proc.stdout)
+        except json.JSONDecodeError as exc:
+            self.fail(f"multica version returned malformed JSON: {exc}")
+        version = data.get("version") if isinstance(data, dict) else None
+        if not isinstance(version, str) or not version.strip():
+            self.fail("multica version JSON lacks a non-blank 'version' string")
+        return version
 
     def test_live_snapshot_is_byte_stable_and_side_effect_free(self):
         root = TOOLS.parent
         before = {name: tree_manifest(root / name)
                   for name in ("team-context", "project-context", "index")}
+        observed_version = self.observe_deployed_version()
         kwargs = dict(issue_id="YZT-58", target_role="software-engineer",
                       caller_role="engineering-lead", purpose="implementation",
                       explicit_project_id="web-imagegen")
@@ -581,7 +610,7 @@ class LiveDeployedCliTests(unittest.TestCase):
         self.assertEqual(before, after)
         self.assertEqual(first["request"]["task_ref"], "multica://issue/YZT-58")
         self.assertFalse(first["trace"]["guarantees"]["llm_called"])
-        self.assertEqual(first["trace"]["cli"]["version"], "v0.4.41")
+        self.assertEqual(first["trace"]["cli"]["version"], observed_version)
         for argv in first["trace"]["cli"]["commands"]:
             self.assertTrue(adapter._allowlisted(argv))
 

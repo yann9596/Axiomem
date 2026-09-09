@@ -49,8 +49,11 @@ No stable mapping exists -> bounded error `project_mapping_unresolved`, stop.
 
 ## CLI compatibility note (implementation plan §30.4)
 
-- Deployed CLI at capture/verification time: `multica version` → `v0.4.41`
-  (go1.26.8, windows/amd64, commit `4aca890a2`, built 2026-09-07).
+- Deployed CLI at YZT-58 capture/verification time: `multica version` →
+  `v0.4.41` (go1.26.8, windows/amd64, commit `4aca890a2`, built 2026-09-07).
+  Historical provenance, not a version requirement: the live T05 evidence
+  test asserts the trace against the independently observed deployed CLI
+  version, and compatibility is contract-based (YZT-62).
 - Commands used and verified against the deployed help: `issue get <id>
   --output json` (accepts identifier or UUID), `issue comment list <issue>
   --thread <id> --full --output json` (`--full` keeps resolved threads
