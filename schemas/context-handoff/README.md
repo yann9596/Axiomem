@@ -239,3 +239,45 @@ self_check_result contract with no schema change:
   exits 0 READY / 2 REFRESH_REQUIRED / 3 BLOCKED.
 - Ordinary progress chatter and parent_task_ref never enter the
   fingerprint (frozen seven inputs), so they never invalidate a package.
+
+---
+
+## 10. T04B current-role Finding Gate integration (YZT-56; additive, no frozen field changes)
+
+`tools/chandoff_selfcheck.py` now integrates the T01 internal
+`FINDING_GATE(boundary=current_role)` (Approved Runtime Finding Processing
+Trigger supplement §7.1 / §19). The frozen `self_check_request` /
+`self_check_result` schemas are unchanged; no new public Native API.
+
+- Sequence: find the ONE candidate package -> validate task_ref / role /
+  scope-vs-Registry / package status / task_fingerprint / revisions ->
+  scan task-associated open Findings -> current-role Finding Gate -> map
+  the final frozen result.
+- The gate runs only when the candidate package scope is Registry-verified
+  (registered, not archived). Without a valid package or without a
+  verifiable Scope the gate never runs: an open Finding is never used as
+  Context and no Scope is guessed.
+- The T01 gate is reused verbatim (task association, strict Scope filter,
+  deterministic relevance narrowing, verification/classification/retention
+  policy, injected store/mutator seam); no Finding policy is copied or
+  weakened. The gate request is built only from the frozen request inputs
+  (task_ref, current role, task_snapshot); opaque task_refs are not parsed.
+- Deterministic mapping: gate CLEAR -> READY / USE_EXISTING (when the other
+  invariants hold); relevant Finding safely processed AND the
+  Canonical/Context revision changed -> REFRESH_REQUIRED / REFRESH with
+  `memory_revision_changed`; material Finding cannot be safely
+  auto-processed -> BLOCKED / ESCALATE with `package_not_ready`.
+- Frozen vocabulary only: public `reasons` use the frozen T00 set in the
+  frozen order. Finding diagnostics (finding ids, gate escalation reasons
+  such as `authority_gap` / `evidence_conflict`, boundary) live only in the
+  internal trace (`self_check_with_trace`) and test evidence, never in the
+  frozen result schema.
+- Ordinary / non-material / irrelevant / cross-scope Findings never wake
+  the Context Engineer and never expand Scope (`context_engineer_woken`
+  stays false); only gate `escalation.required: true` signals a Context
+  Engineer exception. Scope pollution contributed by gate-relevant Findings
+  is asserted to be 0.
+- Default normal path: `llm_called: false`, full Handoff rebuild 0,
+  Canonical writes 0, Multica runtime dependency 0. A controlled injected
+  mutator is used only to prove "processing changed the revision ->
+  refresh"; it never bypasses governance to write Canonical directly.

@@ -9,17 +9,38 @@ Question answered: can the already-started target role use an existing
 Role Context Package as-is? Never a full rebuild, never an LLM call,
 never a Canonical write.
 
-Check order (frozen design §9.3):
-  package exists -> task_ref match -> role match -> scope valid vs current
-  Registry -> package status READY -> task_fingerprint valid ->
-  memory / registry / role_profile revisions valid.
+Check order (frozen design §9.3 + Approved Runtime Finding Processing
+Trigger supplement §7.1 / §19):
+  1. find the ONE candidate package (none -> REFRESH_REQUIRED; the Finding
+     Gate never runs without a valid package: an open Finding is never used
+     as Context);
+  2. validate task_ref / role / scope-vs-current-Registry / task_fingerprint;
+  3. when (and only when) the package scope is Registry-verified: scan
+     task-associated open Findings and run the internal
+     FINDING_GATE(boundary=current_role) — the T01 gate is reused verbatim
+     (no policy copy, no Scope guessing, no Adapter logic);
+  4. compare memory / registry / role_profile revisions (computed AFTER the
+     gate so processing-induced Canonical changes surface);
+  5. map the final frozen result:
+       gate CLEAR + all invariants hold              -> READY / USE_EXISTING
+       relevant Finding safely processed AND the
+       Canonical/Context revision changed            -> REFRESH_REQUIRED / REFRESH
+       material Finding cannot be safely
+       auto-processed                                -> BLOCKED / ESCALATE
 
 Reason vocabulary is the frozen T00 set (`chandoff.SELF_CHECK_REASONS`).
 Verdict is policy computed from data, never an LLM choice:
 
 - any failed check            -> REFRESH_REQUIRED / REFRESH
 - candidate package BLOCKED   -> BLOCKED / ESCALATE (reason package_not_ready)
+- gate BLOCKED                -> BLOCKED / ESCALATE (reason package_not_ready;
+                                 finding diagnostics stay in the internal
+                                 trace, never in the frozen result)
 - everything passes           -> READY / USE_EXISTING
+
+Ordinary / non-material / irrelevant / cross-scope Findings never wake the
+Context Engineer and never expand Scope: only gate `escalation.required`
+signals an exception for the Context Engineer.
 
 Fingerprint revalidation without a request-level `project` field
 (the frozen `self_check_request` carries none, and T00 is not amended):
@@ -52,6 +73,7 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 import chandoff  # noqa: E402
+import chandoff_plan as plan  # noqa: E402  (T01 internal Finding Gate, reused)
 from cutil import RUNTIME, TEAM  # noqa: E402
 from yaml_mini import parse_yaml  # noqa: E402
 
@@ -64,6 +86,11 @@ RESULT_SCHEMA = "context-handoff/self-check-result.schema.json"
 
 ARCHIVED_PHASE = "archived"
 DEFAULT_STORE = RUNTIME / "handoff-packages"
+
+# Supplement §7.1/§19: SELF_CHECK anchors the current-role Finding Gate.
+# The boundary is exactly the CURRENT role of this request — never a handoff
+# target role (that boundary belongs to prepare_handoff).
+GATE_BOUNDARY = "current_role"
 
 _REASON_ORDER = {name: i for i, name in enumerate(chandoff.SELF_CHECK_REASONS)}
 
@@ -106,6 +133,11 @@ def frozen_contract_supports_self_check() -> dict:
         "frozen_self_check_request_shape": sorted(request_schema.get("required") or []) ==
             ["kind", "role", "schema_version", "task_ref", "task_snapshot"],
         "request_has_no_project_field": "project" not in (request_schema.get("properties") or {}),
+        # T01 supplement compatibility, reused (never re-derived here): the
+        # frozen self_check contract can host FINDING_GATE without amendment.
+        "frozen_self_check_contract_can_support_finding_gate":
+            plan.compatibility_check().get(
+                "frozen_self_check_contract_can_support_finding_gate", False),
     }
     return {"ok": all(checks.values()), **checks}
 
@@ -274,8 +306,14 @@ def _sort_reasons(reasons: list) -> list:
 
 
 def check_package(request: dict, envelope: dict, *, registry=None,
-                  current=None) -> dict:
-    """Deterministic self_check against ONE candidate result envelope."""
+                  current=None, gate: dict | None = None) -> dict:
+    """Deterministic self_check against ONE candidate result envelope.
+
+    gate: already-run FINDING_GATE(boundary=current_role) result, or None
+    when no Registry-verified package scope existed to anchor the scan
+    (missing package, unverifiable scope). Without a gate result no Finding
+    is used as Context and no Scope is guessed.
+    """
     reasons: list = []
     built = envelope.get("built_from") or {}
     package = envelope.get("package") or {}
@@ -300,6 +338,22 @@ def check_package(request: dict, envelope: dict, *, registry=None,
     else:
         reasons.append("package_stale")
 
+    # Current-role Finding Gate (supplement §7.1/§19), after package
+    # validation. Gate BLOCKED means a relevant material Finding cannot be
+    # safely auto-processed: stop and escalate. The frozen reason vocabulary
+    # stays package-level (`package_not_ready`); finding diagnostics live
+    # only in the internal gate trace. Gate processing that changed
+    # Canonical state makes the package's built-from revision outdated.
+    if gate is not None:
+        if gate.get("status") == "BLOCKED":
+            reasons.append("package_not_ready")
+            return _emit(envelope, "BLOCKED", "ESCALATE", reasons)
+        if gate.get("canonical_changed"):
+            reasons.append("memory_revision_changed")
+
+    # Revisions are compared against the post-gate CURRENT state so a
+    # controlled Canonical-changing disposition surfaces as
+    # memory_revision_changed instead of hiding behind a pre-gate snapshot.
     cur = current or current_revisions()
     for key, reason in (
         ("memory_revision", "memory_revision_changed"),
@@ -340,29 +394,130 @@ def _emit(envelope, status: str, action: str, reasons: list) -> dict:
     return result
 
 
-def self_check(request: dict, *, packages=None, store_dir=None, registry=None,
-               current=None) -> dict:
-    """Native API entry: frozen request in, frozen result out. No LLM, no writes."""
-    global LLM_CALLED, CANONICAL_WRITES, MULTICA_RUNTIME_DEPENDENCIES
+def _missing_result(reasons: list) -> dict:
+    result = {
+        "schema_version": "1.1",
+        "kind": "self_check_result",
+        "status": "REFRESH_REQUIRED",
+        "reasons": _sort_reasons(reasons),
+        "action": "REFRESH",
+    }
+    out_errors = _validate(RESULT_SCHEMA, result)
+    if out_errors:
+        raise RuntimeError("self_check_result schema invalid: " +
+                           "; ".join(out_errors[:8]))
+    return result
+
+
+def internal_gate_request(request: dict) -> dict:
+    """Framework-neutral FINDING_GATE request built only from frozen inputs.
+
+    The frozen self_check_request carries task_ref, role and task_snapshot;
+    the gate's target role is exactly the CURRENT role of this request
+    (never a handoff target role). No opaque task_ref parsing, no Scope
+    guessing, no Adapter logic: the Scope comes only from the verified
+    package scope handed in by the caller.
+    """
+    return {
+        "task_ref": request["task_ref"],
+        "target": {"role": request["role"]},
+        "task_snapshot": request.get("task_snapshot") or {},
+    }
+
+
+def _gate_store(findings: list | None, finding_store):
+    """T01 finding-store seam, reused: injected store wins; a plain findings
+    list is wrapped in a MemoryFindingStore; with neither, the default
+    runtime store (`runtime/v1.1/findings/`, framework-neutral filesystem)
+    is scanned. Never a Multica runtime dependency."""
+    if finding_store is not None:
+        return finding_store
+    if findings is None:
+        return plan.RuntimeFindingStore()
+    return plan.MemoryFindingStore(findings)
+
+
+def run_current_role_finding_gate(request: dict, task_scope: dict, *,
+                                  findings: list | None = None,
+                                  finding_store=None, mutator=None) -> dict:
+    """Internal FINDING_GATE(boundary=current_role) via the T01 gate.
+
+    Reuses T01's task association, strict Scope filter, deterministic
+    relevance narrowing, verification/classification/retention policy and
+    injected store/mutator seam verbatim. No policy is copied and none is
+    weakened.
+    """
+    return plan.finding_gate(
+        internal_gate_request(request), task_scope,
+        findings=findings, store=_gate_store(findings, finding_store),
+        mutator=mutator, boundary=GATE_BOUNDARY)
+
+
+def finding_pollution(gate: dict | None, task_scope: dict | None) -> int:
+    """Cross-scope pollution contributed by gate-relevant Findings (must be 0)."""
+    if not gate or task_scope is None:
+        return 0
+    return sum(
+        1 for f in (gate.get("relevant_open_findings") or [])
+        if plan._pollutes(plan._finding_as_doc(f), task_scope))
+
+
+def self_check_with_trace(request: dict, *, packages=None, store_dir=None,
+                          registry=None, current=None, findings=None,
+                          finding_store=None, mutator=None) -> dict:
+    """self_check plus the non-schema Finding-Gate trace (diagnostics only).
+
+    The frozen public result never carries finding diagnostics; they live
+    in the returned trace (internal trace / test evidence only). Sequence
+    per supplement §7.1/§19: find current Package -> validate task/role/
+    scope/status/fingerprint/revisions -> scan task-associated open
+    Findings -> FINDING_GATE(boundary=current_role) -> map final result.
+    """
     errors = _validate(REQUEST_SCHEMA, request)
     if errors:
         raise ValueError("invalid self_check_request: " + "; ".join(errors[:8]))
     envelope, missing = resolve_candidate(
         request, packages=packages, store_dir=store_dir)
     if envelope is None:
-        result = {
-            "schema_version": "1.1",
-            "kind": "self_check_result",
-            "status": "REFRESH_REQUIRED",
-            "reasons": _sort_reasons(missing),
-            "action": "REFRESH",
+        # No valid package: the Finding Gate never runs, an open Finding is
+        # never used as Context, and nothing is guessed.
+        return {
+            "result": _missing_result(missing),
+            "finding_gate": None,
+            "gate_ran": False,
+            "verified_scope": None,
+            "context_engineer_woken": False,
+            "scope_pollution_from_findings": 0,
         }
-        out_errors = _validate(RESULT_SCHEMA, result)
-        if out_errors:
-            raise RuntimeError("self_check_result schema invalid: " +
-                               "; ".join(out_errors[:8]))
-        return result
-    return check_package(request, envelope, registry=registry, current=current)
+    scope = (envelope.get("package") or {}).get("scope") or {}
+    verified_scope = None
+    if (scope.get("type") in ("project", "cross_project")
+            and _registry_ok(scope, _load_registry(registry))):
+        verified_scope = scope
+    gate = None
+    if verified_scope is not None:
+        gate = run_current_role_finding_gate(
+            request, verified_scope, findings=findings,
+            finding_store=finding_store, mutator=mutator)
+    result = check_package(request, envelope, registry=registry,
+                           current=current, gate=gate)
+    return {
+        "result": result,
+        "finding_gate": gate,
+        "gate_ran": gate is not None,
+        "verified_scope": verified_scope,
+        "context_engineer_woken": bool((gate or {}).get("context_engineer_woken")),
+        "scope_pollution_from_findings": finding_pollution(gate, verified_scope),
+    }
+
+
+def self_check(request: dict, *, packages=None, store_dir=None, registry=None,
+               current=None, findings=None, finding_store=None, mutator=None) -> dict:
+    """Native API entry: frozen request in, frozen result out. No LLM, no writes."""
+    return self_check_with_trace(
+        request, packages=packages, store_dir=store_dir, registry=registry,
+        current=current, findings=findings, finding_store=finding_store,
+        mutator=mutator)["result"]
 
 
 def main() -> int:

@@ -477,5 +477,326 @@ class CliTests(unittest.TestCase):
             self.assertEqual(proc.returncode, 3)
 
 
+class ControlledMutator:
+    """Controlled injected mutator: proves only that a safely-applied
+    Canonical-changing disposition maps to REFRESH (supplement §7.1).
+    It never bypasses governance: unsafe dispositions stay blocked."""
+
+    def apply(self, finding_doc, disposition):
+        if disposition == "carry_to_checkpoint":
+            return {"applied": True, "canonical_changed": True,
+                    "block_reason": None}
+        if disposition in plan.SAFE_DISPOSITIONS:
+            return {"applied": True, "canonical_changed": False,
+                    "block_reason": None}
+        return {"applied": False, "canonical_changed": False,
+                "block_reason": "unsafe_in_controlled_test"}
+
+
+class FindingGateSelfCheckTests(unittest.TestCase):
+    """T04B corrective delta (YZT-56): current-role Finding Gate inside
+    SELF_CHECK (Runtime Finding Processing Trigger supplement §7.1 / §19)."""
+
+    @classmethod
+    def setUpClass(cls):
+        cls.envelope = prepare_envelope()
+        cls.request = sample_request()
+        cls.consistent = dict(cls.envelope["built_from"])
+
+    def _store(self, *findings) -> "plan.MemoryFindingStore":
+        return plan.MemoryFindingStore([copy.deepcopy(f) for f in findings])
+
+    def test_frozen_contract_supports_current_role_finding_gate(self):
+        report = sc.frozen_contract_supports_self_check()
+        self.assertTrue(report["ok"], report)
+        self.assertTrue(report["frozen_self_check_contract_can_support_finding_gate"])
+
+    def test_no_open_findings_is_clear_and_ready(self):
+        trace = sc.self_check_with_trace(
+            self.request, packages=[self.envelope], current=self.consistent,
+            findings=[])
+        self.assertEqual(trace["result"]["status"], "READY")
+        self.assertEqual(trace["result"]["reasons"], [])
+        self.assertTrue(trace["gate_ran"])
+        self.assertEqual(trace["finding_gate"]["status"], "CLEAR")
+        self.assertEqual(trace["finding_gate"]["relevant_open_findings"], [])
+        self.assertFalse(trace["context_engineer_woken"])
+        self.assertEqual(trace["scope_pollution_from_findings"], 0)
+
+    def test_task_unrelated_finding_is_not_context(self):
+        other_task = finding(
+            "FIND-WIMG-T56-000001",
+            task_id="multica://issue/YZT-99",
+            summary="provider architecture durable candidate for another task",
+            intent="durable_candidate",
+        )
+        trace = sc.self_check_with_trace(
+            self.request, packages=[self.envelope], current=self.consistent,
+            findings=[other_task])
+        self.assertEqual(trace["result"]["status"], "READY")
+        self.assertEqual(trace["finding_gate"]["relevant_open_findings"], [])
+        self.assertFalse(trace["finding_gate"]["escalation"]["required"])
+        self.assertFalse(trace["context_engineer_woken"])
+
+    def test_role_unrelated_finding_is_ignored(self):
+        qa_obs = finding(
+            "FIND-WIMG-T56-000002",
+            summary="qa milestone coverage pytest count",
+            intent="observation",
+            discovered_by="qa",
+        )
+        trace = sc.self_check_with_trace(
+            self.request, packages=[self.envelope], current=self.consistent,
+            findings=[qa_obs])
+        self.assertEqual(trace["result"]["status"], "READY")
+        self.assertEqual(trace["result"]["reasons"], [])
+        self.assertEqual(trace["finding_gate"]["relevant_open_findings"], [])
+        self.assertFalse(trace["context_engineer_woken"])
+
+    def test_safe_processing_with_unchanged_revision_stays_ready(self):
+        obs = finding(
+            "FIND-WIMG-T56-000003",
+            summary="worktree pytest coverage count note",
+            intent="observation",
+            verification="verified",
+            discovered_by="software-engineer",
+        )
+        store = self._store(obs)
+        trace = sc.self_check_with_trace(
+            self.request, packages=[self.envelope], current=self.consistent,
+            findings=None, finding_store=store)
+        self.assertEqual(trace["result"]["status"], "READY", trace["result"])
+        self.assertEqual(trace["result"]["action"], "USE_EXISTING")
+        self.assertEqual(trace["result"]["reasons"], [])
+        gate = trace["finding_gate"]
+        self.assertEqual(gate["status"], "CLEAR")
+        self.assertFalse(gate["canonical_changed"])
+        processed = [f["finding_id"] for f in gate["processed_findings"]]
+        self.assertEqual(processed, ["FIND-WIMG-T56-000003"])
+        self.assertEqual(store.load_open(), [])
+        # injected T01 store seam: the processed status persists there
+        saved = store._items[0]
+        self.assertEqual(saved["status"], "processed")
+        self.assertEqual(saved["disposition"], "pointer")
+        self.assertFalse(gate["escalation"]["required"])
+        self.assertFalse(gate["context_engineer_woken"])
+
+    def test_controlled_revision_change_requires_refresh(self):
+        material = finding(
+            "FIND-WIMG-T56-000004",
+            summary="verified provider worktree constraint carried to checkpoint",
+            detail="This verified constraint belongs in the project checkpoint.",
+            intent="durable_candidate",
+            verification="verified",
+            disposition="carry_to_checkpoint",
+        )
+        trace = sc.self_check_with_trace(
+            self.request, packages=[self.envelope], current=self.consistent,
+            findings=[material], mutator=ControlledMutator())
+        result = trace["result"]
+        self.assertEqual(result["status"], "REFRESH_REQUIRED")
+        self.assertEqual(result["action"], "REFRESH")
+        self.assertEqual(result["reasons"], ["memory_revision_changed"])
+        self.assertEqual(validate_schema(RES_S, result), [])
+        gate = trace["finding_gate"]
+        self.assertEqual(gate["status"], "REFRESH_REQUIRED")
+        self.assertTrue(gate["canonical_changed"])
+        self.assertFalse(gate["escalation"]["required"])
+        self.assertFalse(gate["context_engineer_woken"])
+
+    def test_unverified_durable_finding_blocks_and_escalates(self):
+        material = finding(
+            "FIND-WIMG-T56-000005",
+            summary="architecture ownership of provider routing must become a Rule",
+            detail="This unverified durable candidate would change canonical constraints.",
+            intent="durable_candidate",
+            verification="unverified",
+        )
+        trace = sc.self_check_with_trace(
+            self.request, packages=[self.envelope], current=self.consistent,
+            findings=[material])
+        result = trace["result"]
+        self.assertEqual(result["status"], "BLOCKED")
+        self.assertEqual(result["action"], "ESCALATE")
+        self.assertEqual(result["reasons"], ["package_not_ready"])
+        self.assertEqual(validate_schema(RES_S, result), [])
+        gate = trace["finding_gate"]
+        self.assertEqual(gate["status"], "BLOCKED")
+        self.assertTrue(gate["escalation"]["required"])
+        self.assertEqual(gate["escalation"]["reason"], "authority_gap")
+        self.assertFalse(gate["context_engineer_woken"])
+
+    def test_context_challenge_conflict_blocks_and_escalates(self):
+        challenge = finding(
+            "FIND-WIMG-T56-000006",
+            summary="context challenge: recorded provider fact conflicts with repo",
+            detail="The current_fact CONTRADICTION-001 evidence conflicts with the repo.",
+            intent="context_challenge",
+        )
+        trace = sc.self_check_with_trace(
+            self.request, packages=[self.envelope], current=self.consistent,
+            findings=[challenge])
+        result = trace["result"]
+        self.assertEqual(result["status"], "BLOCKED")
+        self.assertEqual(result["action"], "ESCALATE")
+        self.assertEqual(result["reasons"], ["package_not_ready"])
+        self.assertEqual(validate_schema(RES_S, result), [])
+        gate = trace["finding_gate"]
+        self.assertEqual(gate["status"], "BLOCKED")
+        self.assertTrue(gate["escalation"]["required"])
+        self.assertEqual(gate["escalation"]["reason"], "evidence_conflict")
+        self.assertFalse(gate["context_engineer_woken"])
+
+    def test_multiple_findings_only_one_relevant(self):
+        relevant = finding(
+            "FIND-WIMG-T56-000007",
+            summary="provider worktree note for this software engineer",
+            intent="observation",
+            discovered_by="software-engineer",
+        )
+        qa_obs = finding(
+            "FIND-WIMG-T56-000008",
+            summary="qa milestone coverage pytest count",
+            intent="observation",
+            discovered_by="qa",
+        )
+        other_task = finding(
+            "FIND-WIMG-T56-000009",
+            task_id="multica://issue/YZT-99",
+            summary="provider durable candidate for another task",
+            intent="durable_candidate",
+        )
+        trace = sc.self_check_with_trace(
+            self.request, packages=[self.envelope], current=self.consistent,
+            findings=[relevant, qa_obs, other_task])
+        gate = trace["finding_gate"]
+        rel_ids = [f["finding_id"] for f in gate["relevant_open_findings"]]
+        self.assertEqual(rel_ids, ["FIND-WIMG-T56-000007"])
+        self.assertEqual(trace["result"]["status"], "READY")
+        self.assertFalse(gate["escalation"]["required"])
+        self.assertFalse(gate["context_engineer_woken"])
+
+    def test_cross_scope_finding_pollution_is_zero(self):
+        app1_finding = finding(
+            "FIND-APP1-T56-000001",
+            project_id="app1",
+            summary="App1 teacher VOC follow-up reminder hypothesis",
+            intent="observation",
+            discovered_by="software-engineer",
+        )
+        trace = sc.self_check_with_trace(
+            self.request, packages=[self.envelope], current=self.consistent,
+            findings=[app1_finding])
+        self.assertEqual(trace["result"]["status"], "READY")
+        self.assertEqual(trace["finding_gate"]["relevant_open_findings"], [])
+        self.assertEqual(trace["scope_pollution_from_findings"], 0)
+
+    def test_gate_boundary_is_exactly_current_role(self):
+        trace = sc.self_check_with_trace(
+            self.request, packages=[self.envelope], current=self.consistent,
+            findings=[])
+        self.assertEqual(sc.GATE_BOUNDARY, "current_role")
+        self.assertEqual(trace["finding_gate"]["boundary"], "current_role")
+        gate_req = sc.internal_gate_request(self.request)
+        self.assertEqual(gate_req["target"]["role"], self.request["role"])
+        self.assertEqual(gate_req["task_ref"], self.request["task_ref"])
+
+    def test_gate_diagnostics_stay_out_of_frozen_result(self):
+        material = finding(
+            "FIND-WIMG-T56-000005",
+            summary="architecture ownership of provider routing must become a Rule",
+            intent="durable_candidate",
+            verification="unverified",
+        )
+        trace = sc.self_check_with_trace(
+            self.request, packages=[self.envelope], current=self.consistent,
+            findings=[material])
+        result = trace["result"]
+        self.assertLessEqual(
+            set(result),
+            {"schema_version", "kind", "status", "reasons", "action",
+             "package_id"})
+        self.assertTrue(set(result["reasons"]).issubset(set(chandoff.SELF_CHECK_REASONS)))
+        self.assertNotIn("FIND-WIMG-T56-000005", json.dumps(result))
+        self.assertNotIn("authority_gap", json.dumps(result))
+        # diagnostics survive only in the internal trace
+        self.assertEqual(trace["finding_gate"]["escalation"]["reason"],
+                         "authority_gap")
+
+    def test_gate_skipped_without_valid_package(self):
+        material = finding(
+            "FIND-WIMG-T56-000010",
+            summary="provider routing durable candidate",
+            intent="durable_candidate",
+        )
+        trace = sc.self_check_with_trace(
+            self.request, packages=[], findings=[material])
+        self.assertFalse(trace["gate_ran"])
+        self.assertIsNone(trace["finding_gate"])
+        self.assertEqual(trace["result"]["status"], "REFRESH_REQUIRED")
+        self.assertEqual(trace["result"]["reasons"], ["package_missing"])
+        self.assertFalse(trace["context_engineer_woken"])
+
+    def test_gate_skipped_without_verified_scope(self):
+        material = finding(
+            "FIND-WIMG-T56-000011",
+            summary="provider routing durable candidate",
+            intent="durable_candidate",
+        )
+        registry = {"projects": [{"id": "app1", "phase": "incubation"}]}
+        trace = sc.self_check_with_trace(
+            self.request, packages=[self.envelope], registry=registry,
+            current=self.consistent, findings=[material])
+        self.assertFalse(trace["gate_ran"])
+        self.assertIsNone(trace["finding_gate"])
+        self.assertIsNone(trace["verified_scope"])
+        self.assertNotEqual(trace["result"]["status"], "BLOCKED")
+        self.assertEqual(trace["result"]["status"], "REFRESH_REQUIRED")
+        self.assertIn("scope_mismatch", trace["result"]["reasons"])
+
+    def test_gate_result_is_deterministic(self):
+        def findings():
+            return [
+                finding("FIND-WIMG-T56-000012",
+                        summary="provider worktree note for this software engineer",
+                        intent="observation", discovered_by="software-engineer"),
+                finding("FIND-WIMG-T56-000013",
+                        summary="qa milestone coverage pytest count",
+                        intent="observation", discovered_by="qa"),
+            ]
+
+        first = sc.self_check_with_trace(
+            self.request, packages=[self.envelope], current=self.consistent,
+            findings=findings())
+        second = sc.self_check_with_trace(
+            self.request, packages=[self.envelope], current=self.consistent,
+            findings=findings())
+        self.assertEqual(first, second)
+        self.assertEqual(first["result"]["reasons"], [])
+        self.assertEqual(
+            [f["finding_id"] for f in first["finding_gate"]["relevant_open_findings"]],
+            ["FIND-WIMG-T56-000012"])
+
+
+def finding(fid: str, **kwargs) -> dict:
+    doc = {
+        "schema_version": "1.1",
+        "kind": "finding",
+        "finding_id": fid,
+        "project_id": "web-imagegen",
+        "task_id": "multica://issue/YZT-55",
+        "summary": "provider constraint observation",
+        "detail": None,
+        "intent": "observation",
+        "source_refs": ["repo://web-imagegen@main/README.md"],
+        "discovered_by": "software-engineer",
+        "status": "open",
+        "verification": "unverified",
+        "created_at": "2026-09-09T00:00:00Z",
+    }
+    doc.update(kwargs)
+    return doc
+
+
 if __name__ == "__main__":
     unittest.main()
