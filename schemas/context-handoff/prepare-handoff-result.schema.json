@@ -1,0 +1,37 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "prepare_handoff_result (frozen T00, YZT-46)",
+  "description": "Native API output of prepare_handoff. status is exactly READY | PARTIAL | BLOCKED. package reuses the existing V1.1 Task Context Package schema (context-package.schema.json) — no second package schema exists. BLOCKED stops the normal downstream handoff; PARTIAL keeps gaps visible in package.blocked_by / package.open_conflicts.",
+  "type": "object",
+  "required": ["schema_version", "kind", "status", "package_id", "task_ref", "role", "built_from", "package", "escalation"],
+  "properties": {
+    "schema_version": { "$ref": "context-handoff/handoff-common.schema.json#/$defs/schema_version" },
+    "kind": { "const": "prepare_handoff_result" },
+    "status": { "$ref": "context-handoff/handoff-common.schema.json#/$defs/prepare_handoff_status" },
+    "package_id": { "$ref": "context-handoff/handoff-common.schema.json#/$defs/package_id" },
+    "task_ref": { "$ref": "context-handoff/handoff-common.schema.json#/$defs/task_ref" },
+    "role": { "$ref": "context-handoff/handoff-common.schema.json#/$defs/role" },
+    "built_from": { "$ref": "context-handoff/handoff-common.schema.json#/$defs/built_from" },
+    "package": {
+      "$ref": "context-package.schema.json",
+      "description": "The V1.1 Task Context Package itself. request.task_id carries the task_ref string, request.role must equal role, and request/scope must match the plan scope."
+    },
+    "escalation": { "$ref": "context-handoff/handoff-common.schema.json#/$defs/escalation" },
+    "generated_at": { "type": "string", "format": "date-time" }
+  },
+  "additionalProperties": false,
+  "allOf": [
+    {
+      "if": { "type": "object", "properties": { "status": { "const": "BLOCKED" } } },
+      "then": {
+        "type": "object",
+        "properties": {
+          "escalation": {
+            "type": "object",
+            "properties": { "required": { "const": true } }
+          }
+        }
+      }
+    }
+  ]
+}

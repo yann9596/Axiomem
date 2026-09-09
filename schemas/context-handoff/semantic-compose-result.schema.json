@@ -1,0 +1,24 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "semantic_compose_result (frozen T00, YZT-46)",
+  "description": "Structured output of the bounded semantic compose phase (Phase B). Free-form prose as the sole result is forbidden: every selection is an ID into the PLAN's candidate set, and FINALIZE (Phase C, deterministic) verifies subset relations. The executor is the caller's own model (caller_llm_via_skill) until a replaceable semantic runtime takes over; this contract does not change.",
+  "type": "object",
+  "required": ["schema_version", "kind", "plan_id", "selected_rule_ids", "selected_fact_ids", "selected_case_ids", "checkpoint_entry_ids", "conflict_ids", "semantic_notes"],
+  "properties": {
+    "schema_version": { "$ref": "context-handoff/handoff-common.schema.json#/$defs/schema_version" },
+    "kind": { "const": "semantic_compose_result" },
+    "plan_id": { "$ref": "context-handoff/handoff-common.schema.json#/$defs/plan_id" },
+    "selected_rule_ids": { "type": "array", "items": { "type": "string", "pattern": "\\S" } },
+    "selected_fact_ids": { "type": "array", "items": { "type": "string", "pattern": "\\S" } },
+    "selected_case_ids": { "type": "array", "items": { "type": "string", "pattern": "\\S" } },
+    "checkpoint_entry_ids": { "type": "array", "items": { "type": "string", "pattern": "\\S" } },
+    "conflict_ids": { "type": "array", "items": { "type": "string", "pattern": "\\S" } },
+    "anchor_digest": { "$ref": "context-handoff/handoff-common.schema.json#/$defs/anchor_digest" },
+    "context_summary": {
+      "type": "string",
+      "description": "Optional bounded minimum-sufficient summary. It never replaces structured selection and can never add objects outside the plan."
+    },
+    "semantic_notes": { "type": "array", "items": { "type": "string" } }
+  },
+  "additionalProperties": false
+}

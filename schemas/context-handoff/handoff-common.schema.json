@@ -1,0 +1,190 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Context Handoff Native API — shared definitions (T00, YZT-46)",
+  "description": "Framework-neutral $defs shared by the prepare_handoff / self_check contract schemas. Only opaque external references (task_ref URIs) cross the boundary; the schemas stay free of any dispatch-framework vocabulary, enforced by the boundary scan (tools/chandoff.py scan).",
+  "type": "object",
+  "$defs": {
+    "schema_version": { "const": "1.1" },
+    "sha256_hex": {
+      "type": "string",
+      "pattern": "^sha256:[0-9a-f]{64}$",
+      "description": "Content revision / fingerprint encoding: sha256 over the canonical serialization defined in the T00 contract."
+    },
+    "task_ref": {
+      "$ref": "evidence-ref.schema.json#/$defs/ref_string",
+      "description": "Opaque external task identity URI, e.g. multica://issue/YZT-46. Core never parses framework semantics behind it."
+    },
+    "role": { "$ref": "project-registry.schema.json#/$defs/role_id" },
+    "project_id": { "$ref": "project-registry.schema.json#/$defs/project_id" },
+    "purpose": {
+      "type": "string",
+      "pattern": "\\S",
+      "description": "Framework-neutral reason for the handoff, e.g. implementation, design, review, qa_verification, decision."
+    },
+    "task_snapshot": {
+      "type": "object",
+      "description": "Framework-neutral normalized task definition. The adapter (outside Core) normalizes it from whatever framework the task lives in.",
+      "required": ["title", "description", "requirements", "acceptance_criteria", "relevant_decisions"],
+      "properties": {
+        "title": { "type": "string", "pattern": "\\S" },
+        "description": { "type": "string" },
+        "requirements": { "type": "array", "items": { "type": "string" } },
+        "acceptance_criteria": { "type": "array", "items": { "type": "string" } },
+        "relevant_decisions": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "Explicit human/framework decisions that define the task. Ordinary progress chatter never enters here and never feeds the task fingerprint."
+        },
+        "parent_task_ref": {
+          "type": "string",
+          "pattern": "^(multica|adr|doc|repo|registry|project|git)://\\S+$",
+          "description": "Optional opaque reference to the parent task. Omitted when absent."
+        }
+      },
+      "additionalProperties": false
+    },
+    "anchor_digest": {
+      "type": "object",
+      "description": "Deterministic project anchor digest (same shape produced by the V1.1 builder).",
+      "required": ["mission"],
+      "properties": {
+        "mission": { "type": "string" },
+        "target_users": { "type": "array", "items": { "type": "string" } },
+        "relevant_scope": { "type": "string" },
+        "relevant_constraints": { "type": "array", "items": { "type": "string" } },
+        "non_goals": { "type": "array", "items": { "type": "string" } },
+        "projects": { "type": "array", "items": { "type": "string" } }
+      },
+      "additionalProperties": false
+    },
+    "built_from": {
+      "type": "object",
+      "description": "Provenance block: what the package was built from. Enables deterministic self_check validity decisions.",
+      "required": ["task_fingerprint", "memory_revision", "registry_revision", "role_profile_revision"],
+      "properties": {
+        "task_fingerprint": { "$ref": "context-handoff/handoff-common.schema.json#/$defs/sha256_hex" },
+        "memory_revision": { "$ref": "context-handoff/handoff-common.schema.json#/$defs/sha256_hex" },
+        "registry_revision": { "$ref": "context-handoff/handoff-common.schema.json#/$defs/sha256_hex" },
+        "role_profile_revision": { "$ref": "context-handoff/handoff-common.schema.json#/$defs/sha256_hex" }
+      },
+      "additionalProperties": false
+    },
+    "escalation": {
+      "type": "object",
+      "required": ["required"],
+      "properties": {
+        "required": { "type": "boolean" },
+        "reason": { "type": "string" }
+      },
+      "additionalProperties": false
+    },
+    "candidate_ref": {
+      "type": "object",
+      "required": ["id"],
+      "properties": {
+        "id": { "type": "string", "pattern": "\\S" },
+        "ref": { "$ref": "evidence-ref.schema.json#/$defs/ref_string" },
+        "summary": { "type": "string" }
+      },
+      "additionalProperties": false
+    },
+    "rule_candidate": {
+      "type": "object",
+      "required": ["id"],
+      "properties": {
+        "id": { "type": "string", "pattern": "\\S" },
+        "ref": { "$ref": "evidence-ref.schema.json#/$defs/ref_string" },
+        "summary": { "type": "string" },
+        "modality": { "enum": ["MUST", "MUST_NOT", "SHOULD", "SHOULD_NOT"] },
+        "status": { "enum": ["active", "review_needed", "superseded", "revoked"] }
+      },
+      "additionalProperties": false
+    },
+    "fact_candidate": {
+      "type": "object",
+      "required": ["id"],
+      "properties": {
+        "id": { "type": "string", "pattern": "\\S" },
+        "ref": { "$ref": "evidence-ref.schema.json#/$defs/ref_string" },
+        "summary": { "type": "string" },
+        "status": { "enum": ["active", "review_needed", "superseded"] }
+      },
+      "additionalProperties": false
+    },
+    "checkpoint_entry": {
+      "type": "object",
+      "description": "A bounded slice entry of a team or project checkpoint (same id space as checkpoint.schema.json entries).",
+      "required": ["checkpoint", "section", "id", "summary", "refs"],
+      "properties": {
+        "checkpoint": { "type": "string" },
+        "section": { "enum": ["confirmed", "open", "conflicts"] },
+        "id": { "type": "string", "pattern": "\\S" },
+        "summary": { "type": "string" },
+        "refs": { "type": "array", "items": { "type": "string" }, "minItems": 1 }
+      },
+      "additionalProperties": false
+    },
+    "evidence_candidate": {
+      "type": "object",
+      "description": "Evidence passes through PLAN deterministically; the semantic phase never selects evidence.",
+      "required": ["ref"],
+      "properties": {
+        "ref": { "$ref": "evidence-ref.schema.json#/$defs/ref_string" },
+        "note": { "type": "string" }
+      },
+      "additionalProperties": false
+    },
+    "conflict_candidate": {
+      "type": "object",
+      "required": ["id", "summary", "refs"],
+      "properties": {
+        "id": { "type": "string", "pattern": "\\S" },
+        "summary": { "type": "string" },
+        "refs": { "type": "array", "items": { "type": "string" }, "minItems": 1 },
+        "source": { "type": "string" }
+      },
+      "additionalProperties": false
+    },
+    "semantic_job": {
+      "enum": [
+        "interpret_task_intent",
+        "select_task_applicable_rules_from_candidates",
+        "select_decision_relevant_facts_from_candidates",
+        "compress_checkpoint_slice",
+        "perform_case_scenario_match_when_case_search_already_allowed",
+        "phrase_visible_conflicts",
+        "produce_minimum_sufficient_context"
+      ],
+      "description": "The only semantic work the bounded semantic phase may be asked to perform. Anything outside this vocabulary is forbidden."
+    },
+    "case_search": {
+      "type": "object",
+      "required": ["allowed"],
+      "properties": {
+        "allowed": { "type": "boolean" }
+      },
+      "additionalProperties": false
+    },
+    "package_id": {
+      "type": "string",
+      "pattern": "^CTX-[A-Za-z0-9][A-Za-z0-9._:-]*$",
+      "description": "Role Context Package identifier. One task may hold several packages (one per role, versioned)."
+    },
+    "plan_id": {
+      "type": "string",
+      "pattern": "^PLAN-[A-Za-z0-9][A-Za-z0-9._:-]*$"
+    },
+    "prepare_handoff_status": {
+      "enum": ["READY", "PARTIAL", "BLOCKED"],
+      "description": "Exact and exhaustive for prepare_handoff_result.status."
+    },
+    "self_check_status": {
+      "enum": ["READY", "REFRESH_REQUIRED", "BLOCKED"],
+      "description": "Exact and exhaustive for self_check_result.status."
+    },
+    "self_check_action": {
+      "enum": ["USE_EXISTING", "REFRESH", "ESCALATE"],
+      "description": "Exact and exhaustive for self_check_result.action; paired 1:1 with self_check_status."
+    }
+  }
+}

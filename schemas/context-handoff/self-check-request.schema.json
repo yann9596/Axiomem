@@ -1,0 +1,20 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "self_check_request (frozen T00, YZT-46)",
+  "description": "Native API input for self_check: can the already-started target role use an existing Role Context Package as-is? Default path performs no full rebuild. Framework-neutral; the caller supplies the same normalized task snapshot it would send to prepare_handoff.",
+  "type": "object",
+  "required": ["schema_version", "kind", "task_ref", "role", "task_snapshot"],
+  "properties": {
+    "schema_version": { "$ref": "context-handoff/handoff-common.schema.json#/$defs/schema_version" },
+    "kind": { "const": "self_check_request" },
+    "task_ref": { "$ref": "context-handoff/handoff-common.schema.json#/$defs/task_ref" },
+    "role": { "$ref": "context-handoff/handoff-common.schema.json#/$defs/role" },
+    "task_snapshot": { "$ref": "context-handoff/handoff-common.schema.json#/$defs/task_snapshot" },
+    "package_ref": {
+      "type": "string",
+      "pattern": "\\S",
+      "description": "Optional pointer to the candidate package (e.g. its package_id or its storage locator). Omitted when the caller wants the latest valid package for task_ref + role resolved by the memory system."
+    }
+  },
+  "additionalProperties": false
+}

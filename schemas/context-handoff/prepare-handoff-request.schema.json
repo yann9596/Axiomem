@@ -1,0 +1,43 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "prepare_handoff_request (frozen T00, YZT-46)",
+  "description": "Native API input for prepare_handoff: ask the Memory System to build and validate the minimum sufficient Role Context Package for one task execution of one target role. Framework-neutral; the adapter normalizes the task snapshot from whatever framework holds the task.",
+  "type": "object",
+  "required": ["schema_version", "kind", "task_ref", "project", "target", "purpose", "task_snapshot", "caller"],
+  "properties": {
+    "schema_version": { "$ref": "context-handoff/handoff-common.schema.json#/$defs/schema_version" },
+    "kind": { "const": "prepare_handoff_request" },
+    "task_ref": { "$ref": "context-handoff/handoff-common.schema.json#/$defs/task_ref" },
+    "project": {
+      "type": "object",
+      "required": ["project_id"],
+      "properties": {
+        "project_id": { "$ref": "context-handoff/handoff-common.schema.json#/$defs/project_id" }
+      },
+      "additionalProperties": false
+    },
+    "target": {
+      "type": "object",
+      "required": ["role"],
+      "properties": {
+        "role": { "$ref": "context-handoff/handoff-common.schema.json#/$defs/role" }
+      },
+      "additionalProperties": false
+    },
+    "purpose": { "$ref": "context-handoff/handoff-common.schema.json#/$defs/purpose" },
+    "task_snapshot": { "$ref": "context-handoff/handoff-common.schema.json#/$defs/task_snapshot" },
+    "caller": {
+      "type": "object",
+      "required": ["role"],
+      "properties": {
+        "role": { "$ref": "context-handoff/handoff-common.schema.json#/$defs/role" }
+      },
+      "additionalProperties": false
+    },
+    "options": {
+      "type": "object",
+      "description": "Open build options owned by the caller (e.g. max_context_tier). Content policy only; dispatch-framework keys are forbidden by the boundary scan."
+    }
+  },
+  "additionalProperties": false
+}

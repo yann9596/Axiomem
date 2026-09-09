@@ -22,6 +22,28 @@ by converting YAML → JSON before validation).
 | `replay-metric-evidence.schema.json` | Gate C input: `migration/replay-evidence/<task_id>.yaml` |
 | `replay-expectation-lock.schema.json` | Gate C input: `migration/replay-expectation.lock.yaml` |
 
+## Context Handoff Native API (T00, YZT-46)
+
+`context-handoff/` holds the frozen Native API contract schemas for
+`prepare_handoff` / `self_check` (see `context-handoff/README.md` for the
+authoritative contract, implementation mapping, task fingerprint contract and
+framework-neutral boundary):
+
+| Schema | Contract object |
+|---|---|
+| `context-handoff/handoff-common.schema.json` | shared $defs (task_snapshot, anchor_digest, built_from, candidates, status enums) |
+| `context-handoff/prepare-handoff-request.schema.json` | `prepare_handoff_request` |
+| `context-handoff/context-plan.schema.json` | `context_plan` (deterministic PLAN output) |
+| `context-handoff/semantic-compose-result.schema.json` | `semantic_compose_result` (bounded semantic phase output) |
+| `context-handoff/prepare-handoff-result.schema.json` | `prepare_handoff_result` (package `$ref`s `context-package.schema.json` — no duplicate package schema) |
+| `context-handoff/self-check-request.schema.json` | `self_check_request` |
+| `context-handoff/self-check-result.schema.json` | `self_check_result` |
+
+`tools/chandoff.py` holds the executable side of the contract (task
+fingerprint, built_from content revisions, PLAN-subset validation,
+framework-neutral boundary scan); `tools/tests/test_context_handoff_contracts.py`
+verifies all of it.
+
 ## Shared grammar (from evidence-ref.schema.json)
 
 - **scope**: `team | cross_project | project | task` with deterministic

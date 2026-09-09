@@ -1,0 +1,46 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "self_check_result (frozen T00, YZT-46)",
+  "description": "Native API output of self_check. status is exactly READY | REFRESH_REQUIRED | BLOCKED, paired 1:1 with action USE_EXISTING | REFRESH | ESCALATE. REFRESH_REQUIRED/BLOCKED must carry at least one reason; gaps are never hidden.",
+  "type": "object",
+  "required": ["schema_version", "kind", "status", "reasons", "action"],
+  "properties": {
+    "schema_version": { "$ref": "context-handoff/handoff-common.schema.json#/$defs/schema_version" },
+    "kind": { "const": "self_check_result" },
+    "status": { "$ref": "context-handoff/handoff-common.schema.json#/$defs/self_check_status" },
+    "package_id": { "$ref": "context-handoff/handoff-common.schema.json#/$defs/package_id" },
+    "reasons": {
+      "type": "array",
+      "items": { "type": "string", "pattern": "\\S" },
+      "description": "Standard vocabulary (frozen unless the contract is extended): package_missing, package_stale, task_changed, role_mismatch, scope_mismatch, package_not_ready, memory_revision_changed, registry_revision_changed, role_profile_revision_changed."
+    },
+    "action": { "$ref": "context-handoff/handoff-common.schema.json#/$defs/self_check_action" }
+  },
+  "additionalProperties": false,
+  "allOf": [
+    {
+      "if": { "type": "object", "properties": { "status": { "const": "READY" } } },
+      "then": { "type": "object", "properties": { "action": { "const": "USE_EXISTING" } } }
+    },
+    {
+      "if": { "type": "object", "properties": { "status": { "const": "REFRESH_REQUIRED" } } },
+      "then": { "type": "object", "properties": { "action": { "const": "REFRESH" }, "reasons": { "type": "array", "minItems": 1 } } }
+    },
+    {
+      "if": { "type": "object", "properties": { "status": { "const": "BLOCKED" } } },
+      "then": { "type": "object", "properties": { "action": { "const": "ESCALATE" }, "reasons": { "type": "array", "minItems": 1 } } }
+    },
+    {
+      "if": { "type": "object", "properties": { "action": { "const": "USE_EXISTING" } } },
+      "then": { "type": "object", "properties": { "status": { "const": "READY" } } }
+    },
+    {
+      "if": { "type": "object", "properties": { "action": { "const": "REFRESH" } } },
+      "then": { "type": "object", "properties": { "status": { "const": "REFRESH_REQUIRED" } } }
+    },
+    {
+      "if": { "type": "object", "properties": { "action": { "const": "ESCALATE" } } },
+      "then": { "type": "object", "properties": { "status": { "const": "BLOCKED" } } }
+    }
+  ]
+}

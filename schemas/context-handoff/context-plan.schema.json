@@ -1,0 +1,63 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "context_plan (frozen T00, YZT-46)",
+  "description": "Deterministic PLAN output of prepare_handoff (Phase A). Purely deterministic: hard filters are complete here; the bounded semantic phase only sees the candidates below and may only perform the listed semantic_jobs. PLAN is framework-neutral and never calls a model.",
+  "type": "object",
+  "required": ["schema_version", "kind", "plan_id", "task_ref", "role", "scope", "hard_filters_applied", "case_search", "candidates", "semantic_jobs"],
+  "properties": {
+    "schema_version": { "$ref": "context-handoff/handoff-common.schema.json#/$defs/schema_version" },
+    "kind": { "const": "context_plan" },
+    "plan_id": { "$ref": "context-handoff/handoff-common.schema.json#/$defs/plan_id" },
+    "task_ref": { "$ref": "context-handoff/handoff-common.schema.json#/$defs/task_ref" },
+    "role": { "$ref": "context-handoff/handoff-common.schema.json#/$defs/role" },
+    "scope": { "$ref": "evidence-ref.schema.json#/$defs/scope" },
+    "hard_filters_applied": {
+      "type": "array",
+      "items": { "type": "string", "pattern": "\\S" },
+      "description": "Names of the deterministic hard filters applied while building candidates (scope, lifecycle, verification, role eligibility, project phase, authority presence, case hard gate, context budget)."
+    },
+    "case_search": { "$ref": "context-handoff/handoff-common.schema.json#/$defs/case_search" },
+    "candidates": {
+      "type": "object",
+      "description": "The complete bounded candidate set. Every object the semantic phase may select must appear here; selected IDs in semantic_compose_result must be a subset of these IDs.",
+      "required": ["anchor", "checkpoint_entries", "rules", "facts", "cases", "evidence", "conflicts"],
+      "properties": {
+        "anchor": {
+          "type": "array",
+          "items": { "$ref": "context-handoff/handoff-common.schema.json#/$defs/candidate_ref" }
+        },
+        "checkpoint_entries": {
+          "type": "array",
+          "items": { "$ref": "context-handoff/handoff-common.schema.json#/$defs/checkpoint_entry" }
+        },
+        "rules": {
+          "type": "array",
+          "items": { "$ref": "context-handoff/handoff-common.schema.json#/$defs/rule_candidate" }
+        },
+        "facts": {
+          "type": "array",
+          "items": { "$ref": "context-handoff/handoff-common.schema.json#/$defs/fact_candidate" }
+        },
+        "cases": {
+          "type": "array",
+          "items": { "$ref": "context-handoff/handoff-common.schema.json#/$defs/candidate_ref" }
+        },
+        "evidence": {
+          "type": "array",
+          "items": { "$ref": "context-handoff/handoff-common.schema.json#/$defs/evidence_candidate" }
+        },
+        "conflicts": {
+          "type": "array",
+          "items": { "$ref": "context-handoff/handoff-common.schema.json#/$defs/conflict_candidate" }
+        }
+      },
+      "additionalProperties": false
+    },
+    "semantic_jobs": {
+      "type": "array",
+      "items": { "$ref": "context-handoff/handoff-common.schema.json#/$defs/semantic_job" }
+    },
+    "generated_at": { "type": "string", "format": "date-time" }
+  },
+  "additionalProperties": false
+}
