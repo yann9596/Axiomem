@@ -207,3 +207,35 @@ package is schema-validated against both `context-package.schema.json` and
 `case:<id>` prefixes so Gate C replay expectation locks remain valid. PLAN
 candidate identity is unaffected: candidates carry canonical `id`s; `ref` is
 optional and only used for real URI targets.
+
+---
+
+## 9. T04 SELF_CHECK implementation notes (YZT-57; additive, no frozen field changes)
+
+	ools/chandoff_selfcheck.py implements the frozen self_check_request /
+self_check_result contract with no schema change:
+
+- Resolution: explicit package_ref matches package_id (or store locator
+  <package_id>.json) and is never silently swapped; without a ref, the
+  latest envelope for (task_ref, role) is taken from caller-supplied
+  packages or the gitignored store untime/v1.1/handoff-packages/.
+- ole_mismatch / 	ask_changed are reported when the caller names a
+  package by ref whose role/task differ; without a ref, a wrong role/task
+  simply resolves to package_missing.
+- Fingerprint revalidation reconstructs xplicit_scope from the candidate
+  package scope: project packages reconstruct exactly
+  ({"project_id": ...} == frozen equest.project shape); cross-project
+  packages cannot reconstruct the original primary project id, so their
+  fingerprint validity is unprovable and fails closed as package_stale
+  (uncertainty demotes; a wrong READY is worse than an unnecessary refresh).
+- package_stale also covers missing/incomplete uilt_from provenance.
+- PARTIAL packages -> REFRESH_REQUIRED + package_not_ready (the caller
+  may still choose to proceed per the frozen PARTIAL semantics);
+  BLOCKED packages -> BLOCKED / ESCALATE + package_not_ready.
+- Scope validity: the package scope must still resolve against the CURRENT
+  Registry (registered, not archived) or scope_mismatch is reported.
+- Reasons are deduplicated and emitted in the frozen vocabulary order.
+- CLI: context_cli.py self-check --request-file ... [--package ...]...
+  exits 0 READY / 2 REFRESH_REQUIRED / 3 BLOCKED.
+- Ordinary progress chatter and parent_task_ref never enter the
+  fingerprint (frozen seven inputs), so they never invalidate a package.

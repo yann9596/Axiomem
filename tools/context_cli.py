@@ -10,6 +10,9 @@ stays untouched and remains production until human Cutover.
   gate-b               Gate B hard acceptance tests (incl. YZT-22 probes)
   migrate-replay       Gate C: historical replay (expected vs actual)
   compat get|retrieve  old-call translation only (writes nothing)
+  prepare-handoff-*    T01/T03 deterministic handoff PLAN / FINALIZE
+  semantic-compose     T02 bounded semantic compose validation
+  self-check           T04 deterministic SELF_CHECK (READY/REFRESH/BLOCKED)
 """
 from __future__ import annotations
 
@@ -68,6 +71,15 @@ def main() -> int:
     fin.add_argument("--result-file", required=True)
     fin.add_argument("--request-file", required=True)
 
+    chk = sub.add_parser("self-check",
+                         help="T04 deterministic SELF_CHECK (no model call)")
+    chk.add_argument("--request-file", required=True)
+    chk.add_argument("--package", action="append", default=[],
+                     help="prepare_handoff_result envelope file (repeatable)")
+    chk.add_argument("--store", default=None,
+                     help="runtime package store dir "
+                          "(default runtime/v1.1/handoff-packages)")
+
     args = parser.parse_args()
     try:
         if args.command == "validate-canonical":
@@ -118,6 +130,15 @@ def main() -> int:
             result = chandoff_finalize.finalize_handoff(plan_input, compose_input, request)
             print(json.dumps(result, ensure_ascii=False, indent=2))
             return 0 if result.get("status") in {"READY", "PARTIAL", "BLOCKED"} else 2
+        if args.command == "self-check":
+            import chandoff_selfcheck
+            request = json.loads(Path(args.request_file).read_text(encoding="utf-8"))
+            packages = [json.loads(Path(p).read_text(encoding="utf-8"))
+                        for p in args.package]
+            result = chandoff_selfcheck.self_check(
+                request, packages=packages or None, store_dir=args.store)
+            print(json.dumps(result, ensure_ascii=False, indent=2))
+            return {"READY": 0, "REFRESH_REQUIRED": 2, "BLOCKED": 3}[result["status"]]
         if args.command == "compat":
             import ccompat
             if args.compat_command == "get":

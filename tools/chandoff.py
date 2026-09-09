@@ -216,6 +216,9 @@ def scan_handoff_contracts() -> dict:
     finalize_path = self_path.with_name("chandoff_finalize.py")
     if finalize_path.exists():
         targets.append(finalize_path)
+    selfcheck_path = self_path.with_name("chandoff_selfcheck.py")
+    if selfcheck_path.exists():
+        targets.append(selfcheck_path)
     report = {}
     for t in targets:
         text = t.read_text(encoding="utf-8")
