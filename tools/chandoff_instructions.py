@@ -889,8 +889,6 @@ def verify(baseline_path: Path, capture_dir: Path, mode: str = "stage",
     report = {
         "ok": not drift,
         "mode": mode,
-        "baseline_file": Path(baseline_path).name,
-        "capture_dir_name": Path(capture_dir).name,
         "checks": checks,
         "checks_failed": failed,
         "checks_passed_count": len(checks) - len(failed),

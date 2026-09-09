@@ -1,6 +1,4 @@
 {
-  "baseline_file": "baseline.json",
-  "capture_dir_name": "t08-endcap-1849351456",
   "checks": [
     {
       "detail": "found by exact name",
