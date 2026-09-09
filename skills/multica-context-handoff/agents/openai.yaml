@@ -1,0 +1,3 @@
+interface:
+  display_name: "Multica Context Handoff"
+  short_description: "Run the frozen PREPARE_HANDOFF / SELF_CHECK context handoff protocol"
