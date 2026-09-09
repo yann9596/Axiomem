@@ -1,0 +1,213 @@
+{
+  "agents": [
+    {
+      "agent_id": "24f04aba-7da9-4371-bf89-685d7505a411",
+      "agent_name": "01 Engineering Lead",
+      "anchor_tail": "一波，不必等 Human Merge。不要依赖 stage 屏障：stage 只在 done/cancelled 时唤醒 parent。创建子 Issue 时必须写明「Ready for Review 后要在 parent 提及 01」。\n",
+      "baseline_binding_ids": [
+        "647db182-b4fd-4f78-bc45-874b9f6e358c",
+        "aab482f9-b9ff-4b78-8394-1f13e2b319c0"
+      ],
+      "baseline_bindings": [
+        {
+          "enabled": true,
+          "id": "647db182-b4fd-4f78-bc45-874b9f6e358c",
+          "name": "adaptive-task-planning"
+        },
+        {
+          "enabled": true,
+          "id": "aab482f9-b9ff-4b78-8394-1f13e2b319c0",
+          "name": "parent-handoff-wake"
+        }
+      ],
+      "instruction_length": 842,
+      "instruction_sha256": "sha256:30ac23c94dc2c875c7d39a01c92c8400c20ffee34974c7793ae2aa6c1a32d3b7",
+      "role": "engineering-lead"
+    },
+    {
+      "agent_id": "8bc546ab-ffd8-4aa6-ad30-58583346c065",
+      "agent_name": "02 Context Engineer",
+      "anchor_tail": "e** 发评论，并用 [@01 Engineering Lead](mention://agent/24f04aba-7da9-4371-bf89-685d7505a411) 提及 Lead。只在子 Issue 写结果不会唤醒 Lead。\n",
+      "baseline_binding_ids": [
+        "6db4a1dc-4f6c-47be-8416-2fc8756c546a",
+        "aab482f9-b9ff-4b78-8394-1f13e2b319c0",
+        "fe50d0ce-e57c-4991-bfde-bef2983aa00c"
+      ],
+      "baseline_bindings": [
+        {
+          "enabled": true,
+          "id": "6db4a1dc-4f6c-47be-8416-2fc8756c546a",
+          "name": "canonical-memory-governance"
+        },
+        {
+          "enabled": true,
+          "id": "aab482f9-b9ff-4b78-8394-1f13e2b319c0",
+          "name": "parent-handoff-wake"
+        },
+        {
+          "enabled": true,
+          "id": "fe50d0ce-e57c-4991-bfde-bef2983aa00c",
+          "name": "minimum-context-package"
+        }
+      ],
+      "instruction_length": 614,
+      "instruction_sha256": "sha256:15ac35d9d56a127bd6b729ba56004ce5ce91790f8cb277d24487b69c18f0e5c6",
+      "role": "context-engineer"
+    },
+    {
+      "agent_id": "1303827b-73d1-4d71-a461-00b93e4b4418",
+      "agent_name": "03 Solution Architect",
+      "anchor_tail": "e** 发评论，并用 [@01 Engineering Lead](mention://agent/24f04aba-7da9-4371-bf89-685d7505a411) 提及 Lead。只在子 Issue 写结果不会唤醒 Lead。\n",
+      "baseline_binding_ids": [
+        "368260ac-3702-468d-a21a-c90cc8a52bd1",
+        "aab482f9-b9ff-4b78-8394-1f13e2b319c0"
+      ],
+      "baseline_bindings": [
+        {
+          "enabled": true,
+          "id": "368260ac-3702-468d-a21a-c90cc8a52bd1",
+          "name": "solution-design-brief"
+        },
+        {
+          "enabled": true,
+          "id": "aab482f9-b9ff-4b78-8394-1f13e2b319c0",
+          "name": "parent-handoff-wake"
+        }
+      ],
+      "instruction_length": 747,
+      "instruction_sha256": "sha256:8378c82b547c5be4339cafe742405f2570a909d8d94f6052fbcff5f254fe6194",
+      "role": "solution-architect"
+    },
+    {
+      "agent_id": "fa7d16a7-2dae-4994-80b8-7435b3fcca47",
+      "agent_name": "04 Software Engineer",
+      "anchor_tail": ") 提及 Lead。只在子 Issue 写 Ready for Review **不会**唤醒 Lead（in_review 不是终态）。评论含：结论、测试证据、分支/commit、建议下一波、阻塞。禁止未提及 parent 就结束回合。\n",
+      "baseline_binding_ids": [
+        "aab482f9-b9ff-4b78-8394-1f13e2b319c0",
+        "b68797d6-9459-43fd-92ce-d45cd82f3fbe"
+      ],
+      "baseline_bindings": [
+        {
+          "enabled": true,
+          "id": "aab482f9-b9ff-4b78-8394-1f13e2b319c0",
+          "name": "parent-handoff-wake"
+        },
+        {
+          "enabled": true,
+          "id": "b68797d6-9459-43fd-92ce-d45cd82f3fbe",
+          "name": "implementation-handoff"
+        }
+      ],
+      "instruction_length": 838,
+      "instruction_sha256": "sha256:44b9db9b26daaeacbcb23e30c6682a0d8b7231d35f02c7f91de0f6bcce8ab873",
+      "role": "software-engineer"
+    },
+    {
+      "agent_id": "b6335f8e-8147-45f7-aac0-8079d85423b5",
+      "agent_name": "05 Feature Reviewer",
+      "anchor_tail": "e** 发评论，并用 [@01 Engineering Lead](mention://agent/24f04aba-7da9-4371-bf89-685d7505a411) 提及 Lead。只在子 Issue 写结果不会唤醒 Lead。\n",
+      "baseline_binding_ids": [
+        "aab482f9-b9ff-4b78-8394-1f13e2b319c0",
+        "db4b6822-5b69-4958-b33b-7ecb3261f151",
+        "e964f7b1-3cb4-4bc7-902b-16c57e73cefe"
+      ],
+      "baseline_bindings": [
+        {
+          "enabled": true,
+          "id": "aab482f9-b9ff-4b78-8394-1f13e2b319c0",
+          "name": "parent-handoff-wake"
+        },
+        {
+          "enabled": true,
+          "id": "db4b6822-5b69-4958-b33b-7ecb3261f151",
+          "name": "external-signal-research"
+        },
+        {
+          "enabled": true,
+          "id": "e964f7b1-3cb4-4bc7-902b-16c57e73cefe",
+          "name": "feature-correctness-review"
+        }
+      ],
+      "instruction_length": 814,
+      "instruction_sha256": "sha256:51cd0ddd07b7d8443a098e6586240dd191bfe3e67768fac31c80aea4a8ba744d",
+      "role": "feature-reviewer"
+    },
+    {
+      "agent_id": "30ce43d4-97a7-42a8-ab3e-78df0d894702",
+      "agent_name": "06 QA",
+      "anchor_tail": "e** 发评论，并用 [@01 Engineering Lead](mention://agent/24f04aba-7da9-4371-bf89-685d7505a411) 提及 Lead。只在子 Issue 写结果不会唤醒 Lead。\n",
+      "baseline_binding_ids": [
+        "29f68c43-0772-47a8-a860-d946a100c789",
+        "aab482f9-b9ff-4b78-8394-1f13e2b319c0"
+      ],
+      "baseline_bindings": [
+        {
+          "enabled": true,
+          "id": "29f68c43-0772-47a8-a860-d946a100c789",
+          "name": "milestone-quality-gate"
+        },
+        {
+          "enabled": true,
+          "id": "aab482f9-b9ff-4b78-8394-1f13e2b319c0",
+          "name": "parent-handoff-wake"
+        }
+      ],
+      "instruction_length": 691,
+      "instruction_sha256": "sha256:822867b9797195e53532b61543daac9265436ae5b9963da183679187c6de0625",
+      "role": "qa"
+    }
+  ],
+  "applies_to": "T13-owned application; checked by tools/chandoff_instructions.py verify",
+  "checks": [
+    {
+      "id": "agents_present",
+      "rule": "all six role agents exist by exact name"
+    },
+    {
+      "id": "agent_ids_stable",
+      "rule": "agent ids equal the baseline recorded ids"
+    },
+    {
+      "id": "instruction_digests_match",
+      "rule": "sha256 of the exact instructions text equals baseline"
+    },
+    {
+      "id": "anchor_tails_match",
+      "rule": "last 120 chars equal baseline anchor_tail"
+    },
+    {
+      "id": "binding_sets_match",
+      "rule": "sorted (id, name, enabled) binding tuples equal baseline"
+    },
+    {
+      "id": "skill_catalog_stage_state",
+      "rule": "stage mode: workspace catalog has no multica-context-handoff"
+    },
+    {
+      "id": "skill_catalog_apply_state",
+      "rule": "apply mode: catalog has multica-context-handoff whose SKILL.md content digest equals skill.skill_md_digest"
+    },
+    {
+      "id": "no_in_scope_binding_in_stage_mode",
+      "rule": "stage mode: none of the six agents is bound to multica-context-handoff"
+    }
+  ],
+  "drift_codes": [
+    "agent_missing",
+    "agent_id_changed",
+    "instruction_digest_mismatch",
+    "anchor_tail_mismatch",
+    "binding_set_drift",
+    "skill_state_drift"
+  ],
+  "drift_is_fatal": true,
+  "fail_closed": true,
+  "issue_ref": "YZT-63",
+  "schema_version": "T08-preconditions/1.0",
+  "skill": {
+    "bundle_digest": "sha256:986bbc42390536b73649d0cf0667a79f39a3a96607b7acd59d041910b7b8bbaa",
+    "name": "multica-context-handoff",
+    "skill_md_digest": "sha256:f62fa00300cb9b63fab749965ea9671c87121986e62307c22397272aba419834"
+  },
+  "updated_at_is_provenance_only": true
+}

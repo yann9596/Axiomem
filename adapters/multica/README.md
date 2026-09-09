@@ -99,6 +99,27 @@ agents, mentions, assignments, or new runs.
 
 ---
 
+# T08 — Staged Agent Instruction Contract (YZT-63)
+
+`agent-instructions/` holds the T08 staging bundle (YZT-63): a read-only live
+baseline of the six collaboration-role agents (stable ids, exact instruction
+digests, complete skill-binding ids, workspace skill catalog state), the
+deterministic candidate instruction blocks for 01/02/03/04/05/06, the additive
+skill-binding plan for exactly 01/03/04/05/06 (02 stays exception-path only),
+the fail-closed precondition manifest, the exact rollback bundle, and the
+static §33 audit (`T08_REPORT.md`). Executable tool:
+`tools/chandoff_instructions.py` (`capture` / `build` / `verify` / `audit`,
+read-only allowlist only).
+
+STAGED, NOT ACTIVE: nothing in the bundle has been applied to the live
+workspace — no `multica skill import/refresh`, no `multica agent update`, no
+`agent skills add/set/remove`, no assignment/mention/publish/run trigger.
+Application is T13-owned controlled enablement. The bundle references the
+accepted T07 Skill by name; deterministic policy is never copied into the
+instructions.
+
+---
+
 # T06 — Non-trigger `/note` CONTEXT_HANDOFF publisher + discovery (YZT-59)
 
 Implementation: `tools/chandoff_note.py`. Adapter-only state machine on top of

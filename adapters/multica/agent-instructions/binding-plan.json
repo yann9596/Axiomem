@@ -1,0 +1,145 @@
+{
+  "activation": "owned by T13 controlled enablement; T08 executes none of these operations",
+  "additive_only": true,
+  "bindings": [
+    {
+      "agent_id": "24f04aba-7da9-4371-bf89-685d7505a411",
+      "agent_name": "01 Engineering Lead",
+      "agent_role": "engineering-lead",
+      "baseline_binding_ids": [
+        "647db182-b4fd-4f78-bc45-874b9f6e358c",
+        "aab482f9-b9ff-4b78-8394-1f13e2b319c0"
+      ],
+      "baseline_bindings": [
+        {
+          "enabled": true,
+          "id": "647db182-b4fd-4f78-bc45-874b9f6e358c",
+          "name": "adaptive-task-planning"
+        },
+        {
+          "enabled": true,
+          "id": "aab482f9-b9ff-4b78-8394-1f13e2b319c0",
+          "name": "parent-handoff-wake"
+        }
+      ],
+      "declarative_command": "multica agent skills add <agent-id> --skill-ids <skill-id-assigned-at-import>",
+      "op": "add"
+    },
+    {
+      "agent_id": "1303827b-73d1-4d71-a461-00b93e4b4418",
+      "agent_name": "03 Solution Architect",
+      "agent_role": "solution-architect",
+      "baseline_binding_ids": [
+        "368260ac-3702-468d-a21a-c90cc8a52bd1",
+        "aab482f9-b9ff-4b78-8394-1f13e2b319c0"
+      ],
+      "baseline_bindings": [
+        {
+          "enabled": true,
+          "id": "368260ac-3702-468d-a21a-c90cc8a52bd1",
+          "name": "solution-design-brief"
+        },
+        {
+          "enabled": true,
+          "id": "aab482f9-b9ff-4b78-8394-1f13e2b319c0",
+          "name": "parent-handoff-wake"
+        }
+      ],
+      "declarative_command": "multica agent skills add <agent-id> --skill-ids <skill-id-assigned-at-import>",
+      "op": "add"
+    },
+    {
+      "agent_id": "fa7d16a7-2dae-4994-80b8-7435b3fcca47",
+      "agent_name": "04 Software Engineer",
+      "agent_role": "software-engineer",
+      "baseline_binding_ids": [
+        "aab482f9-b9ff-4b78-8394-1f13e2b319c0",
+        "b68797d6-9459-43fd-92ce-d45cd82f3fbe"
+      ],
+      "baseline_bindings": [
+        {
+          "enabled": true,
+          "id": "aab482f9-b9ff-4b78-8394-1f13e2b319c0",
+          "name": "parent-handoff-wake"
+        },
+        {
+          "enabled": true,
+          "id": "b68797d6-9459-43fd-92ce-d45cd82f3fbe",
+          "name": "implementation-handoff"
+        }
+      ],
+      "declarative_command": "multica agent skills add <agent-id> --skill-ids <skill-id-assigned-at-import>",
+      "op": "add"
+    },
+    {
+      "agent_id": "b6335f8e-8147-45f7-aac0-8079d85423b5",
+      "agent_name": "05 Feature Reviewer",
+      "agent_role": "feature-reviewer",
+      "baseline_binding_ids": [
+        "aab482f9-b9ff-4b78-8394-1f13e2b319c0",
+        "db4b6822-5b69-4958-b33b-7ecb3261f151",
+        "e964f7b1-3cb4-4bc7-902b-16c57e73cefe"
+      ],
+      "baseline_bindings": [
+        {
+          "enabled": true,
+          "id": "aab482f9-b9ff-4b78-8394-1f13e2b319c0",
+          "name": "parent-handoff-wake"
+        },
+        {
+          "enabled": true,
+          "id": "db4b6822-5b69-4958-b33b-7ecb3261f151",
+          "name": "external-signal-research"
+        },
+        {
+          "enabled": true,
+          "id": "e964f7b1-3cb4-4bc7-902b-16c57e73cefe",
+          "name": "feature-correctness-review"
+        }
+      ],
+      "declarative_command": "multica agent skills add <agent-id> --skill-ids <skill-id-assigned-at-import>",
+      "op": "add"
+    },
+    {
+      "agent_id": "30ce43d4-97a7-42a8-ab3e-78df0d894702",
+      "agent_name": "06 QA",
+      "agent_role": "qa",
+      "baseline_binding_ids": [
+        "29f68c43-0772-47a8-a860-d946a100c789",
+        "aab482f9-b9ff-4b78-8394-1f13e2b319c0"
+      ],
+      "baseline_bindings": [
+        {
+          "enabled": true,
+          "id": "29f68c43-0772-47a8-a860-d946a100c789",
+          "name": "milestone-quality-gate"
+        },
+        {
+          "enabled": true,
+          "id": "aab482f9-b9ff-4b78-8394-1f13e2b319c0",
+          "name": "parent-handoff-wake"
+        }
+      ],
+      "declarative_command": "multica agent skills add <agent-id> --skill-ids <skill-id-assigned-at-import>",
+      "op": "add"
+    }
+  ],
+  "excluded": [
+    {
+      "agent_id": "8bc546ab-ffd8-4aa6-ad30-58583346c065",
+      "agent_name": "02 Context Engineer",
+      "agent_role": "context-engineer",
+      "binding": "not planned",
+      "reason": "exception-path only; ordinary handoffs must not route through 02 and 02 must not be made mandatory without evidence (YZT-63 §33.4)"
+    }
+  ],
+  "issue_ref": "YZT-63",
+  "never_replace_all_set": true,
+  "preserve_existing_bindings": true,
+  "schema_version": "T08-binding-plan/1.0",
+  "skill": {
+    "bundle_digest": "sha256:986bbc42390536b73649d0cf0667a79f39a3a96607b7acd59d041910b7b8bbaa",
+    "name": "multica-context-handoff"
+  },
+  "status": "staged_candidate_not_active"
+}

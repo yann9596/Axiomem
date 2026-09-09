@@ -1,0 +1,92 @@
+[
+  {
+    "config": {},
+    "created_at": "2026-09-06T05:39:39Z",
+    "created_by": "1338bca6-ea41-4886-83bb-3375322a3049",
+    "description": "Break a confirmed product goal into owned, verifiable work and replan it when new evidence changes value, risk, dependencies, or uncertainty. Use for project planning, task routing, or living-plan updates; not for implementing specialist work.",
+    "id": "647db182-b4fd-4f78-bc45-874b9f6e358c",
+    "name": "adaptive-task-planning",
+    "updated_at": "2026-09-06T11:57:21Z",
+    "workspace_id": "33df1cfd-3f24-4202-9259-93b2a5fe8b6b"
+  },
+  {
+    "config": {},
+    "created_at": "2026-09-06T05:39:39Z",
+    "created_by": "1338bca6-ea41-4886-83bb-3375322a3049",
+    "description": "Evaluate memory candidates and safely write, supersede, index, and verify canonical team memory. Use only for long-lived project knowledge governance, not ordinary notes or full-chat archiving.",
+    "id": "6db4a1dc-4f6c-47be-8416-2fc8756c546a",
+    "name": "canonical-memory-governance",
+    "updated_at": "2026-09-06T05:39:39Z",
+    "workspace_id": "33df1cfd-3f24-4202-9259-93b2a5fe8b6b"
+  },
+  {
+    "config": {},
+    "created_at": "2026-09-06T05:39:40Z",
+    "created_by": "1338bca6-ea41-4886-83bb-3375322a3049",
+    "description": "Research users, standards, products, competitors, and ecosystem changes to calibrate a current feature decision. Use when external evidence can change feature correctness or priority; not for speculative trend collection.",
+    "id": "db4b6822-5b69-4958-b33b-7ecb3261f151",
+    "name": "external-signal-research",
+    "updated_at": "2026-09-06T05:39:40Z",
+    "workspace_id": "33df1cfd-3f24-4202-9259-93b2a5fe8b6b"
+  },
+  {
+    "config": {},
+    "created_at": "2026-09-06T05:39:40Z",
+    "created_by": "1338bca6-ea41-4886-83bb-3375322a3049",
+    "description": "Review whether a delivered feature solves the intended user problem and matches the approved solution and observable behavior. Use for feature-level correctness, not code-style or local defensive-programming review.",
+    "id": "e964f7b1-3cb4-4bc7-902b-16c57e73cefe",
+    "name": "feature-correctness-review",
+    "updated_at": "2026-09-06T05:39:40Z",
+    "workspace_id": "33df1cfd-3f24-4202-9259-93b2a5fe8b6b"
+  },
+  {
+    "config": {},
+    "created_at": "2026-09-06T05:39:39Z",
+    "created_by": "1338bca6-ea41-4886-83bb-3375322a3049",
+    "description": "Implement an approved product change in an isolated worktree and hand it off with deviations, tests, risks, and review evidence. Use for product-code execution after task, context, and solution boundaries are clear.",
+    "id": "b68797d6-9459-43fd-92ce-d45cd82f3fbe",
+    "name": "implementation-handoff",
+    "updated_at": "2026-09-06T11:57:21Z",
+    "workspace_id": "33df1cfd-3f24-4202-9259-93b2a5fe8b6b"
+  },
+  {
+    "config": {},
+    "created_at": "2026-09-06T05:39:40Z",
+    "created_by": "1338bca6-ea41-4886-83bb-3375322a3049",
+    "description": "Run an independent quality gate for an explicitly triggered milestone, release candidate, core journey, cross-repository change, or other high-risk delivery. Do not activate for ordinary issues by default.",
+    "id": "29f68c43-0772-47a8-a860-d946a100c789",
+    "name": "milestone-quality-gate",
+    "updated_at": "2026-09-06T05:39:40Z",
+    "workspace_id": "33df1cfd-3f24-4202-9259-93b2a5fe8b6b"
+  },
+  {
+    "config": {},
+    "created_at": "2026-09-06T05:39:39Z",
+    "created_by": "1338bca6-ea41-4886-83bb-3375322a3049",
+    "description": "Retrieve, verify, and package the minimum sufficient project context for a specific task, role, and decision. Use when work needs grounded facts or when context may be missing, stale, conflicting, or polluted.",
+    "id": "fe50d0ce-e57c-4991-bfde-bef2983aa00c",
+    "name": "minimum-context-package",
+    "updated_at": "2026-09-06T05:39:39Z",
+    "workspace_id": "33df1cfd-3f24-4202-9259-93b2a5fe8b6b"
+  },
+  {
+    "config": {},
+    "created_at": "2026-09-06T11:57:21Z",
+    "created_by": "1338bca6-ea41-4886-83bb-3375322a3049",
+    "description": "When a child issue is ready for review, blocked, or stopped, wake Engineering Lead by mentioning them on the PARENT issue. in_review does not auto-wake the parent.",
+    "id": "aab482f9-b9ff-4b78-8394-1f13e2b319c0",
+    "name": "parent-handoff-wake",
+    "updated_at": "2026-09-06T11:57:21Z",
+    "workspace_id": "33df1cfd-3f24-4202-9259-93b2a5fe8b6b"
+  },
+  {
+    "config": {},
+    "created_at": "2026-09-06T05:39:39Z",
+    "created_by": "1338bca6-ea41-4886-83bb-3375322a3049",
+    "description": "Turn an approved goal and grounded context into an implementation-ready technical solution with contracts, compatibility, failure handling, and validation focus. Use for architecture or cross-module design, not coding.",
+    "id": "368260ac-3702-468d-a21a-c90cc8a52bd1",
+    "name": "solution-design-brief",
+    "updated_at": "2026-09-06T05:39:39Z",
+    "workspace_id": "33df1cfd-3f24-4202-9259-93b2a5fe8b6b"
+  }
+]

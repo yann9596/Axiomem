@@ -1,0 +1,38 @@
+{
+  "activation": "T13-owned controlled enablement; nothing here has been applied to the live workspace",
+  "baseline": {
+    "captured_cli_version": "v0.4.42",
+    "instruction_sha256": {
+      "context-engineer": "sha256:15ac35d9d56a127bd6b729ba56004ce5ce91790f8cb277d24487b69c18f0e5c6",
+      "engineering-lead": "sha256:30ac23c94dc2c875c7d39a01c92c8400c20ffee34974c7793ae2aa6c1a32d3b7",
+      "feature-reviewer": "sha256:51cd0ddd07b7d8443a098e6586240dd191bfe3e67768fac31c80aea4a8ba744d",
+      "qa": "sha256:822867b9797195e53532b61543daac9265436ae5b9963da183679187c6de0625",
+      "software-engineer": "sha256:44b9db9b26daaeacbcb23e30c6682a0d8b7231d35f02c7f91de0f6bcce8ab873",
+      "solution-architect": "sha256:8378c82b547c5be4339cafe742405f2570a909d8d94f6052fbcff5f254fe6194"
+    }
+  },
+  "files": {
+    "after/context-engineer.md": "sha256:3d63e51552ddf5cedb9e334d15dce147b4ab580ba40f00624ec679bbb4caf5fa",
+    "after/engineering-lead.md": "sha256:022dad7de0a2f1d6a011371e7812aa67f956ee1ff7e93ecc2a8b237963137115",
+    "after/feature-reviewer.md": "sha256:ce8ee7f03aa4113167b5b8a49e566460028b2a01519833d8da4d38d9202570fe",
+    "after/qa.md": "sha256:9c401696809cf5b4ffb8e5aa2f00286f9167a5d809509de879a5d9c84cd0063d",
+    "after/software-engineer.md": "sha256:33a5660f790338845cb5f61631af27c91cc63b2aaa782b3c940220d311ee004b",
+    "after/solution-architect.md": "sha256:f1817de23e3f9c12a27b6f88cd1bff8cecf8767b4f1bffde2b25b290924f4957",
+    "binding-plan.json": "sha256:82d6f3d2c133b2b60f6fdf6bc634a2426d8f42862e6d07a4595ba894c1cad12f",
+    "candidates/context-engineer.md": "sha256:77570b3d9dd7a86ddbb9df24580051450842e18a0cbe601251739434b5cef159",
+    "candidates/engineering-lead.md": "sha256:a2e7b33472787b3b0285aa503dd39dc70a2b4d3c64b0bdad0846517161a71c2b",
+    "candidates/feature-reviewer.md": "sha256:cd380acf0f04d10a81d5653bcc7a6b2936f6650b924648df1718754a3e820f91",
+    "candidates/qa.md": "sha256:cd380acf0f04d10a81d5653bcc7a6b2936f6650b924648df1718754a3e820f91",
+    "candidates/software-engineer.md": "sha256:cd380acf0f04d10a81d5653bcc7a6b2936f6650b924648df1718754a3e820f91",
+    "candidates/solution-architect.md": "sha256:cd380acf0f04d10a81d5653bcc7a6b2936f6650b924648df1718754a3e820f91",
+    "preconditions.json": "sha256:76ff2b18c301b3bca438c33b13b1e77b14f07d4e5f0cadeb43a63ca322c367ff",
+    "rollback.json": "sha256:ba9a2a3be1e6b83146aa6d46c142e4d189f5a03f567449c6fe792d62e3aee64f"
+  },
+  "issue_ref": "YZT-63",
+  "schema_version": "T08-bundle/1.0",
+  "skill": {
+    "bundle_digest": "sha256:986bbc42390536b73649d0cf0667a79f39a3a96607b7acd59d041910b7b8bbaa",
+    "name": "multica-context-handoff"
+  },
+  "status": "staged_candidate_not_active"
+}

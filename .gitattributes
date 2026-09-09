@@ -13,3 +13,6 @@ memory/*.json -text
 chains/*.json -text
 sources/*.json -text
 sources/candidates/*.json -text
+# YZT-63: byte-stability for the T08 captured live-state fixtures and staged
+# instruction-contract bundles (instruction digests are re-verified offline).
+adapters/multica/agent-instructions/** -text

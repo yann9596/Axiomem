@@ -1,0 +1,201 @@
+{
+  "baseline_file": "baseline.json",
+  "capture_dir_name": "t08-endcap-1849351456",
+  "checks": [
+    {
+      "detail": "found by exact name",
+      "id": "agents_present",
+      "role": "engineering-lead",
+      "status": "pass"
+    },
+    {
+      "detail": "id unchanged",
+      "id": "agent_ids_stable",
+      "role": "engineering-lead",
+      "status": "pass"
+    },
+    {
+      "detail": "digest unchanged",
+      "id": "instruction_digests_match",
+      "role": "engineering-lead",
+      "status": "pass"
+    },
+    {
+      "detail": "anchor unchanged",
+      "id": "anchor_tails_match",
+      "role": "engineering-lead",
+      "status": "pass"
+    },
+    {
+      "detail": "2 bindings unchanged",
+      "id": "binding_sets_match",
+      "role": "engineering-lead",
+      "status": "pass"
+    },
+    {
+      "detail": "found by exact name",
+      "id": "agents_present",
+      "role": "context-engineer",
+      "status": "pass"
+    },
+    {
+      "detail": "id unchanged",
+      "id": "agent_ids_stable",
+      "role": "context-engineer",
+      "status": "pass"
+    },
+    {
+      "detail": "digest unchanged",
+      "id": "instruction_digests_match",
+      "role": "context-engineer",
+      "status": "pass"
+    },
+    {
+      "detail": "anchor unchanged",
+      "id": "anchor_tails_match",
+      "role": "context-engineer",
+      "status": "pass"
+    },
+    {
+      "detail": "3 bindings unchanged",
+      "id": "binding_sets_match",
+      "role": "context-engineer",
+      "status": "pass"
+    },
+    {
+      "detail": "found by exact name",
+      "id": "agents_present",
+      "role": "solution-architect",
+      "status": "pass"
+    },
+    {
+      "detail": "id unchanged",
+      "id": "agent_ids_stable",
+      "role": "solution-architect",
+      "status": "pass"
+    },
+    {
+      "detail": "digest unchanged",
+      "id": "instruction_digests_match",
+      "role": "solution-architect",
+      "status": "pass"
+    },
+    {
+      "detail": "anchor unchanged",
+      "id": "anchor_tails_match",
+      "role": "solution-architect",
+      "status": "pass"
+    },
+    {
+      "detail": "2 bindings unchanged",
+      "id": "binding_sets_match",
+      "role": "solution-architect",
+      "status": "pass"
+    },
+    {
+      "detail": "found by exact name",
+      "id": "agents_present",
+      "role": "software-engineer",
+      "status": "pass"
+    },
+    {
+      "detail": "id unchanged",
+      "id": "agent_ids_stable",
+      "role": "software-engineer",
+      "status": "pass"
+    },
+    {
+      "detail": "digest unchanged",
+      "id": "instruction_digests_match",
+      "role": "software-engineer",
+      "status": "pass"
+    },
+    {
+      "detail": "anchor unchanged",
+      "id": "anchor_tails_match",
+      "role": "software-engineer",
+      "status": "pass"
+    },
+    {
+      "detail": "2 bindings unchanged",
+      "id": "binding_sets_match",
+      "role": "software-engineer",
+      "status": "pass"
+    },
+    {
+      "detail": "found by exact name",
+      "id": "agents_present",
+      "role": "feature-reviewer",
+      "status": "pass"
+    },
+    {
+      "detail": "id unchanged",
+      "id": "agent_ids_stable",
+      "role": "feature-reviewer",
+      "status": "pass"
+    },
+    {
+      "detail": "digest unchanged",
+      "id": "instruction_digests_match",
+      "role": "feature-reviewer",
+      "status": "pass"
+    },
+    {
+      "detail": "anchor unchanged",
+      "id": "anchor_tails_match",
+      "role": "feature-reviewer",
+      "status": "pass"
+    },
+    {
+      "detail": "3 bindings unchanged",
+      "id": "binding_sets_match",
+      "role": "feature-reviewer",
+      "status": "pass"
+    },
+    {
+      "detail": "found by exact name",
+      "id": "agents_present",
+      "role": "qa",
+      "status": "pass"
+    },
+    {
+      "detail": "id unchanged",
+      "id": "agent_ids_stable",
+      "role": "qa",
+      "status": "pass"
+    },
+    {
+      "detail": "digest unchanged",
+      "id": "instruction_digests_match",
+      "role": "qa",
+      "status": "pass"
+    },
+    {
+      "detail": "anchor unchanged",
+      "id": "anchor_tails_match",
+      "role": "qa",
+      "status": "pass"
+    },
+    {
+      "detail": "2 bindings unchanged",
+      "id": "binding_sets_match",
+      "role": "qa",
+      "status": "pass"
+    },
+    {
+      "detail": "multica-context-handoff absent from the catalog as staged",
+      "id": "skill_catalog_stage_state",
+      "status": "pass"
+    },
+    {
+      "detail": "no in-scope agent is bound to the skill",
+      "id": "no_in_scope_binding_in_stage_mode",
+      "status": "pass"
+    }
+  ],
+  "checks_failed": [],
+  "checks_passed_count": 32,
+  "drift": [],
+  "mode": "stage",
+  "ok": true
+}
