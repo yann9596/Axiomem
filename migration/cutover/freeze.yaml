@@ -1,0 +1,25 @@
+schema_version: "1.1"
+kind: cutover_freeze_record
+migration_id: MIG-2026-09-08-YZT39
+authorized_by:
+  issue: multica://issue/YZT-39
+  comment: multica://issue/YZT-39/comment/01a083a1-baaa-7631-b161-f0e15c21291d
+  decision: GO
+exact_candidate: b0733f8e2e8155c65985f5fd8fa97c11fe7f8d78
+freeze:
+  frozen_at_utc: "2026-09-09T00:51:47Z"
+  owner: context-engineer
+  owner_agent_id: 8bc546ab-ffd8-4aa6-ad30-58583346c065
+  suspended: [v1_canonical_writes, v1_index_updates]
+switch:
+  merged_at_utc: "2026-09-09T00:53:26Z"
+  mode: fast_forward
+  from: 61c6f0efab35d64c4c1a19c4c6a771dd5f6efb5a
+  to: b0733f8e2e8155c65985f5fd8fa97c11fe7f8d78
+  get_context: v1.1
+unfrozen_at_utc: "2026-09-09T00:53:26Z"
+notes: >
+  V1 writer freeze covered exactly the window between freeze and switch; after
+  the fast-forward merge the active writer contract is V1.1 (context_cli) and
+  the V1 CLI stays read-only compat/rollback. Full step-by-step evidence:
+  D:\AI\context-backups\r10-cutover-log.md and migration/cutover/CUTOVER_REPORT.md.
