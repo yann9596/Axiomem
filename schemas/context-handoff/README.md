@@ -281,3 +281,50 @@ Trigger supplement §7.1 / §19). The frozen `self_check_request` /
   Canonical writes 0, Multica runtime dependency 0. A controlled injected
   mutator is used only to prove "processing changed the revision ->
   refresh"; it never bypasses governance to write Canonical directly.
+
+---
+
+## 11. T05 Multica Issue Snapshot Adapter (YZT-58; additive, no frozen field changes)
+
+`tools/chandoff_adapter.py` (config + notes under `adapters/multica/`)
+normalizes a Multica issue into a **frozen-schema** `prepare_handoff_request`.
+No T00 schema, enum, fingerprint input or status vocabulary changed.
+
+- Direction of knowledge: the adapter is deliberately framework-specific —
+  it is the one place that may name Multica runtime concepts. Its output
+  validates against `prepare-handoff-request.schema.json`
+  (`additionalProperties: false` at every level), so Multica-only fields
+  cannot leak into Native API/Core shapes. The boundary scan therefore
+  deliberately does NOT scan the adapter file; compensating controls live in
+  `tools/tests/test_handoff_adapter.py` (import allowlist, no memory/LLM/
+  network tokens in adapter source, read-only argv allowlist, schema
+  validation of every emitted request).
+- Reads only `multica issue get`, `issue comment list --thread --full` and
+  `multica version`; write commands are refused by allowlist. Returned issue
+  JSON is contract-checked (`id`, `identifier`, `title`, `description`,
+  `parent_issue_id`, `project_id`); drift stops bounded
+  (`incompatible_cli_contract`).
+- Project mapping is explicit-only and fail closed: caller `--project-id`
+  or a map file (`adapters/multica/project-map.json`, mirrors the Registry's
+  `multica_project_id` fields). A Multica project UUID / missing / null
+  project is never a registry id by default → bounded
+  `project_mapping_unresolved`.
+- `task_ref` is the stable opaque `multica://issue/<identifier>`;
+  `parent_task_ref` maps the parent issue's identifier (relation pointer
+  only; excluded from the fingerprint by the frozen input set).
+- Snapshot content enters only through frozen explicit markers in the
+  authoritative issue body (requirements / acceptance / done-style headings)
+  or caller-selected comment ids (fetched via the read-only thread read).
+  Exact provenance for every admitted item is recorded in the adapter trace;
+  ordinary progress comments are never fetched and cannot move the
+  fingerprint. The assignee is never mapped (no field in the frozen request
+  contract).
+- No LLM/model call, no network library, no Canonical write, no Memory read
+  or rebuild, no Multica write, no publish (T06 owns discovery/publishing).
+  All failures are bounded AdapterError codes (`cli_unavailable`,
+  `cli_command_failed`, `cli_json_malformed`, `incompatible_cli_contract`,
+  `project_mapping_unresolved`, `selected_comment_not_found`,
+  `forbidden_options_key`, `request_schema_violation`).
+- CLI: `python tools/chandoff_adapter.py build …` (live) or with
+  `--issue-file/--parent-file/--thread-file` for byte-stable offline
+  reproduction from captured CLI JSON (`tools/fixtures/adapter/`).
