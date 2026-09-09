@@ -522,16 +522,24 @@ def self_check(request: dict, *, packages=None, store_dir=None, registry=None,
 
 def main() -> int:
     parser = argparse.ArgumentParser(description="T04 deterministic SELF_CHECK")
-    sub = parser.add_parser("check", help="run self_check from request file")
-    sub.add_argument("--request-file", required=True)
-    sub.add_argument("--package", action="append", default=[],
+    sub = parser.add_subparsers(dest="command", required=True)
+    chk = sub.add_parser("check", help="run self_check from request file")
+    chk.add_argument("--request-file", required=True)
+    chk.add_argument("--package", action="append", default=[],
                      help="prepare_handoff_result envelope file (repeatable)")
-    sub.add_argument("--store", default=None, help="runtime package store dir")
+    chk.add_argument("--store", default=None,
+                     help="runtime package store dir "
+                          "(default runtime/v1.1/handoff-packages)")
     args = parser.parse_args()
-    request = json.loads(Path(args.request_file).read_text(encoding="utf-8"))
-    packages = [json.loads(Path(p).read_text(encoding="utf-8"))
-                for p in args.package]
-    result = self_check(request, packages=packages or None, store_dir=args.store)
+    try:
+        request = json.loads(Path(args.request_file).read_text(encoding="utf-8"))
+        packages = [json.loads(Path(p).read_text(encoding="utf-8"))
+                    for p in args.package]
+        result = self_check(request, packages=packages or None,
+                            store_dir=args.store)
+    except Exception as exc:
+        print(f"ERROR: {exc}", file=sys.stderr)
+        return 2
     print(json.dumps(result, ensure_ascii=False, indent=2))
     return {"READY": 0, "REFRESH_REQUIRED": 2, "BLOCKED": 3}[result["status"]]
 
