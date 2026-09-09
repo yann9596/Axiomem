@@ -1,0 +1,42 @@
+[
+  {
+    "agent_id": "8bc546ab-ffd8-4aa6-ad30-58583346c065",
+    "attempt": 1,
+    "attribution": {
+      "delegated_from_task_id": "01a08608-bbdf-70b3-b7b3-8c0b91ae63a3",
+      "evidence": {
+        "kind": "issue_assignment",
+        "ref_id": "01a08610-ab5f-7e73-ba6b-145db345a36c"
+      },
+      "initiator": {
+        "avatar_url": "https://lh3.googleusercontent.com/a/ACg8ocKmRXg9Z8AldZx45Ec8x8rZj0cW3eU0H5I8bBOEuv6OJy51nA=s96-c",
+        "email": "yztwyx@gmail.com",
+        "id": "1338bca6-ea41-4886-83bb-3375322a3049",
+        "name": "Yann"
+      },
+      "originator": {
+        "avatar_url": "https://lh3.googleusercontent.com/a/ACg8ocKmRXg9Z8AldZx45Ec8x8rZj0cW3eU0H5I8bBOEuv6OJy51nA=s96-c",
+        "email": "yztwyx@gmail.com",
+        "id": "1338bca6-ea41-4886-83bb-3375322a3049",
+        "name": "Yann"
+      },
+      "precise": true,
+      "source": "delegation"
+    },
+    "completed_at": null,
+    "created_at": "2026-09-09T12:07:14Z",
+    "delivered_comment_ids": [],
+    "dispatched_at": "2026-09-09T12:07:14Z",
+    "error": null,
+    "id": "01a08610-ab8d-75ca-bb24-b316eb1f2b8c",
+    "issue_id": "01a08610-ab5f-7e73-ba6b-145db345a36c",
+    "kind": "direct",
+    "max_attempts": 2,
+    "priority": 3,
+    "result": null,
+    "runtime_id": "edc6fd68-98b9-4167-9758-3fe17e3e2725",
+    "started_at": "2026-09-09T12:07:15Z",
+    "status": "running",
+    "workspace_id": "33df1cfd-3f24-4202-9259-93b2a5fe8b6b"
+  }
+]

@@ -1,0 +1,16 @@
+{
+  "body_sha256_as_written": "c3661035426857ffee2c596e7fe777752005184b3a654448223a0c4328a5ba75",
+  "cli_version": "v0.4.41",
+  "comment_id": "01a0862a-efb6-7bdc-9317-23089673e36c",
+  "envelope_digest16": "81da0e15405aa0f2",
+  "published_with_explicit_authorization": true,
+  "runs_after_ids": [
+    "01a08610-ab8d-75ca-bb24-b316eb1f2b8c"
+  ],
+  "runs_before_ids": [
+    "01a08610-ab8d-75ca-bb24-b316eb1f2b8c"
+  ],
+  "status": "PARTIAL",
+  "target_role": "context-engineer",
+  "task_ref": "multica://issue/YZT-59"
+}
