@@ -196,14 +196,14 @@ Prose documents (READMEs, `docs/`) are exempt by design: they must be able to
 
 ## 8. Known gap inherited from V1.1 (FIND-WIMG-HO00-000001)
 
-`cbuild.build_package` emits package `rules[].ref` / `current_facts[].ref` /
-`cases[].ref` as pseudo-scheme identifiers (`rule:<id>`, `fact:<id>`,
-`case:<id>`), while `context-package.schema.json` types them with the frozen
-`evidence-ref` `ref_string` grammar (`multica|adr|doc|repo|registry|project|git`
-schemes only). No Gate A/B/C ever schema-validated a runtime-built package, so
-this divergence was latent until the T00 schema tests. T00 changes neither the
-Core ref grammar nor builder behavior. FINALIZE (T03) must close the gap —
-either by emitting grammar-conforming refs or by a governed grammar extension —
-and must add a package-vs-schema check to its deterministic validations.
-PLAN candidate identity is unaffected: candidates carry canonical `id`s; `ref`
-is optional and only used for real URI targets.
+**Closed in T03 FINALIZE** (`disposition: absorbed_by_existing`, no Canonical
+write). `chandoff_finalize` emits package `rules[].ref` / `current_facts[].ref` /
+`cases[].ref` as grammar-valid `repo://multica-memory/<canonical-path>` pointers.
+The frozen `evidence-ref` `ref_string` grammar is unchanged. A real built
+package is schema-validated against both `context-package.schema.json` and
+`prepare-handoff-result.schema.json`.
+
+`cbuild.build_package` still emits historical `rule:<id>` / `fact:<id>` /
+`case:<id>` prefixes so Gate C replay expectation locks remain valid. PLAN
+candidate identity is unaffected: candidates carry canonical `id`s; `ref` is
+optional and only used for real URI targets.

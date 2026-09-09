@@ -62,6 +62,12 @@ def main() -> int:
     sc.add_argument("--plan-file", required=True)
     sc.add_argument("--result-file", required=True)
 
+    fin = sub.add_parser("prepare-handoff-finalize",
+                         help="T03 deterministic FINALIZE (no model call)")
+    fin.add_argument("--plan-file", required=True)
+    fin.add_argument("--result-file", required=True)
+    fin.add_argument("--request-file", required=True)
+
     args = parser.parse_args()
     try:
         if args.command == "validate-canonical":
@@ -104,6 +110,14 @@ def main() -> int:
             result = chandoff_compose.compose_semantic(plan_input, proposed)
             print(json.dumps(result, ensure_ascii=False, indent=2))
             return 0 if result.get("status") == "ACCEPTED" else 2
+        if args.command == "prepare-handoff-finalize":
+            import chandoff_finalize
+            plan_input = json.loads(Path(args.plan_file).read_text(encoding="utf-8"))
+            compose_input = json.loads(Path(args.result_file).read_text(encoding="utf-8"))
+            request = json.loads(Path(args.request_file).read_text(encoding="utf-8"))
+            result = chandoff_finalize.finalize_handoff(plan_input, compose_input, request)
+            print(json.dumps(result, ensure_ascii=False, indent=2))
+            return 0 if result.get("status") in {"READY", "PARTIAL", "BLOCKED"} else 2
         if args.command == "compat":
             import ccompat
             if args.compat_command == "get":
