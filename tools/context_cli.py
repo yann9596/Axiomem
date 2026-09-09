@@ -53,6 +53,10 @@ def main() -> int:
     build.add_argument("--case-trigger", default=None)
     build.add_argument("--limit", type=int, default=8)
 
+    ph = sub.add_parser("prepare-handoff-plan",
+                        help="T01 deterministic context_plan (no model call)")
+    ph.add_argument("--request-file", required=True)
+
     args = parser.parse_args()
     try:
         if args.command == "validate-canonical":
@@ -82,6 +86,12 @@ def main() -> int:
                                 case_trigger=args.case_trigger, limit=args.limit)
             print(json.dumps(pkg, ensure_ascii=False, indent=2))
             return 0
+        if args.command == "prepare-handoff-plan":
+            import chandoff_plan
+            request = json.loads(Path(args.request_file).read_text(encoding="utf-8"))
+            result = chandoff_plan.prepare_handoff_plan(request)
+            print(json.dumps(result, ensure_ascii=False, indent=2))
+            return 0 if result.get("status") == "PLAN_READY" else 2
         if args.command == "compat":
             import ccompat
             if args.compat_command == "get":

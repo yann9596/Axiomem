@@ -207,6 +207,9 @@ def scan_handoff_contracts() -> dict:
     targets = sorted((ROOT / "schemas" / "context-handoff").glob("*.schema.json"))
     self_path = Path(__file__).resolve()
     targets.append(self_path)
+    plan_path = self_path.with_name("chandoff_plan.py")
+    if plan_path.exists():
+        targets.append(plan_path)
     report = {}
     for t in targets:
         text = t.read_text(encoding="utf-8")
