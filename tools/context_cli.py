@@ -57,6 +57,11 @@ def main() -> int:
                         help="T01 deterministic context_plan (no model call)")
     ph.add_argument("--request-file", required=True)
 
+    sc = sub.add_parser("semantic-compose",
+                        help="T02 bounded semantic compose validation (no model call)")
+    sc.add_argument("--plan-file", required=True)
+    sc.add_argument("--result-file", required=True)
+
     args = parser.parse_args()
     try:
         if args.command == "validate-canonical":
@@ -92,6 +97,13 @@ def main() -> int:
             result = chandoff_plan.prepare_handoff_plan(request)
             print(json.dumps(result, ensure_ascii=False, indent=2))
             return 0 if result.get("status") == "PLAN_READY" else 2
+        if args.command == "semantic-compose":
+            import chandoff_compose
+            plan_input = json.loads(Path(args.plan_file).read_text(encoding="utf-8"))
+            proposed = json.loads(Path(args.result_file).read_text(encoding="utf-8"))
+            result = chandoff_compose.compose_semantic(plan_input, proposed)
+            print(json.dumps(result, ensure_ascii=False, indent=2))
+            return 0 if result.get("status") == "ACCEPTED" else 2
         if args.command == "compat":
             import ccompat
             if args.compat_command == "get":

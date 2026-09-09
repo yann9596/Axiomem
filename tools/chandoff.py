@@ -210,6 +210,9 @@ def scan_handoff_contracts() -> dict:
     plan_path = self_path.with_name("chandoff_plan.py")
     if plan_path.exists():
         targets.append(plan_path)
+    compose_path = self_path.with_name("chandoff_compose.py")
+    if compose_path.exists():
+        targets.append(compose_path)
     report = {}
     for t in targets:
         text = t.read_text(encoding="utf-8")
