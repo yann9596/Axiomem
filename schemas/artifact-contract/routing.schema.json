@@ -1,0 +1,61 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Artifact Contract — Option A R0/R1/R2 routing contracts (U10)",
+  "description": "Machine-checkable routing contracts. This runtime never creates or triggers Review/QA work. Producer auto-trigger of delivery-reviewer and delivery-reviewer auto-trigger of QA remain forbidden.",
+  "type": "object",
+  "required": ["schema_version", "kind", "option", "levels"],
+  "properties": {
+    "schema_version": { "const": "1.0" },
+    "kind": { "const": "artifact_routing_contracts" },
+    "option": { "const": "A" },
+    "levels": {
+      "type": "object",
+      "required": ["R0", "R1", "R2"],
+      "properties": {
+        "R0": { "$ref": "#/$defs/level" },
+        "R1": { "$ref": "#/$defs/level" },
+        "R2": { "$ref": "#/$defs/level" }
+      },
+      "additionalProperties": false
+    }
+  },
+  "additionalProperties": false,
+  "$defs": {
+    "level": {
+      "type": "object",
+      "required": [
+        "independent_delivery_review_attempt",
+        "independent_qa_attempt",
+        "requires_delivery_review",
+        "requires_qa",
+        "producer_auto_triggers_delivery_reviewer",
+        "delivery_reviewer_auto_triggers_qa",
+        "lead_mediated",
+        "review_in_producer_task",
+        "min_envelope",
+        "required_review_input_types",
+        "required_qa_baseline_types"
+      ],
+      "properties": {
+        "independent_delivery_review_attempt": { "type": "boolean" },
+        "independent_qa_attempt": { "type": "boolean" },
+        "requires_delivery_review": { "type": "boolean" },
+        "requires_qa": { "type": "boolean" },
+        "producer_auto_triggers_delivery_reviewer": { "type": "boolean" },
+        "delivery_reviewer_auto_triggers_qa": { "type": "boolean" },
+        "lead_mediated": { "type": "boolean" },
+        "review_in_producer_task": { "type": "boolean" },
+        "min_envelope": { "enum": ["common_envelope", "type_contract"] },
+        "required_review_input_types": {
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "required_qa_baseline_types": {
+          "type": "array",
+          "items": { "type": "string" }
+        }
+      },
+      "additionalProperties": false
+    }
+  }
+}

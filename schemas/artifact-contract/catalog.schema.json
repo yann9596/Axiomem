@@ -1,0 +1,75 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Artifact Contract — catalog of core types (U10)",
+  "type": "object",
+  "required": ["schema_version", "kind", "types"],
+  "properties": {
+    "schema_version": { "const": "1.0" },
+    "kind": { "const": "artifact_catalog" },
+    "types": {
+      "type": "array",
+      "minItems": 7,
+      "items": {
+        "type": "object",
+        "required": [
+          "artifact_type",
+          "title",
+          "owner_role",
+          "default_consumers",
+          "semantic_keys",
+          "r0_required_keys",
+          "allowed_input_statuses",
+          "relation_rules",
+          "correction_owner"
+        ],
+        "properties": {
+          "artifact_type": { "type": "string" },
+          "title": { "type": "string" },
+          "owner_role": { "type": "string" },
+          "default_consumers": {
+            "type": "array",
+            "items": { "type": "string" }
+          },
+          "semantic_keys": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "required": ["key", "required"],
+              "properties": {
+                "key": { "type": "string" },
+                "required": { "type": "boolean" },
+                "description": { "type": "string" }
+              },
+              "additionalProperties": false
+            }
+          },
+          "r0_required_keys": {
+            "type": "array",
+            "items": { "type": "string" }
+          },
+          "allowed_input_statuses": {
+            "type": "array",
+            "items": { "type": "string" }
+          },
+          "relation_rules": {
+            "type": "object",
+            "required": ["based_on_min", "requires_reviewed_artifact", "requires_validated_against"],
+            "properties": {
+              "based_on_min": { "type": "integer" },
+              "requires_reviewed_artifact": { "type": "boolean" },
+              "requires_validated_against": { "type": "boolean" },
+              "validated_against_types": {
+                "type": "array",
+                "items": { "type": "string" }
+              }
+            },
+            "additionalProperties": false
+          },
+          "correction_owner": { "type": "string" }
+        },
+        "additionalProperties": false
+      }
+    }
+  },
+  "additionalProperties": false
+}

@@ -1,0 +1,20 @@
+{
+  "review_level": "R2",
+  "independent_delivery_review_attempt": true,
+  "independent_qa_attempt": true,
+  "producer_auto_triggers_delivery_reviewer": false,
+  "delivery_reviewer_auto_triggers_qa": false,
+  "lead_mediated": true,
+  "triggers_created": 0,
+  "review_input": {
+    "artifact_type": "implementation",
+    "artifact_id": "ART-WIMG-031",
+    "version": "aaa111"
+  },
+  "qa_baselines": [
+    {"artifact_type": "product_expectation", "artifact_id": "PE-WIMG-004", "version": "4"},
+    {"artifact_type": "design_baseline", "artifact_id": "SOL-WIMG-017", "version": "3"},
+    {"artifact_type": "implementation", "artifact_id": "ART-WIMG-031", "version": "aaa111"},
+    {"artifact_type": "delivery_review", "artifact_id": "REV-WIMG-008", "version": "1"}
+  ]
+}

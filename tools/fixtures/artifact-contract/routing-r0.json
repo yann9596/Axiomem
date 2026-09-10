@@ -1,0 +1,9 @@
+{
+  "review_level": "R0",
+  "independent_delivery_review_attempt": false,
+  "independent_qa_attempt": false,
+  "producer_auto_triggers_delivery_reviewer": false,
+  "delivery_reviewer_auto_triggers_qa": false,
+  "lead_mediated": true,
+  "triggers_created": 0
+}

@@ -1,0 +1,36 @@
+{
+  "schema_version": "1.0",
+  "kind": "artifact_envelope",
+  "artifact_type": "implementation",
+  "artifact_id": "ART-WIMG-031",
+  "project_id": "web-imagegen",
+  "task_id": "multica://issue/YZT-71",
+  "owner_role": "software-engineer",
+  "version": "bbb222",
+  "status": "ready_for_review",
+  "purpose": "Implementation B superseding A",
+  "intended_consumers": ["delivery-reviewer", "engineering-lead"],
+  "provenance": {
+    "created_at": "2026-09-10T14:00:00Z",
+    "updated_at": "2026-09-10T14:00:00Z",
+    "produced_by_role": "software-engineer"
+  },
+  "based_on": [
+    {"artifact_type": "design_baseline", "artifact_id": "SOL-WIMG-017", "version": "3"}
+  ],
+  "supersedes": {
+    "artifact_type": "implementation",
+    "artifact_id": "ART-WIMG-031",
+    "version": "aaa111"
+  },
+  "locator": "repo://web-imagegen@bbb222/tools/cartifact.py",
+  "semantics": {
+    "what_changed": "Implementation B",
+    "artifact_refs": {"commit": "bbb222"},
+    "implementation_scope": "same runtime, new commit",
+    "deviations": [],
+    "tests": ["replay"],
+    "known_risks": [],
+    "review_readiness": "ready_for_review"
+  }
+}

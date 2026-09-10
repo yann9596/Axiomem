@@ -1,0 +1,353 @@
+{
+  "envelopes": [
+    {
+      "schema_version": "1.0",
+      "kind": "artifact_envelope",
+      "artifact_type": "issue_definition",
+      "artifact_id": "ISS-WIMG-071",
+      "project_id": "web-imagegen",
+      "task_id": "multica://issue/YZT-71",
+      "owner_role": "engineering-lead",
+      "version": "1",
+      "status": "accepted",
+      "purpose": "Define U10 artifact-contract runtime work",
+      "intended_consumers": ["software-engineer", "delivery-reviewer", "qa"],
+      "provenance": {
+        "created_at": "2026-09-10T10:00:00Z",
+        "updated_at": "2026-09-10T10:00:00Z",
+        "produced_by_role": "engineering-lead"
+      },
+      "based_on": [],
+      "locator": "multica://issue/YZT-71",
+      "semantics": {
+        "goal": "Build minimum artifact contract runtime",
+        "scope": "Seven core types, exact version, ready-check, dependency export, Option A routing",
+        "non_goal": "No U04 skill integration, no 05/06 dispatch",
+        "why_or_value": "R1/R2 cannot bind exact artifacts without this foundation",
+        "dependencies": ["U03 frozen T00 revalidation at 2e1959b"],
+        "context_refs": ["multica://issue/YZT-66"],
+        "expected_deliverable": "artifact-contract runtime + U10 report",
+        "acceptance": "Done criteria yaml in YZT-71",
+        "review_level": "R2",
+        "qa_requirement": "Lead foundation review now; 05/06 evidence after U04/U05 and in U11/U12",
+        "known_risks": ["Do not amend T00"]
+      }
+    },
+    {
+      "schema_version": "1.0",
+      "kind": "artifact_envelope",
+      "artifact_type": "context_package",
+      "artifact_id": "CTX-WIMG-021",
+      "project_id": "web-imagegen",
+      "task_id": "multica://issue/YZT-71",
+      "owner_role": "context-engineer",
+      "version": "1",
+      "status": "ready",
+      "purpose": "Role-scoped context for software-engineer",
+      "intended_consumers": ["software-engineer"],
+      "provenance": {
+        "created_at": "2026-09-10T10:05:00Z",
+        "updated_at": "2026-09-10T10:05:00Z",
+        "produced_by_role": "context-engineer"
+      },
+      "based_on": [
+        {"artifact_type": "issue_definition", "artifact_id": "ISS-WIMG-071", "version": "1"}
+      ],
+      "locator": "multica://issue/YZT-71",
+      "semantics": {
+        "task_ref": "multica://issue/YZT-71",
+        "target_role": "software-engineer",
+        "resolved_scope": {"type": "project", "project_id": "web-imagegen"},
+        "project_phase": "active_development",
+        "anchor_digest": {"mission": "Web ImageGen provider-neutral generation"},
+        "project_checkpoint_slice": ["web-imagegen:cp-confirmed-001"],
+        "rules": ["RULE-WIMG-000001"],
+        "current_facts": ["FACT-WIMG-000001"],
+        "blocked_by": [],
+        "task_evidence": [],
+        "source_refs": ["multica://issue/YZT-71"],
+        "built_from": {
+          "task_fingerprint": "sha256:990ff3c35ea971bd623571d4aeab994e36c09768781413f6492866cb2e4cbd2b",
+          "memory_revision": "sha256:30b51dea6d6f2a09b3ec25d283d207f8705d4198206664e33049ef6285138561",
+          "registry_revision": "sha256:a08e20ebea57bf830c605e8c9cc87950bc3781350d1d0c22c01e83e994684edb",
+          "role_profile_revision": "sha256:7b3bdf5249dba6e1aeec1f29180b89c51985b04a6ab10a9aaaf5da596361531f"
+        }
+      }
+    },
+    {
+      "schema_version": "1.0",
+      "kind": "artifact_envelope",
+      "artifact_type": "product_expectation",
+      "artifact_id": "PE-WIMG-004",
+      "project_id": "web-imagegen",
+      "task_id": "multica://issue/YZT-71",
+      "owner_role": "context-engineer",
+      "version": "3",
+      "status": "superseded",
+      "purpose": "Prior PE baseline",
+      "intended_consumers": ["qa", "solution-architect"],
+      "provenance": {
+        "created_at": "2026-09-09T09:00:00Z",
+        "updated_at": "2026-09-10T09:00:00Z",
+        "produced_by_role": "context-engineer"
+      },
+      "based_on": [],
+      "locator": "doc://multica-memory/pe/PE-WIMG-004@3",
+      "semantics": {
+        "product_positioning": "older positioning",
+        "target_users": ["Codex users"],
+        "core_principles": ["explicit provider switch"],
+        "feature_expectations": ["grok path"],
+        "prohibited_outcomes": ["silent fallback"],
+        "approved_decisions": ["adr://0002"],
+        "as_of": "2026-09-09T09:00:00Z"
+      }
+    },
+    {
+      "schema_version": "1.0",
+      "kind": "artifact_envelope",
+      "artifact_type": "product_expectation",
+      "artifact_id": "PE-WIMG-004",
+      "project_id": "web-imagegen",
+      "task_id": "multica://issue/YZT-71",
+      "owner_role": "context-engineer",
+      "version": "4",
+      "status": "accepted",
+      "purpose": "Current PE baseline",
+      "intended_consumers": ["qa", "solution-architect", "delivery-reviewer"],
+      "provenance": {
+        "created_at": "2026-09-10T10:10:00Z",
+        "updated_at": "2026-09-10T10:10:00Z",
+        "produced_by_role": "context-engineer"
+      },
+      "based_on": [
+        {"artifact_type": "context_package", "artifact_id": "CTX-WIMG-021", "version": "1"}
+      ],
+      "supersedes": {"artifact_type": "product_expectation", "artifact_id": "PE-WIMG-004", "version": "3"},
+      "locator": "doc://multica-memory/pe/PE-WIMG-004@4",
+      "semantics": {
+        "product_positioning": "Supplier-neutral Web ImageGen for Codex",
+        "target_users": ["Codex users on local ChatGPT desktop"],
+        "potential_users": ["future browser-provider users"],
+        "core_principles": ["one active provider", "visible failure"],
+        "feature_expectations": ["default | grok | gpt", "local job folder"],
+        "prohibited_outcomes": ["implicit routing", "cookie access"],
+        "approved_decisions": ["adr://0001", "adr://0002", "adr://0003"],
+        "external_evidence": ["FACT-WIMG-000001"],
+        "known_uncertainty": ["gpt live smoke pending Phase H"],
+        "conflicts": [],
+        "as_of": "2026-09-10T10:10:00Z"
+      }
+    },
+    {
+      "schema_version": "1.0",
+      "kind": "artifact_envelope",
+      "artifact_type": "design_baseline",
+      "artifact_id": "SOL-WIMG-016",
+      "project_id": "web-imagegen",
+      "task_id": "multica://issue/YZT-71",
+      "owner_role": "solution-architect",
+      "version": "2",
+      "status": "superseded",
+      "purpose": "Prior design",
+      "intended_consumers": ["software-engineer"],
+      "provenance": {
+        "created_at": "2026-09-09T11:00:00Z",
+        "updated_at": "2026-09-10T11:00:00Z",
+        "produced_by_role": "solution-architect"
+      },
+      "based_on": [],
+      "locator": "doc://multica-memory/design/SOL-WIMG-016@2",
+      "semantics": {
+        "problem": "older problem",
+        "current_behavior": "none",
+        "target_behavior": "older target",
+        "concrete_solution": "older solution",
+        "affected_boundaries": ["tools/"],
+        "compatibility": "n/a",
+        "failure_semantics": "fail closed",
+        "risks": ["stale"],
+        "implementation_boundaries": ["runtime only"],
+        "validation_focus": ["unit"]
+      }
+    },
+    {
+      "schema_version": "1.0",
+      "kind": "artifact_envelope",
+      "artifact_type": "design_baseline",
+      "artifact_id": "SOL-WIMG-017",
+      "project_id": "web-imagegen",
+      "task_id": "multica://issue/YZT-71",
+      "owner_role": "solution-architect",
+      "version": "3",
+      "status": "accepted",
+      "purpose": "Current design baseline for artifact-contract runtime",
+      "intended_consumers": ["software-engineer", "delivery-reviewer", "qa"],
+      "provenance": {
+        "created_at": "2026-09-10T10:20:00Z",
+        "updated_at": "2026-09-10T10:20:00Z",
+        "produced_by_role": "solution-architect"
+      },
+      "based_on": [
+        {"artifact_type": "product_expectation", "artifact_id": "PE-WIMG-004", "version": "4"},
+        {"artifact_type": "context_package", "artifact_id": "CTX-WIMG-021", "version": "1"}
+      ],
+      "supersedes": {"artifact_type": "design_baseline", "artifact_id": "SOL-WIMG-016", "version": "2"},
+      "locator": "doc://multica-memory/design/SOL-WIMG-017@3",
+      "semantics": {
+        "problem": "No exact artifact version for Review/QA",
+        "current_behavior": "T00 can express refs but has no artifact runtime",
+        "target_behavior": "Fail-closed exact version and ARTIFACT_READY_CHECK",
+        "concrete_solution": "cartifact.py + schemas/artifact-contract",
+        "affected_boundaries": ["tools/cartifact.py", "schemas/artifact-contract/"],
+        "contract_changes": "none to T00 public schema",
+        "compatibility": "export via task_evidence / source_refs",
+        "failure_semantics": "ARTIFACT_NOT_READY blocks READY",
+        "invariants": ["no latest version", "no auto 05/06 trigger"],
+        "risks": ["U04 must map digest mismatch to package_stale"],
+        "implementation_boundaries": ["no skill integration", "no canonical write"],
+        "dependencies": ["U03 2e1959b"],
+        "validation_focus": ["unit replays for seven types and R0/R1/R2"],
+        "open_questions": []
+      }
+    },
+    {
+      "schema_version": "1.0",
+      "kind": "artifact_envelope",
+      "artifact_type": "implementation",
+      "artifact_id": "ART-WIMG-031",
+      "project_id": "web-imagegen",
+      "task_id": "multica://issue/YZT-71",
+      "owner_role": "software-engineer",
+      "version": "aaa111",
+      "status": "ready_for_review",
+      "purpose": "Implementation A of artifact-contract runtime",
+      "intended_consumers": ["delivery-reviewer", "engineering-lead"],
+      "provenance": {
+        "created_at": "2026-09-10T11:00:00Z",
+        "updated_at": "2026-09-10T11:00:00Z",
+        "produced_by_role": "software-engineer"
+      },
+      "based_on": [
+        {"artifact_type": "design_baseline", "artifact_id": "SOL-WIMG-017", "version": "3"},
+        {"artifact_type": "issue_definition", "artifact_id": "ISS-WIMG-071", "version": "1"}
+      ],
+      "locator": "repo://web-imagegen@aaa111/tools/cartifact.py",
+      "semantics": {
+        "what_changed": "Added artifact-contract runtime A",
+        "artifact_refs": {"branch": "yzt-71-u10-artifact-contract", "commit": "aaa111"},
+        "implementation_scope": "schemas + cartifact.py",
+        "deviations": [],
+        "tests": ["tools/tests/test_artifact_contract.py"],
+        "known_risks": ["U04 integration still pending"],
+        "unresolved_issues": [],
+        "context_findings": [],
+        "review_readiness": "ready_for_review"
+      }
+    },
+    {
+      "schema_version": "1.0",
+      "kind": "artifact_envelope",
+      "artifact_type": "delivery_review",
+      "artifact_id": "REV-WIMG-008",
+      "project_id": "web-imagegen",
+      "task_id": "multica://issue/YZT-71-review",
+      "owner_role": "delivery-reviewer",
+      "version": "1",
+      "status": "accepted",
+      "purpose": "Review of implementation A",
+      "intended_consumers": ["engineering-lead", "qa"],
+      "provenance": {
+        "created_at": "2026-09-10T12:00:00Z",
+        "updated_at": "2026-09-10T12:00:00Z",
+        "produced_by_role": "delivery-reviewer"
+      },
+      "based_on": [
+        {"artifact_type": "implementation", "artifact_id": "ART-WIMG-031", "version": "aaa111"}
+      ],
+      "reviewed_artifact": {
+        "artifact_type": "implementation",
+        "artifact_id": "ART-WIMG-031",
+        "version": "aaa111"
+      },
+      "locator": "multica://issue/YZT-71-review",
+      "semantics": {
+        "verdict": "APPROVE",
+        "requirement_correctness": "meets U10 scope",
+        "global_correctness": "no T00 leak",
+        "robustness": "fail closed on latest/stale",
+        "maintainability": "small runtime module",
+        "evidence_freshness": "fixtures at aaa111",
+        "artifact_findings": [],
+        "required_changes": [],
+        "follow_ups": ["U04 skill wiring"],
+        "challenges": []
+      }
+    },
+    {
+      "schema_version": "1.0",
+      "kind": "artifact_envelope",
+      "artifact_type": "qa_acceptance",
+      "artifact_id": "QA-WIMG-004",
+      "project_id": "web-imagegen",
+      "task_id": "multica://issue/YZT-71-qa",
+      "owner_role": "qa",
+      "version": "1",
+      "status": "accepted",
+      "purpose": "QA of implementation A against PE/Design/Review",
+      "intended_consumers": ["engineering-lead"],
+      "provenance": {
+        "created_at": "2026-09-10T13:00:00Z",
+        "updated_at": "2026-09-10T13:00:00Z",
+        "produced_by_role": "qa"
+      },
+      "based_on": [
+        {"artifact_type": "delivery_review", "artifact_id": "REV-WIMG-008", "version": "1"}
+      ],
+      "validated_against": [
+        {"artifact_type": "product_expectation", "artifact_id": "PE-WIMG-004", "version": "4"},
+        {"artifact_type": "design_baseline", "artifact_id": "SOL-WIMG-017", "version": "3"},
+        {"artifact_type": "implementation", "artifact_id": "ART-WIMG-031", "version": "aaa111"},
+        {"artifact_type": "delivery_review", "artifact_id": "REV-WIMG-008", "version": "1"}
+      ],
+      "locator": "multica://issue/YZT-71-qa",
+      "semantics": {
+        "verdict": "PASS",
+        "pe_validation": "PE-WIMG-004@4 holds",
+        "design_conformance": "SOL-WIMG-017@3 holds",
+        "integration_validation": "unit suite",
+        "failure_risk_validation": "fail closed paths covered",
+        "critical_findings": [],
+        "residual_risks": ["U04 mapping of digest to package_stale"],
+        "required_fixes": [],
+        "evidence": ["tools/tests/test_artifact_contract.py"]
+      }
+    },
+    {
+      "schema_version": "1.0",
+      "kind": "artifact_envelope",
+      "artifact_type": "issue_definition",
+      "artifact_id": "ISS-WIMG-R0",
+      "project_id": "web-imagegen",
+      "task_id": "multica://issue/YZT-71-r0",
+      "owner_role": "engineering-lead",
+      "version": "1",
+      "status": "accepted",
+      "purpose": "R0 typo fix",
+      "intended_consumers": ["software-engineer"],
+      "provenance": {
+        "created_at": "2026-09-10T09:00:00Z",
+        "updated_at": "2026-09-10T09:00:00Z",
+        "produced_by_role": "engineering-lead"
+      },
+      "based_on": [],
+      "locator": "multica://issue/YZT-71-r0",
+      "semantics": {
+        "goal": "Fix comment typo",
+        "scope": "one comment string",
+        "acceptance": "string matches",
+        "review_level": "R0"
+      }
+    }
+  ]
+}

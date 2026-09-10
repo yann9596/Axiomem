@@ -1,0 +1,14 @@
+{
+  "schema_version": "1.0",
+  "kind": "artifact_ready_check_request",
+  "target_role": "engineering-lead",
+  "review_level": "R0",
+  "requirements": [
+    {
+      "artifact_type": "issue_definition",
+      "artifact_id": "ISS-WIMG-R0",
+      "version": "1",
+      "required": true
+    }
+  ]
+}

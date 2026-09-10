@@ -1,0 +1,105 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Artifact Contract — common envelope (U10)",
+  "description": "Level-1 identity envelope for official cross-role artifacts and runtime outputs. Presentation of body content is flexible; this object only standardizes identity, version, status, consumers, provenance and traceability relations. Not a Memory Core type and not a T00 public field.",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "kind",
+    "artifact_type",
+    "artifact_id",
+    "project_id",
+    "task_id",
+    "owner_role",
+    "version",
+    "status",
+    "purpose",
+    "intended_consumers",
+    "provenance",
+    "based_on",
+    "semantics"
+  ],
+  "properties": {
+    "schema_version": { "const": "1.0" },
+    "kind": { "const": "artifact_envelope" },
+    "artifact_type": {
+      "type": "string",
+      "enum": [
+        "issue_definition",
+        "context_package",
+        "product_expectation",
+        "design_baseline",
+        "implementation",
+        "delivery_review",
+        "qa_acceptance"
+      ]
+    },
+    "artifact_id": { "type": "string", "pattern": "\\S" },
+    "project_id": { "type": "string", "pattern": "\\S" },
+    "task_id": { "type": "string", "pattern": "\\S" },
+    "owner_role": { "$ref": "project-registry.schema.json#/$defs/role_id" },
+    "version": {
+      "type": "string",
+      "pattern": "\\S",
+      "description": "Exact version token. latest / current / free-prose are rejected by the runtime, not by this pattern alone."
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "draft",
+        "ready",
+        "ready_for_review",
+        "changes_required",
+        "accepted",
+        "superseded",
+        "stale"
+      ]
+    },
+    "purpose": { "type": "string", "pattern": "\\S" },
+    "intended_consumers": {
+      "type": "array",
+      "items": { "$ref": "project-registry.schema.json#/$defs/role_id" }
+    },
+    "provenance": {
+      "type": "object",
+      "required": ["created_at", "updated_at", "produced_by_role"],
+      "properties": {
+        "created_at": { "type": "string", "format": "date-time" },
+        "updated_at": { "type": "string", "format": "date-time" },
+        "produced_by_role": { "$ref": "project-registry.schema.json#/$defs/role_id" }
+      },
+      "additionalProperties": false
+    },
+    "based_on": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/artifact_ref" }
+    },
+    "supersedes": { "$ref": "#/$defs/artifact_ref" },
+    "reviewed_artifact": { "$ref": "#/$defs/artifact_ref" },
+    "validated_against": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/artifact_ref" }
+    },
+    "locator": {
+      "type": "string",
+      "pattern": "^(multica|adr|doc|repo|registry|project|git)://\\S+$"
+    },
+    "semantics": {
+      "type": "object",
+      "description": "Type-level semantic answers. Keys are required by the catalog; extra task-specific keys are allowed. Headings and chapter count are not constrained."
+    }
+  },
+  "additionalProperties": false,
+  "$defs": {
+    "artifact_ref": {
+      "type": "object",
+      "required": ["artifact_type", "artifact_id", "version"],
+      "properties": {
+        "artifact_type": { "type": "string", "pattern": "\\S" },
+        "artifact_id": { "type": "string", "pattern": "\\S" },
+        "version": { "type": "string", "pattern": "\\S" }
+      },
+      "additionalProperties": false
+    }
+  }
+}

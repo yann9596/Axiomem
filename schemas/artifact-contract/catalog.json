@@ -1,0 +1,232 @@
+{
+  "schema_version": "1.0",
+  "kind": "artifact_catalog",
+  "types": [
+    {
+      "artifact_type": "issue_definition",
+      "title": "Issue Definition",
+      "owner_role": "engineering-lead",
+      "default_consumers": [
+        "context-engineer",
+        "solution-architect",
+        "software-engineer",
+        "delivery-reviewer",
+        "qa"
+      ],
+      "semantic_keys": [
+        {"key": "goal", "required": true, "description": "What this task is for"},
+        {"key": "scope", "required": true, "description": "In-scope work"},
+        {"key": "non_goal", "required": false, "description": "Out of scope when valuable"},
+        {"key": "why_or_value", "required": false, "description": "Why the work matters"},
+        {"key": "dependencies", "required": false, "description": "Upstream dependencies"},
+        {"key": "context_refs", "required": false, "description": "Relevant context pointers"},
+        {"key": "expected_deliverable", "required": true, "description": "Formal artifact expected"},
+        {"key": "acceptance", "required": true, "description": "Acceptance criteria"},
+        {"key": "review_level", "required": true, "description": "R0, R1 or R2"},
+        {"key": "qa_requirement", "required": false, "description": "Whether QA is required"},
+        {"key": "known_risks", "required": false, "description": "Known risks or unknowns"}
+      ],
+      "r0_required_keys": ["goal", "scope", "acceptance", "review_level"],
+      "allowed_input_statuses": ["ready", "ready_for_review", "accepted"],
+      "relation_rules": {
+        "based_on_min": 0,
+        "requires_reviewed_artifact": false,
+        "requires_validated_against": false
+      },
+      "correction_owner": "engineering-lead"
+    },
+    {
+      "artifact_type": "context_package",
+      "title": "Task Context Package",
+      "owner_role": "context-engineer",
+      "default_consumers": [
+        "engineering-lead",
+        "context-engineer",
+        "solution-architect",
+        "software-engineer",
+        "delivery-reviewer",
+        "qa"
+      ],
+      "semantic_keys": [
+        {"key": "task_ref", "required": true, "description": "Opaque task identity"},
+        {"key": "target_role", "required": true, "description": "Role the package was built for"},
+        {"key": "resolved_scope", "required": true, "description": "Resolved scope"},
+        {"key": "project_phase", "required": false, "description": "Project phase"},
+        {"key": "anchor_digest", "required": true, "description": "Anchor digest"},
+        {"key": "project_checkpoint_slice", "required": false, "description": "Project checkpoint slice"},
+        {"key": "rules", "required": false, "description": "Applicable rules"},
+        {"key": "current_facts", "required": false, "description": "Relevant current facts"},
+        {"key": "blocked_by", "required": false, "description": "Visible gaps"},
+        {"key": "task_evidence", "required": false, "description": "Task evidence including artifact deps"},
+        {"key": "source_refs", "required": true, "description": "Source refs"},
+        {"key": "built_from", "required": true, "description": "task_fingerprint and content revisions"}
+      ],
+      "r0_required_keys": ["task_ref", "target_role", "resolved_scope", "built_from"],
+      "allowed_input_statuses": ["ready", "ready_for_review", "accepted"],
+      "relation_rules": {
+        "based_on_min": 0,
+        "requires_reviewed_artifact": false,
+        "requires_validated_against": false
+      },
+      "correction_owner": "context-engineer"
+    },
+    {
+      "artifact_type": "product_expectation",
+      "title": "Product Expectation Baseline",
+      "owner_role": "context-engineer",
+      "default_consumers": [
+        "engineering-lead",
+        "solution-architect",
+        "software-engineer",
+        "delivery-reviewer",
+        "qa"
+      ],
+      "semantic_keys": [
+        {"key": "product_positioning", "required": true, "description": "Product positioning"},
+        {"key": "target_users", "required": true, "description": "Target users"},
+        {"key": "potential_users", "required": false, "description": "Potential users when relevant"},
+        {"key": "core_principles", "required": true, "description": "Core product principles"},
+        {"key": "feature_expectations", "required": true, "description": "Feature expectations"},
+        {"key": "prohibited_outcomes", "required": true, "description": "Prohibited outcomes"},
+        {"key": "approved_decisions", "required": true, "description": "Approved decisions / authority refs"},
+        {"key": "external_evidence", "required": false, "description": "External / user evidence"},
+        {"key": "known_uncertainty", "required": false, "description": "Known uncertainty"},
+        {"key": "conflicts", "required": false, "description": "Open conflicts"},
+        {"key": "as_of", "required": true, "description": "As-of timestamp or revision"}
+      ],
+      "r0_required_keys": ["product_positioning", "feature_expectations", "as_of"],
+      "allowed_input_statuses": ["ready", "accepted"],
+      "relation_rules": {
+        "based_on_min": 0,
+        "requires_reviewed_artifact": false,
+        "requires_validated_against": false
+      },
+      "correction_owner": "context-engineer"
+    },
+    {
+      "artifact_type": "design_baseline",
+      "title": "Solution / Design Baseline",
+      "owner_role": "solution-architect",
+      "default_consumers": [
+        "engineering-lead",
+        "software-engineer",
+        "delivery-reviewer",
+        "qa"
+      ],
+      "semantic_keys": [
+        {"key": "problem", "required": true, "description": "Problem / goal"},
+        {"key": "current_behavior", "required": true, "description": "Current behavior"},
+        {"key": "target_behavior", "required": true, "description": "Target behavior"},
+        {"key": "concrete_solution", "required": true, "description": "Concrete design"},
+        {"key": "affected_boundaries", "required": true, "description": "Affected repos / modules / boundaries"},
+        {"key": "contract_changes", "required": false, "description": "Data / API / event / UI contract changes"},
+        {"key": "compatibility", "required": true, "description": "Compatibility"},
+        {"key": "failure_semantics", "required": true, "description": "Failure semantics"},
+        {"key": "invariants", "required": false, "description": "Important invariants"},
+        {"key": "risks", "required": true, "description": "Risks / tradeoffs"},
+        {"key": "implementation_boundaries", "required": true, "description": "Implementation boundaries"},
+        {"key": "dependencies", "required": false, "description": "Dependencies"},
+        {"key": "validation_focus", "required": true, "description": "Validation focus"},
+        {"key": "open_questions", "required": false, "description": "Open questions"}
+      ],
+      "r0_required_keys": ["problem", "concrete_solution", "affected_boundaries"],
+      "allowed_input_statuses": ["ready", "ready_for_review", "accepted"],
+      "relation_rules": {
+        "based_on_min": 0,
+        "requires_reviewed_artifact": false,
+        "requires_validated_against": false
+      },
+      "correction_owner": "solution-architect"
+    },
+    {
+      "artifact_type": "implementation",
+      "title": "Implementation Report / Change Set",
+      "owner_role": "software-engineer",
+      "default_consumers": [
+        "engineering-lead",
+        "delivery-reviewer",
+        "qa"
+      ],
+      "semantic_keys": [
+        {"key": "what_changed", "required": true, "description": "What changed"},
+        {"key": "artifact_refs", "required": true, "description": "Commit / branch / build refs"},
+        {"key": "implementation_scope", "required": true, "description": "Implementation scope"},
+        {"key": "deviations", "required": true, "description": "Known deviations from design"},
+        {"key": "tests", "required": true, "description": "Tests / verification"},
+        {"key": "known_risks", "required": true, "description": "Known risks"},
+        {"key": "unresolved_issues", "required": false, "description": "Unresolved issues"},
+        {"key": "context_findings", "required": false, "description": "Context findings"},
+        {"key": "review_readiness", "required": true, "description": "Review readiness"}
+      ],
+      "r0_required_keys": ["what_changed", "artifact_refs", "tests"],
+      "allowed_input_statuses": ["ready", "ready_for_review", "accepted"],
+      "relation_rules": {
+        "based_on_min": 0,
+        "requires_reviewed_artifact": false,
+        "requires_validated_against": false
+      },
+      "correction_owner": "software-engineer"
+    },
+    {
+      "artifact_type": "delivery_review",
+      "title": "Delivery Review Report",
+      "owner_role": "delivery-reviewer",
+      "default_consumers": [
+        "engineering-lead",
+        "software-engineer",
+        "qa"
+      ],
+      "semantic_keys": [
+        {"key": "verdict", "required": true, "description": "APPROVE | CHANGES_REQUIRED | ESCALATE"},
+        {"key": "requirement_correctness", "required": true, "description": "Requirement correctness"},
+        {"key": "global_correctness", "required": true, "description": "Global / business correctness"},
+        {"key": "robustness", "required": true, "description": "Robustness"},
+        {"key": "maintainability", "required": true, "description": "Maintainability / evolvability"},
+        {"key": "evidence_freshness", "required": true, "description": "Evidence / truthfulness"},
+        {"key": "artifact_findings", "required": true, "description": "Artifact-specific findings"},
+        {"key": "required_changes", "required": true, "description": "Required changes"},
+        {"key": "follow_ups", "required": false, "description": "Non-blocking follow-ups"},
+        {"key": "challenges", "required": false, "description": "Context / design / scope challenges"}
+      ],
+      "r0_required_keys": ["verdict"],
+      "allowed_input_statuses": ["ready", "accepted"],
+      "relation_rules": {
+        "based_on_min": 1,
+        "requires_reviewed_artifact": true,
+        "requires_validated_against": false
+      },
+      "correction_owner": "delivery-reviewer"
+    },
+    {
+      "artifact_type": "qa_acceptance",
+      "title": "Product & Quality Acceptance Report",
+      "owner_role": "qa",
+      "default_consumers": ["engineering-lead"],
+      "semantic_keys": [
+        {"key": "verdict", "required": true, "description": "PASS | CONDITIONAL_PASS | FAIL"},
+        {"key": "pe_validation", "required": true, "description": "Product Expectation validation"},
+        {"key": "design_conformance", "required": true, "description": "Design conformance"},
+        {"key": "integration_validation", "required": true, "description": "Integration / E2E / regression"},
+        {"key": "failure_risk_validation", "required": true, "description": "Failure / risk validation"},
+        {"key": "critical_findings", "required": true, "description": "Critical findings"},
+        {"key": "residual_risks", "required": true, "description": "Residual risks"},
+        {"key": "required_fixes", "required": true, "description": "Required fixes"},
+        {"key": "evidence", "required": true, "description": "Evidence"}
+      ],
+      "r0_required_keys": ["verdict"],
+      "allowed_input_statuses": ["ready", "accepted"],
+      "relation_rules": {
+        "based_on_min": 1,
+        "requires_reviewed_artifact": false,
+        "requires_validated_against": true,
+        "validated_against_types": [
+          "product_expectation",
+          "design_baseline",
+          "implementation",
+          "delivery_review"
+        ]
+      },
+      "correction_owner": "qa"
+    }
+  ]
+}

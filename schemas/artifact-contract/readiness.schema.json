@@ -1,0 +1,104 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Artifact Contract — ARTIFACT_READY_CHECK request and result (U10)",
+  "description": "Runtime check outside Memory Core. Failure is ARTIFACT_NOT_READY and must block READY/trigger. No new T00 public field.",
+  "$defs": {
+    "requirement": {
+      "type": "object",
+      "required": ["artifact_type", "artifact_id", "version"],
+      "properties": {
+        "artifact_type": { "type": "string", "pattern": "\\S" },
+        "artifact_id": { "type": "string", "pattern": "\\S" },
+        "version": { "type": "string" },
+        "required": { "type": "boolean" },
+        "ref": { "type": "string" }
+      },
+      "additionalProperties": false
+    },
+    "request": {
+      "type": "object",
+      "required": ["schema_version", "kind", "target_role", "requirements"],
+      "properties": {
+        "schema_version": { "const": "1.0" },
+        "kind": { "const": "artifact_ready_check_request" },
+        "target_role": { "type": "string", "pattern": "\\S" },
+        "review_level": { "enum": ["R0", "R1", "R2"] },
+        "requirements": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/requirement" }
+        }
+      },
+      "additionalProperties": false
+    },
+    "failure": {
+      "type": "object",
+      "required": [
+        "artifact_id",
+        "artifact_type",
+        "version",
+        "ref",
+        "reason_code",
+        "reason",
+        "correction_owner",
+        "route"
+      ],
+      "properties": {
+        "artifact_id": { "type": "string" },
+        "artifact_type": { "type": "string" },
+        "version": { "type": "string" },
+        "ref": { "type": "string" },
+        "reason_code": { "type": "string" },
+        "reason": { "type": "string" },
+        "correction_owner": { "type": "string" },
+        "route": { "enum": ["producer_correction", "lead_replan"] }
+      },
+      "additionalProperties": false
+    },
+    "result": {
+      "type": "object",
+      "required": [
+        "schema_version",
+        "kind",
+        "status",
+        "checks",
+        "failures",
+        "blocks_handoff",
+        "dependency_digest"
+      ],
+      "properties": {
+        "schema_version": { "const": "1.0" },
+        "kind": { "const": "artifact_ready_check_result" },
+        "status": { "enum": ["ARTIFACT_READY", "ARTIFACT_NOT_READY"] },
+        "checks": {
+          "type": "object",
+          "required": [
+            "expected_artifact_type_present",
+            "authoritative_version_resolved",
+            "status_allowed_for_target_role",
+            "superseded",
+            "stale",
+            "required_semantics_present",
+            "upstream_refs_resolvable"
+          ],
+          "properties": {
+            "expected_artifact_type_present": { "type": "boolean" },
+            "authoritative_version_resolved": { "type": "boolean" },
+            "status_allowed_for_target_role": { "type": "boolean" },
+            "superseded": { "type": "boolean" },
+            "stale": { "type": "boolean" },
+            "required_semantics_present": { "type": "boolean" },
+            "upstream_refs_resolvable": { "type": "boolean" }
+          },
+          "additionalProperties": false
+        },
+        "failures": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/failure" }
+        },
+        "blocks_handoff": { "type": "boolean" },
+        "dependency_digest": { "type": "string" }
+      },
+      "additionalProperties": false
+    }
+  }
+}

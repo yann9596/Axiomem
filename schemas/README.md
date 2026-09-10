@@ -44,6 +44,23 @@ fingerprint, built_from content revisions, PLAN-subset validation,
 framework-neutral boundary scan); `tools/tests/test_context_handoff_contracts.py`
 verifies all of it.
 
+## Artifact Contract Runtime (U10, YZT-71)
+
+`artifact-contract/` is a **runtime** surface, not a Canonical Memory type
+and not a Frozen T00 Public Schema. Executable: `tools/cartifact.py`.
+Dependency sets export only through existing `context-package`
+`task_evidence` / `source_refs`. Do not add these files to Gate A canonical
+targets.
+
+| File | Object |
+|---|---|
+| `artifact-contract/common-envelope.schema.json` | Level-1 identity envelope |
+| `artifact-contract/catalog.json` | Seven core types + semantic contracts |
+| `artifact-contract/readiness.schema.json` | `ARTIFACT_READY_CHECK` request/result |
+| `artifact-contract/routing.json` | Option A R0/R1/R2 contracts |
+| `artifact-contract/dependency-set.schema.json` | Deterministic dependency set |
+| `artifact-contract/u04-u05-input-contract.json` | Import/CLI surface for U04/U05 |
+
 ## Shared grammar (from evidence-ref.schema.json)
 
 - **scope**: `team | cross_project | project | task` with deterministic

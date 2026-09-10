@@ -1,0 +1,31 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Artifact Contract — deterministic dependency set (U10)",
+  "description": "Sorted identity/version set exported through existing T00 task_evidence / source_refs. No new public package field. A digest change is the validity input later U04 maps to package_stale / REFRESH_REQUIRED.",
+  "type": "object",
+  "required": ["schema_version", "kind", "dependencies", "dependency_digest"],
+  "properties": {
+    "schema_version": { "const": "1.0" },
+    "kind": { "const": "artifact_dependency_set" },
+    "dependencies": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["artifact_type", "artifact_id", "version", "required"],
+        "properties": {
+          "artifact_type": { "type": "string" },
+          "artifact_id": { "type": "string" },
+          "version": { "type": "string" },
+          "required": { "type": "boolean" },
+          "ref": { "type": "string" }
+        },
+        "additionalProperties": false
+      }
+    },
+    "dependency_digest": {
+      "type": "string",
+      "pattern": "^sha256:[0-9a-f]{64}$"
+    }
+  },
+  "additionalProperties": false
+}

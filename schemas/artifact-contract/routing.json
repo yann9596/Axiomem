@@ -1,0 +1,51 @@
+{
+  "schema_version": "1.0",
+  "kind": "artifact_routing_contracts",
+  "option": "A",
+  "levels": {
+    "R0": {
+      "independent_delivery_review_attempt": false,
+      "independent_qa_attempt": false,
+      "requires_delivery_review": false,
+      "requires_qa": false,
+      "producer_auto_triggers_delivery_reviewer": false,
+      "delivery_reviewer_auto_triggers_qa": false,
+      "lead_mediated": true,
+      "review_in_producer_task": true,
+      "min_envelope": "common_envelope",
+      "required_review_input_types": [],
+      "required_qa_baseline_types": []
+    },
+    "R1": {
+      "independent_delivery_review_attempt": true,
+      "independent_qa_attempt": false,
+      "requires_delivery_review": true,
+      "requires_qa": false,
+      "producer_auto_triggers_delivery_reviewer": false,
+      "delivery_reviewer_auto_triggers_qa": false,
+      "lead_mediated": true,
+      "review_in_producer_task": false,
+      "min_envelope": "type_contract",
+      "required_review_input_types": ["implementation"],
+      "required_qa_baseline_types": []
+    },
+    "R2": {
+      "independent_delivery_review_attempt": true,
+      "independent_qa_attempt": true,
+      "requires_delivery_review": true,
+      "requires_qa": true,
+      "producer_auto_triggers_delivery_reviewer": false,
+      "delivery_reviewer_auto_triggers_qa": false,
+      "lead_mediated": true,
+      "review_in_producer_task": false,
+      "min_envelope": "type_contract",
+      "required_review_input_types": ["implementation"],
+      "required_qa_baseline_types": [
+        "product_expectation",
+        "design_baseline",
+        "implementation",
+        "delivery_review"
+      ]
+    }
+  }
+}

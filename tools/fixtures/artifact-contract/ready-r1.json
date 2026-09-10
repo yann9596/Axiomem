@@ -1,0 +1,26 @@
+{
+  "schema_version": "1.0",
+  "kind": "artifact_ready_check_request",
+  "target_role": "delivery-reviewer",
+  "review_level": "R1",
+  "requirements": [
+    {
+      "artifact_type": "implementation",
+      "artifact_id": "ART-WIMG-031",
+      "version": "aaa111",
+      "required": true
+    },
+    {
+      "artifact_type": "design_baseline",
+      "artifact_id": "SOL-WIMG-017",
+      "version": "3",
+      "required": true
+    },
+    {
+      "artifact_type": "issue_definition",
+      "artifact_id": "ISS-WIMG-071",
+      "version": "1",
+      "required": true
+    }
+  ]
+}

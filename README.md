@@ -57,6 +57,7 @@ python tools/context_cli.py gate-b                # Gate B hard acceptance tests
 python tools/context_cli.py migrate-replay        # Gate C historical replay
 python tools/context_cli.py compat get|retrieve   # old V1 call translation only (writes nothing)
 python tools/chandoff.py scan                     # framework-neutral boundary audit (T00)
+python tools/cartifact.py revision                # U10 artifact-contract runtime (not Public Context API)
 ```
 
 The V1.1 CLI never turns findings into canonical objects automatically;

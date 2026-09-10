@@ -1,0 +1,36 @@
+{
+  "schema_version": "1.0",
+  "kind": "artifact_contract_u04_u05_input",
+  "module": "tools/cartifact.py",
+  "not_public_context_api": true,
+  "not_memory_core": true,
+  "not_t00_schema": true,
+  "import": {
+    "load_catalog": "catalog of seven core types",
+    "load_routing_contracts": "Option A R0/R1/R2 contracts",
+    "artifact_contract_revision": "deterministic content digest of this directory plus cartifact.py",
+    "ArtifactStore": "caller-supplied envelope store; not a dispatch database",
+    "validate_envelope": "common envelope + type/relation checks",
+    "resolve_exact": "fail-closed exact version resolution",
+    "authoritative_version": "unique current non-stale non-superseded version",
+    "artifact_ready_check": "ARTIFACT_READY / ARTIFACT_NOT_READY; blocks READY/trigger",
+    "dependency_digest": "byte-stable sha256 of sorted dependency set",
+    "export_t00_surfaces": "task_evidence + source_refs only; no new T00 field",
+    "dependency_changed": "true when digest differs; U04 maps to package_stale / REFRESH_REQUIRED",
+    "apply_supersede": "marks superseded and stales downstream; never rewrites verdicts",
+    "validate_routing": "machine-check Option A; triggers_created is always 0"
+  },
+  "cli": "python tools/cartifact.py <revision|catalog|validate-envelope|resolve|ready-check|dependency-digest|export|routing-check|supersede>",
+  "t00_export": {
+    "task_evidence.kind": ["artifact_dependency", "artifact_dependency_set"],
+    "source_refs": "existing ref_string grammar only",
+    "self_check_mapping": "U04 may treat dependency_digest mismatch as package_stale -> REFRESH_REQUIRED. U10 does not amend frozen reason vocabulary."
+  },
+  "forbidden_in_this_surface": [
+    "prepare_artifact_handoff",
+    "review_handoff",
+    "qa_handoff",
+    "canonical writes",
+    "creating or triggering delivery-reviewer or qa work"
+  ]
+}
