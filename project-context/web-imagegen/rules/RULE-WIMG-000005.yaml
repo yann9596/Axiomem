@@ -44,7 +44,7 @@ applicability:
 relevant_roles:
   - software-engineer
   - solution-architect
-  - feature-reviewer
+  - delivery-reviewer
   - qa
 
 exception_policy: none
@@ -68,4 +68,4 @@ source_refs:
   - repo://web-imagegen@600225a/README.md
 
 created_at: 2026-09-06T09:15:00Z
-updated_at: 2026-09-08T14:30:00Z
+updated_at: 2026-09-10T09:00:00Z

@@ -5,17 +5,24 @@ responsibilities:
   - own canonical memory (Anchor maintenance, Rule/Fact/Case curation), checkpoints and the derived retrieval layer as sole normal write owner
   - process findings from all roles (verify, classify, retain/forget) without granting unearned authority
   - maintain scope-first retrieval, role profiles, case activation and grooming
+  - govern the Product Expectation Baseline as a versioned Project Artifact + Authority/Evidence Source (not a new Memory Type). It builds/calibrates it from Project Charter/Anchor governance, confirmed product principles, approved product decisions, still-valid historical authority/evidence, verified user/product evidence and relevant Current Facts/Cases/Findings; approved Authority projects it into Anchor/Rule, Evidence/Reality never automatically becomes normative
+  - ingest external intelligence (e.g. Grok) only as Evidence / Finding / Pointer through V1.1 governance (source, scope, freshness, verification check) and compare it against the Product Expectation Baseline; escalate PRODUCT_EXPECTATION_CONFLICT to 01 when material; package minimal governed Grok challenge context (EXTERNAL_CHALLENGE_BRIEF) without disclosing internal rationale, full project memory, QA expected answers or architecture reasoning
+  - maintain artifact baseline/context pointers (authoritative artifact refs and baseline context classes expressed in role profiles) without owning artifact version-binding mechanics
+  - resolve context exceptions and unresolved conflicts as the exception target only; ordinary task Findings are captured at REPORT_FINDING and processed at their natural boundaries (SELF_CHECK / PREPARE_HANDOFF / TASK_COMPLETION) and must not wake 02
   - escalate machine-unsolvable governance/authority questions to Multica Issues
 authority_boundary:
   - can write memory files but cannot change Anchor governance semantics or create normative authority without a recognized decision artifact
   - cannot change project phase (Registry is the authority)
   - cannot silently resolve conflicts or overwrite canonical objects
+  - 02 governs the Product Expectation Baseline but does not own the final product direction decision (material conflict goes to 01)
+  - 02 is never the execution agent of an ordinary prepare_handoff READY path
 retrieval_policy:
   baseline_context:
     - team.checkpoint
     - current_project.checkpoint.task_relevant_slice
     - current_project.anchor
     - registry
+    - artifact.authoritative_refs         # V2: authoritative artifact/baseline refs for governance work
   preferred_memory:
     - current_project.rules
     - current_project.current_facts
@@ -23,9 +30,12 @@ retrieval_policy:
     - current_project.cases.metadata
     - findings.open
     - evidence_and_relations
+    - artifact.product_expectation_baseline_ref   # V2: governed Product Expectation Baseline pointer
+    - artifact.external_evidence_refs             # V2: governed external intelligence pointers
   conditional_memory:
     - cross_project.memory.explicit_dependency
     - historical_evidence.context_challenge
+    - artifact.open_context_challenges            # V2: open context challenges (06 -> 02 etc.)
   default_exclude:
     - nothing                              # CE needs full-system visibility within resolved scope
   priority: [rule, current_fact, checkpoint, case]

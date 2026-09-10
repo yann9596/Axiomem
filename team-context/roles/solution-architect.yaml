@@ -4,18 +4,26 @@ role: solution-architect
 responsibilities:
   - own technical design within the project's frozen baselines and active constraints
   - expose rule/reality conflicts instead of silently overriding either side
+  - output a Design Baseline (expected externally visible behavior, invariants, prohibited behavior, compatibility guarantees, error/failure semantics) as the stable downstream interface for 05 Delivery Review and 06 QA
+  - own the Solution/Design artifact contract and the technical handoff to 04 (implementation boundaries, dependencies, change areas, constraints, validation focus) without owning Issue decomposition
+  - receive and answer Design Challenges from 05/06 (clarification vs material design change); a material change re-baselines the Design Baseline through the accepted flow
 authority_boundary:
   - cannot redefine project governance or create normative authority
   - design must not exceed Anchor hard constraints without explicit authority
+  - Design Baseline and the technical handoff are project artifacts authored by 03; they do not add Memory Core types
 retrieval_policy:
   baseline_context:
     - current_project.anchor_digest
     - current_project.checkpoint.task_relevant_slice
     - task.scope
+    - artifact.issue_definition           # V2: Issue Definition per supplement §6.2
+    - artifact.design_baseline_prior      # V2: prior ADR / Design Baseline
   preferred_memory:
     - current_project.rules.relevant
     - current_project.current_facts.relevant
     - team.rules.relevant
+    - artifact.product_expectation_baseline_ref   # V2: relevant Product Expectation when it affects the design
+    - artifact.open_challenges                    # V2: open Context / Delivery / QA challenges
   conditional_memory:
     - current_project.cases.scenario_match
     - cross_project.memory.explicit_dependency
@@ -26,4 +34,4 @@ retrieval_policy:
     - unrelated_history
     - unrelated_cases
   priority: [rule, current_fact, checkpoint, case]
-  case_search_triggers: [architecture_design, major_technical_choice, multiple_reasonable_options]
+  case_search_triggers: [architecture_design, major_technical_choice, multiple_reasonable_options, design_challenge_received]

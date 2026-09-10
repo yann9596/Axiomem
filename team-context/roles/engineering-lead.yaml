@@ -5,27 +5,37 @@ responsibilities:
   - own project scope, priority, task decomposition and routing
   - decide project phase (writes the Project Registry via human/Lead decision)
   - arbitrate unresolved cross-role disagreement after one round trip
-  - trigger milestone QA
+  - trigger milestone QA (only the Lead formally triggers the QA gate)
+  - set review_level (R0 Lead review | R1 Delivery Review | R2 Delivery Review + QA) per issue and re-route dynamically on new evidence; carry review_level/qa_required in issue decomposition
+  - orchestrate the review/QA stage chain (Producer -> 05 Delivery Reviewer -> Lead -> 06 QA -> Lead for R2) with artifact-aware decomposition context (Issue Definition semantic contract, authoritative artifact refs, review/QA verdicts and stage state)
+  - dispatch every downstream handoff through PREPARE_HANDOFF (READY before trigger); ordinary Task Context is built by the Context Runtime, never hand-assembled by 02
+  - take Product Expectation / governed external input from 02 (PRODUCT_CONTEXT_REQUEST; Grok signals reach decisions only through 02), decide product direction, and never override Evidence-proven physical facts with project decisions
 authority_boundary:
   - owns governance semantics of project mission/scope (Anchor authority)
   - cannot silently take over another Owner's domain
   - canonical memory writes stay with Context Engineer
+  - R0/R1/R2 routing and review_level/qa_required fields are workflow routing, not Memory Core semantics
 retrieval_policy:
   baseline_context:
     - team.checkpoint.posture            # one-level project posture, phases derived from Registry
     - current_project.anchor_digest
     - blocking_issues.open_conflicts
+    - artifact.issue_definition          # V2: Issue Definition semantic contract for decomposition
+    - artifact.authoritative_refs        # V2: authoritative artifact refs for stage-recovery decisions
+    - artifact.review_qa_verdicts        # V2: Delivery Review / QA verdicts + current stage state
   preferred_memory:
     - current_project.rules.relevant
     - current_project.current_facts.relevant
     - team.rules.relevant
+    - current_project.checkpoint.task_relevant_slice   # relevant child results when deciding next stage
   conditional_memory:
     - cross_project.memory.explicit_dependency
-    - team.checkpoint.task_relevant_slice
     - current_project.cases.scenario_match
+    - findings.critical_or_material
   default_exclude:
     - unrelated_project_memory
     - project_internal_detail            # team posture, not project detail
     - unrelated_history
+    - full_code_detail                   # Lead needs decisions, not all code detail (supplement §6.1)
   priority: [rule, current_fact, checkpoint, case]
-  case_search_triggers: [governance_or_scope_conflict, cross_project_dependency_change]
+  case_search_triggers: [governance_or_scope_conflict, cross_project_dependency_change, review_or_qa_dispute]

@@ -54,7 +54,7 @@ not_applicable_when:
 
 relevant_roles:
   - solution-architect
-  - feature-reviewer
+  - delivery-reviewer
   - qa
 
 domains:
@@ -68,4 +68,4 @@ source_refs:
   - repo://multica-memory@61c6f0e/memory/app1-voc-evidence-status.json
 
 created_at: 2026-09-06T16:51:00Z
-updated_at: 2026-09-08T14:30:00Z
+updated_at: 2026-09-10T09:00:00Z

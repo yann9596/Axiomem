@@ -14,10 +14,49 @@
 # - RULE-WIMG-000003: added multica://issue/YZT-22 as authority for the
 #   embedding-interface-only clause (verbatim owner constraint), which neither
 #   the anchor nor YZT-40 states.
+# U02/YZT-69: added a claim for RULE-TEAM-000001 × multica://issue/YZT-66
+# (V2.2 Corrected six-role model + Human supplement, current authority after
+# the V2.1 REBASE DECISION); the two V1 rows below are retained as historical
+# evidence for the superseded statement.
 schema_version: "1.1"
 kind: authority_claim_evidence
 claims:
-  # ---------- RULE-TEAM-000001 (team scope) ----------
+  # ---------- RULE-TEAM-000001 (V2.2 six-role model; U02/YZT-69) ----------
+  - rule_id: RULE-TEAM-000001
+    authority_ref: multica://issue/YZT-66
+    claim_support:
+      supported: true
+      excerpt_or_pointer: >-
+        YZT-66 is the migration parent carrying the published `V2.1 REBASE
+        DECISION` (comment 01a08a59-090d-7693-92be-ec2ef337557d) with the
+        Human-provided runtime-integration supplement
+        (multica_v2_1_artifact_handoff_review_qa_supplement_draft.md, attachment
+        01a08a59-06af-7f2c-9fdf-cbc06d1f5a82) and the V2.2 Corrected change plan
+        (multica_team_v1_to_v2_change_plan_v2.2_corrected.md, attachment
+        01a08921-0fce-7a10-b75e-a7b4e11da000) attached as current authority.
+        Change plan §27.A "Agent Roster / Logical Role Identity" mandates:
+        "01 engineering-lead：保留 Identity" / "02 context-engineer：保留 Identity，
+        更新 Role Profile revision" / "旧 feature-reviewer：retired" / "新建逻辑
+        Role ID delivery-reviewer，不得只改旧 05 显示名" / "06 qa：保留 Identity，
+        更新为 Product & Quality Assurance 的 Role Profile revision" and
+        "更新 Project Registry 的 active/on-demand role set"; plan §0.13:
+        "旧 feature-reviewer logical role 正式退役；新 delivery-reviewer 使用新的
+        Role Identity"; plan §2: "旧 05 不再保留。"; supplement §20:
+        "role_profile_revision → bump for all six roles". Verbatim support for
+        the V2.2 six-role owner model recorded in this rule revision.
+      claim_relation: supports
+    scope_coverage:
+      covers: true
+      authority_scope: >-
+        workspace team migration governance: V2.2 Corrected six-role model +
+        Human runtime-integration supplement, staged on parent YZT-66 with
+        Human authority intake (V2.1 REBASE DECISION)
+      rule_scope: team (all tasks involving ownership, canonical writes, cross-role handoff)
+  # ---------- RULE-TEAM-000001 (team scope; V1 historical rows) ----------
+  # Historical evidence for the superseded V1 statement. RULE-TEAM-000001 no
+  # longer lists these refs in authority_refs (U02/YZT-69 re-pointed the rule
+  # to YZT-66); the rows are retained for audit provenance of the prior
+  # statement and remain inspectable in git history.
   - rule_id: RULE-TEAM-000001
     authority_ref: multica://issue/YZT-39
     claim_support:

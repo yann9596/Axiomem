@@ -1,14 +1,19 @@
 schema_version: "1.1"
 kind: project_registry
-updated_at: 2026-09-08T14:30:00Z
-authority_ref: multica://issue/YZT-40
+updated_at: 2026-09-10T09:00:00Z
+authority_ref: multica://issue/YZT-66
 notes: >
   Project Registry is the ONLY canonical source of project phase (F-6).
   Team Checkpoint phases are derived presentation only. Context repo topology:
   single Git repo with team/project dual logical roots (F-2); scope isolation
   is enforced by Canonical Scope + Policy + Retrieval Engine, not repo count.
   Project ids are stable short ids; multica_project_id keeps the Multica
-  workspace identity for traceability.
+  workspace identity for traceability. Role lists follow the V2.2 Corrected
+  six-role model (U02/YZT-69): delivery-reviewer replaces retired
+  feature-reviewer; review roles stay on-demand by design (R0/R1/R2 review
+  level and milestone-triggered QA); ops-sre is not part of the V2.2 team
+  roster. Prior V1/V1.1 role lists and their YZT-40 authority rows remain
+  inspectable in git history.
 
 projects:
   - id: app1
@@ -31,12 +36,11 @@ projects:
       - context-engineer
       - solution-architect
       - software-engineer
-      - feature-reviewer
     on_demand_roles:
+      - delivery-reviewer
       - qa
-      - ops-sre
-    updated_at: 2026-09-08T14:30:00Z
-    authority_ref: multica://issue/YZT-40
+    updated_at: 2026-09-10T09:00:00Z
+    authority_ref: multica://issue/YZT-66
 
   - id: web-imagegen
     name: Web-ImageGen
@@ -59,8 +63,7 @@ projects:
       - software-engineer
     on_demand_roles:
       - solution-architect
-      - feature-reviewer
+      - delivery-reviewer
       - qa
-      - ops-sre
-    updated_at: 2026-09-08T14:30:00Z
-    authority_ref: multica://issue/YZT-40
+    updated_at: 2026-09-10T09:00:00Z
+    authority_ref: multica://issue/YZT-66

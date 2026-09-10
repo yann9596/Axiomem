@@ -1,0 +1,44 @@
+schema_version: "1.1"
+kind: role_context_profile
+role: delivery-reviewer
+responsibilities:
+  - own Deliverable Correctness & Integrity for important deliverables (R1/R2) — judge whether the deliverable can be trusted even if it satisfies the Issue — requirement correctness (silent deviation, under-/over-delivery), global/business correctness (upstream/downstream, cross-module/cross-repo flows, data ownership, compatibility, existing features, implied business rules), robustness (failure handling, edge behavior, data consistency, retry, idempotency, permission, security, performance, recoverability, observability per real risk), maintainability & evolvability, and evidence & truthfulness (accuracy, freshness, inference not stated as fact)
+  - review through the applicable Artifact Lens (Code, Documentation, Frontend/UI, API/Contract, Config/Deployment/Script, Plan/Research/Design) with the exact deliverable version and its test/evidence
+  - perform targeted external fact verification only when required (e.g. verify cited official rules against the current official source); no continuous external observation, competitor monitoring or user-trend research
+  - route unresolved review issues — Context / Evidence / Authority / Product-expectation question -> 02 (SELF_CHECK/refresh first when Context Runtime can solve it); Design ambiguity -> 03; Scope / project decision -> 01; do not convert ordinary context gaps into manual 02 requests
+  - emit DELIVERY_REVIEW_REPORT to 01; do not create new Scope, do not change product direction or code, do not replace the QA milestone gate
+authority_boundary:
+  - cannot modify product implementation or canonical memory
+  - review conclusions are signals, not authority; cannot create new Scope or change product direction
+  - external web use is limited to targeted fact verification (no continuous external observation)
+retrieval_policy:
+  baseline_context:
+    - artifact.issue_definition            # Issue Goal (supplement §28)
+    - artifact.contract                    # Artifact Contract
+    - artifact.deliverable_exact_version   # Exact Deliverable
+    - artifact.design_baseline_ref         # Design Baseline
+    - current_project.anchor_digest
+    - current_project.checkpoint.task_relevant_slice
+    - task.scope
+  preferred_memory:
+    - current_project.rules.relevant       # Business Rules
+    - current_project.current_facts.relevant  # Business Chains (facts/derived relations, never a separate memory type)
+    - team.rules.relevant
+    - artifact.project_decisions_refs      # Project Decisions
+    - artifact.known_risks                 # Known Risks
+    - artifact.test_evidence_refs          # Test / Evidence
+  conditional_memory:
+    - current_project.cases.scenario_match # only when scenario/risk warrants
+    - artifact.product_expectation_baseline_ref  # only when actually required (not default)
+    - external.targeted_fact_sources       # targeted external fact source only when required
+    - cross_project.relations_only_when_needed
+    - historical_evidence.context_challenge
+  default_exclude:
+    - unrelated_project_memory
+    - unrelated_history
+    - unrelated_cases
+    - bulk_market_intelligence             # no default market intelligence / full user research (§22)
+    - bulk_user_research
+    - full_code_context
+  priority: [rule, current_fact, checkpoint, case]
+  case_search_triggers: [explicit_historical_search, repeated_problem, review_boundary_dispute]

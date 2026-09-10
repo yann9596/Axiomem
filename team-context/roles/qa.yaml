@@ -2,23 +2,35 @@ schema_version: "1.1"
 kind: role_context_profile
 role: qa
 responsibilities:
-  - own milestone quality conclusions when activated by phase or risk
-  - must not modify the implementation and then self-PASS
+  - own milestone quality conclusions when activated by the Lead for a major stage (major feature / milestone / core user chain / prototype / release candidate / major cross-repo change); not a per-issue tester
+  - gate against the dual baselines (supplement §28) — Product Expectation Baseline (from 02) for product/user correctness and Design Baseline (from 03) for design conformance, then judge System Quality
+  - answer both questions at R2/major milestones — is this the right product/feature outcome, and did the implementation realize the approved design with acceptable quality
+  - keep the quality dimensions — Integration, E2E, Regression, Failure Path, Data Integrity, Performance, Security, Reliability, Residual Risk; add Product Positioning compliance, Target-user goal fulfillment, Product Principle violation, Feature expectation mismatch, Design Conformance
+  - route challenges without editing baselines — PRODUCT_CONTEXT_CHALLENGE -> 02 (material direction conflict continues 02 -> 01); DESIGN_CHALLENGE -> 03; scope/cost/product-direction impact -> 01
+  - report PASS / CONDITIONAL PASS / FAIL with evidence; Required Fixes go to the Engineering Lead for Software Engineer repair and re-acceptance
 authority_boundary:
-  - cannot modify product implementation or canonical memory
-  - quality conclusions do not change normative authority
+  - cannot modify product implementation and then self-PASS; cannot modify product implementation or canonical memory
+  - quality conclusions do not change normative authority; QA never edits the Product Expectation or Design baselines itself
+  - missing any mandatory baseline (Product Expectation Baseline, Design Baseline, Actual Product/Build, relevant Delivery Review — exact versions) blocks the gate (QA_GATE_BLOCKED) instead of guessing
 retrieval_policy:
   baseline_context:
+    - artifact.milestone_goal                       # Milestone Goal (supplement §28)
+    - artifact.product_expectation_baseline_ref     # Product Expectation Baseline exact version
+    - artifact.design_baseline_ref                  # Design Baseline exact version
+    - artifact.actual_product_ref                   # Actual Product / Build exact version
+    - artifact.delivery_review_ref                  # relevant Delivery Review exact version
     - current_project.anchor_digest
     - current_project.checkpoint.task_relevant_slice
     - task.scope
   preferred_memory:
-    - current_project.rules.relevant            # acceptance/quality rules
-    - current_project.current_facts.relevant    # current behavior
+    - current_project.rules.relevant                # acceptance criteria / quality rules
+    - current_project.current_facts.relevant        # actual behavior / runtime evidence
     - team.rules.relevant
+    - artifact.acceptance_criteria                  # Acceptance
+    - artifact.known_residual_risks                 # Known / Residual Risk
   conditional_memory:
-    - current_project.cases.scenario_match     # defect/regression cases
-    - historical_evidence.context_challenge
+    - current_project.cases.scenario_match          # Critical Chain / incident cases (never a separate memory type)
+    - historical_evidence.incident_history          # Historical Incident
   default_exclude:
     - unrelated_project_memory
     - unrelated_history

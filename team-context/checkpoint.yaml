@@ -52,6 +52,20 @@ confirmed:
       - multica://issue/YZT-66
       - multica://issue/YZT-68
       - schemas/README.md
+  - id: cp-confirmed-004
+    summary: >
+      U02/YZT-69 已按 V2.2 Corrected + Human 补充稿（§20/§28）迁移角色身份数据：
+      canonical 当前 roster 恰为六个逻辑角色（engineering-lead、
+      context-engineer、solution-architect、software-engineer、
+      delivery-reviewer、qa）；feature-reviewer 退役且不保留 alias，ops-sre
+      不在 V2.2 roster；六个 Role Profile 全部 revision bump，05/06 profile
+      内容按补充稿 §28；RULE-TEAM-000001 更新为 V2.2 owner 模型（authority
+      YZT-66）；Registry role lists 同步。Multica agent UUID 映射在
+      adapters/multica/role-bindings/（Memory Core / Native API 之外）。
+    refs:
+      - multica://issue/YZT-69
+      - multica://issue/YZT-66
+      - team-context/registry/projects.yaml
 
 open:
   - id: cp-team-open-002
@@ -68,9 +82,10 @@ open:
 conflicts: []
 
 next:
-  - Stage 2（YZT-66）：U02 角色身份/Profile 迁移以 READY handoff 启动（唯一 Assignment trigger）
-  - U03 重新验证 T00–T06 并合并 handoff chain（drain FIND-WIMG-HO00-000001）
-  - U04/U05 重建 shared skill 与 Agent/Squad Instructions；平台 Instructions/Skills cutover 由 workspace owner 执行
+  - U02（YZT-69）六角色迁移已交付（in_review，等待 Lead 验收）；U03 以 U02 报告中的 registry/profile revision 为输入
+  - U03 重新验证 T00–T06 并合并 handoff chain（drain FIND-WIMG-HO00-000001；含 duplicate checkpoint-entry id 修正）
+  - U04/U05 重建 shared skill 与 Agent/Squad Instructions；05 agent 平台改名/Instructions cutover 归 U05/U12
+  - 平台 Instructions/Skills cutover 由 workspace owner 执行
 
 refs:
   - migration/README.md
@@ -78,4 +93,4 @@ refs:
   - migration/snapshot.yaml
   - team-context/registry/projects.yaml
 
-updated_at: 2026-09-10T05:40:00Z
+updated_at: 2026-09-10T09:00:00Z

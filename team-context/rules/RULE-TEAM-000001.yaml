@@ -4,16 +4,22 @@ id: RULE-TEAM-000001
 legacy_ids:
   - governance-owner-boundaries
 
-title: Team owner boundaries (six-role model)
+title: Team owner boundaries (V2.2 six-role model)
 statement: >
-  Engineering Lead owns project scope, priority, task decomposition and routing.
-  Context Engineer is the sole normal write owner for Canonical Memory (project,
-  team, task context and RAG derived layer). Solution Architect owns technical
-  design; Software Engineer owns product implementation; Feature Reviewer owns
-  functional review and external/user signals; QA owns milestone quality
-  conclusions. Any role may challenge, but unresolved cross-role disagreement
-  escalates to Engineering Lead after one round trip. Any role may Challenge;
-  no role silently takes over another Owner's domain.
+  Engineering Lead owns project scope, priority, task decomposition and
+  routing, sets review levels (R0/R1/R2), and is the only formal QA-gate
+  trigger. Context Engineer is the sole normal write owner for Canonical
+  Memory (project, team, task context and RAG derived layer) and governs the
+  Product Expectation Baseline as a versioned project artifact without owning
+  the product direction decision. Solution Architect owns technical design and
+  the Design Baseline; Software Engineer owns product implementation;
+  Delivery Reviewer owns deliverable correctness and integrity review; QA owns
+  Product Expectation + Design Conformance + milestone quality conclusions.
+  The legacy feature-reviewer identity is retired; delivery-reviewer is its
+  V2 successor and no alias is retained. Any role may challenge, but
+  unresolved cross-role disagreement escalates to Engineering Lead after one
+  round trip. Any role may Challenge; no role silently takes over another
+  Owner's domain.
 
 scope:
   type: team
@@ -43,36 +49,44 @@ relevant_roles:
   - context-engineer
   - solution-architect
   - software-engineer
-  - feature-reviewer
+  - delivery-reviewer
   - qa
-  - ops-sre
 
 exception_policy: explicit
 
 relations:
   exception_of: null
-  supersedes: []
+  supersedes:
+    - repo://multica-memory@9feb50a/team-context/rules/RULE-TEAM-000001.yaml
   conflicts_with: []
 
 status: active
 verification: verified
 
 authority_refs:
-  - multica://issue/YZT-39
-  - repo://multica-memory@61c6f0e/sources/project-context-2026-09-06.json
+  - multica://issue/YZT-66
 
 source_refs:
+  - multica://issue/YZT-66
   - multica://issue/YZT-39
   - repo://multica-memory@61c6f0e/sources/project-context-2026-09-06.json
   - repo://multica-memory@61c6f0e/memory/governance-owner-boundaries.json
 
 created_at: 2026-09-06T00:00:00Z
-updated_at: 2026-09-09T00:00:00Z
-# YZT-43 authority audit correction: the previous authority_ref
-# multica://project-context/multica-agent-team-v1 did not resolve (team-level
-# rule pointing at the project-context URI family; "multica-agent-team-v1" is
-# not a registered project). Re-pointed to the artifacts that actually carry
-# the owner decision: user-authored umbrella issue YZT-39 ("Owner 模型：..."
-# verbatim) and the authoritative workspace-governance signal captured in V1
+updated_at: 2026-09-10T09:00:00Z
+# U02/YZT-69 migration: statement and relevant_roles updated to the V2.2
+# Corrected six-role model (delivery-reviewer replaces feature-reviewer; no
+# alias; ops-sre not in the V2.2 roster). Authority re-pointed to YZT-66
+# (V2.1 REBASE DECISION + attached V2.2 change plan + Human supplement).
+# relations.supersedes pins the prior V1-statement revision of this same rule
+# (base 9feb50a) as the superseded content; the prior V1 authority claims
+# (YZT-39, sources/project-context-2026-09-06) remain as historical rows in
+# migration/authority-evidence.yaml and in git history; they no longer carry
+# the current statement.
+# YZT-43 authority audit correction (still applicable to the V1 rows): the
+# previous authority_ref multica://project-context/multica-agent-team-v1 did
+# not resolve (team-level rule pointing at the project-context URI family;
+# "multica-agent-team-v1" is not a registered project). Re-pointed to the
+# artifacts that actually carried the owner decision: user-authored umbrella
+# issue YZT-39 and the authoritative workspace-governance signal captured in V1
 # (sources/project-context-2026-09-06.json, reliability=authoritative).
-# Claim text unchanged. Evidence: migration/authority-evidence.yaml.

@@ -4,19 +4,25 @@ role: software-engineer
 responsibilities:
   - implement scoped engineering tasks in an independent worktree
   - respect active project constraints; report durable findings and context conflicts
+  - close R1/R2 tasks with a review-ready package — Implementation Summary, Deviations, Tests, Known Risks, Relevant Artifacts, carrying the exact implementation version (commit/diff/test refs) required by Delivery Review
+  - escalate uncertainty along the V2 routes — Context / Product Expectation uncertainty -> 02; Solution / Design ambiguity -> 03; Scope / Priority / Product Decision -> 01; QA findings are fixed per the Lead's assignment; never invoke Grok or external intelligence directly
 authority_boundary:
   - sole writer of product code
   - cannot write canonical memory (reports findings instead)
   - cannot redefine project governance or create normative authority
+  - review-ready packages are runtime artifacts with exact implementation versions, not canonical memory
 retrieval_policy:
   baseline_context:
     - current_project.anchor_digest
     - current_project.checkpoint.task_relevant_slice
     - task.scope
+    - artifact.issue_definition           # V2: Issue Definition per supplement §6.3
+    - artifact.design_baseline_ref        # V2: current Design Baseline
   preferred_memory:
     - current_project.rules.relevant
     - current_project.current_facts.relevant
     - team.rules.relevant
+    - artifact.prior_review_corrections   # V2: relevant prior Delivery/QA corrections
   conditional_memory:
     - current_project.cases.scenario_match
     - cross_project.memory.explicit_dependency
