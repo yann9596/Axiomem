@@ -1,0 +1,92 @@
+{
+  "kind": "platform_roster_capture",
+  "captured_at": "2026-09-10T09:05:00Z",
+  "captured_by": "U02/YZT-69 (02 Context Engineer)",
+  "source": "multica agent list --output json (live platform read)",
+  "workspace_note": "framework identity evidence only; not canonical memory",
+  "agents": [
+    {
+      "agent_id": "d208ecd2-ac6a-4d6c-84b7-91136acf8297",
+      "name": "Mika",
+      "description": "你的工作区 Chief of Staff。Mika 会把目标转化为任务、协调智能体，并帮你建立可复用的工作流。",
+      "model": "gpt-5.6-sol",
+      "archived": false,
+      "updated_at": "2026-09-06T07:31:49Z",
+      "captured_skills": []
+    },
+    {
+      "agent_id": "24f04aba-7da9-4371-bf89-685d7505a411",
+      "name": "01 Engineering Lead",
+      "description": "负责项目状态、范围、优先级、任务拆分、路由和动态重排，是唯一决策Owner。",
+      "model": "gpt-5.6-sol",
+      "archived": false,
+      "updated_at": "2026-09-10T08:16:42Z",
+      "captured_skills": [
+        "adaptive-task-planning",
+        "parent-handoff-wake"
+      ]
+    },
+    {
+      "agent_id": "1303827b-73d1-4d71-a461-00b93e4b4418",
+      "name": "03 Solution Architect",
+      "description": "负责当前需求的技术方案、契约、数据流和跨模块一致性。",
+      "model": "gpt-5.6-sol",
+      "archived": false,
+      "updated_at": "2026-09-07T04:56:46Z",
+      "captured_skills": [
+        "parent-handoff-wake",
+        "solution-design-brief"
+      ]
+    },
+    {
+      "agent_id": "b6335f8e-8147-45f7-aac0-8079d85423b5",
+      "name": "05 Feature Reviewer",
+      "description": "从用户、竞品、标准和外部环境校准功能正确性。",
+      "model": "grok-4.6",
+      "archived": false,
+      "updated_at": "2026-09-07T06:39:54Z",
+      "captured_skills": [
+        "external-signal-research",
+        "feature-correctness-review",
+        "parent-handoff-wake"
+      ]
+    },
+    {
+      "agent_id": "8bc546ab-ffd8-4aa6-ad30-58583346c065",
+      "name": "02 Context Engineer",
+      "description": "负责项目记忆、团队记忆、任务上下文、规范记忆与检索索引治理，是唯一正常写入Owner。",
+      "model": "opencode-go/deepseek-v4-flash",
+      "archived": false,
+      "updated_at": "2026-09-10T08:16:01Z",
+      "captured_skills": [
+        "canonical-memory-governance",
+        "minimum-context-package",
+        "parent-handoff-wake"
+      ]
+    },
+    {
+      "agent_id": "fa7d16a7-2dae-4994-80b8-7435b3fcca47",
+      "name": "04 Software Engineer",
+      "description": "负责产品代码实现、测试与隔离工作区交付，是唯一实现Owner。",
+      "model": "grok-4.6",
+      "archived": false,
+      "updated_at": "2026-09-09T10:43:45Z",
+      "captured_skills": [
+        "implementation-handoff",
+        "parent-handoff-wake"
+      ]
+    },
+    {
+      "agent_id": "30ce43d4-97a7-42a8-ab3e-78df0d894702",
+      "name": "06 QA",
+      "description": "仅在重大阶段执行 Integration、E2E、Regression 等整体质量 Gate，并给出独立里程碑结论。",
+      "model": "gpt-5.6-sol",
+      "archived": false,
+      "updated_at": "2026-09-09T09:22:21Z",
+      "captured_skills": [
+        "milestone-quality-gate",
+        "parent-handoff-wake"
+      ]
+    }
+  ]
+}
