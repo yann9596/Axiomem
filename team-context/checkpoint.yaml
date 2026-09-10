@@ -24,12 +24,14 @@ projects:
 confirmed:
   - id: cp-confirmed-001
     summary: >
-      Context & Memory System 正在按 V1.1 旁路重建（migration branch
-      context-v1.1-rebuild）；V1.0 canonical 在迁移与 Replay 期间保持可恢复
-      （tag context-v1.0-pre-v1.1-20260908 + bundle）。回滚基线已验证可恢复。
+      Context & Memory System V1.1 重建与受控切换已完成：R10 CUTOVER_SUCCESS
+      （2026-09-09，main == b0733f8e 后追加 T00 freeze）。V1.0 legacy 目录
+      （memory/、chains/、sources/、registry/、index/memory.db、
+      tools/memory_cli.py）在兼容/回滚窗口内保留只读，不是写入模型；
+      回滚基线（tag context-v1.0-pre-v1.1-20260908 + bundle）已验证可恢复。
     refs:
       - multica://issue/YZT-40
-      - migration/README.md
+      - migration/cutover/CUTOVER_REPORT.md
   - id: cp-confirmed-002
     summary: >
       人类已裁决的迁移拓扑：单 Git Repo + Team/Project 双根逻辑分区（F-2）；
@@ -39,43 +41,41 @@ confirmed:
       - multica://issue/YZT-40
       - registry://app1
       - registry://web-imagegen
-
-open:
-  - id: cp-team-open-001
+  - id: cp-confirmed-003
     summary: >
-      V1.1 R10 Cutover GO / NO-GO 待用户决策；决策前严禁 merge migration
-      branch、冻结 V1 writer 或切换 GET_CONTEXT。
-    projects: [app1, web-imagegen]
+      Registry 物理路径偏差已裁定并关闭（原 cp-team-conflict-001）：采用
+      Spec §3.1 实施合同路径 team-context/registry/projects.yaml，设计文档
+      §4.1 路径仅作概念历史；偏差记录于 schemas/README.md。团队语义当前权威
+      为 V2.2 Corrected（YZT-66）；V1.1 Memory Core 与 V2.2 的兼容性已由
+      U01 审计确认（YZT-68，V2_2_MEMORY_CONTEXT_COMPATIBLE）。
     refs:
-      - multica://issue/YZT-40
-  - id: cp-team-open-002
-    summary: >
-      Workspace/Agent Instructions 与 Skills 中的动态 Project Knowledge 剥离
-      （R6）属于平台侧更新，随 Cutover 窗口执行；当前运行时 Instructions 仍
-      携带项目指针（V1 形态）。
-    projects: [app1, web-imagegen]
-    refs:
-      - multica://issue/YZT-40
-      - team-context/roles
-
-conflicts:
-  - id: cp-team-conflict-001
-    summary: >
-      Registry 物理路径：设计文档 §4.1 给出 team-context/projects/registry.yaml，
-      Spec §3.1（实施合同）给出 registry/projects.yaml —— 已按"设计概念权威 /
-      Spec 实施合同"原则采用 Spec 路径并在 schemas/README.md 记录偏差；非阻塞。
-    refs:
-      - multica://issue/YZT-40
+      - multica://issue/YZT-66
+      - multica://issue/YZT-68
       - schemas/README.md
 
+open:
+  - id: cp-team-open-002
+    summary: >
+      Workspace/Agent Instructions 与平台 Skills 仍为 V1/V1.1 混合形态，
+      V2 六角色重建（shared skill U04、Agent/Squad Instructions U05）与
+      workspace-owner 平台 cutover 未执行——该清理债务明确归属 YZT-66
+      Stage 3 (U04/U05) 与 U12 enablement，不是 U02 handoff gap；
+      平台侧 staged 更新清单见 migration/contract-updates.md。
+    projects: [app1, web-imagegen]
+    refs:
+      - migration/contract-updates.md
+
+conflicts: []
+
 next:
-  - 用户对 YZT-40 做 Cutover GO / NO-GO 决策（R10 之前 STOP）
-  - 若 GO：按 Spec §42–45 执行 delta 迁移 + 冻结 V1 writer + merge + 零重建 + 切换
-  - 若 NO-GO：保持 V1 运行，V1.1 停留在 migration branch
+  - Stage 2（YZT-66）：U02 角色身份/Profile 迁移以 READY handoff 启动（唯一 Assignment trigger）
+  - U03 重新验证 T00–T06 并合并 handoff chain（drain FIND-WIMG-HO00-000001）
+  - U04/U05 重建 shared skill 与 Agent/Squad Instructions；平台 Instructions/Skills cutover 由 workspace owner 执行
 
 refs:
   - migration/README.md
+  - migration/cutover/CUTOVER_REPORT.md
   - migration/snapshot.yaml
   - team-context/registry/projects.yaml
 
-updated_at: 2026-09-08T14:30:00Z
+updated_at: 2026-09-10T05:40:00Z
