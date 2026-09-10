@@ -405,6 +405,16 @@ class FrozenSchemaTests(unittest.TestCase):
         with self.assertRaises(adapter.SchemaViolationError):
             build(cli=fake_cli(), explicit_project_id="web-imagegen", caller_role="wizard")
 
+    def test_invalid_target_role_fails_closed(self):
+        with self.assertRaises(adapter.SchemaViolationError):
+            build(cli=fake_cli(), explicit_project_id="web-imagegen", target_role="wizard")
+
+    def test_role_vocabulary_is_role_profile_data_not_roster(self):
+        known = adapter.current_role_ids()
+        self.assertIn("context-engineer", known)
+        self.assertIn("software-engineer", known)
+        self.assertNotIn("wizard", known)
+
     def test_invalid_project_id_pattern_fails_closed(self):
         with self.assertRaises(adapter.SchemaViolationError):
             build(cli=fake_cli(), explicit_project_id="Web_ImageGen")

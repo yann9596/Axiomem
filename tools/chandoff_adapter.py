@@ -462,6 +462,32 @@ def _validate_request(request: dict) -> None:
         raise SchemaViolationError(
             "assembled request violates the frozen prepare_handoff_request "
             "schema: " + "; ".join(errors[:8]))
+    _validate_role_vocabulary(request)
+
+
+# Roles are data, not a schema-enumerated roster (V2.2: team role changes must
+# not be hard-coded into Memory Core). The shared role_id $def is pattern-based,
+# so the adapter adds this compensating control: target/caller roles must
+# resolve to a current role profile (team-context/roles/<role>.yaml), the same
+# "resolve current Role Profile" step PLAN performs. Adding a role profile is
+# therefore sufficient to make a new logical role dispatchable; no schema edit.
+ROLE_PROFILE_DIR = Path(__file__).resolve().parents[1] / "team-context" / "roles"
+
+
+def current_role_ids() -> set:
+    return {p.stem for p in sorted(ROLE_PROFILE_DIR.glob("*.yaml"))}
+
+
+def _validate_role_vocabulary(request: dict) -> None:
+    known = current_role_ids()
+    for side in ("target", "caller"):
+        role = ((request.get(side) or {}).get("role") or "")
+        if role not in known:
+            raise SchemaViolationError(
+                f"{side}.role {role!r} is not a currently resolvable logical "
+                f"role: no team-context/roles/{role}.yaml profile exists; "
+                "role vocabulary resolves from role-profile data, never from "
+                "a hard-coded roster")
 
 
 def build_snapshot_request(*, issue_id: str, target_role: str, caller_role: str,
