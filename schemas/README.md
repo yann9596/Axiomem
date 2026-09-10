@@ -72,9 +72,9 @@ verifies all of it.
 
 `memory-unit.schema.json`, `memory-candidate.schema.json`,
 `memory-chain.schema.json`, `external-signal.schema.json` and
-`schemas/templates/memory-*.json` / `templates/external-signal.json` are
-V1.0 heritage kept for the retained V1 runtime (`tools/memory_cli.py`) and
-rollback comparison. They are **not canonical targets** (see table above) and
+`schemas/templates/memory-*.json` / `templates/external-signal.json` /
+`templates/context-package.json` are V1.0 heritage kept for the retained V1
+runtime (`tools/memory_cli.py`) and rollback comparison. They are **not canonical targets** (see table above) and
 must not be promoted back into the V1.1 write model:
 
 - `memory_unit` / `memory_chain` / `memory_candidate` / numeric `confidence`

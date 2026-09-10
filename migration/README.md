@@ -1,5 +1,10 @@
 # Migration — V1.0 → V1.1 bypass rebuild (YZT-40)
 
+> Status (YZT-68 U01 note): the pre-cutover status line below is historical —
+> R10 completed on 2026-09-09 as `CUTOVER_SUCCESS` (see
+> `cutover/CUTOVER_REPORT.md`); V1.1 is the active system on `main`. The rest
+> of this README is kept verbatim as migration history.
+
 This directory holds the V1.0 → V1.1 migration artifacts for the
 Context & Memory System rebuild (YZT-40, R3–R9). These are migration /
 implementation artifacts, not long-term memory.
