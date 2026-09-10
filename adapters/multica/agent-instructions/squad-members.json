@@ -1,0 +1,50 @@
+[
+  {
+    "created_at": "2026-09-06T05:34:55Z",
+    "id": "d209b709-fc60-4323-a8a3-554640784fcd",
+    "member_id": "24f04aba-7da9-4371-bf89-685d7505a411",
+    "member_type": "agent",
+    "role": "Engineering Lead",
+    "squad_id": "ee895c79-ca0a-498b-abe9-5af537736a30"
+  },
+  {
+    "created_at": "2026-09-06T05:35:29Z",
+    "id": "a4d0d24f-6e0c-4d95-bf28-a5ec869d5291",
+    "member_id": "8bc546ab-ffd8-4aa6-ad30-58583346c065",
+    "member_type": "agent",
+    "role": "Context Engineer",
+    "squad_id": "ee895c79-ca0a-498b-abe9-5af537736a30"
+  },
+  {
+    "created_at": "2026-09-06T05:35:30Z",
+    "id": "c916189f-df3f-4a62-9724-1f0651844ea6",
+    "member_id": "1303827b-73d1-4d71-a461-00b93e4b4418",
+    "member_type": "agent",
+    "role": "Solution Architect",
+    "squad_id": "ee895c79-ca0a-498b-abe9-5af537736a30"
+  },
+  {
+    "created_at": "2026-09-06T05:35:32Z",
+    "id": "3ecc61c8-88d1-485b-834d-c7a4f7d886cf",
+    "member_id": "fa7d16a7-2dae-4994-80b8-7435b3fcca47",
+    "member_type": "agent",
+    "role": "Software Engineer",
+    "squad_id": "ee895c79-ca0a-498b-abe9-5af537736a30"
+  },
+  {
+    "created_at": "2026-09-06T05:35:33Z",
+    "id": "f2ac8a29-6a2e-44eb-8ae4-0ccf3c35c6f8",
+    "member_id": "b6335f8e-8147-45f7-aac0-8079d85423b5",
+    "member_type": "agent",
+    "role": "Feature Reviewer",
+    "squad_id": "ee895c79-ca0a-498b-abe9-5af537736a30"
+  },
+  {
+    "created_at": "2026-09-06T05:35:34Z",
+    "id": "d19f188e-709e-4f49-8a48-762b41f0ad4a",
+    "member_id": "30ce43d4-97a7-42a8-ab3e-78df0d894702",
+    "member_type": "agent",
+    "role": "QA",
+    "squad_id": "ee895c79-ca0a-498b-abe9-5af537736a30"
+  }
+]

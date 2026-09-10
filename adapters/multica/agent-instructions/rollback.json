@@ -1,9 +1,9 @@
 {
-  "issue_ref": "YZT-63",
+  "issue_ref": "YZT-73",
   "notes": {
-    "binding_set_usage": "`set` appears only in this declarative rollback to restore the exact baseline binding set; the forward binding plan never uses `set` (additive only).",
-    "catalog": "T08 imports nothing; stage time needs no catalog restore. If T13 imported the skill and rollback is required, catalog handling is a T13 decision.",
-    "scope": "instruction text and skill bindings only; no run trigger, assignment, mention, or issue lifecycle command exists in this bundle."
+    "binding_set_usage": "`set` appears only in this declarative rollback to restore the exact baseline binding set; the forward binding plan never uses `set`.",
+    "catalog": "U05 imports nothing; stage time needs no catalog restore. If U12 imported skills and rollback is required, catalog handling is a U12 decision.",
+    "scope": "instruction text, squad instructions/role labels, and skill bindings only; no run trigger, assignment, mention, or issue lifecycle command exists in this bundle."
   },
   "restores": [
     {
@@ -123,7 +123,7 @@
     {
       "agent_id": "b6335f8e-8147-45f7-aac0-8079d85423b5",
       "agent_name": "05 Feature Reviewer",
-      "agent_role": "feature-reviewer",
+      "agent_role": "delivery-reviewer",
       "baseline_binding_ids": [
         "aab482f9-b9ff-4b78-8394-1f13e2b319c0",
         "db4b6822-5b69-4958-b33b-7ecb3261f151",
@@ -181,6 +181,41 @@
       ]
     }
   ],
-  "schema_version": "T08-rollback/1.0",
-  "status": "declarative_only_not_executed_by_T08"
+  "schema_version": "U05-rollback/1.0",
+  "squad_restore": {
+    "baseline_instruction_sha256": "sha256:f9f8afae1421b459c720e3d4a7faa139ba442594c86ccd870c2804b96f63d649",
+    "baseline_instruction_text": "You are the sole routing entrypoint and leader for Engineering Team. Squad assignment and squad mention route only to you; never assume member fan-out. Maintain a living plan and decompose work into independently verifiable issues with explicit owner, dependencies, risk, unknowns, and acceptance criteria. Route dynamically by current evidence: Context Engineer owns facts, minimum sufficient context, canonical memory and RAG; Solution Architect owns solution contracts and cross-system consistency; Software Engineer alone writes product code in an isolated worktree; Feature Reviewer owns user and external-signal calibration plus feature correctness; QA owns milestone quality verdicts and is engaged only when you explicitly trigger a gate for major milestones, core flows, cross-repo changes, release candidates, or high-risk work. Ordinary issues do not default to Architect, Feature Review, or QA, and work must not follow a fixed six-step pipeline. You own scope, priority, task breakdown, routing, replanning, and execution decisions; complexity must be paid for by validated need. Escalate fact/context conflicts to Context Engineer, architecture/API/schema/event/data-flow/compatibility questions to Solution Architect, implementation to Software Engineer, user-behavior questions to Feature Reviewer, milestone verification to QA, and scope/priority tradeoffs to yourself; escalate to Human when authority, final merge, sensitive permissions, or an unresolved Lead-level decision requires it. Delegate with explicit issue assignment or a concrete agent mention only; mentions enqueue runs, so never use courtesy or FYI mentions. Preserve owner boundaries: any role may challenge but may not silently take over another owner's decision or write surface. Disagreement stop rule: after the initial challenge and one owner response (two messages, one round trip), if unresolved, stop cross-mentions and escalate to Engineering Lead; if the dispute involves the Lead's own authority or remains unresolved at Lead, escalate to Human. Never clean, overwrite, commit, or discard the existing uncommitted/untracked product baseline; final merge stays Human. Keep squad-owned parent issues in progress while delegated work continues and move them to review only after the overall outcome is verified.",
+    "baseline_member_roles": [
+      {
+        "member_id": "1303827b-73d1-4d71-a461-00b93e4b4418",
+        "role": "Solution Architect"
+      },
+      {
+        "member_id": "24f04aba-7da9-4371-bf89-685d7505a411",
+        "role": "Engineering Lead"
+      },
+      {
+        "member_id": "30ce43d4-97a7-42a8-ab3e-78df0d894702",
+        "role": "QA"
+      },
+      {
+        "member_id": "8bc546ab-ffd8-4aa6-ad30-58583346c065",
+        "role": "Context Engineer"
+      },
+      {
+        "member_id": "b6335f8e-8147-45f7-aac0-8079d85423b5",
+        "role": "Feature Reviewer"
+      },
+      {
+        "member_id": "fa7d16a7-2dae-4994-80b8-7435b3fcca47",
+        "role": "Software Engineer"
+      }
+    ],
+    "id": "ee895c79-ca0a-498b-abe9-5af537736a30",
+    "restore_instructions_declarative": [
+      "multica squad update <squad-id> --instructions <baseline squad instruction_text from this record>",
+      "multica squad member set-role <squad-id> --member-id <05-uuid> --role Feature Reviewer"
+    ]
+  },
+  "status": "declarative_only_not_executed_by_U05"
 }

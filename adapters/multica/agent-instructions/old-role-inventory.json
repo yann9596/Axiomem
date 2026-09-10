@@ -1,0 +1,594 @@
+{
+  "counts": {
+    "active_to_migrate": 28,
+    "historical_only": 42,
+    "negative_fixture": 27
+  },
+  "entries": [
+    {
+      "classification": "negative_fixture",
+      "excerpt": "\"feature-reviewer\": \"retired_no_alias\",",
+      "line": 96,
+      "path": "tools/chandoff_instructions.py"
+    },
+    {
+      "classification": "negative_fixture",
+      "excerpt": "\"delivery-reviewer\": \"05 Feature Reviewer\",",
+      "line": 104,
+      "path": "tools/chandoff_instructions.py"
+    },
+    {
+      "classification": "negative_fixture",
+      "excerpt": "LEGACY_05_SKILLS = (\"external-signal-research\", \"feature-correctness-review\")",
+      "line": 118,
+      "path": "tools/chandoff_instructions.py"
+    },
+    {
+      "classification": "negative_fixture",
+      "excerpt": "\"name remains '05 Feature Reviewer' (old-role baseline).\"),",
+      "line": 610,
+      "path": "tools/chandoff_instructions.py"
+    },
+    {
+      "classification": "active_to_migrate",
+      "excerpt": "if \"feature-reviewer\" in roles:",
+      "line": 660,
+      "path": "tools/chandoff_instructions.py"
+    },
+    {
+      "classification": "active_to_migrate",
+      "excerpt": "raise BaselineError(\"baseline still treats feature-reviewer as active\")",
+      "line": 661,
+      "path": "tools/chandoff_instructions.py"
+    },
+    {
+      "classification": "active_to_migrate",
+      "excerpt": "if pkg_role == \"feature-reviewer\":",
+      "line": 722,
+      "path": "tools/chandoff_instructions.py"
+    },
+    {
+      "classification": "active_to_migrate",
+      "excerpt": "if target_role == \"feature-reviewer\":",
+      "line": 724,
+      "path": "tools/chandoff_instructions.py"
+    },
+    {
+      "classification": "active_to_migrate",
+      "excerpt": "if pkg_role == \"feature-reviewer\" and target_role == \"delivery-reviewer\":",
+      "line": 726,
+      "path": "tools/chandoff_instructions.py"
+    },
+    {
+      "classification": "negative_fixture",
+      "excerpt": "# Old 05 Feature Reviewer instruction cannot SELF_CHECK as new 05.",
+      "line": 732,
+      "path": "tools/chandoff_instructions.py"
+    },
+    {
+      "classification": "active_to_migrate",
+      "excerpt": "and package.get(\"identity\") == \"feature-reviewer\":",
+      "line": 734,
+      "path": "tools/chandoff_instructions.py"
+    },
+    {
+      "classification": "active_to_migrate",
+      "excerpt": "\"\"\"Use U03 adapter + role-profile data: feature-reviewer does not resolve.\"\"\"",
+      "line": 752,
+      "path": "tools/chandoff_instructions.py"
+    },
+    {
+      "classification": "active_to_migrate",
+      "excerpt": "profile_ok = \"delivery-reviewer\" in known and \"feature-reviewer\" not in known",
+      "line": 754,
+      "path": "tools/chandoff_instructions.py"
+    },
+    {
+      "classification": "active_to_migrate",
+      "excerpt": "\"target\": {\"role\": \"feature-reviewer\"},",
+      "line": 759,
+      "path": "tools/chandoff_instructions.py"
+    },
+    {
+      "classification": "negative_fixture",
+      "excerpt": "load_fail = not (roles_dir / \"feature-reviewer.yaml\").exists() \\",
+      "line": 767,
+      "path": "tools/chandoff_instructions.py"
+    },
+    {
+      "classification": "active_to_migrate",
+      "excerpt": "\"feature_reviewer_profile_absent\": \"feature-reviewer\" not in known,",
+      "line": 772,
+      "path": "tools/chandoff_instructions.py"
+    },
+    {
+      "classification": "negative_fixture",
+      "excerpt": "or \"feature-reviewer.yaml\" in text and \"not\" in text \\",
+      "line": 889,
+      "path": "tools/chandoff_instructions.py"
+    },
+    {
+      "classification": "historical_only",
+      "excerpt": "or \"YZT-63\" in line and \"feature-reviewer\" in text:",
+      "line": 895,
+      "path": "tools/chandoff_instructions.py"
+    },
+    {
+      "classification": "active_to_migrate",
+      "excerpt": "return \"active_to_migrate\" if \"feature-reviewer\" in text \\",
+      "line": 903,
+      "path": "tools/chandoff_instructions.py"
+    },
+    {
+      "classification": "active_to_migrate",
+      "excerpt": "if \"feature-reviewer\" in text and (",
+      "line": 905,
+      "path": "tools/chandoff_instructions.py"
+    },
+    {
+      "classification": "active_to_migrate",
+      "excerpt": "if \"feature-reviewer\" in text:",
+      "line": 909,
+      "path": "tools/chandoff_instructions.py"
+    },
+    {
+      "classification": "active_to_migrate",
+      "excerpt": "if \"feature-reviewer\" not in text \\",
+      "line": 929,
+      "path": "tools/chandoff_instructions.py"
+    },
+    {
+      "classification": "negative_fixture",
+      "excerpt": "and \"Feature Reviewer\" not in text \\",
+      "line": 930,
+      "path": "tools/chandoff_instructions.py"
+    },
+    {
+      "classification": "negative_fixture",
+      "excerpt": "and \"external-signal-research\" not in text \\",
+      "line": 931,
+      "path": "tools/chandoff_instructions.py"
+    },
+    {
+      "classification": "negative_fixture",
+      "excerpt": "and \"feature-correctness-review\" not in text:",
+      "line": 932,
+      "path": "tools/chandoff_instructions.py"
+    },
+    {
+      "classification": "active_to_migrate",
+      "excerpt": "if \"feature-reviewer\" in line or \"Feature Reviewer\" in line \\",
+      "line": 935,
+      "path": "tools/chandoff_instructions.py"
+    },
+    {
+      "classification": "negative_fixture",
+      "excerpt": "or \"external-signal-research\" in line \\",
+      "line": 936,
+      "path": "tools/chandoff_instructions.py"
+    },
+    {
+      "classification": "negative_fixture",
+      "excerpt": "or \"feature-correctness-review\" in line:",
+      "line": 937,
+      "path": "tools/chandoff_instructions.py"
+    },
+    {
+      "classification": "active_to_migrate",
+      "excerpt": "{\"role\": \"feature-reviewer\", \"identity\": \"feature-reviewer\",",
+      "line": 988,
+      "path": "tools/chandoff_instructions.py"
+    },
+    {
+      "classification": "active_to_migrate",
+      "excerpt": "{\"role\": \"feature-reviewer\"}, \"feature-reviewer\"),",
+      "line": 995,
+      "path": "tools/chandoff_instructions.py"
+    },
+    {
+      "classification": "active_to_migrate",
+      "excerpt": "resolve_logical_role(\"feature-reviewer\"),",
+      "line": 998,
+      "path": "tools/chandoff_instructions.py"
+    },
+    {
+      "classification": "negative_fixture",
+      "excerpt": "\"from\": \"Feature Reviewer\",",
+      "line": 1075,
+      "path": "tools/chandoff_instructions.py"
+    },
+    {
+      "classification": "negative_fixture",
+      "excerpt": "\"rule\": \"05 live name remains 05 Feature Reviewer until U12\"},",
+      "line": 1112,
+      "path": "tools/chandoff_instructions.py"
+    },
+    {
+      "classification": "negative_fixture",
+      "excerpt": "\"<05-uuid> --role Feature Reviewer\",",
+      "line": 1195,
+      "path": "tools/chandoff_instructions.py"
+    },
+    {
+      "classification": "active_to_migrate",
+      "excerpt": "and resolve_logical_role(\"feature-reviewer\")[\"ok\"] is False",
+      "line": 1520,
+      "path": "tools/chandoff_instructions.py"
+    },
+    {
+      "classification": "active_to_migrate",
+      "excerpt": "and resolve_logical_role(\"feature-reviewer\")[\"alias_to\"] is None,",
+      "line": 1521,
+      "path": "tools/chandoff_instructions.py"
+    },
+    {
+      "classification": "active_to_migrate",
+      "excerpt": "\"six logical roles resolve; feature-reviewer resolves to nothing\")",
+      "line": 1522,
+      "path": "tools/chandoff_instructions.py"
+    },
+    {
+      "classification": "negative_fixture",
+      "excerpt": "and \"Feature Reviewer，是 User and External\" not in",
+      "line": 1560,
+      "path": "tools/chandoff_instructions.py"
+    },
+    {
+      "classification": "negative_fixture",
+      "excerpt": "\"external-signal-research and feature-correctness-review removed\")",
+      "line": 1594,
+      "path": "tools/chandoff_instructions.py"
+    },
+    {
+      "classification": "active_to_migrate",
+      "excerpt": "\"old feature-reviewer package cannot READY/trigger new 05\")",
+      "line": 1638,
+      "path": "tools/chandoff_instructions.py"
+    },
+    {
+      "classification": "active_to_migrate",
+      "excerpt": "resolve_logical_role(\"feature-reviewer\")[\"ok\"] is False,",
+      "line": 1671,
+      "path": "tools/chandoff_instructions.py"
+    },
+    {
+      "classification": "active_to_migrate",
+      "excerpt": "本协议不转移任何 Owner 边界：Scope/Priority/任务拆分/Review 与 QA 路由仍归 01；架构与 Design Baseline 仍归 03；实现仍归 04；交付完整性仍归 05 Delivery Reviewer；Product & Quality Acceptance 仍归 06；Canonical 写入与 PE 治理仍归 02；最终 Merge 仍归 Human。普",
+      "line": 60,
+      "path": "tools/chandoff_instruction_texts.py"
+    },
+    {
+      "classification": "active_to_migrate",
+      "excerpt": "- 不得恢复内部持续外部情报、`feature-reviewer`、`external-user-research`，或把普通 context 缺口直接升级给 02。",
+      "line": 110,
+      "path": "tools/chandoff_instruction_texts.py"
+    },
+    {
+      "classification": "negative_fixture",
+      "excerpt": "不得把「用户行为问题 → 05 Feature Reviewer」当作有效路由。",
+      "line": 129,
+      "path": "tools/chandoff_instruction_texts.py"
+    },
+    {
+      "classification": "active_to_migrate",
+      "excerpt": "DR_FULL = \"\"\"你是 05 Delivery Reviewer，是独立的交付完整性与正确性审查 Owner。审查重要交付物是否可被信任，即使它满足了 Issue 局部合规。平台 Agent UUID 可在 cutover 时沿用，但旧显示名「05 Feature Reviewer」、逻辑角色 token `feature-reviewer`、旧 instruction digest、旧 ",
+      "line": 133,
+      "path": "tools/chandoff_instruction_texts.py"
+    },
+    {
+      "classification": "active_to_migrate",
+      "excerpt": "- 把旧 `feature-reviewer` 指令、技能（`external-signal-research`、`feature-correctness-review`）或 package 当作新 05 身份。",
+      "line": 147,
+      "path": "tools/chandoff_instruction_texts.py"
+    },
+    {
+      "classification": "negative_fixture",
+      "excerpt": "`feature-reviewer` is retired with no alias. An old Feature Reviewer package, display name, instruction digest, binding set, or Context Package must never resolve, SELF_CHECK READY, trigger, or be rew",
+      "line": 212,
+      "path": "tools/chandoff_instruction_texts.py"
+    },
+    {
+      "classification": "negative_fixture",
+      "excerpt": "\"按需调用 Context、Architect、Engineer、Feature Reviewer；只有你能正式触发 QA Gate。\",",
+      "line": 234,
+      "path": "tools/chandoff_instruction_texts.py"
+    },
+    {
+      "classification": "negative_fixture",
+      "excerpt": "\"用户行为疑问交 Feature Reviewer。\",",
+      "line": 241,
+      "path": "tools/chandoff_instruction_texts.py"
+    },
+    {
+      "classification": "active_to_migrate",
+      "excerpt": "\"feature-reviewer` 已退役且无 alias\",",
+      "line": 284,
+      "path": "tools/chandoff_instruction_texts.py"
+    },
+    {
+      "classification": "negative_fixture",
+      "excerpt": "\"feature-reviewer` is retired with no alias\",",
+      "line": 358,
+      "path": "tools/chandoff_instruction_texts.py"
+    },
+    {
+      "classification": "historical_only",
+      "excerpt": "\"name\": \"05 Feature Reviewer\",",
+      "line": 43,
+      "path": "adapters/multica/role-bindings/platform-roster-2026-09-10.json"
+    },
+    {
+      "classification": "historical_only",
+      "excerpt": "\"external-signal-research\",",
+      "line": 49,
+      "path": "adapters/multica/role-bindings/platform-roster-2026-09-10.json"
+    },
+    {
+      "classification": "historical_only",
+      "excerpt": "\"feature-correctness-review\",",
+      "line": 50,
+      "path": "adapters/multica/role-bindings/platform-roster-2026-09-10.json"
+    },
+    {
+      "classification": "historical_only",
+      "excerpt": "\"retired_roles\": [\"feature-reviewer\", \"ops-sre\"],",
+      "line": 17,
+      "path": "adapters/multica/role-bindings/role-bindings.v2.json"
+    },
+    {
+      "classification": "negative_fixture",
+      "excerpt": "\"alias_policy\": \"no alias: feature-reviewer must not resolve, activate or route to delivery-reviewer\"",
+      "line": 18,
+      "path": "adapters/multica/role-bindings/role-bindings.v2.json"
+    },
+    {
+      "classification": "historical_only",
+      "excerpt": "\"platform_cutover_note\": \"the 05 platform agent keeps UUID b6335f8e-8147-45f7-aac0-8079d85423b5; its display name, instructions and skill bindings are rebuilt by U05 and cut over by the workspace owne",
+      "line": 24,
+      "path": "adapters/multica/role-bindings/role-bindings.v2.json"
+    },
+    {
+      "classification": "historical_only",
+      "excerpt": "\"agent_name\": \"05 Feature Reviewer\",",
+      "line": 54,
+      "path": "adapters/multica/role-bindings/role-bindings.v2.json"
+    },
+    {
+      "classification": "historical_only",
+      "excerpt": "RETIRED_ROLES = {\"feature-reviewer\", \"ops-sre\"}",
+      "line": 34,
+      "path": "adapters/multica/role-bindings/validate_role_bindings.py"
+    },
+    {
+      "classification": "negative_fixture",
+      "excerpt": "self.assertNotIn(\"feature-reviewer\", known)",
+      "line": 417,
+      "path": "tools/tests/test_handoff_adapter.py"
+    },
+    {
+      "classification": "historical_only",
+      "excerpt": "\"agents\": [{\"role\": \"feature-reviewer\",",
+      "line": 464,
+      "path": "tools/tests/test_handoff_assignment.py"
+    },
+    {
+      "classification": "historical_only",
+      "excerpt": "\"agent_name\": \"05 Feature Reviewer\"}],",
+      "line": 466,
+      "path": "tools/tests/test_handoff_assignment.py"
+    },
+    {
+      "classification": "historical_only",
+      "excerpt": "body += \"按需调用 Context、Architect、Engineer、Feature Reviewer；只有你能正式触发 QA Gate。\"",
+      "line": 40,
+      "path": "tools/tests/test_handoff_instructions.py"
+    },
+    {
+      "classification": "historical_only",
+      "excerpt": "body += \"用户行为疑问交 Feature Reviewer。产品仓只读。\\n\"",
+      "line": 45,
+      "path": "tools/tests/test_handoff_instructions.py"
+    },
+    {
+      "classification": "historical_only",
+      "excerpt": "body += \"你是 Feature Reviewer，是 User and External Environment Sensor。\\n\"",
+      "line": 51,
+      "path": "tools/tests/test_handoff_instructions.py"
+    },
+    {
+      "classification": "historical_only",
+      "excerpt": "\"name\": \"external-signal-research\", \"enabled\": True},",
+      "line": 66,
+      "path": "tools/tests/test_handoff_instructions.py"
+    },
+    {
+      "classification": "historical_only",
+      "excerpt": "\"name\": \"feature-correctness-review\", \"enabled\": True},",
+      "line": 68,
+      "path": "tools/tests/test_handoff_instructions.py"
+    },
+    {
+      "classification": "historical_only",
+      "excerpt": "\"role\": (\"Feature Reviewer\" if role == \"delivery-reviewer\"",
+      "line": 103,
+      "path": "tools/tests/test_handoff_instructions.py"
+    },
+    {
+      "classification": "historical_only",
+      "excerpt": "\"instructions\": \"You are the sole routing entrypoint. Feature Reviewer owns user signals.\",",
+      "line": 111,
+      "path": "tools/tests/test_handoff_instructions.py"
+    },
+    {
+      "classification": "historical_only",
+      "excerpt": "self.assertEqual(dr[\"agent_name\"], \"05 Feature Reviewer\")",
+      "line": 192,
+      "path": "tools/tests/test_handoff_instructions.py"
+    },
+    {
+      "classification": "negative_fixture",
+      "excerpt": "self.assertNotIn(\"feature-reviewer\",",
+      "line": 194,
+      "path": "tools/tests/test_handoff_instructions.py"
+    },
+    {
+      "classification": "historical_only",
+      "excerpt": "retired = instr.resolve_logical_role(\"feature-reviewer\")",
+      "line": 220,
+      "path": "tools/tests/test_handoff_instructions.py"
+    },
+    {
+      "classification": "historical_only",
+      "excerpt": "self.assertNotEqual(mapped[\"role\"], \"feature-reviewer\")",
+      "line": 229,
+      "path": "tools/tests/test_handoff_instructions.py"
+    },
+    {
+      "classification": "historical_only",
+      "excerpt": "{\"role\": \"feature-reviewer\", \"identity\": \"feature-reviewer\",",
+      "line": 233,
+      "path": "tools/tests/test_handoff_instructions.py"
+    },
+    {
+      "classification": "historical_only",
+      "excerpt": "self.assertNotIn(\"external-signal-research\", after_names)",
+      "line": 306,
+      "path": "tools/tests/test_handoff_instructions.py"
+    },
+    {
+      "classification": "historical_only",
+      "excerpt": "self.assertNotIn(\"feature-correctness-review\", after_names)",
+      "line": 307,
+      "path": "tools/tests/test_handoff_instructions.py"
+    },
+    {
+      "classification": "historical_only",
+      "excerpt": "self.assertFalse((ART / \"after\" / \"feature-reviewer.md\").exists())",
+      "line": 422,
+      "path": "tools/tests/test_handoff_instructions.py"
+    },
+    {
+      "classification": "historical_only",
+      "excerpt": "self.assertFalse((ART / \"candidates\" / \"feature-reviewer.md\").exists())",
+      "line": 423,
+      "path": "tools/tests/test_handoff_instructions.py"
+    },
+    {
+      "classification": "historical_only",
+      "excerpt": "self.assertEqual(instr.main([\"resolve-role\", \"feature-reviewer\"]), 2)",
+      "line": 448,
+      "path": "tools/tests/test_handoff_instructions.py"
+    },
+    {
+      "classification": "historical_only",
+      "excerpt": "\"feature-reviewer\": AGENT_FR,",
+      "line": 52,
+      "path": "tools/tests/test_handoff_mention.py"
+    },
+    {
+      "classification": "historical_only",
+      "excerpt": "\"feature-reviewer\": AGENT_FR,",
+      "line": 59,
+      "path": "tools/tests/test_handoff_mention.py"
+    },
+    {
+      "classification": "historical_only",
+      "excerpt": "# U02/YZT-69 + U05/YZT-73: feature-reviewer is retired without an",
+      "line": 678,
+      "path": "tools/tests/test_handoff_mention.py"
+    },
+    {
+      "classification": "historical_only",
+      "excerpt": "target=\"feature-reviewer\",",
+      "line": 682,
+      "path": "tools/tests/test_handoff_mention.py"
+    },
+    {
+      "classification": "historical_only",
+      "excerpt": "self.assertIn(\"feature-reviewer\", result[\"stop_reason\"] or \"\")",
+      "line": 689,
+      "path": "tools/tests/test_handoff_mention.py"
+    },
+    {
+      "classification": "negative_fixture",
+      "excerpt": "load_role_profile(\"feature-reviewer\")",
+      "line": 252,
+      "path": "tools/tests/test_handoff_u03_revalidation.py"
+    },
+    {
+      "classification": "historical_only",
+      "excerpt": "\"target\": {\"role\": \"feature-reviewer\"},",
+      "line": 255,
+      "path": "tools/tests/test_handoff_u03_revalidation.py"
+    },
+    {
+      "classification": "historical_only",
+      "excerpt": "if re.search(r\"feature-reviewer\", text):",
+      "line": 265,
+      "path": "tools/tests/test_handoff_u03_revalidation.py"
+    },
+    {
+      "classification": "historical_only",
+      "excerpt": "hits.append((name, \"feature-reviewer\"))",
+      "line": 266,
+      "path": "tools/tests/test_handoff_u03_revalidation.py"
+    },
+    {
+      "classification": "historical_only",
+      "excerpt": "05 Feature Reviewer",
+      "line": 378,
+      "path": "docs/context_handoff_multica_implementation_v1.1.md"
+    },
+    {
+      "classification": "historical_only",
+      "excerpt": "4. Feature Reviewer / QA handoff",
+      "line": 1721,
+      "path": "docs/context_handoff_multica_implementation_v1.1.md"
+    },
+    {
+      "classification": "historical_only",
+      "excerpt": "> **适用对象**：Multica AI 开发团队、Context Engineer、Engineering Lead、Architect、Software Engineer、Feature Reviewer、QA、Ops/SRE",
+      "line": 6,
+      "path": "docs/multica_context_memory_system_v1.1_design.md"
+    },
+    {
+      "classification": "historical_only",
+      "excerpt": "### Feature Reviewer",
+      "line": 1307,
+      "path": "docs/multica_context_memory_system_v1.1_design.md"
+    },
+    {
+      "classification": "historical_only",
+      "excerpt": "delivery-reviewer、qa）；feature-reviewer 退役且不保留 alias，ops-sre",
+      "line": 60,
+      "path": "team-context/checkpoint.yaml"
+    },
+    {
+      "classification": "historical_only",
+      "excerpt": "feature-reviewer; review roles stay on-demand by design (R0/R1/R2 review",
+      "line": 13,
+      "path": "team-context/registry/projects.yaml"
+    },
+    {
+      "classification": "historical_only",
+      "excerpt": "The legacy feature-reviewer identity is retired; delivery-reviewer is its",
+      "line": 18,
+      "path": "team-context/rules/RULE-TEAM-000001.yaml"
+    },
+    {
+      "classification": "historical_only",
+      "excerpt": "# Corrected six-role model (delivery-reviewer replaces feature-reviewer; no",
+      "line": 78,
+      "path": "team-context/rules/RULE-TEAM-000001.yaml"
+    },
+    {
+      "classification": "negative_fixture",
+      "excerpt": "`feature-reviewer`. There is no alias to this role.",
+      "line": 25,
+      "path": "skills/delivery-review/SKILL.md"
+    }
+  ],
+  "invalid_active_semantics": [],
+  "issue_ref": "YZT-73",
+  "schema_version": "U05-old-role-inventory/1.0"
+}

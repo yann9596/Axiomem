@@ -1,145 +1,352 @@
 {
-  "activation": "owned by T13 controlled enablement; T08 executes none of these operations",
-  "additive_only": true,
+  "activation": "owned by U12/Human controlled enablement; U05 executes none of these operations",
+  "additive_only": false,
+  "after_bindings": {
+    "context-engineer": [
+      {
+        "enabled": true,
+        "id": "6db4a1dc-4f6c-47be-8416-2fc8756c546a",
+        "name": "canonical-memory-governance"
+      },
+      {
+        "enabled": true,
+        "id": "fe50d0ce-e57c-4991-bfde-bef2983aa00c",
+        "name": "minimum-context-package"
+      },
+      {
+        "content_digest": "sha256:f369cee40ada061364d91ef48a9cb7d467039931e922c1db18d85fe1d7e0638a",
+        "enabled": true,
+        "id": null,
+        "id_status": "enablement_placeholder_until_u12_import",
+        "name": "multica-context-handoff"
+      },
+      {
+        "enabled": true,
+        "id": "aab482f9-b9ff-4b78-8394-1f13e2b319c0",
+        "name": "parent-handoff-wake"
+      }
+    ],
+    "delivery-reviewer": [
+      {
+        "content_digest": "sha256:cc0358a77e4843be88d2d6fb878d97196fabc375912cef044ec3d78c45fd92e1",
+        "enabled": true,
+        "id": null,
+        "id_status": "enablement_placeholder_until_u12_import",
+        "name": "delivery-review"
+      },
+      {
+        "content_digest": "sha256:f369cee40ada061364d91ef48a9cb7d467039931e922c1db18d85fe1d7e0638a",
+        "enabled": true,
+        "id": null,
+        "id_status": "enablement_placeholder_until_u12_import",
+        "name": "multica-context-handoff"
+      },
+      {
+        "enabled": true,
+        "id": "aab482f9-b9ff-4b78-8394-1f13e2b319c0",
+        "name": "parent-handoff-wake"
+      }
+    ],
+    "engineering-lead": [
+      {
+        "enabled": true,
+        "id": "647db182-b4fd-4f78-bc45-874b9f6e358c",
+        "name": "adaptive-task-planning"
+      },
+      {
+        "content_digest": "sha256:f369cee40ada061364d91ef48a9cb7d467039931e922c1db18d85fe1d7e0638a",
+        "enabled": true,
+        "id": null,
+        "id_status": "enablement_placeholder_until_u12_import",
+        "name": "multica-context-handoff"
+      },
+      {
+        "enabled": true,
+        "id": "aab482f9-b9ff-4b78-8394-1f13e2b319c0",
+        "name": "parent-handoff-wake"
+      }
+    ],
+    "qa": [
+      {
+        "content_digest": "sha256:f369cee40ada061364d91ef48a9cb7d467039931e922c1db18d85fe1d7e0638a",
+        "enabled": true,
+        "id": null,
+        "id_status": "enablement_placeholder_until_u12_import",
+        "name": "multica-context-handoff"
+      },
+      {
+        "enabled": true,
+        "id": "aab482f9-b9ff-4b78-8394-1f13e2b319c0",
+        "name": "parent-handoff-wake"
+      },
+      {
+        "content_digest": "sha256:e4c866588c216ff678bc67fac48db5aa40f1a29b627119e4c7ab162b93f243a1",
+        "enabled": true,
+        "id": null,
+        "id_status": "enablement_placeholder_until_u12_import",
+        "name": "product-quality-gate"
+      }
+    ],
+    "software-engineer": [
+      {
+        "enabled": true,
+        "id": "b68797d6-9459-43fd-92ce-d45cd82f3fbe",
+        "name": "implementation-handoff"
+      },
+      {
+        "content_digest": "sha256:f369cee40ada061364d91ef48a9cb7d467039931e922c1db18d85fe1d7e0638a",
+        "enabled": true,
+        "id": null,
+        "id_status": "enablement_placeholder_until_u12_import",
+        "name": "multica-context-handoff"
+      },
+      {
+        "enabled": true,
+        "id": "aab482f9-b9ff-4b78-8394-1f13e2b319c0",
+        "name": "parent-handoff-wake"
+      }
+    ],
+    "solution-architect": [
+      {
+        "content_digest": "sha256:f369cee40ada061364d91ef48a9cb7d467039931e922c1db18d85fe1d7e0638a",
+        "enabled": true,
+        "id": null,
+        "id_status": "enablement_placeholder_until_u12_import",
+        "name": "multica-context-handoff"
+      },
+      {
+        "enabled": true,
+        "id": "aab482f9-b9ff-4b78-8394-1f13e2b319c0",
+        "name": "parent-handoff-wake"
+      },
+      {
+        "enabled": true,
+        "id": "368260ac-3702-468d-a21a-c90cc8a52bd1",
+        "name": "solution-design-brief"
+      }
+    ]
+  },
+  "binding_plan_revision": "sha256:7f83bfd523e2c0da3cd0dac4568869f3c9937e2d3ae6c0dc66b9853094a27c22",
   "bindings": [
     {
       "agent_id": "24f04aba-7da9-4371-bf89-685d7505a411",
       "agent_name": "01 Engineering Lead",
       "agent_role": "engineering-lead",
-      "baseline_binding_ids": [
-        "647db182-b4fd-4f78-bc45-874b9f6e358c",
-        "aab482f9-b9ff-4b78-8394-1f13e2b319c0"
-      ],
-      "baseline_bindings": [
-        {
-          "enabled": true,
-          "id": "647db182-b4fd-4f78-bc45-874b9f6e358c",
-          "name": "adaptive-task-planning"
-        },
-        {
-          "enabled": true,
-          "id": "aab482f9-b9ff-4b78-8394-1f13e2b319c0",
-          "name": "parent-handoff-wake"
-        }
-      ],
       "declarative_command": "multica agent skills add <agent-id> --skill-ids <skill-id-assigned-at-import>",
-      "op": "add"
+      "note": null,
+      "op": "add",
+      "skill": {
+        "bundle_digest": "sha256:7f861c320c115b328fb45db7356573ae449a5e443ac08b3572a764c79934fce9",
+        "content_digest": "sha256:f369cee40ada061364d91ef48a9cb7d467039931e922c1db18d85fe1d7e0638a",
+        "id_status": "enablement_placeholder_until_u12_import",
+        "name": "multica-context-handoff",
+        "workspace_skill_id": null
+      }
+    },
+    {
+      "agent_id": "8bc546ab-ffd8-4aa6-ad30-58583346c065",
+      "agent_name": "02 Context Engineer",
+      "agent_role": "context-engineer",
+      "declarative_command": "multica agent skills add <agent-id> --skill-ids <skill-id-assigned-at-import>",
+      "note": "02 binding does not make context-engineer a normal-path target; its instruction preserves exception-only execution",
+      "op": "add",
+      "skill": {
+        "bundle_digest": "sha256:7f861c320c115b328fb45db7356573ae449a5e443ac08b3572a764c79934fce9",
+        "content_digest": "sha256:f369cee40ada061364d91ef48a9cb7d467039931e922c1db18d85fe1d7e0638a",
+        "id_status": "enablement_placeholder_until_u12_import",
+        "name": "multica-context-handoff",
+        "workspace_skill_id": null
+      }
     },
     {
       "agent_id": "1303827b-73d1-4d71-a461-00b93e4b4418",
       "agent_name": "03 Solution Architect",
       "agent_role": "solution-architect",
-      "baseline_binding_ids": [
-        "368260ac-3702-468d-a21a-c90cc8a52bd1",
-        "aab482f9-b9ff-4b78-8394-1f13e2b319c0"
-      ],
-      "baseline_bindings": [
-        {
-          "enabled": true,
-          "id": "368260ac-3702-468d-a21a-c90cc8a52bd1",
-          "name": "solution-design-brief"
-        },
-        {
-          "enabled": true,
-          "id": "aab482f9-b9ff-4b78-8394-1f13e2b319c0",
-          "name": "parent-handoff-wake"
-        }
-      ],
       "declarative_command": "multica agent skills add <agent-id> --skill-ids <skill-id-assigned-at-import>",
-      "op": "add"
+      "note": null,
+      "op": "add",
+      "skill": {
+        "bundle_digest": "sha256:7f861c320c115b328fb45db7356573ae449a5e443ac08b3572a764c79934fce9",
+        "content_digest": "sha256:f369cee40ada061364d91ef48a9cb7d467039931e922c1db18d85fe1d7e0638a",
+        "id_status": "enablement_placeholder_until_u12_import",
+        "name": "multica-context-handoff",
+        "workspace_skill_id": null
+      }
     },
     {
       "agent_id": "fa7d16a7-2dae-4994-80b8-7435b3fcca47",
       "agent_name": "04 Software Engineer",
       "agent_role": "software-engineer",
-      "baseline_binding_ids": [
-        "aab482f9-b9ff-4b78-8394-1f13e2b319c0",
-        "b68797d6-9459-43fd-92ce-d45cd82f3fbe"
-      ],
-      "baseline_bindings": [
-        {
-          "enabled": true,
-          "id": "aab482f9-b9ff-4b78-8394-1f13e2b319c0",
-          "name": "parent-handoff-wake"
-        },
-        {
-          "enabled": true,
-          "id": "b68797d6-9459-43fd-92ce-d45cd82f3fbe",
-          "name": "implementation-handoff"
-        }
-      ],
       "declarative_command": "multica agent skills add <agent-id> --skill-ids <skill-id-assigned-at-import>",
-      "op": "add"
+      "note": null,
+      "op": "add",
+      "skill": {
+        "bundle_digest": "sha256:7f861c320c115b328fb45db7356573ae449a5e443ac08b3572a764c79934fce9",
+        "content_digest": "sha256:f369cee40ada061364d91ef48a9cb7d467039931e922c1db18d85fe1d7e0638a",
+        "id_status": "enablement_placeholder_until_u12_import",
+        "name": "multica-context-handoff",
+        "workspace_skill_id": null
+      }
     },
     {
       "agent_id": "b6335f8e-8147-45f7-aac0-8079d85423b5",
       "agent_name": "05 Feature Reviewer",
-      "agent_role": "feature-reviewer",
-      "baseline_binding_ids": [
-        "aab482f9-b9ff-4b78-8394-1f13e2b319c0",
-        "db4b6822-5b69-4958-b33b-7ecb3261f151",
-        "e964f7b1-3cb4-4bc7-902b-16c57e73cefe"
-      ],
-      "baseline_bindings": [
-        {
-          "enabled": true,
-          "id": "aab482f9-b9ff-4b78-8394-1f13e2b319c0",
-          "name": "parent-handoff-wake"
-        },
-        {
-          "enabled": true,
-          "id": "db4b6822-5b69-4958-b33b-7ecb3261f151",
-          "name": "external-signal-research"
-        },
-        {
-          "enabled": true,
-          "id": "e964f7b1-3cb4-4bc7-902b-16c57e73cefe",
-          "name": "feature-correctness-review"
-        }
-      ],
+      "agent_role": "delivery-reviewer",
+      "declarative_command": "logical_remove of exact skill id db4b6822-5b69-4958-b33b-7ecb3261f151; deployed CLI exposes agent skills add|set only and U12 must not use replace-all set",
+      "op": "remove",
+      "skill_id": "db4b6822-5b69-4958-b33b-7ecb3261f151",
+      "skill_name": "external-signal-research"
+    },
+    {
+      "agent_id": "b6335f8e-8147-45f7-aac0-8079d85423b5",
+      "agent_name": "05 Feature Reviewer",
+      "agent_role": "delivery-reviewer",
+      "declarative_command": "logical_remove of exact skill id e964f7b1-3cb4-4bc7-902b-16c57e73cefe; deployed CLI exposes agent skills add|set only and U12 must not use replace-all set",
+      "op": "remove",
+      "skill_id": "e964f7b1-3cb4-4bc7-902b-16c57e73cefe",
+      "skill_name": "feature-correctness-review"
+    },
+    {
+      "agent_id": "b6335f8e-8147-45f7-aac0-8079d85423b5",
+      "agent_name": "05 Feature Reviewer",
+      "agent_role": "delivery-reviewer",
       "declarative_command": "multica agent skills add <agent-id> --skill-ids <skill-id-assigned-at-import>",
-      "op": "add"
+      "op": "add",
+      "skill": {
+        "bundle_digest": "sha256:9a81581f51c7c65a766e021733ec8c2044558e9c3af57325953ec812760fe95a",
+        "content_digest": "sha256:cc0358a77e4843be88d2d6fb878d97196fabc375912cef044ec3d78c45fd92e1",
+        "id_status": "enablement_placeholder_until_u12_import",
+        "name": "delivery-review",
+        "workspace_skill_id": null
+      }
+    },
+    {
+      "agent_id": "b6335f8e-8147-45f7-aac0-8079d85423b5",
+      "agent_name": "05 Feature Reviewer",
+      "agent_role": "delivery-reviewer",
+      "declarative_command": "multica agent skills add <agent-id> --skill-ids <skill-id-assigned-at-import>",
+      "note": null,
+      "op": "add",
+      "skill": {
+        "bundle_digest": "sha256:7f861c320c115b328fb45db7356573ae449a5e443ac08b3572a764c79934fce9",
+        "content_digest": "sha256:f369cee40ada061364d91ef48a9cb7d467039931e922c1db18d85fe1d7e0638a",
+        "id_status": "enablement_placeholder_until_u12_import",
+        "name": "multica-context-handoff",
+        "workspace_skill_id": null
+      }
     },
     {
       "agent_id": "30ce43d4-97a7-42a8-ab3e-78df0d894702",
       "agent_name": "06 QA",
       "agent_role": "qa",
-      "baseline_binding_ids": [
-        "29f68c43-0772-47a8-a860-d946a100c789",
-        "aab482f9-b9ff-4b78-8394-1f13e2b319c0"
-      ],
-      "baseline_bindings": [
-        {
-          "enabled": true,
-          "id": "29f68c43-0772-47a8-a860-d946a100c789",
-          "name": "milestone-quality-gate"
-        },
-        {
-          "enabled": true,
-          "id": "aab482f9-b9ff-4b78-8394-1f13e2b319c0",
-          "name": "parent-handoff-wake"
-        }
-      ],
-      "declarative_command": "multica agent skills add <agent-id> --skill-ids <skill-id-assigned-at-import>",
-      "op": "add"
-    }
-  ],
-  "excluded": [
+      "declarative_command": "logical_remove of exact skill id 29f68c43-0772-47a8-a860-d946a100c789; deployed CLI exposes agent skills add|set only and U12 must not use replace-all set",
+      "op": "remove",
+      "skill_id": "29f68c43-0772-47a8-a860-d946a100c789",
+      "skill_name": "milestone-quality-gate"
+    },
     {
-      "agent_id": "8bc546ab-ffd8-4aa6-ad30-58583346c065",
-      "agent_name": "02 Context Engineer",
-      "agent_role": "context-engineer",
-      "binding": "not planned",
-      "reason": "exception-path only; ordinary handoffs must not route through 02 and 02 must not be made mandatory without evidence (YZT-63 §33.4)"
+      "agent_id": "30ce43d4-97a7-42a8-ab3e-78df0d894702",
+      "agent_name": "06 QA",
+      "agent_role": "qa",
+      "declarative_command": "multica agent skills add <agent-id> --skill-ids <skill-id-assigned-at-import>",
+      "op": "add",
+      "skill": {
+        "bundle_digest": "sha256:63c99756ee251d98569580e8b0e12c8b4243a27717c4e3fd340ea071574b1ccd",
+        "content_digest": "sha256:e4c866588c216ff678bc67fac48db5aa40f1a29b627119e4c7ab162b93f243a1",
+        "id_status": "enablement_placeholder_until_u12_import",
+        "name": "product-quality-gate",
+        "workspace_skill_id": null
+      }
+    },
+    {
+      "agent_id": "30ce43d4-97a7-42a8-ab3e-78df0d894702",
+      "agent_name": "06 QA",
+      "agent_role": "qa",
+      "declarative_command": "multica agent skills add <agent-id> --skill-ids <skill-id-assigned-at-import>",
+      "note": null,
+      "op": "add",
+      "skill": {
+        "bundle_digest": "sha256:7f861c320c115b328fb45db7356573ae449a5e443ac08b3572a764c79934fce9",
+        "content_digest": "sha256:f369cee40ada061364d91ef48a9cb7d467039931e922c1db18d85fe1d7e0638a",
+        "id_status": "enablement_placeholder_until_u12_import",
+        "name": "multica-context-handoff",
+        "workspace_skill_id": null
+      }
     }
   ],
-  "issue_ref": "YZT-63",
+  "capability_skills": {
+    "delivery-review": {
+      "bundle_digest": "sha256:9a81581f51c7c65a766e021733ec8c2044558e9c3af57325953ec812760fe95a",
+      "content_digest": "sha256:cc0358a77e4843be88d2d6fb878d97196fabc375912cef044ec3d78c45fd92e1",
+      "id_status": "enablement_placeholder_until_u12_import",
+      "name": "delivery-review",
+      "workspace_skill_id": null
+    },
+    "product-quality-gate": {
+      "bundle_digest": "sha256:63c99756ee251d98569580e8b0e12c8b4243a27717c4e3fd340ea071574b1ccd",
+      "content_digest": "sha256:e4c866588c216ff678bc67fac48db5aa40f1a29b627119e4c7ab162b93f243a1",
+      "id_status": "enablement_placeholder_until_u12_import",
+      "name": "product-quality-gate",
+      "workspace_skill_id": null
+    }
+  },
+  "context_handoff_planned_for_all_six": true,
+  "explicit_add_remove_only": true,
+  "issue_ref": "YZT-73",
+  "legacy_05_skills_removed_in_after_state": true,
   "never_replace_all_set": true,
-  "preserve_existing_bindings": true,
-  "schema_version": "T08-binding-plan/1.0",
+  "preserve_unrelated_bindings": true,
+  "schema_version": "U05-binding-plan/1.0",
   "skill": {
-    "bundle_digest": "sha256:324db1ba1afc816c5da1010045dbf29527f1520b67f008b5e1684a531a908c53",
-    "name": "multica-context-handoff"
+    "bundle_digest": "sha256:7f861c320c115b328fb45db7356573ae449a5e443ac08b3572a764c79934fce9",
+    "issue_stated_integration_digest": "sha256:1df6a40c2dcc402adc98cd6258589d20e59e17bad3a279b45d594668c8c5bdc5",
+    "issue_stated_integration_reproducible": false,
+    "name": "multica-context-handoff",
+    "skill_md_digest": "sha256:f369cee40ada061364d91ef48a9cb7d467039931e922c1db18d85fe1d7e0638a",
+    "u04_commit": "702cb9bb11120c154a216e66c6ed1d3d632d3b49"
+  },
+  "squad": {
+    "after_member_roles": [
+      {
+        "member_id": "24f04aba-7da9-4371-bf89-685d7505a411",
+        "role": "Engineering Lead"
+      },
+      {
+        "member_id": "8bc546ab-ffd8-4aa6-ad30-58583346c065",
+        "role": "Context Engineer"
+      },
+      {
+        "member_id": "1303827b-73d1-4d71-a461-00b93e4b4418",
+        "role": "Solution Architect"
+      },
+      {
+        "member_id": "fa7d16a7-2dae-4994-80b8-7435b3fcca47",
+        "role": "Software Engineer"
+      },
+      {
+        "member_id": "b6335f8e-8147-45f7-aac0-8079d85423b5",
+        "role": "Delivery Reviewer"
+      },
+      {
+        "member_id": "30ce43d4-97a7-42a8-ab3e-78df0d894702",
+        "role": "QA"
+      }
+    ],
+    "id": "ee895c79-ca0a-498b-abe9-5af537736a30",
+    "name": "Engineering Team",
+    "ops": [
+      {
+        "declarative_command": "multica squad update <squad-id> --instructions <after/squad.md>",
+        "op": "update_instructions"
+      },
+      {
+        "declarative_command": "multica squad member set-role <squad-id> --member-id <05-uuid> --role Delivery Reviewer",
+        "from": "Feature Reviewer",
+        "member_id": "b6335f8e-8147-45f7-aac0-8079d85423b5",
+        "op": "set-role",
+        "to": "Delivery Reviewer"
+      }
+    ]
   },
   "status": "staged_candidate_not_active"
 }

@@ -58,7 +58,11 @@ import chandoff_finalize as finalize  # noqa: E402
 import chandoff_note as note  # noqa: E402
 import chandoff_plan as plan  # noqa: E402
 import chandoff_selfcheck as selfcheck  # noqa: E402
-from chandoff_instructions import ROLES, ROLE_BY_SLUG  # noqa: E402
+from chandoff_instructions import (  # noqa: E402
+    LIVE_DISPLAY_NAME,
+    ROLE_BY_SLUG,
+    ROLES,
+)
 from cutil import ROOT, now_iso  # noqa: E402
 
 ORCHESTRATOR_VERSION = "T09/1.0"
@@ -248,10 +252,12 @@ def t08_mapping(bundle_dir=None) -> dict:
         if not dispatch.UUID_RE.match(agent_id):
             raise T08BundleError("T08 baseline agent_id is not a UUID",
                                  role=str(role)[:80])
-        expected = _role_names().get(role)
-        if expected is None or name != expected:
+        expected = {_role_names().get(role), LIVE_DISPLAY_NAME.get(role)}
+        expected.discard(None)
+        if name not in expected:
             raise T08BundleError(
-                "T08 baseline agent name does not match the frozen role table",
+                "T08 baseline agent name does not match the frozen role table "
+                "or the live old-role baseline display name",
                 role=str(role)[:80], agent_name=str(name)[:80])
         mapping[role] = {"agent_id": agent_id, "agent_name": name}
         seen_ids.add(agent_id)

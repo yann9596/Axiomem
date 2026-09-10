@@ -22,7 +22,8 @@
       ],
       "instruction_length": 842,
       "instruction_sha256": "sha256:30ac23c94dc2c875c7d39a01c92c8400c20ffee34974c7793ae2aa6c1a32d3b7",
-      "role": "engineering-lead"
+      "role": "engineering-lead",
+      "staged_agent_name": "01 Engineering Lead"
     },
     {
       "agent_id": "8bc546ab-ffd8-4aa6-ad30-58583346c065",
@@ -52,7 +53,8 @@
       ],
       "instruction_length": 614,
       "instruction_sha256": "sha256:15ac35d9d56a127bd6b729ba56004ce5ce91790f8cb277d24487b69c18f0e5c6",
-      "role": "context-engineer"
+      "role": "context-engineer",
+      "staged_agent_name": "02 Context Engineer"
     },
     {
       "agent_id": "1303827b-73d1-4d71-a461-00b93e4b4418",
@@ -76,7 +78,8 @@
       ],
       "instruction_length": 747,
       "instruction_sha256": "sha256:8378c82b547c5be4339cafe742405f2570a909d8d94f6052fbcff5f254fe6194",
-      "role": "solution-architect"
+      "role": "solution-architect",
+      "staged_agent_name": "03 Solution Architect"
     },
     {
       "agent_id": "fa7d16a7-2dae-4994-80b8-7435b3fcca47",
@@ -100,7 +103,8 @@
       ],
       "instruction_length": 838,
       "instruction_sha256": "sha256:44b9db9b26daaeacbcb23e30c6682a0d8b7231d35f02c7f91de0f6bcce8ab873",
-      "role": "software-engineer"
+      "role": "software-engineer",
+      "staged_agent_name": "04 Software Engineer"
     },
     {
       "agent_id": "b6335f8e-8147-45f7-aac0-8079d85423b5",
@@ -130,7 +134,8 @@
       ],
       "instruction_length": 814,
       "instruction_sha256": "sha256:51cd0ddd07b7d8443a098e6586240dd191bfe3e67768fac31c80aea4a8ba744d",
-      "role": "feature-reviewer"
+      "role": "delivery-reviewer",
+      "staged_agent_name": "05 Delivery Reviewer"
     },
     {
       "agent_id": "30ce43d4-97a7-42a8-ab3e-78df0d894702",
@@ -154,42 +159,43 @@
       ],
       "instruction_length": 691,
       "instruction_sha256": "sha256:822867b9797195e53532b61543daac9265436ae5b9963da183679187c6de0625",
-      "role": "qa"
+      "role": "qa",
+      "staged_agent_name": "06 QA"
     }
   ],
-  "applies_to": "T13-owned application; checked by tools/chandoff_instructions.py verify",
+  "applies_to": "U12-owned application; checked by tools/chandoff_instructions.py verify",
   "checks": [
     {
       "id": "agents_present",
-      "rule": "all six role agents exist by exact name"
+      "rule": "all six role agents exist by stable UUID"
     },
     {
       "id": "agent_ids_stable",
       "rule": "agent ids equal the baseline recorded ids"
     },
     {
-      "id": "instruction_digests_match",
-      "rule": "sha256 of the exact instructions text equals baseline"
+      "id": "live_display_names_match_old_role_baseline",
+      "rule": "05 live name remains 05 Feature Reviewer until U12"
     },
     {
-      "id": "anchor_tails_match",
-      "rule": "last 120 chars equal baseline anchor_tail"
+      "id": "instruction_digests_match",
+      "rule": "sha256 of the exact instructions text equals baseline"
     },
     {
       "id": "binding_sets_match",
       "rule": "sorted (id, name, enabled) binding tuples equal baseline"
     },
     {
+      "id": "squad_identity_stable",
+      "rule": "Engineering Team id/leader/member ids equal baseline"
+    },
+    {
       "id": "skill_catalog_stage_state",
-      "rule": "stage mode: workspace catalog has no multica-context-handoff"
+      "rule": "stage mode records catalog presence without writing"
     },
     {
-      "id": "skill_catalog_apply_state",
-      "rule": "apply mode: catalog has multica-context-handoff whose SKILL.md content digest equals skill.skill_md_digest"
-    },
-    {
-      "id": "no_in_scope_binding_in_stage_mode",
-      "rule": "stage mode: none of the six agents is bound to multica-context-handoff"
+      "id": "no_stage_mode_writes",
+      "rule": "stage mode live instruction/skill/squad/binding writes and downstream triggers are all zero"
     }
   ],
   "drift_codes": [
@@ -198,16 +204,38 @@
     "instruction_digest_mismatch",
     "anchor_tail_mismatch",
     "binding_set_drift",
-    "skill_state_drift"
+    "skill_state_drift",
+    "squad_drift",
+    "display_name_drift"
   ],
   "drift_is_fatal": true,
   "fail_closed": true,
-  "issue_ref": "YZT-63",
-  "schema_version": "T08-preconditions/1.0",
+  "issue_ref": "YZT-73",
+  "pinned": {
+    "artifact_contract_revision": "sha256:9c2857ae252e1916ef79a4816dfb57c05a6f32ec1b97f31419cdfddfd9e83bfc",
+    "role_profile_revision": "sha256:7b3bdf5249dba6e1aeec1f29180b89c51985b04a6ab10a9aaaf5da596361531f",
+    "skill_bundle_digest": "sha256:7f861c320c115b328fb45db7356573ae449a5e443ac08b3572a764c79934fce9",
+    "skill_md_digest": "sha256:f369cee40ada061364d91ef48a9cb7d467039931e922c1db18d85fe1d7e0638a",
+    "u04_commit": "702cb9bb11120c154a216e66c6ed1d3d632d3b49"
+  },
+  "schema_version": "U05-preconditions/1.0",
   "skill": {
-    "bundle_digest": "sha256:324db1ba1afc816c5da1010045dbf29527f1520b67f008b5e1684a531a908c53",
+    "bundle_digest": "sha256:7f861c320c115b328fb45db7356573ae449a5e443ac08b3572a764c79934fce9",
     "name": "multica-context-handoff",
     "skill_md_digest": "sha256:f369cee40ada061364d91ef48a9cb7d467039931e922c1db18d85fe1d7e0638a"
+  },
+  "squad": {
+    "id": "ee895c79-ca0a-498b-abe9-5af537736a30",
+    "instruction_sha256": "sha256:f9f8afae1421b459c720e3d4a7faa139ba442594c86ccd870c2804b96f63d649",
+    "leader_id": "24f04aba-7da9-4371-bf89-685d7505a411",
+    "member_ids": [
+      "1303827b-73d1-4d71-a461-00b93e4b4418",
+      "24f04aba-7da9-4371-bf89-685d7505a411",
+      "30ce43d4-97a7-42a8-ab3e-78df0d894702",
+      "8bc546ab-ffd8-4aa6-ad30-58583346c065",
+      "b6335f8e-8147-45f7-aac0-8079d85423b5",
+      "fa7d16a7-2dae-4994-80b8-7435b3fcca47"
+    ]
   },
   "updated_at_is_provenance_only": true
 }

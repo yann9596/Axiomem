@@ -1,0 +1,91 @@
+{
+  "agents": [
+    {
+      "agent_id": "24f04aba-7da9-4371-bf89-685d7505a411",
+      "alias_from_feature_reviewer": false,
+      "live_display_name": "01 Engineering Lead",
+      "live_display_name_is": "current",
+      "logical_role": "engineering-lead",
+      "old_instruction_digest": "sha256:30ac23c94dc2c875c7d39a01c92c8400c20ffee34974c7793ae2aa6c1a32d3b7",
+      "staged_display_name": "01 Engineering Lead"
+    },
+    {
+      "agent_id": "8bc546ab-ffd8-4aa6-ad30-58583346c065",
+      "alias_from_feature_reviewer": false,
+      "live_display_name": "02 Context Engineer",
+      "live_display_name_is": "current",
+      "logical_role": "context-engineer",
+      "old_instruction_digest": "sha256:15ac35d9d56a127bd6b729ba56004ce5ce91790f8cb277d24487b69c18f0e5c6",
+      "staged_display_name": "02 Context Engineer"
+    },
+    {
+      "agent_id": "1303827b-73d1-4d71-a461-00b93e4b4418",
+      "alias_from_feature_reviewer": false,
+      "live_display_name": "03 Solution Architect",
+      "live_display_name_is": "current",
+      "logical_role": "solution-architect",
+      "old_instruction_digest": "sha256:8378c82b547c5be4339cafe742405f2570a909d8d94f6052fbcff5f254fe6194",
+      "staged_display_name": "03 Solution Architect"
+    },
+    {
+      "agent_id": "fa7d16a7-2dae-4994-80b8-7435b3fcca47",
+      "alias_from_feature_reviewer": false,
+      "live_display_name": "04 Software Engineer",
+      "live_display_name_is": "current",
+      "logical_role": "software-engineer",
+      "old_instruction_digest": "sha256:44b9db9b26daaeacbcb23e30c6682a0d8b7231d35f02c7f91de0f6bcce8ab873",
+      "staged_display_name": "04 Software Engineer"
+    },
+    {
+      "agent_id": "b6335f8e-8147-45f7-aac0-8079d85423b5",
+      "alias_from_feature_reviewer": false,
+      "live_display_name": "05 Feature Reviewer",
+      "live_display_name_is": "old-role-baseline-not-v22-authority",
+      "logical_role": "delivery-reviewer",
+      "old_instruction_digest": "sha256:51cd0ddd07b7d8443a098e6586240dd191bfe3e67768fac31c80aea4a8ba744d",
+      "staged_display_name": "05 Delivery Reviewer"
+    },
+    {
+      "agent_id": "30ce43d4-97a7-42a8-ab3e-78df0d894702",
+      "alias_from_feature_reviewer": false,
+      "live_display_name": "06 QA",
+      "live_display_name_is": "current",
+      "logical_role": "qa",
+      "old_instruction_digest": "sha256:822867b9797195e53532b61543daac9265436ae5b9963da183679187c6de0625",
+      "staged_display_name": "06 QA"
+    }
+  ],
+  "feature_reviewer_resolves_to": null,
+  "issue_ref": "YZT-73",
+  "retired_without_alias": [
+    "feature-reviewer",
+    "ops-sre"
+  ],
+  "runtime_proof": {
+    "adapter_error_excerpt": "target.role 'feature-reviewer' is not a currently resolvable logical role: no team-context/roles/feature-reviewer.yaml profile exists; role vocabulary resolves from role-profile data, never from a hard-coded roster",
+    "adapter_rejects_feature_reviewer": true,
+    "current_role_ids": [
+      "context-engineer",
+      "delivery-reviewer",
+      "engineering-lead",
+      "qa",
+      "software-engineer",
+      "solution-architect"
+    ],
+    "delivery_reviewer_profile_present": true,
+    "feature_reviewer_profile_absent": true,
+    "ok": true,
+    "role_file_absent": true
+  },
+  "schema_version": "U05-role-mapping/1.0",
+  "uuid_05": "b6335f8e-8147-45f7-aac0-8079d85423b5",
+  "uuid_05_maps_to": "delivery-reviewer",
+  "v2_roles": [
+    "engineering-lead",
+    "context-engineer",
+    "solution-architect",
+    "software-engineer",
+    "delivery-reviewer",
+    "qa"
+  ]
+}

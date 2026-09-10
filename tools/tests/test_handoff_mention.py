@@ -675,23 +675,18 @@ class HappyPathTests(unittest.TestCase):
         self.assertEqual(evidence["live_mutations"], 0)
 
     def test_retired_feature_reviewer_fails_closed_no_transfer(self):
-        # U02/YZT-69: feature-reviewer is retired without an alias; routing a
-        # mention to it must fail closed at PREPARE (role vocabulary resolves
-        # from role-profile data), with zero triggers and no assignee transfer.
+        # U02/YZT-69 + U05/YZT-73: feature-reviewer is retired without an
+        # alias. Routing a mention to it fails closed at role-table resolve
+        # (no alias to delivery-reviewer), with zero triggers.
         result, fake, ledger = run_tx(caller="engineering-lead",
                                       target="feature-reviewer",
                                       tx="tx-retired-fr")
         self.assertFalse(result["ok"], result)
-        self.assertEqual(result["terminal_status"], "PREPARE_FAILED")
-        self.assertEqual(result["stop_reason"], "T05 snapshot failed")
-        self.assertEqual(result["target"]["role"], "feature-reviewer")
+        self.assertEqual(result["terminal_status"], "ROUTING_REQUIRED")
+        self.assertIsNone(result.get("target"))
         self.assertEqual(result["trigger"]["count"], 0)
-        self.assertEqual(result["assignee"]["unchanged"], True)
         self.assertEqual(result["guarantees"]["live_mutations"], 0)
-        self.assertEqual(
-            result["extra"]["error"]["code"], "request_schema_violation")
-        self.assertIn("feature-reviewer",
-                      result["extra"]["error"]["message"])
+        self.assertIn("feature-reviewer", result["stop_reason"] or "")
 
     def test_lead_invokes_qa_no_transfer(self):
         result, fake, ledger = run_tx(caller="engineering-lead", target="qa",

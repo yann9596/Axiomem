@@ -1,0 +1,82 @@
+{
+  "alias": false,
+  "cases": [
+    {
+      "code": "old_05_package_rejected",
+      "ok": false,
+      "package_role": "feature-reviewer",
+      "reasons": [
+        "old_role_package_rejected",
+        "no_alias_rewrite",
+        "old_05_instruction_not_new_identity",
+        "legacy_05_skill_binding_present"
+      ],
+      "self_check": "REFRESH_REQUIRED",
+      "target_role": "delivery-reviewer",
+      "trigger_eligible": false
+    },
+    {
+      "code": "old_05_package_rejected",
+      "ok": false,
+      "package_role": "feature-reviewer",
+      "reasons": [
+        "retired_no_alias",
+        "old_role_package_rejected",
+        "retired_role_not_dispatchable"
+      ],
+      "self_check": "REFRESH_REQUIRED",
+      "target_role": "feature-reviewer",
+      "trigger_eligible": false
+    },
+    {
+      "code": "accepted",
+      "ok": true,
+      "package_role": "delivery-reviewer",
+      "reasons": [],
+      "self_check": "READY",
+      "target_role": "delivery-reviewer",
+      "trigger_eligible": true
+    },
+    {
+      "alias_to": null,
+      "code": "retired_no_alias",
+      "message": "feature-reviewer is retired and has no alias",
+      "ok": false,
+      "role": null,
+      "token": "feature-reviewer"
+    },
+    {
+      "code": "resolved",
+      "ok": true,
+      "role": "delivery-reviewer",
+      "token": "delivery-reviewer"
+    },
+    {
+      "agent_id": "b6335f8e-8147-45f7-aac0-8079d85423b5",
+      "live_name": "05 Feature Reviewer",
+      "ok": true,
+      "role": "delivery-reviewer",
+      "staged_name": "05 Delivery Reviewer"
+    }
+  ],
+  "feature_reviewer_activation": 0,
+  "issue_ref": "YZT-73",
+  "old_05_package_accepted": false,
+  "runtime_proof": {
+    "adapter_error_excerpt": "target.role 'feature-reviewer' is not a currently resolvable logical role: no team-context/roles/feature-reviewer.yaml profile exists; role vocabulary resolves from role-profile data, never from a hard-coded roster",
+    "adapter_rejects_feature_reviewer": true,
+    "current_role_ids": [
+      "context-engineer",
+      "delivery-reviewer",
+      "engineering-lead",
+      "qa",
+      "software-engineer",
+      "solution-architect"
+    ],
+    "delivery_reviewer_profile_present": true,
+    "feature_reviewer_profile_absent": true,
+    "ok": true,
+    "role_file_absent": true
+  },
+  "schema_version": "U05-package-invalidation/1.0"
+}

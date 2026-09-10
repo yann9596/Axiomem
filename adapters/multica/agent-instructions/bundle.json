@@ -1,38 +1,58 @@
 {
-  "activation": "T13-owned controlled enablement; nothing here has been applied to the live workspace",
+  "activation": "U12-owned controlled enablement; nothing here has been applied to the live workspace",
+  "agent_after_state_digests": {
+    "context-engineer": "sha256:2435c6ec2d92660152cb30572ab7f6009432d55c85429b55faa3df29476b9101",
+    "delivery-reviewer": "sha256:b16f88febef1c63b1261b90165251d7497f63865fb98c580d7c1609230d92683",
+    "engineering-lead": "sha256:729cb3e0673fb4bf43472585f908cf8cfb38e498f67255a6180202ddb80bebe3",
+    "qa": "sha256:5dccebc97c2888b9d122291d4b94a2c7bfb8d530b5e861772bd34f9897dc2cba",
+    "software-engineer": "sha256:140f1f7d8bbc8c6c163fd2955f72d1ce3495f4cb68e9ad96697b46f031d5d885",
+    "solution-architect": "sha256:8aa931af665b57900d35f2f132a45c269877f2a3b8a04633be7a35c2c485f0c7"
+  },
+  "artifact_contract_revision": "sha256:9c2857ae252e1916ef79a4816dfb57c05a6f32ec1b97f31419cdfddfd9e83bfc",
   "baseline": {
     "captured_cli_version": "v0.4.42",
     "instruction_sha256": {
       "context-engineer": "sha256:15ac35d9d56a127bd6b729ba56004ce5ce91790f8cb277d24487b69c18f0e5c6",
+      "delivery-reviewer": "sha256:51cd0ddd07b7d8443a098e6586240dd191bfe3e67768fac31c80aea4a8ba744d",
       "engineering-lead": "sha256:30ac23c94dc2c875c7d39a01c92c8400c20ffee34974c7793ae2aa6c1a32d3b7",
-      "feature-reviewer": "sha256:51cd0ddd07b7d8443a098e6586240dd191bfe3e67768fac31c80aea4a8ba744d",
       "qa": "sha256:822867b9797195e53532b61543daac9265436ae5b9963da183679187c6de0625",
       "software-engineer": "sha256:44b9db9b26daaeacbcb23e30c6682a0d8b7231d35f02c7f91de0f6bcce8ab873",
       "solution-architect": "sha256:8378c82b547c5be4339cafe742405f2570a909d8d94f6052fbcff5f254fe6194"
-    }
+    },
+    "squad_instruction_sha256": "sha256:f9f8afae1421b459c720e3d4a7faa139ba442594c86ccd870c2804b96f63d649"
   },
+  "binding_plan_revision": "sha256:7f83bfd523e2c0da3cd0dac4568869f3c9937e2d3ae6c0dc66b9853094a27c22",
   "files": {
-    "after/context-engineer.md": "sha256:3d63e51552ddf5cedb9e334d15dce147b4ab580ba40f00624ec679bbb4caf5fa",
-    "after/engineering-lead.md": "sha256:022dad7de0a2f1d6a011371e7812aa67f956ee1ff7e93ecc2a8b237963137115",
-    "after/feature-reviewer.md": "sha256:ce8ee7f03aa4113167b5b8a49e566460028b2a01519833d8da4d38d9202570fe",
-    "after/qa.md": "sha256:9c401696809cf5b4ffb8e5aa2f00286f9167a5d809509de879a5d9c84cd0063d",
-    "after/software-engineer.md": "sha256:33a5660f790338845cb5f61631af27c91cc63b2aaa782b3c940220d311ee004b",
-    "after/solution-architect.md": "sha256:f1817de23e3f9c12a27b6f88cd1bff8cecf8767b4f1bffde2b25b290924f4957",
-    "binding-plan.json": "sha256:6ba704ec3ee1c3d7de72015eb6bacc9587e9b3c01894ca41843a241f3c80f98d",
-    "candidates/context-engineer.md": "sha256:77570b3d9dd7a86ddbb9df24580051450842e18a0cbe601251739434b5cef159",
-    "candidates/engineering-lead.md": "sha256:a2e7b33472787b3b0285aa503dd39dc70a2b4d3c64b0bdad0846517161a71c2b",
-    "candidates/feature-reviewer.md": "sha256:cd380acf0f04d10a81d5653bcc7a6b2936f6650b924648df1718754a3e820f91",
-    "candidates/qa.md": "sha256:cd380acf0f04d10a81d5653bcc7a6b2936f6650b924648df1718754a3e820f91",
-    "candidates/software-engineer.md": "sha256:cd380acf0f04d10a81d5653bcc7a6b2936f6650b924648df1718754a3e820f91",
-    "candidates/solution-architect.md": "sha256:cd380acf0f04d10a81d5653bcc7a6b2936f6650b924648df1718754a3e820f91",
-    "preconditions.json": "sha256:8d8265f476f1090ba7ea5e9f01579ca09f61d46537b53459a2b6db456217d281",
-    "rollback.json": "sha256:ba9a2a3be1e6b83146aa6d46c142e4d189f5a03f567449c6fe792d62e3aee64f"
+    "after/context-engineer.md": "sha256:2435c6ec2d92660152cb30572ab7f6009432d55c85429b55faa3df29476b9101",
+    "after/delivery-reviewer.md": "sha256:b16f88febef1c63b1261b90165251d7497f63865fb98c580d7c1609230d92683",
+    "after/engineering-lead.md": "sha256:729cb3e0673fb4bf43472585f908cf8cfb38e498f67255a6180202ddb80bebe3",
+    "after/qa.md": "sha256:5dccebc97c2888b9d122291d4b94a2c7bfb8d530b5e861772bd34f9897dc2cba",
+    "after/software-engineer.md": "sha256:140f1f7d8bbc8c6c163fd2955f72d1ce3495f4cb68e9ad96697b46f031d5d885",
+    "after/solution-architect.md": "sha256:8aa931af665b57900d35f2f132a45c269877f2a3b8a04633be7a35c2c485f0c7",
+    "after/squad.md": "sha256:3e5d1413e8f28af97a44bf2b04190d673ac12de77429d76e003d2df8ef391d31",
+    "binding-plan.json": "sha256:ac40e0b8e7110095803e9a1b2e16d7ad6fd25b277015361baa1ab0840de7ff63",
+    "candidates/context-engineer.md": "sha256:0ea6c5cfca8da6f2f086f66ae8a24137dc4b4f360a99c866b71660f0352adbf3",
+    "candidates/delivery-reviewer.md": "sha256:b16f88febef1c63b1261b90165251d7497f63865fb98c580d7c1609230d92683",
+    "candidates/engineering-lead.md": "sha256:ace1dcab11d56ceb17aa54cb92ba2e2e522870e582b652ec3c4f2e8fafb7c48d",
+    "candidates/qa.md": "sha256:357263a64bb7474ee3a89b623e931069af1b0351971f33c2995510369909cc05",
+    "candidates/software-engineer.md": "sha256:2d07e2bbd837e2dc57b0d19af3533791759b6de8121c7795096d3faf7ebe8baa",
+    "candidates/solution-architect.md": "sha256:a405caf83fbe1cd4df3e25fc3263f909e347987c771655630a57aed7bcb90984",
+    "old-role-inventory.json": "sha256:8a1ea9c6cbbfb811d5141b046cb66a4dc0e52f4098f806224f6541ba756c3b86",
+    "package-invalidation.json": "sha256:46b9d0d2669821fe32dfe85497790cbf1d1da25e62e19ed773f2297b3876c62c",
+    "preconditions.json": "sha256:d3f07cc4bf3a050234276d9b8871aadd0ca4b048e832d90cebe79f8ecce7f739",
+    "role-mapping.json": "sha256:eea0cbac2b8d480f805dd668fec1730d7bc4059fa89081c116de4d27de7a1bb6",
+    "rollback.json": "sha256:511d0c4002370bbee617a3da82b0b565a68ff47b77d15cbb5c6bc332733a760d"
   },
-  "issue_ref": "YZT-63",
+  "instruction_bundle_revision": "sha256:a93e146d6586cf6f474148aeed092032e3a9c871ad3138ee1152d28108b5b98f",
+  "issue_ref": "YZT-73",
+  "role_profile_revision": "sha256:7b3bdf5249dba6e1aeec1f29180b89c51985b04a6ab10a9aaaf5da596361531f",
   "schema_version": "T08-bundle/1.0",
   "skill": {
-    "bundle_digest": "sha256:324db1ba1afc816c5da1010045dbf29527f1520b67f008b5e1684a531a908c53",
-    "name": "multica-context-handoff"
+    "bundle_digest": "sha256:7f861c320c115b328fb45db7356573ae449a5e443ac08b3572a764c79934fce9",
+    "name": "multica-context-handoff",
+    "skill_md_digest": "sha256:f369cee40ada061364d91ef48a9cb7d467039931e922c1db18d85fe1d7e0638a"
   },
-  "status": "staged_candidate_not_active"
+  "squad_after_state_digest": "sha256:3e5d1413e8f28af97a44bf2b04190d673ac12de77429d76e003d2df8ef391d31",
+  "status": "staged_candidate_not_active",
+  "u04_commit": "702cb9bb11120c154a216e66c6ed1d3d632d3b49"
 }

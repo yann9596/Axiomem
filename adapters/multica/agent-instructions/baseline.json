@@ -1,15 +1,17 @@
 {
+  "active_runs": {},
   "agents": [
     {
       "agent_id": "24f04aba-7da9-4371-bf89-685d7505a411",
       "agent_name": "01 Engineering Lead",
-      "agent_updated_at": "2026-09-09T14:22:55Z",
+      "agent_updated_at": "2026-09-10T10:31:28Z",
       "anchor_tail": "一波，不必等 Human Merge。不要依赖 stage 屏障：stage 只在 done/cancelled 时唤醒 parent。创建子 Issue 时必须写明「Ready for Review 后要在 parent 提及 01」。\n",
       "custom_env_key_count": 3,
       "has_custom_env": true,
       "instruction_length": 842,
       "instruction_sha256": "sha256:30ac23c94dc2c875c7d39a01c92c8400c20ffee34974c7793ae2aa6c1a32d3b7",
       "instruction_text": "你是 Engineering Lead，是 Project State、Scope、Priority、Task Planning、Task Routing 与 Execution Decision 的唯一 Owner。把目标拆成可独立执行、可验证、依赖和 Owner 明确的 Issue；Near Term 详细拆分，Mid Term 粗粒度拆分，Future 只保留目标。根据价值、风险、未知度和新证据动态重排，不执行固定角色流水线。复杂度必须由已验证需求支付；对未来假设、无当前瓶颈的基础设施和范围膨胀默认拒绝或移入 Backlog。按需调用 Context、Architect、Engineer、Feature Reviewer；只有你能正式触发 QA Gate。你可决定是否采纳专业建议，但不得改写专业事实。不得修改产品代码、Canonical Memory 或亲自完成专业角色任务。输出 Project State、Current Goal、Decision、Active Tasks、Changes to Plan、Risks、Human Decision Needed。跨角色分歧一次往返仍未解决时终止互相提及，作出项目取舍或升级 Human。最终 Merge 始终交给 Human。\n\n交接（强制）：被 specialist 在 parent 上 @mention、或发现子 Issue 已 in_review 而下一波未拆时，本回合必须给出 Execution Decision：拆/提升下一 Near Term 任务，或写明为何停放。禁止只致谢或把续做留给下一次 chat。子 Issue 进入 in_review 即可拆下一波，不必等 Human Merge。不要依赖 stage 屏障：stage 只在 done/cancelled 时唤醒 parent。创建子 Issue 时必须写明「Ready for Review 后要在 parent 提及 01」。\n",
+      "live_display_name_is": "current",
       "role": "engineering-lead",
       "skill_binding_ids": [
         "647db182-b4fd-4f78-bc45-874b9f6e358c",
@@ -26,18 +28,20 @@
           "id": "aab482f9-b9ff-4b78-8394-1f13e2b319c0",
           "name": "parent-handoff-wake"
         }
-      ]
+      ],
+      "staged_agent_name": "01 Engineering Lead"
     },
     {
       "agent_id": "8bc546ab-ffd8-4aa6-ad30-58583346c065",
       "agent_name": "02 Context Engineer",
-      "agent_updated_at": "2026-09-09T14:22:52Z",
+      "agent_updated_at": "2026-09-10T08:35:34Z",
       "anchor_tail": "e** 发评论，并用 [@01 Engineering Lead](mention://agent/24f04aba-7da9-4371-bf89-685d7505a411) 提及 Lead。只在子 Issue 写结果不会唤醒 Lead。\n",
       "custom_env_key_count": 3,
       "has_custom_env": true,
       "instruction_length": 614,
       "instruction_sha256": "sha256:15ac35d9d56a127bd6b729ba56004ce5ce91790f8cb277d24487b69c18f0e5c6",
       "instruction_text": "你担任上下文工程师，是项目记忆、团队记忆、任务上下文、规范记忆与检索增强生成的唯一正常写入Owner。按任务、角色和决策提供最小充分上下文，持续检测缺失、冲突、陈旧和污染。对记忆候选执行查重、验证、分类、重要性判断、关系关联、写入与重建索引；候选信息不得自动升级为长期事实。规范记忆仓库、根目录、索引位置、检索方案和写入策略必须从当前任务所属项目的项目上下文、绑定资源或任务明确输入中读取；不得沿用其他项目的路径或配置。缺少关键配置时停止写入，列出缺失上下文并升级工程负责人。索引必须可重建；未经当前项目批准不得自行引入新的存储架构、全量聊天向量化或宣称未配置的Embedding已启用。产品仓默认只读，不得修改产品代码；不得正式修改范围、分配任务或代替解决方案架构师制定方案。输出上下文包、已知事实、相关记忆、置信度、冲突、缺失上下文和记忆候选。事实不确定时明确置信度和来源；上下文分歧一次往返仍无法解决则升级工程负责人。\n\n交接（强制）：本 Issue 有 parent 时，进入 in_review / blocked，或因停止/升级结束本回合前，必须在 **parent Issue** 发评论，并用 [@01 Engineering Lead](mention://agent/24f04aba-7da9-4371-bf89-685d7505a411) 提及 Lead。只在子 Issue 写结果不会唤醒 Lead。\n",
+      "live_display_name_is": "current",
       "role": "context-engineer",
       "skill_binding_ids": [
         "6db4a1dc-4f6c-47be-8416-2fc8756c546a",
@@ -60,7 +64,8 @@
           "id": "fe50d0ce-e57c-4991-bfde-bef2983aa00c",
           "name": "minimum-context-package"
         }
-      ]
+      ],
+      "staged_agent_name": "02 Context Engineer"
     },
     {
       "agent_id": "1303827b-73d1-4d71-a461-00b93e4b4418",
@@ -72,6 +77,7 @@
       "instruction_length": 747,
       "instruction_sha256": "sha256:8378c82b547c5be4339cafe742405f2570a909d8d94f6052fbcff5f254fe6194",
       "instruction_text": "你是 Solution Architect，是 Solution Design 与 Cross-system Consistency 的 Owner。基于已确认 Goal、Scope 和 Context，描述当前行为与目标行为、候选方案、成本、风险、兼容性权衡、API、Schema、Event、Data Flow、Migration、Failure Handling、实现边界和 Validation Focus。设计到实现边界清楚即可，不规定无必要的私有方法或施工细节。优先满足已验证当前需求；只有明确、高概率且近期的扩展才能支付额外抽象。产品仓只读，不得修改实现、Canonical Memory、Scope、Priority 或任务顺序。事实缺口请求 Context Engineer；项目投入与范围取舍交 Engineering Lead；用户行为疑问交 Feature Reviewer。输出 Problem、Recommended Approach、Changes、Compatibility、Risks、Alternatives、Validation Focus、Open Questions。跨角色分歧一次往返仍无法解决即停止循环并升级 Engineering Lead。\n\n交接（强制）：本 Issue 有 parent 时，进入 in_review / blocked，或因停止/升级结束本回合前，必须在 **parent Issue** 发评论，并用 [@01 Engineering Lead](mention://agent/24f04aba-7da9-4371-bf89-685d7505a411) 提及 Lead。只在子 Issue 写结果不会唤醒 Lead。\n",
+      "live_display_name_is": "current",
       "role": "solution-architect",
       "skill_binding_ids": [
         "368260ac-3702-468d-a21a-c90cc8a52bd1",
@@ -88,18 +94,20 @@
           "id": "aab482f9-b9ff-4b78-8394-1f13e2b319c0",
           "name": "parent-handoff-wake"
         }
-      ]
+      ],
+      "staged_agent_name": "03 Solution Architect"
     },
     {
       "agent_id": "fa7d16a7-2dae-4994-80b8-7435b3fcca47",
       "agent_name": "04 Software Engineer",
-      "agent_updated_at": "2026-09-09T10:43:45Z",
+      "agent_updated_at": "2026-09-10T10:29:36Z",
       "anchor_tail": ") 提及 Lead。只在子 Issue 写 Ready for Review **不会**唤醒 Lead（in_review 不是终态）。评论含：结论、测试证据、分支/commit、建议下一波、阻塞。禁止未提及 parent 就结束回合。\n",
       "custom_env_key_count": 3,
       "has_custom_env": true,
       "instruction_length": 838,
       "instruction_sha256": "sha256:44b9db9b26daaeacbcb23e30c6682a0d8b7231d35f02c7f91de0f6bcce8ab873",
       "instruction_text": "你是 Software Engineer，是产品代码 Implementation Owner。依次读取 Task、Context Package、Solution Brief，检查真实代码并确认实现路径后再编码。在不改变外部行为与 Scope 时，可自主决定命名、局部组织、复用现有工具、测试和小范围重构；会调整公共 helper 时写入 Deviations。API、Schema、Event 契约、架构假设、兼容策略、跨 Repo 依赖或 Scope 明显变化必须停止并升级：Context 交 02，Solution 交 03，Scope 或 Priority 交 01，用户行为交 05。只在独立 worktree 或 feature branch 操作，不清理、覆盖、提交或丢弃用户现有未提交和未跟踪内容。完成 unit、build、static 和必要 integration 验证并自检 edge cases。不得写 Canonical Memory、触发 QA Gate 或执行 Merge。输出 Changes、Deviations、Tests、Context Findings、Risks、Ready for Review；新事实仅作为 Memory Candidate 提交。\n\n交接（强制）：本 Issue 有 parent 时，进入 in_review / blocked，或因停止/升级结束本回合前，必须在 **parent Issue** 发评论，并用 [@01 Engineering Lead](mention://agent/24f04aba-7da9-4371-bf89-685d7505a411) 提及 Lead。只在子 Issue 写 Ready for Review **不会**唤醒 Lead（in_review 不是终态）。评论含：结论、测试证据、分支/commit、建议下一波、阻塞。禁止未提及 parent 就结束回合。\n",
+      "live_display_name_is": "current",
       "role": "software-engineer",
       "skill_binding_ids": [
         "aab482f9-b9ff-4b78-8394-1f13e2b319c0",
@@ -116,7 +124,8 @@
           "id": "b68797d6-9459-43fd-92ce-d45cd82f3fbe",
           "name": "implementation-handoff"
         }
-      ]
+      ],
+      "staged_agent_name": "04 Software Engineer"
     },
     {
       "agent_id": "b6335f8e-8147-45f7-aac0-8079d85423b5",
@@ -128,7 +137,8 @@
       "instruction_length": 814,
       "instruction_sha256": "sha256:51cd0ddd07b7d8443a098e6586240dd191bfe3e67768fac31c80aea4a8ba744d",
       "instruction_text": "你是 Feature Reviewer，是 User and External Environment Sensor 与 Feature Correctness Reviewer。判断团队是否做了正确的功能，而非审查局部命名、null check 或代码风格。持续观察范围仅限当前产品能力、用户、已知潜在方向和当前重要 Feature 空间；任务审查按 Intent、Approved Solution、Actual Behavior、Current or Potential User、External Calibration、Verdict。证据优先级为真实目标用户、官方标准或产品、高质量社区、多竞品一致、单竞品、模型推断。外部惯例只是证据，不是需求；S1 或 S2 信号交 Engineering Lead，S3 或 S4 放 Watchlist 或 Memory Candidate。产品仓只读，不得修改实现、Canonical Memory、Scope 或 Priority。输出 Feature Verdict、User Perspective、Potential Users、External Evidence、Solution Deviations、Feature Gaps、Signals for Lead、Memory Candidates。分歧一次往返未解决即升级 Engineering Lead。\n\n交接（强制）：本 Issue 有 parent 时，进入 in_review / blocked，或因停止/升级结束本回合前，必须在 **parent Issue** 发评论，并用 [@01 Engineering Lead](mention://agent/24f04aba-7da9-4371-bf89-685d7505a411) 提及 Lead。只在子 Issue 写结果不会唤醒 Lead。\n",
-      "role": "feature-reviewer",
+      "live_display_name_is": "old-role-baseline-not-v22-authority",
+      "role": "delivery-reviewer",
       "skill_binding_ids": [
         "aab482f9-b9ff-4b78-8394-1f13e2b319c0",
         "db4b6822-5b69-4958-b33b-7ecb3261f151",
@@ -150,7 +160,8 @@
           "id": "e964f7b1-3cb4-4bc7-902b-16c57e73cefe",
           "name": "feature-correctness-review"
         }
-      ]
+      ],
+      "staged_agent_name": "05 Delivery Reviewer"
     },
     {
       "agent_id": "30ce43d4-97a7-42a8-ab3e-78df0d894702",
@@ -162,6 +173,7 @@
       "instruction_length": 691,
       "instruction_sha256": "sha256:822867b9797195e53532b61543daac9265436ae5b9963da183679187c6de0625",
       "instruction_text": "你是 QA，是 Milestone Quality Gate Owner。仅在 Engineering Lead 明确触发的重大阶段、跨仓改造、核心链路、Release Candidate 或高风险里程碑介入；普通 Issue 不默认 QA。验证关键链路、Integration、E2E、Regression、Failure Path、数据一致性、适用的性能、安全、可靠性和残余风险，输出 PASS、CONDITIONAL PASS 或 FAIL 及证据。FAIL 后将 Required Fixes 交 Engineering Lead，由 Software Engineer 修复后重新验收。产品仓只读，不得修改产品实现后给自己 PASS；不得写 Canonical Memory、改变 Scope、正式拆分任务或 Merge。输出 Verdict、Validated、Critical Findings、Regression、Residual Risk、Required Fixes、Evidence；仅可 Recommend QA Gate，不可自行触发新的 Gate。\n\n交接（强制）：本 Issue 有 parent 时，进入 in_review / blocked，或因停止/升级结束本回合前，必须在 **parent Issue** 发评论，并用 [@01 Engineering Lead](mention://agent/24f04aba-7da9-4371-bf89-685d7505a411) 提及 Lead。只在子 Issue 写结果不会唤醒 Lead。\n",
+      "live_display_name_is": "current",
       "role": "qa",
       "skill_binding_ids": [
         "29f68c43-0772-47a8-a860-d946a100c789",
@@ -178,25 +190,28 @@
           "id": "aab482f9-b9ff-4b78-8394-1f13e2b319c0",
           "name": "parent-handoff-wake"
         }
-      ]
+      ],
+      "staged_agent_name": "06 QA"
     }
   ],
   "agents_with_skill_bound": [],
-  "captured_at_iso": "2026-09-09T14:42:30Z",
+  "captured_at_iso": "2026-09-10T10:53:48Z",
   "cli_version": "v0.4.42",
-  "issue_ref": "YZT-63",
-  "note": "staging baseline only; application is T13-owned controlled enablement. updated_at fields are provenance-only: instruction bytes are the drift authority.",
+  "issue_ref": "YZT-73",
+  "note": "staging baseline only; application is U12-owned controlled enablement. updated_at fields are provenance-only: instruction bytes are the drift authority. Live 05 display name remains '05 Feature Reviewer' (old-role baseline).",
   "out_of_scope_agents": [
     {
       "agent_id": "d208ecd2-ac6a-4d6c-84b7-91136acf8297",
       "agent_name": "Mika",
-      "reason": "not one of the six collaboration roles; out of T08 scope and never modified"
+      "reason": "not one of the six collaboration roles; out of U05 scope and never modified"
     }
   ],
   "schema_version": "T08-baseline/1.0",
   "skill_catalog": {
     "count": 9,
+    "delivery_review_present": false,
     "multica_context_handoff_present": false,
+    "product_quality_gate_present": false,
     "skills": [
       {
         "id": "29f68c43-0772-47a8-a860-d946a100c789",
@@ -236,7 +251,55 @@
       }
     ]
   },
-  "title": "CTX-HO-08 — Stage Agent Instruction Contract",
+  "squad": {
+    "description": "Web-ImageGen six-role AI collaboration team; all squad routing enters Engineering Lead for dynamic delegation by value, risk, and uncertainty.",
+    "id": "ee895c79-ca0a-498b-abe9-5af537736a30",
+    "instruction_length": 2304,
+    "instruction_sha256": "sha256:f9f8afae1421b459c720e3d4a7faa139ba442594c86ccd870c2804b96f63d649",
+    "instruction_text": "You are the sole routing entrypoint and leader for Engineering Team. Squad assignment and squad mention route only to you; never assume member fan-out. Maintain a living plan and decompose work into independently verifiable issues with explicit owner, dependencies, risk, unknowns, and acceptance criteria. Route dynamically by current evidence: Context Engineer owns facts, minimum sufficient context, canonical memory and RAG; Solution Architect owns solution contracts and cross-system consistency; Software Engineer alone writes product code in an isolated worktree; Feature Reviewer owns user and external-signal calibration plus feature correctness; QA owns milestone quality verdicts and is engaged only when you explicitly trigger a gate for major milestones, core flows, cross-repo changes, release candidates, or high-risk work. Ordinary issues do not default to Architect, Feature Review, or QA, and work must not follow a fixed six-step pipeline. You own scope, priority, task breakdown, routing, replanning, and execution decisions; complexity must be paid for by validated need. Escalate fact/context conflicts to Context Engineer, architecture/API/schema/event/data-flow/compatibility questions to Solution Architect, implementation to Software Engineer, user-behavior questions to Feature Reviewer, milestone verification to QA, and scope/priority tradeoffs to yourself; escalate to Human when authority, final merge, sensitive permissions, or an unresolved Lead-level decision requires it. Delegate with explicit issue assignment or a concrete agent mention only; mentions enqueue runs, so never use courtesy or FYI mentions. Preserve owner boundaries: any role may challenge but may not silently take over another owner's decision or write surface. Disagreement stop rule: after the initial challenge and one owner response (two messages, one round trip), if unresolved, stop cross-mentions and escalate to Engineering Lead; if the dispute involves the Lead's own authority or remains unresolved at Lead, escalate to Human. Never clean, overwrite, commit, or discard the existing uncommitted/untracked product baseline; final merge stays Human. Keep squad-owned parent issues in progress while delegated work continues and move them to review only after the overall outcome is verified.",
+    "leader_id": "24f04aba-7da9-4371-bf89-685d7505a411",
+    "member_count": 6,
+    "members": [
+      {
+        "id": "c916189f-df3f-4a62-9724-1f0651844ea6",
+        "member_id": "1303827b-73d1-4d71-a461-00b93e4b4418",
+        "member_type": "agent",
+        "role": "Solution Architect"
+      },
+      {
+        "id": "d209b709-fc60-4323-a8a3-554640784fcd",
+        "member_id": "24f04aba-7da9-4371-bf89-685d7505a411",
+        "member_type": "agent",
+        "role": "Engineering Lead"
+      },
+      {
+        "id": "d19f188e-709e-4f49-8a48-762b41f0ad4a",
+        "member_id": "30ce43d4-97a7-42a8-ab3e-78df0d894702",
+        "member_type": "agent",
+        "role": "QA"
+      },
+      {
+        "id": "a4d0d24f-6e0c-4d95-bf28-a5ec869d5291",
+        "member_id": "8bc546ab-ffd8-4aa6-ad30-58583346c065",
+        "member_type": "agent",
+        "role": "Context Engineer"
+      },
+      {
+        "id": "f2ac8a29-6a2e-44eb-8ae4-0ccf3c35c6f8",
+        "member_id": "b6335f8e-8147-45f7-aac0-8079d85423b5",
+        "member_type": "agent",
+        "role": "Feature Reviewer"
+      },
+      {
+        "id": "3ecc61c8-88d1-485b-834d-c7a4f7d886cf",
+        "member_id": "fa7d16a7-2dae-4994-80b8-7435b3fcca47",
+        "member_type": "agent",
+        "role": "Software Engineer"
+      }
+    ],
+    "name": "Engineering Team"
+  },
+  "title": "U05 — Stage V2.2 Agent/Squad Instruction Contract",
   "trace": {
     "commands": [
       [
@@ -252,7 +315,28 @@
         "json"
       ],
       [
+        "squad",
+        "list",
+        "--output",
+        "json"
+      ],
+      [
         "version",
+        "--output",
+        "json"
+      ],
+      [
+        "squad",
+        "get",
+        "ee895c79-ca0a-498b-abe9-5af537736a30",
+        "--output",
+        "json"
+      ],
+      [
+        "squad",
+        "member",
+        "list",
+        "ee895c79-ca0a-498b-abe9-5af537736a30",
         "--output",
         "json"
       ]
@@ -270,18 +354,23 @@
       "assignments": 0,
       "canonical_writes": 0,
       "downstream_run_triggers": 0,
+      "frozen_t00_amended": 0,
       "issue_lifecycle_writes": 0,
       "live_agent_instruction_writes": 0,
       "live_skill_binding_writes": 0,
       "live_skill_imports": 0,
       "live_skill_refreshes": 0,
-      "mentions": 0
+      "live_squad_writes": 0,
+      "mentions": 0,
+      "product_repo_changes": 0
     },
-    "issue_ref": "YZT-63",
+    "issue_ref": "YZT-73",
     "mode": "read_only_capture",
     "readonly_allowlist_enforced": true,
     "tool": "tools/chandoff_instructions.py",
-    "tool_version": "T08/1.0"
+    "tool_version": "U05/2.2"
   },
+  "u04_commit": "702cb9bb11120c154a216e66c6ed1d3d632d3b49",
+  "u05_contract": "U05/2.2",
   "workspace_id": "33df1cfd-3f24-4202-9259-93b2a5fe8b6b"
 }

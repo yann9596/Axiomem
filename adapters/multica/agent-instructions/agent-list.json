@@ -86,7 +86,7 @@
     ],
     "status": "idle",
     "thinking_level": "high",
-    "updated_at": "2026-09-09T14:22:55Z",
+    "updated_at": "2026-09-10T10:31:28Z",
     "visibility": "workspace",
     "workspace_id": "33df1cfd-3f24-4202-9259-93b2a5fe8b6b"
   },
@@ -220,7 +220,7 @@
     "max_concurrent_tasks": 2,
     "mcp_config": null,
     "mcp_config_redacted": false,
-    "model": "opencode-go/glm-5.3-flash",
+    "model": "opencode-go/deepseek-v4-flash",
     "name": "02 Context Engineer",
     "owner_id": "1338bca6-ea41-4886-83bb-3375322a3049",
     "permission_mode": "public_to",
@@ -249,9 +249,9 @@
         "name": "parent-handoff-wake"
       }
     ],
-    "status": "working",
+    "status": "idle",
     "thinking_level": "max",
-    "updated_at": "2026-09-09T14:22:52Z",
+    "updated_at": "2026-09-10T08:35:34Z",
     "visibility": "workspace",
     "workspace_id": "33df1cfd-3f24-4202-9259-93b2a5fe8b6b"
   },
@@ -300,9 +300,9 @@
         "name": "parent-handoff-wake"
       }
     ],
-    "status": "idle",
+    "status": "working",
     "thinking_level": "high",
-    "updated_at": "2026-09-09T10:43:45Z",
+    "updated_at": "2026-09-10T10:29:36Z",
     "visibility": "workspace",
     "workspace_id": "33df1cfd-3f24-4202-9259-93b2a5fe8b6b"
   },
