@@ -27,7 +27,7 @@ expected:
     - anchor:web-imagegen
   must_exclude: []
   expected_case_search: performed_no_match
-  expected_conflicts: 1
+  expected_conflicts: 0        # re-derived (YZT-68 bootstrap repair): cp-team-conflict-001 closed in canonical checkpoint
   notes: >
     Cross-project scope must be explicit (both projects); case search runs
     (migration trigger) but activates nothing (no case exists for this domain).

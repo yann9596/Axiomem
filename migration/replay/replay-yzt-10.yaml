@@ -6,8 +6,11 @@
 #   challenge must never overwrite);
 # - must NOT see any project-scoped canonical object (no app1/wimg rules,
 #   facts or cases);
-# - the one team-checkpoint conflicts entry (documented, non-blocking
-#   registry-path deviation) is surfaced, not hidden.
+# - team-checkpoint conflicts: re-derived (YZT-68 bootstrap repair) — the
+#   registry-path deviation record (cp-team-conflict-001) was closed in the
+#   canonical team checkpoint with provenance moved to schemas/README.md and
+#   cp-confirmed-003, so the post-repair expectation is zero open conflicts;
+#   hidden_unresolved_conflict stays false (there is nothing left to hide).
 # Coverage: normal implementation task, team scope.
 task_id: replay-yzt-10
 role: software-engineer
@@ -30,7 +33,7 @@ expected:
     - fact:FACT-WIMG
     - case:CASE-APP1
   expected_case_search: none
-  expected_conflicts: 1        # team checkpoint conflict record (registry path) is surfaced, non-blocking
+  expected_conflicts: 0        # post-repair (YZT-68): cp-team-conflict-001 closed in canonical checkpoint; zero open conflicts remain
   notes: >
     Team-scope infra task; must see owner-boundary rule + team checkpoint state;
     must NOT see any project memory.
