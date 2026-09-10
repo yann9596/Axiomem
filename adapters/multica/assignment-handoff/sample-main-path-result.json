@@ -1,0 +1,118 @@
+{
+  "transaction_result": {
+    "ok": true,
+    "orchestrator": "T09/1.0",
+    "transaction_id": "tx-t09-sample-0001",
+    "mode": "simulation",
+    "terminal_status": "COMPLETED",
+    "stop_reason": null,
+    "escalation": null,
+    "issue": {
+      "id": "11111111-2222-3333-4444-000000000001",
+      "identifier": "YZT-9001"
+    },
+    "task_ref": "multica://issue/YZT-9001",
+    "caller": {
+      "role": "engineering-lead",
+      "agent_id": "24f04aba-7da9-4371-bf89-685d7505a411"
+    },
+    "target": {
+      "role": "software-engineer",
+      "role_name": "04 Software Engineer",
+      "agent_id": "fa7d16a7-2dae-4994-80b8-7435b3fcca47",
+      "agent_name": "04 Software Engineer",
+      "resolution_source": "T08-baseline:D:\\AI\\worktrees\\multica-memory-yzt-64\\adapters\\multica\\agent-instructions"
+    },
+    "package": {
+      "package_id": "CTX-software-engineer-7be075ab4abdaf60",
+      "status": "READY"
+    },
+    "published_comment_id": "c-0002",
+    "handoff_ready": true,
+    "trigger": {
+      "type": "issue_assign",
+      "count": 1,
+      "confirmed": true,
+      "argv": [
+        "multica",
+        "issue",
+        "assign",
+        "11111111-2222-3333-4444-000000000001",
+        "--to-id",
+        "fa7d16a7-2dae-4994-80b8-7435b3fcca47",
+        "--output",
+        "json"
+      ]
+    },
+    "self_check": {
+      "status": "READY",
+      "attempts": 1,
+      "refreshes": 0,
+      "reasons": []
+    },
+    "transitions": [
+      "INIT",
+      "ISSUE_CREATED",
+      "TARGET_RESOLVED",
+      "HANDOFF_PREPARED",
+      "HANDOFF_PUBLISHED",
+      "HANDOFF_READY_CONFIRMED",
+      "ASSIGNMENT_TRIGGERED",
+      "TARGET_SELF_CHECKED",
+      "COMPLETED"
+    ],
+    "compose_fn_source": "injected",
+    "guarantees": {
+      "live_mutations": 0,
+      "mentions": 0,
+      "run_triggers_outside_assignment": 0,
+      "canonical_writes": 0,
+      "llm_calls_in_orchestrator": 0,
+      "frozen_schema_changes": 0
+    },
+    "uncertainty": [
+      "exactly-once is evidenced only by this transaction's observable ledger; platform-side atomicity of issue create/assign is not proven",
+      "assignment confirmation is marker-based over the deployed response; an unrecognized-but-successful response fails closed to TRIGGER_CONFIRMATION_REQUIRED and requires a read-only operator reconciliation, never a retry",
+      "the target SELF_CHECK runs inside this transaction as a Run-start boundary simulation; platform-level pre-run guarantees do not exist"
+    ],
+    "audit": {
+      "command_counts": {
+        "issue_create": 1,
+        "read": 5,
+        "comment_publish": 1,
+        "assignment_trigger": 1
+      },
+      "mention_hits": [],
+      "issue_create": {
+        "count": 1,
+        "unassigned_argv_ok": true
+      },
+      "assignment_trigger": {
+        "count": 1,
+        "argv_ok": true
+      },
+      "comment_publish": {
+        "count": 1
+      },
+      "unexpected_write_classes": [],
+      "ok": true
+    }
+  },
+  "replay_result": {
+    "replayed": true,
+    "terminal_status": "COMPLETED",
+    "commands": [],
+    "trigger_count": 1
+  },
+  "acceptance_evidence": {
+    "run_before_handoff": 0,
+    "intended_run_count_per_handoff": 1,
+    "assignment_is_only_trigger": true,
+    "published_handoff_confirmed_before_assignment": true,
+    "self_check_ready_before_work": true,
+    "blocked_or_unresolved_refresh_stops_work": true,
+    "retry_does_not_duplicate_trigger": true,
+    "ambiguous_trigger_response_fails_closed": true,
+    "live_mutations": 0
+  }
+}
