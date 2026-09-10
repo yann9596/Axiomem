@@ -56,7 +56,11 @@
   },
   "$defs": {
     "project_id": { "type": "string", "pattern": "^[a-z0-9][a-z0-9-]{1,62}$" },
-    "role_id": { "enum": ["engineering-lead", "context-engineer", "solution-architect", "software-engineer", "feature-reviewer", "qa", "ops-sre"] }
+    "role_id": {
+      "type": "string",
+      "pattern": "^[a-z][a-z0-9-]{1,31}$",
+      "description": "Logical role id (hyphenated). Roles are data, never hard-coded: the roster lives in the Project Registry role lists and team-context/roles/*.yaml profiles, so team role changes (e.g. V2 feature-reviewer -> delivery-reviewer) require data/profile updates only, no schema edit. Unknown roles fail closed at package build (role profile missing)."
+    }
   },
   "additionalProperties": false
 }

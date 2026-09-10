@@ -68,6 +68,26 @@ verifies all of it.
    instead of the design doc's `.schema.yaml` suggestion, so validation tooling
    is unambiguous. Content structure follows the Spec.
 
+## Legacy V1.0 schemas still in this directory (retained, NOT canonical)
+
+`memory-unit.schema.json`, `memory-candidate.schema.json`,
+`memory-chain.schema.json`, `external-signal.schema.json` and
+`schemas/templates/memory-*.json` / `templates/external-signal.json` are
+V1.0 heritage kept for the retained V1 runtime (`tools/memory_cli.py`) and
+rollback comparison. They are **not canonical targets** (see table above) and
+must not be promoted back into the V1.1 write model:
+
+- `memory_unit` / `memory_chain` / `memory_candidate` / numeric `confidence`
+  are retired V1.0 semantics. New observations enter as V1.1 Findings
+  (`finding.schema.json`, lifecycle `open -> processed`); old candidate ids are
+  preserved via `finding.legacy_ids`, never via a second candidate lifecycle.
+- `external-signal.schema.json` remains an active **compatibility-only input**
+  shape: the frozen T00 contract maps `challenge_context` to the retained V1
+  `challenge` CLI + `source_type: memory_challenge` signals, and external
+  intelligence (e.g. Grok) ingests through V1.1 Evidence refs
+  (`source_type: research_finding`) / Findings / Pointers — never as a core
+  memory type.
+
 ## Gate evidence contracts (YZT-42)
 
 These files are **inputs to executable gates**, not Canonical Memory. Context
