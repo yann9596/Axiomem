@@ -19,3 +19,11 @@ adapters/multica/agent-instructions/** -text
 # YZT-69: byte-stability for the V2 agent-UUID→role binding evidence (live
 # platform roster capture; binding validator cross-checks file bytes).
 adapters/multica/role-bindings/** -text
+# YZT-74: byte-stability for U05 skill bundle digests hashed by
+# chandoff_instructions.digest_skill_dir (U04 shared skill + staged 05/06
+# capability skills). core.autocrlf would otherwise change SKILL.md bytes
+# on Windows checkout and fail the U05 pin.
+skills/delivery-review/** -text
+skills/product-quality-gate/** -text
+skills/multica-context-handoff/** -text
+adapters/multica/assignment-handoff/** -text

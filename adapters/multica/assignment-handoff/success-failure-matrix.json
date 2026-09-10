@@ -1,0 +1,35 @@
+{
+  "schema_version": "U06-success-failure-matrix/1.0",
+  "main_path": {
+    "terminal_status": "COMPLETED",
+    "one_note": true,
+    "assignment_only_trigger": true,
+    "intended_run_count": 1,
+    "mention_count": 0,
+    "sample": "sample-main-path-result.json"
+  },
+  "cases": [
+    {"id": "main_path", "terminal": "COMPLETED", "triggers": 1, "notes": 1, "runs": 1},
+    {"id": "stale_or_missing_artifact", "terminal": "PACKAGE_STALE", "triggers": 0, "notes": 0, "sample": "sample-stale-artifact-result.json"},
+    {"id": "unexpected_preexisting_run", "terminal": "UNEXPECTED_RUN", "triggers": 0, "sample": "sample-unexpected-run-result.json"},
+    {"id": "ambiguous_assign_response", "terminal": "TRIGGER_CONFIRMATION_REQUIRED", "triggers": 1, "confirmed": false, "retry": false, "sample": "sample-ambiguous-trigger-result.json"},
+    {"id": "malformed_runs_listing", "terminal": "RUN_STATE_UNDETERMINED", "triggers": 0},
+    {"id": "truncated_runs_listing", "terminal": "RUN_STATE_UNDETERMINED", "triggers": 0},
+    {"id": "duplicate_intended_run", "terminal": "RUN_CORRELATION_FAILED", "triggers": 1, "work": false},
+    {"id": "feature_reviewer_slug", "terminal": "ROUTING_REQUIRED", "triggers": 0, "alias": false},
+    {"id": "feature_reviewer_live_display_name", "terminal": "ROUTING_REQUIRED", "triggers": 0, "alias": false},
+    {"id": "delivery_reviewer_staged", "terminal": "COMPLETED", "role": "delivery-reviewer"},
+    {"id": "context_engineer_explicit", "terminal": "COMPLETED", "role": "context-engineer"},
+    {"id": "unknown_role", "terminal": "ROUTING_REQUIRED", "triggers": 0},
+    {"id": "create_unassigned_required", "terminal": "CREATE_NOT_UNASSIGNED", "triggers": 0},
+    {"id": "partial_default_stop", "terminal": "PREPARE_PARTIAL_STOPPED", "triggers": 0},
+    {"id": "blocked_finding", "terminal": "PREPARE_BLOCKED", "triggers": 0},
+    {"id": "self_check_blocked", "terminal": "SELF_CHECK_BLOCKED", "triggers": 1, "work": false},
+    {"id": "refresh_success", "terminal": "COMPLETED", "triggers": 1, "notes": 1},
+    {"id": "refresh_exhaustion", "terminal": "SELF_REFRESH_EXHAUSTED", "triggers": 1, "work": false},
+    {"id": "completed_replay", "terminal": "COMPLETED", "replayed": true, "new_commands": 0},
+    {"id": "crash_pre_publish", "recovery": "continue_from_issue", "terminal_after": "COMPLETED", "sample": "sample-recovery-pre-publish-result.json"},
+    {"id": "crash_post_publish_pre_trigger", "recovery": "reuse_note_if_fresh", "terminal_after": "COMPLETED", "new_notes": 0, "sample": "sample-recovery-post-publish-result.json"},
+    {"id": "crash_post_trigger", "recovery": "stop", "terminal_after": "TRIGGER_CONFIRMATION_REQUIRED", "retry": false, "sample": "sample-recovery-post-trigger-result.json"}
+  ]
+}

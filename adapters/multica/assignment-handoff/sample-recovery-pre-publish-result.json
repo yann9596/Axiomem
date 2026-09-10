@@ -1,20 +1,52 @@
 {
-  "acceptance_evidence": {
-    "ambiguous_trigger_response_fails_closed": true,
-    "artifact_ready_before_publish_and_trigger": true,
-    "assignment_is_only_trigger": true,
-    "blocked_or_unresolved_refresh_stops_work": true,
-    "intended_run_correlated": true,
-    "intended_run_count_per_handoff": 1,
-    "live_mutations": 0,
-    "mention_count": 0,
-    "published_handoff_confirmed_before_assignment": true,
-    "retry_does_not_duplicate_trigger": true,
-    "run_before_handoff": 0,
-    "self_check_ready_before_work": true,
-    "unexpected_run_precheck": true
+  "crash": {
+    "audit": {
+      "assignment_trigger": {
+        "argv_ok": false,
+        "count": 0
+      },
+      "command_counts": {
+        "issue_create": 1,
+        "read": 5
+      },
+      "comment_publish": {
+        "count": 0
+      },
+      "issue_create": {
+        "count": 1,
+        "unassigned_argv_ok": true
+      },
+      "issue_update": {
+        "count": 0,
+        "non_trigger_argv_ok": true
+      },
+      "mention_hits": [],
+      "ok": true,
+      "unexpected_write_classes": []
+    },
+    "crash_at": "ARTIFACT_READY",
+    "guarantees": {
+      "canonical_writes": 0,
+      "frozen_schema_changes": 0,
+      "live_mutations": 0,
+      "llm_calls_in_orchestrator": 0,
+      "mentions": 0,
+      "run_triggers_outside_assignment": 0
+    },
+    "mode": "simulation",
+    "ok": false,
+    "orchestrator": "U06/2.2",
+    "stop_reason": "simulated crash at ARTIFACT_READY",
+    "terminal_status": "CRASH_SIMULATED",
+    "transaction_id": "tx-u06-crash-pre",
+    "uncertainty": [
+      "exactly-once is evidenced only by this transaction's observable ledger; platform-side atomicity of issue create/assign is not proven",
+      "assignment confirmation is marker-based over the deployed response; an unrecognized-but-successful response fails closed to TRIGGER_CONFIRMATION_REQUIRED and requires a read-only operator reconciliation, never a retry",
+      "the target SELF_CHECK runs inside this transaction as a Run-start boundary simulation; platform-level pre-run guarantees do not exist",
+      "run correlation uses the observed issue-runs list-of-objects contract (id, issue_id, agent_id, status); extra fields are ignored; a missing required field fails closed"
+    ]
   },
-  "transaction_result": {
+  "recovered": {
     "artifacts": {
       "count": 0,
       "digest": "sha256:4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
@@ -29,7 +61,7 @@
         "assignment_trigger": 1,
         "comment_publish": 1,
         "issue_create": 1,
-        "read": 10
+        "read": 15
       },
       "comment_publish": {
         "count": 1
@@ -86,6 +118,15 @@
       "skill_md_digest": "sha256:f369cee40ada061364d91ef48a9cb7d467039931e922c1db18d85fe1d7e0638a"
     },
     "published_comment_id": "c-0002",
+    "recovery": {
+      "boundary": "pre_publish",
+      "canonical": {
+        "id": "11111111-2222-3333-4444-000000000001",
+        "identifier": "YZT-9001"
+      },
+      "last_state": "ARTIFACT_READY",
+      "next": "continue_from_issue"
+    },
     "self_check": {
       "attempts": 1,
       "reasons": [],
@@ -104,7 +145,7 @@
     },
     "task_ref": "multica://issue/YZT-9001",
     "terminal_status": "COMPLETED",
-    "transaction_id": "tx-u06-sample-0001",
+    "transaction_id": "tx-u06-crash-pre",
     "transitions": [
       "INIT",
       "ISSUE_CREATED",

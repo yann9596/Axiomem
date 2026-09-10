@@ -1,0 +1,106 @@
+{
+  "crash": {
+    "audit": {
+      "assignment_trigger": {
+        "argv_ok": true,
+        "count": 1
+      },
+      "command_counts": {
+        "assignment_trigger": 1,
+        "comment_publish": 1,
+        "issue_create": 1,
+        "read": 9
+      },
+      "comment_publish": {
+        "count": 1
+      },
+      "issue_create": {
+        "count": 1,
+        "unassigned_argv_ok": true
+      },
+      "issue_update": {
+        "count": 0,
+        "non_trigger_argv_ok": true
+      },
+      "mention_hits": [],
+      "ok": true,
+      "unexpected_write_classes": []
+    },
+    "crash_at": "ASSIGNMENT_TRIGGERED",
+    "guarantees": {
+      "canonical_writes": 0,
+      "frozen_schema_changes": 0,
+      "live_mutations": 0,
+      "llm_calls_in_orchestrator": 0,
+      "mentions": 0,
+      "run_triggers_outside_assignment": 0
+    },
+    "mode": "simulation",
+    "ok": false,
+    "orchestrator": "U06/2.2",
+    "stop_reason": "simulated crash at ASSIGNMENT_TRIGGERED",
+    "terminal_status": "CRASH_SIMULATED",
+    "transaction_id": "tx-u06-crash-trig",
+    "uncertainty": [
+      "exactly-once is evidenced only by this transaction's observable ledger; platform-side atomicity of issue create/assign is not proven",
+      "assignment confirmation is marker-based over the deployed response; an unrecognized-but-successful response fails closed to TRIGGER_CONFIRMATION_REQUIRED and requires a read-only operator reconciliation, never a retry",
+      "the target SELF_CHECK runs inside this transaction as a Run-start boundary simulation; platform-level pre-run guarantees do not exist",
+      "run correlation uses the observed issue-runs list-of-objects contract (id, issue_id, agent_id, status); extra fields are ignored; a missing required field fails closed"
+    ]
+  },
+  "recovered": {
+    "audit": {
+      "assignment_trigger": {
+        "argv_ok": true,
+        "count": 1
+      },
+      "command_counts": {
+        "assignment_trigger": 1,
+        "comment_publish": 1,
+        "issue_create": 1,
+        "read": 9
+      },
+      "comment_publish": {
+        "count": 1
+      },
+      "issue_create": {
+        "count": 1,
+        "unassigned_argv_ok": true
+      },
+      "issue_update": {
+        "count": 0,
+        "non_trigger_argv_ok": true
+      },
+      "mention_hits": [],
+      "ok": true,
+      "unexpected_write_classes": []
+    },
+    "guarantees": {
+      "canonical_writes": 0,
+      "frozen_schema_changes": 0,
+      "live_mutations": 0,
+      "llm_calls_in_orchestrator": 0,
+      "mentions": 0,
+      "run_triggers_outside_assignment": 0
+    },
+    "mode": "simulation",
+    "ok": false,
+    "orchestrator": "U06/2.2",
+    "recovery": {
+      "boundary": "post_trigger_unconfirmed",
+      "last_state": "ASSIGNMENT_TRIGGERED",
+      "next": "stop",
+      "reason": "assignment was possibly issued; never retry",
+      "status": "TRIGGER_CONFIRMATION_REQUIRED"
+    },
+    "stop_reason": "assignment was possibly issued; never retry",
+    "terminal_status": "TRIGGER_CONFIRMATION_REQUIRED",
+    "transaction_id": "tx-u06-crash-trig",
+    "uncertainty": [
+      "exactly-once is evidenced only by this transaction's observable ledger; platform-side atomicity of issue create/assign is not proven",
+      "assignment confirmation is marker-based over the deployed response; an unrecognized-but-successful response fails closed to TRIGGER_CONFIRMATION_REQUIRED and requires a read-only operator reconciliation, never a retry",
+      "the target SELF_CHECK runs inside this transaction as a Run-start boundary simulation; platform-level pre-run guarantees do not exist",
+      "run correlation uses the observed issue-runs list-of-objects contract (id, issue_id, agent_id, status); extra fields are ignored; a missing required field fails closed"
+    ]
+  }
+}

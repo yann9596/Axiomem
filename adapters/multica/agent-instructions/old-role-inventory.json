@@ -368,13 +368,13 @@
     {
       "classification": "historical_only",
       "excerpt": "\"agents\": [{\"role\": \"feature-reviewer\",",
-      "line": 464,
+      "line": 555,
       "path": "tools/tests/test_handoff_assignment.py"
     },
     {
       "classification": "historical_only",
       "excerpt": "\"agent_name\": \"05 Feature Reviewer\"}],",
-      "line": 466,
+      "line": 557,
       "path": "tools/tests/test_handoff_assignment.py"
     },
     {

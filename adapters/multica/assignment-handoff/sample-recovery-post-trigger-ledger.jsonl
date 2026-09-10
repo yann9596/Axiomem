@@ -1,0 +1,42 @@
+{"caller_role": "engineering-lead", "existing_issue_id": null, "kind": "recovery_context", "seq": 1, "spec_digest": "sha256:a0ff94341ee06336ca7bb5a0b0c0c08fed757679811e5739484b7df44516ab6c", "target_role_spec": "software-engineer", "transaction_id": "tx-u06-crash-trig"}
+{"argv": ["multica", "issue", "create", "--title", "U06 assignment handoff main path drill", "--description-file", "D:\\AI\\worktrees\\multica-memory-yzt-74-u06\\.u06-create-96a5be87987a.md", "--output", "json", "--parent", "99999999-0000-0000-0000-000000000039", "--project", "web-imagegen"], "command_class": "issue_create", "kind": "command", "seq": 2, "transaction_id": "tx-u06-crash-trig"}
+{"exit_code": 0, "kind": "command_result", "seq": 3, "transaction_id": "tx-u06-crash-trig"}
+{"id": "11111111-2222-3333-4444-000000000001", "identifier": "YZT-9001", "kind": "canonical_issue", "seq": 4, "transaction_id": "tx-u06-crash-trig"}
+{"from": "INIT", "kind": "state_transition", "seq": 5, "to": "ISSUE_CREATED", "transaction_id": "tx-u06-crash-trig"}
+{"agent_id": "fa7d16a7-2dae-4994-80b8-7435b3fcca47", "artifact_digest": "sha256:4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945", "kind": "target_binding", "role": "software-engineer", "seq": 6, "transaction_id": "tx-u06-crash-trig"}
+{"from": "ISSUE_CREATED", "kind": "state_transition", "seq": 7, "to": "TARGET_BOUND", "transaction_id": "tx-u06-crash-trig"}
+{"argv": ["multica", "issue", "runs", "11111111-2222-3333-4444-000000000001", "--output", "json", "--active", "--siblings"], "command_class": "read", "kind": "command", "seq": 8, "transaction_id": "tx-u06-crash-trig"}
+{"exit_code": 0, "kind": "command_result", "seq": 9, "transaction_id": "tx-u06-crash-trig"}
+{"argv": ["multica", "issue", "runs", "11111111-2222-3333-4444-000000000001", "--output", "json"], "command_class": "read", "kind": "command", "seq": 10, "transaction_id": "tx-u06-crash-trig"}
+{"exit_code": 0, "kind": "command_result", "seq": 11, "transaction_id": "tx-u06-crash-trig"}
+{"active_count": 0, "kind": "run_precheck", "phase": "prepare", "seq": 12, "transaction_id": "tx-u06-crash-trig", "unexpected_count": 0}
+{"from": "TARGET_BOUND", "kind": "state_transition", "seq": 13, "to": "RUN_PRECHECK_PREPARE", "transaction_id": "tx-u06-crash-trig"}
+{"argv": ["multica", "version", "--output", "json"], "command_class": "read", "kind": "command", "seq": 14, "transaction_id": "tx-u06-crash-trig"}
+{"exit_code": 0, "kind": "command_result", "seq": 15, "transaction_id": "tx-u06-crash-trig"}
+{"argv": ["multica", "issue", "get", "11111111-2222-3333-4444-000000000001", "--output", "json"], "command_class": "read", "kind": "command", "seq": 16, "transaction_id": "tx-u06-crash-trig"}
+{"exit_code": 0, "kind": "command_result", "seq": 17, "transaction_id": "tx-u06-crash-trig"}
+{"argv": ["multica", "issue", "get", "99999999-0000-0000-0000-000000000039", "--output", "json"], "command_class": "read", "kind": "command", "seq": 18, "transaction_id": "tx-u06-crash-trig"}
+{"exit_code": 0, "kind": "command_result", "seq": 19, "transaction_id": "tx-u06-crash-trig"}
+{"from": "RUN_PRECHECK_PREPARE", "kind": "state_transition", "seq": 20, "to": "HANDOFF_PREPARED", "transaction_id": "tx-u06-crash-trig"}
+{"digest": "sha256:4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945", "empty": true, "kind": "artifact_gate", "seq": 21, "status": "ARTIFACT_READY", "transaction_id": "tx-u06-crash-trig"}
+{"from": "HANDOFF_PREPARED", "kind": "state_transition", "seq": 22, "to": "ARTIFACT_READY", "transaction_id": "tx-u06-crash-trig"}
+{"argv": ["multica", "issue", "comment", "list", "11111111-2222-3333-4444-000000000001", "--full", "--output", "json"], "command_class": "read", "kind": "command", "seq": 23, "transaction_id": "tx-u06-crash-trig"}
+{"exit_code": 0, "kind": "command_result", "seq": 24, "transaction_id": "tx-u06-crash-trig"}
+{"argv": ["multica", "issue", "comment", "add", "11111111-2222-3333-4444-000000000001", "--content-file", "D:\\AI\\worktrees\\multica-memory-yzt-74-u06\\.t06-note-083ee8c74b3b.md", "--output", "json"], "command_class": "comment_publish", "kind": "command", "seq": 25, "transaction_id": "tx-u06-crash-trig"}
+{"exit_code": 0, "kind": "command_result", "seq": 26, "transaction_id": "tx-u06-crash-trig"}
+{"comment_id": "c-0002", "idempotent": false, "kind": "publish_outcome", "package_id": "CTX-software-engineer-f72f7166de276fb7", "published": true, "seq": 27, "transaction_id": "tx-u06-crash-trig"}
+{"from": "ARTIFACT_READY", "kind": "state_transition", "seq": 28, "to": "HANDOFF_PUBLISHED", "transaction_id": "tx-u06-crash-trig"}
+{"argv": ["multica", "issue", "comment", "list", "11111111-2222-3333-4444-000000000001", "--full", "--output", "json"], "command_class": "read", "kind": "command", "seq": 29, "transaction_id": "tx-u06-crash-trig"}
+{"exit_code": 0, "kind": "command_result", "seq": 30, "transaction_id": "tx-u06-crash-trig"}
+{"from": "HANDOFF_PUBLISHED", "kind": "state_transition", "seq": 31, "to": "HANDOFF_READY_CONFIRMED", "transaction_id": "tx-u06-crash-trig"}
+{"argv": ["multica", "issue", "runs", "11111111-2222-3333-4444-000000000001", "--output", "json", "--active", "--siblings"], "command_class": "read", "kind": "command", "seq": 32, "transaction_id": "tx-u06-crash-trig"}
+{"exit_code": 0, "kind": "command_result", "seq": 33, "transaction_id": "tx-u06-crash-trig"}
+{"argv": ["multica", "issue", "runs", "11111111-2222-3333-4444-000000000001", "--output", "json"], "command_class": "read", "kind": "command", "seq": 34, "transaction_id": "tx-u06-crash-trig"}
+{"exit_code": 0, "kind": "command_result", "seq": 35, "transaction_id": "tx-u06-crash-trig"}
+{"active_count": 0, "kind": "run_precheck", "phase": "trigger", "seq": 36, "transaction_id": "tx-u06-crash-trig", "unexpected_count": 0}
+{"from": "HANDOFF_READY_CONFIRMED", "kind": "state_transition", "seq": 37, "to": "RUN_PRECHECK_TRIGGER", "transaction_id": "tx-u06-crash-trig"}
+{"argv": ["multica", "issue", "assign", "11111111-2222-3333-4444-000000000001", "--to-id", "fa7d16a7-2dae-4994-80b8-7435b3fcca47", "--output", "json"], "command_class": "assignment_trigger", "kind": "command", "seq": 38, "transaction_id": "tx-u06-crash-trig"}
+{"exit_code": 0, "kind": "command_result", "seq": 39, "transaction_id": "tx-u06-crash-trig"}
+{"agent_id": "fa7d16a7-2dae-4994-80b8-7435b3fcca47", "issue_id": "11111111-2222-3333-4444-000000000001", "kind": "trigger_outcome", "outcome": "confirmed", "seq": 40, "transaction_id": "tx-u06-crash-trig"}
+{"from": "RUN_PRECHECK_TRIGGER", "kind": "state_transition", "seq": 41, "to": "ASSIGNMENT_TRIGGERED", "transaction_id": "tx-u06-crash-trig"}
+{"boundary": "post_trigger_unconfirmed", "kind": "recovery_classification", "next": "stop", "seq": 42, "transaction_id": "tx-u06-crash-trig"}

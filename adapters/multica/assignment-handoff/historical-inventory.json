@@ -1,0 +1,29 @@
+{
+  "schema_version": "U06-historical-inventory/1.0",
+  "source": "CTX-HO-09 / YZT-64 tools/chandoff_assignment.py and tools/chandoff_dispatch.py",
+  "items": [
+    {"assumption": "unassigned create never starts a run", "class": "retained", "note": "still fail-closed if create response carries an assignee"},
+    {"assumption": "argv allowlists for create/assign/comment", "class": "retained", "note": "extended with issue update --no-start and issue runs reads"},
+    {"assumption": "canonical issue id only from verified JSON response", "class": "retained"},
+    {"assumption": "exactly one issue assign --to-id UUID trigger", "class": "retained"},
+    {"assumption": "zero mentions; mention in spec refuses before any process", "class": "retained"},
+    {"assumption": "PARTIAL default-stop; explicit policy to continue", "class": "retained"},
+    {"assumption": "TRIGGER_CONFIRMATION_REQUIRED never retried", "class": "retained"},
+    {"assumption": "COMPLETED replay is idempotent", "class": "retained"},
+    {"assumption": "injected compose_fn; no model in orchestrator", "class": "retained"},
+    {"assumption": "simulation default; live requires separate authorization", "class": "retained"},
+    {"assumption": "T08 baseline mapping is identity authority", "class": "adapted", "note": "Assignment uses U05 role-mapping.json; t08_mapping kept for T10 mention"},
+    {"assumption": "context-engineer is never a dispatch target", "class": "adapted", "note": "Assignment permits all six V2.2 roles when the caller routes explicitly; T10 mention still refuses 02"},
+    {"assumption": "role lookup by live display name including 05 Feature Reviewer", "class": "invalid", "note": "live old-role display name is refused; only staged V2.2 names/slugs resolve"},
+    {"assumption": "incomplete replay always REPLAY_REFUSED", "class": "adapted", "note": "crash recovery continues uniquely for pre-publish and post-publish-pre-trigger; post-trigger never retried"},
+    {"assumption": "no artifact_ready_check / dependency digest", "class": "adapted", "note": "U04 artifact_gate + U10 cartifact bound before publish and re-checked before trigger"},
+    {"assumption": "no unexpected-run precheck or run correlation", "class": "adapted", "note": "issue runs --active --siblings before publish and before assign; correlate exactly one new intended run"},
+    {"assumption": "T09/T12/T13 live activation ownership", "class": "deferred", "note": "U12 owns live enablement; U06 never exercises live writes"},
+    {"assumption": "mention route as sibling trigger", "class": "deferred", "note": "U07 owns Mention; U06 emits CROSS_ROUTE_REQUIRED rather than implementing it"},
+    {"assumption": "cross-route direct-assignment fallback", "class": "deferred", "note": "U08"},
+    {"assumption": "Finding/Challenge semantic alignment", "class": "deferred", "note": "U09; T04 Finding gate reused as-is"},
+    {"assumption": "joint end-to-end replay", "class": "deferred", "note": "U11"},
+    {"assumption": "non-set skill removal path", "class": "deferred", "note": "U12 enablement blocker, unchanged"},
+    {"assumption": "T08 as current authority for 05 Feature Reviewer identity", "class": "invalid", "note": "U05 supersedes; 05 UUID maps only to delivery-reviewer"}
+  ]
+}

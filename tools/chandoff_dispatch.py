@@ -1,43 +1,32 @@
 #!/usr/bin/env python3
-"""T09 — Multica dispatch CLI boundary + deterministic transaction ledger (YZT-64).
+"""U06 — Multica dispatch CLI boundary + deterministic transaction ledger (YZT-74).
 
-Framework-specific adapter layer (like T05/T06/T08): it names Multica runtime
-concepts by design and is deliberately NOT scanned by the frozen framework-
-neutral boundary scan (`tools/chandoff.py scan`), which audits only the frozen
-schemas and Native helpers.
+Rebases the historical T09 (YZT-64) allowlist onto the V2.2 Assignment route.
+Framework-specific adapter layer (like T05/T06/T08/U05): it names Multica
+runtime concepts by design and is deliberately NOT scanned by the frozen
+framework-neutral boundary scan (`tools/chandoff.py scan`).
 
-This module owns the ONLY command surface through which the T09 assignment
-orchestrator may reach the deployed Multica CLI, with an argv allowlist that
-proves the frozen main path:
+This module owns the ONLY command surface through which the U06 assignment
+orchestrator may reach the deployed Multica CLI:
 
-- reads (always allowed): `issue get`, `issue comment list`, `version`;
-- issue create: at most ONE argv, built only from validated caller input —
-  `--title` + `--description-file` (UTF-8 file inside the working directory),
-  optional `--parent`, `--project`, `--priority`, always `--output json`.
-  `--assignee` / `--assignee-id` / `--attachment*` / inline or stdin
-  description / `--allow-external-file` / `--allow-duplicate` / `--status` /
-  `--stage` are refused, and any `mention://` link in the title or
-  description refuses the create before a process can start. An unassigned
-  create never starts a target run;
+- reads (always allowed): `issue get`, `issue comment list`, `issue runs`,
+  `version`. `issue runs --active --siblings --output json` is the
+  unexpected-run precheck / correlation surface. The JSON contract is the
+  observed list-of-objects shape (id, issue_id, agent_id, status); missing
+  fields or a non-list fail closed as undetermined, never guessed;
+- issue create: at most ONE unassigned argv (`--title` + `--description-file`,
+  optional `--parent` / `--project` / `--priority`, always `--output json`).
+  Assignee, attachment, inline/stdin description, `--status` / `--stage` and
+  any `mention://` are refused before a process starts;
+- issue update: optional NON_TRIGGER_MUTATION of an existing unassigned
+  issue. Always `--no-start`; assignee / mention / status / stage refused;
 - the sole run trigger: at most ONE `issue assign <id> --to-id <uuid>
-  --output json` argv. `--no-start` (silent zero-run), `--unassign` and the
-  fuzzy `--to` form are refused. A failed command stops without retry; a
-  non-parseable or marker-less successful response fails closed to
-  TRIGGER_CONFIRMATION_REQUIRED — reconciliation is a later read-only
-  operator action, never a second trigger;
-- no runner is ever constructed implicitly. Live subprocess execution
-  requires a separate explicit authorization document validated by
-  `authorization_ok` / `authorized_runner`; simulation (the default) always
-  uses a caller-injected runner.
+  --output json`. `--no-start` / `--unassign` / fuzzy `--to` refused. A
+  failed command or marker-less response fails closed without retry;
+- no runner is ever constructed implicitly. Live execution requires a
+  separate explicit authorization document. U06 never exercises live mode.
 
-The `TransactionLedger` records one JSON-safe, deterministic record per
-issued command (argv + class + exit code only — never comment bodies, never
-secrets), plus state transitions and the final transaction result. Replaying
-a recorded COMPLETED transaction re-issues nothing; an incomplete recorded
-transaction is refused, not blindly retried.
-
-Exactly-once is claimed ONLY against this observable ledger evidence;
-platform-side create/assign atomicity is explicitly not claimed.
+Exactly-once is claimed ONLY against this observable ledger evidence.
 """
 from __future__ import annotations
 
@@ -53,7 +42,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 
 from chandoff_adapter import parse_issue_json  # noqa: E402
 
-DISPATCH_VERSION = "T09/1.0"
+DISPATCH_VERSION = "U06/2.2"
 
 MAX_TEXT = 200
 MAX_ARGV_TEXT = 240
@@ -66,6 +55,7 @@ MENTION_RE = re.compile(r"mention://")
 READ_COMMANDS = (
     ("issue", "get"),
     ("issue", "comment", "list"),
+    ("issue", "runs"),
     ("version",),
 )
 CREATE_FORBIDDEN_FLAGS = (
@@ -75,9 +65,21 @@ CREATE_FORBIDDEN_FLAGS = (
 )
 CREATE_ALLOWED_FLAGS = ("--title", "--description-file", "--parent",
                         "--project", "--priority", "--output")
+UPDATE_FORBIDDEN_FLAGS = (
+    "--assignee", "--assignee-id", "--attachment", "--attachment-id",
+    "--description", "--description-stdin", "--allow-external-file",
+    "--status", "--stage", "--start-date", "--due-date", "--position",
+)
+UPDATE_ALLOWED_FLAGS = ("--title", "--description-file", "--parent",
+                        "--project", "--priority", "--output", "--no-start")
 ASSIGN_FORBIDDEN_FLAGS = ("--no-start", "--unassign", "--to")
 
 CREATE_CONTRACT_FIELDS = ("id", "identifier", "title", "description")
+RUN_CONTRACT_FIELDS = ("id", "issue_id", "agent_id", "status")
+ACTIVE_RUN_STATUSES = frozenset({
+    "queued", "dispatched", "running", "waiting_local_directory",
+})
+TRUNCATION_RE = re.compile(r"truncat", re.IGNORECASE)
 
 
 def _bounded(value, limit: int = MAX_TEXT):
@@ -135,6 +137,38 @@ class AssignResponseInvalidError(DispatchError):
     code = "assignment_response_unconfirmable"
 
 
+class UpdateArgvInvalidError(DispatchError):
+    code = "forbidden_update_argv"
+
+
+class UpdateCommandFailedError(DispatchError):
+    code = "update_command_failed"
+
+
+class UpdateResponseInvalidError(DispatchError):
+    code = "update_response_invalid"
+
+
+class UpdateNotUnassignedError(DispatchError):
+    code = "update_response_not_unassigned"
+
+
+class RunsResponseInvalidError(DispatchError):
+    code = "runs_response_invalid"
+
+
+class RunStateUndeterminedError(DispatchError):
+    code = "run_state_undetermined"
+
+
+class UnexpectedRunError(DispatchError):
+    code = "unexpected_run"
+
+
+class RunCorrelationError(DispatchError):
+    code = "run_correlation_failed"
+
+
 class LedgerError(DispatchError):
     code = "ledger_error"
 
@@ -152,6 +186,8 @@ def classify_command(argv: list, executable: str = "multica") -> str:
         return "comment_publish"
     if tuple(core[:2]) == ("issue", "create"):
         return "issue_create"
+    if tuple(core[:2]) == ("issue", "update"):
+        return "issue_update"
     if tuple(core[:2]) == ("issue", "assign"):
         return "assignment_trigger"
     if any(tuple(core[:len(cmd)]) == cmd for cmd in READ_COMMANDS):
@@ -411,7 +447,7 @@ class DispatchCli:
                 "an unassigned create never carries an assignee flag")
 
         temp_name = hashlib.sha1(description.encode("utf-8")).hexdigest()[:12]
-        temp_path = self.workdir / f".t09-create-{temp_name}.md"
+        temp_path = self.workdir / f".u06-create-{temp_name}.md"
         try:
             temp_path.write_bytes(description.encode("utf-8"))
             resolved = temp_path.resolve()
@@ -427,39 +463,6 @@ class DispatchCli:
                 exit_code=code)
         return self._parse_create_response(out)
 
-    def _parse_create_response(self, text: str) -> dict:
-        try:
-            data = json.loads(text)
-        except json.JSONDecodeError as exc:
-            raise CreateResponseInvalidError(
-                f"issue create returned malformed JSON: {exc}") from exc
-        if not isinstance(data, dict):
-            raise CreateResponseInvalidError(
-                "issue create JSON is not an object", kind=type(data).__name__)
-        missing = [f for f in CREATE_CONTRACT_FIELDS if f not in data]
-        if missing:
-            raise CreateResponseInvalidError(
-                "issue create response is missing contract fields",
-                missing=missing)
-        for field in ("id", "identifier", "title"):
-            if not isinstance(data[field], str) or not data[field].strip():
-                raise CreateResponseInvalidError(
-                    f"issue create {field} is not a non-blank string")
-        if data["description"] is None:
-            data["description"] = ""
-        if not isinstance(data["description"], str):
-            raise CreateResponseInvalidError(
-                "issue create description is not a string")
-        assignee_id = data.get("assignee_id")
-        assignee = data.get("assignee")
-        if assignee_id not in (None, "") or assignee not in (None, ""):
-            raise CreateNotUnassignedError(
-                "created issue already carries an assignee; the handoff "
-                "create must never start a target run",
-                assignee_id=_bounded(str(assignee_id), 80),
-                assignee=_bounded(str(assignee), 80))
-        return data
-
     def assign_issue(self, issue_id: str, agent_id: str) -> dict:
         """The sole run trigger: exactly one `issue assign --to-id <uuid>`.
 
@@ -472,7 +475,8 @@ class DispatchCli:
         if not UUID_RE.match(agent_id):
             raise AssignArgvInvalidError(
                 "agent_id is not a UUID; the trigger uses only the exact "
-                "--to-id form resolved from the T08 mapping", agent_id=agent_id)
+                "--to-id form resolved from the U05 staged role map",
+                agent_id=agent_id)
         argv = ["issue", "assign", issue_id, "--to-id", agent_id,
                 "--output", "json"]
         present = set(argv)
@@ -502,6 +506,191 @@ class DispatchCli:
                 "marker for this issue/agent; fail closed", response_keys=sorted(data)[:8])
         return {"outcome": "confirmed", "response": data}
 
+    def update_issue(self, issue_id: str, *, title: str | None = None,
+                     description: str | None = None,
+                     parent_issue_id: str | None = None,
+                     project_id: str | None = None,
+                     priority: str | None = None) -> dict:
+        """NON_TRIGGER_MUTATION: unassigned update with --no-start."""
+        issue_id = _require_bare_id(issue_id, "issue_id")
+        argv = ["issue", "update", issue_id, "--no-start", "--output", "json"]
+        temp_path = None
+        if title is not None:
+            title = _require_text(title, "title")
+            if MENTION_RE.search(title):
+                raise UpdateArgvInvalidError(
+                    "title carries a mention link; the assignment path "
+                    "must contain no mention of any kind", field="title")
+            argv += ["--title", title]
+        if description is not None:
+            if not isinstance(description, str) or not description.strip():
+                raise DispatchError("description must be a non-blank string")
+            if MENTION_RE.search(description):
+                raise UpdateArgvInvalidError(
+                    "description carries a mention link; the assignment path "
+                    "must contain no mention of any kind", field="description")
+            temp_name = hashlib.sha1(description.encode("utf-8")).hexdigest()[:12]
+            temp_path = self.workdir / f".u06-update-{temp_name}.md"
+            argv += ["--description-file", str(temp_path)]
+        if parent_issue_id is not None:
+            argv += ["--parent", _require_bare_id(parent_issue_id, "parent_issue_id")]
+        if project_id is not None:
+            argv += ["--project", _require_text(project_id, "project_id", 64)]
+        if priority is not None:
+            argv += ["--priority", _require_text(priority, "priority", 40)]
+        flags = {argv[i] for i in range(len(argv)) if argv[i].startswith("--")}
+        for flag in flags:
+            if flag not in UPDATE_ALLOWED_FLAGS:
+                raise UpdateArgvInvalidError(
+                    f"update flag {flag!r} is outside the non-trigger "
+                    "update allowlist", flag=flag)
+        if "--assignee" in argv or "--assignee-id" in argv:
+            raise UpdateArgvInvalidError(
+                "an unassigned update never carries an assignee flag")
+        if "--no-start" not in argv:
+            raise UpdateArgvInvalidError(
+                "issue update must carry --no-start so it cannot start a run")
+        try:
+            if temp_path is not None:
+                temp_path.write_bytes(description.encode("utf-8"))
+                resolved = temp_path.resolve()
+                if not resolved.is_relative_to(self.workdir.resolve()):
+                    raise DispatchError(
+                        "temp description file escaped the working directory")
+            code, out, err = self._run(argv)
+        finally:
+            if temp_path is not None:
+                temp_path.unlink(missing_ok=True)
+        if code != 0:
+            raise UpdateCommandFailedError(
+                f"issue update failed (exit {code}): {_bounded(err, 120)}",
+                exit_code=code)
+        return self._parse_unassigned_issue_response(out, kind="update")
+
+    def _parse_create_response(self, text: str) -> dict:
+        return self._parse_unassigned_issue_response(text, kind="create")
+
+    def _parse_unassigned_issue_response(self, text: str, *, kind: str) -> dict:
+        invalid = (CreateResponseInvalidError if kind == "create"
+                   else UpdateResponseInvalidError)
+        not_unassigned = (CreateNotUnassignedError if kind == "create"
+                          else UpdateNotUnassignedError)
+        try:
+            data = json.loads(text)
+        except json.JSONDecodeError as exc:
+            raise invalid(
+                f"issue {kind} returned malformed JSON: {exc}") from exc
+        if not isinstance(data, dict):
+            raise invalid(
+                f"issue {kind} JSON is not an object", kind=type(data).__name__)
+        missing = [f for f in CREATE_CONTRACT_FIELDS if f not in data]
+        if missing:
+            raise invalid(
+                f"issue {kind} response is missing contract fields",
+                missing=missing)
+        for field in ("id", "identifier", "title"):
+            if not isinstance(data[field], str) or not data[field].strip():
+                raise invalid(
+                    f"issue {kind} {field} is not a non-blank string")
+        if data["description"] is None:
+            data["description"] = ""
+        if not isinstance(data["description"], str):
+            raise invalid(f"issue {kind} description is not a string")
+        assignee_id = data.get("assignee_id")
+        assignee = data.get("assignee")
+        if assignee_id not in (None, "") or assignee not in (None, ""):
+            raise not_unassigned(
+                f"{kind}d issue already carries an assignee; the handoff "
+                "mutation must never start a target run",
+                assignee_id=_bounded(str(assignee_id), 80),
+                assignee=_bounded(str(assignee), 80))
+        return data
+
+    def list_runs(self, issue_id: str, *, active: bool = False,
+                  siblings: bool = False) -> dict:
+        """Read-only run listing. Fail closed when the shape is undetermined."""
+        issue_id = _require_bare_id(issue_id, "issue_id")
+        argv = ["issue", "runs", issue_id, "--output", "json"]
+        if active:
+            argv.append("--active")
+        if siblings:
+            argv.append("--siblings")
+        code, out, err = self._run(argv)
+        if code != 0:
+            raise RunStateUndeterminedError(
+                f"issue runs failed (exit {code}): {_bounded(err, 120)}",
+                exit_code=code)
+        if TRUNCATION_RE.search(err or ""):
+            raise RunStateUndeterminedError(
+                "issue runs stderr reports truncation; unexpected-run state "
+                "cannot be determined", stderr=_bounded(err, 120))
+        return {"runs": parse_runs_json(out), "stderr": err or ""}
+
+
+def parse_runs_json(text: str) -> list:
+    """Documented list-of-objects contract. Extra fields are ignored."""
+    try:
+        data = json.loads(text)
+    except json.JSONDecodeError as exc:
+        raise RunsResponseInvalidError(
+            f"issue runs returned malformed JSON: {exc}") from exc
+    if not isinstance(data, list):
+        raise RunsResponseInvalidError(
+            "issue runs JSON is not a list", kind=type(data).__name__)
+    runs = []
+    for i, row in enumerate(data):
+        if not isinstance(row, dict):
+            raise RunsResponseInvalidError(
+                f"issue runs[{i}] is not an object", index=i)
+        parsed = {}
+        for field in RUN_CONTRACT_FIELDS:
+            value = row.get(field)
+            if not isinstance(value, str) or not value.strip():
+                raise RunsResponseInvalidError(
+                    f"issue runs[{i}].{field} is not a non-blank string",
+                    index=i, field=field)
+            parsed[field] = value
+        parsed["status"] = parsed["status"].strip()
+        runs.append(parsed)
+    return runs
+
+
+def unexpected_active_runs(runs: list, *, issue_id: str,
+                           ignore_ids: set | None = None) -> list:
+    """Active runs on the target/sibling set that are not already correlated."""
+    ignore_ids = ignore_ids or set()
+    unexpected = []
+    for run in runs:
+        if run["id"] in ignore_ids:
+            continue
+        if run["status"] in ACTIVE_RUN_STATUSES:
+            unexpected.append(run)
+    return unexpected
+
+
+def correlate_intended_run(runs: list, *, issue_id: str, agent_id: str,
+                           known_ids: set | None = None) -> dict:
+    """Exactly one new run for this issue+agent, else fail closed."""
+    known_ids = known_ids or set()
+    newcomers = [r for r in runs if r["id"] not in known_ids]
+    matching = [r for r in newcomers
+                if r["issue_id"] == issue_id and r["agent_id"] == agent_id]
+    wrong = [r for r in newcomers if r not in matching]
+    if len(matching) == 1 and not wrong:
+        return {"ok": True, "run": matching[0], "count": 1,
+                "uncertainty": "correlation is against this listing only"}
+    reason = "zero_intended_runs"
+    if len(matching) > 1:
+        reason = "duplicate_intended_runs"
+    elif wrong and not matching:
+        reason = "wrong_target_run"
+    elif wrong and matching:
+        reason = "ambiguous_run_set"
+    raise RunCorrelationError(
+        "intended run cannot be uniquely correlated; fail closed",
+        reason=reason, matching=len(matching), extra=len(wrong),
+        new=len(newcomers))
+
 
 def _assignment_confirmed(data: dict, issue_id: str, agent_id: str) -> bool:
     """Observable confirmation marker set for the deployed assign response."""
@@ -528,15 +717,21 @@ def audit_ledger(records: list, executable: str = "multica") -> dict:
     assigns = [r for r in commands if r.get("command_class") == "assignment_trigger"]
     assign_ok = bool(assigns) and all(
         _assign_argv_ok(r.get("argv") or [], executable) for r in assigns)
-    unexpected = sorted(set(counts) - {"read", "issue_create",
+    updates = [r for r in commands if r.get("command_class") == "issue_update"]
+    update_ok = (not updates) or all(
+        _update_argv_ok(r.get("argv") or [], executable) for r in updates)
+    unexpected = sorted(set(counts) - {"read", "issue_create", "issue_update",
                                        "assignment_trigger", "comment_publish"})
-    ok = (not mention_hits and create_ok and assign_ok and not unexpected
-          and counts.get("issue_create", 0) <= 1
+    mutations = counts.get("issue_create", 0) + counts.get("issue_update", 0)
+    ok = (not mention_hits and (not creates or create_ok) and update_ok
+          and (not assigns or assign_ok) and not unexpected
+          and mutations <= 1
           and counts.get("assignment_trigger", 0) <= 1)
     return {
         "command_counts": counts,
         "mention_hits": mention_hits,
         "issue_create": {"count": len(creates), "unassigned_argv_ok": create_ok},
+        "issue_update": {"count": len(updates), "non_trigger_argv_ok": update_ok},
         "assignment_trigger": {"count": len(assigns), "argv_ok": assign_ok},
         "comment_publish": {"count": counts.get("comment_publish", 0)},
         "unexpected_write_classes": unexpected,
@@ -568,3 +763,16 @@ def _assign_argv_ok(argv: list, executable: str) -> bool:
         return False
     index = core.index("--to-id") + 1
     return index < len(core) and bool(UUID_RE.match(core[index]))
+
+
+def _update_argv_ok(argv: list, executable: str) -> bool:
+    core = _strip_executable(argv, executable)
+    if tuple(core[:2]) != ("issue", "update"):
+        return False
+    present = set(core)
+    if "--assignee" in present or "--assignee-id" in present:
+        return False
+    if "--no-start" not in present:
+        return False
+    return all(flag in UPDATE_ALLOWED_FLAGS
+               for flag in present if flag.startswith("--"))

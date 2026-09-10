@@ -1,0 +1,45 @@
+{
+  "captured_at": "2026-09-10T11:30:00Z",
+  "cli_version_observed": "v0.4.42",
+  "mode": "read_only_help_and_issue_runs_shape",
+  "live_mutations": 0,
+  "commands": {
+    "issue_create": {
+      "usage": "multica issue create [flags]",
+      "non_trigger_allowlist": ["--title", "--description-file", "--parent", "--project", "--priority", "--output"],
+      "refused": ["--assignee", "--assignee-id", "--attachment", "--description", "--description-stdin", "--status", "--stage", "mention://"],
+      "note": "unassigned create does not start a target run"
+    },
+    "issue_update": {
+      "usage": "multica issue update <id> [flags]",
+      "non_trigger_required": ["--no-start"],
+      "non_trigger_allowlist": ["--title", "--description-file", "--parent", "--project", "--priority", "--output", "--no-start"],
+      "refused": ["--assignee", "--assignee-id", "--status", "--stage", "mention://"],
+      "note": "--no-start is required because update can otherwise start a run"
+    },
+    "issue_assign": {
+      "usage": "multica issue assign <id> --to-id <uuid> --output json",
+      "sole_trigger": true,
+      "refused": ["--no-start", "--unassign", "--to"],
+      "confirmation_markers_observed": ["id == issue_id", "assignee_id == agent_id"],
+      "undocumented_success_shape": "fail closed to TRIGGER_CONFIRMATION_REQUIRED"
+    },
+    "issue_comment_add": {
+      "usage": "multica issue comment add <issue-id> --content-file <path> --output json",
+      "non_trigger": true,
+      "body_prefix": "/note"
+    },
+    "issue_runs": {
+      "usage": "multica issue runs <issue-id> [--active] [--siblings] --output json",
+      "active_statuses_from_help": ["queued", "dispatched", "running", "waiting_local_directory"],
+      "observed_json_contract": {
+        "type": "array_of_objects",
+        "required_fields": ["id", "issue_id", "agent_id", "status"],
+        "extra_fields_ignored": true,
+        "observed_on": "YZT-74 current run 2026-09-10",
+        "not_a_frozen_public_schema": true
+      },
+      "truncation": "siblings cap 20; stderr reports truncation; U06 treats truncation as RUN_STATE_UNDETERMINED"
+    }
+  }
+}

@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""T09 focused tests — assignment handoff main path (YZT-64).
+"""U06 focused tests — Artifact-aware Assignment SAFE_DISPATCH (YZT-74).
 
 Every path runs against fixture/injected runners only: no live issue
 create/comment/assign/mention/run, no Canonical write, no model call. The
@@ -22,8 +22,12 @@ sys.path.insert(0, str(TOOLS))
 import chandoff_assignment as asm  # noqa: E402
 import chandoff_compose as compose  # noqa: E402
 import chandoff_dispatch as dispatch  # noqa: E402
+import chandoff_instructions as instr  # noqa: E402
 import chandoff_note as note  # noqa: E402
 import chandoff_selfcheck as selfcheck  # noqa: E402
+
+RETIRED_05 = [k for k in instr.RETIRED_ROLES if k != "ops-sre"][0]
+LIVE_05_NAME = instr.LIVE_DISPLAY_NAME["delivery-reviewer"]
 
 CLOCK = lambda: "2026-09-10T09:00:00Z"  # noqa: E731
 
@@ -32,18 +36,28 @@ AGENT_LEAD = "24f04aba-7da9-4371-bf89-685d7505a411"
 AGENT_SA = "1303827b-73d1-4d71-a461-00b93e4b4418"
 PARENT_UUID = "99999999-0000-0000-0000-000000000039"
 
-TITLE = "T09 assignment handoff main path drill"
+TITLE = "U06 assignment handoff main path drill"
 DESCRIPTION = (
-    "Drill the fail-closed assignment orchestrator main path in the isolated "
-    "worktree: create unassigned issue, prepare, publish, confirm, assign "
-    "exactly once, self-check before work."
+    "Drill the fail-closed U06 assignment orchestrator main path in the "
+    "isolated worktree: create unassigned issue, bind role/artifacts, "
+    "zero-run precheck, prepare, ARTIFACT_READY, publish, confirm, assign "
+    "exactly once, correlate the intended run, self-check before work."
 )
 
 COMPOSE = lambda plan_obj, request, errors=None: compose.subset_result(plan_obj)  # noqa: E731
-MAIN_TRANSITIONS = ["INIT", "ISSUE_CREATED", "TARGET_RESOLVED",
-                    "HANDOFF_PREPARED", "HANDOFF_PUBLISHED",
-                    "HANDOFF_READY_CONFIRMED", "ASSIGNMENT_TRIGGERED",
-                    "TARGET_SELF_CHECKED", "COMPLETED"]
+MAIN_TRANSITIONS = [
+    "INIT", "ISSUE_CREATED", "TARGET_BOUND", "RUN_PRECHECK_PREPARE",
+    "HANDOFF_PREPARED", "ARTIFACT_READY", "HANDOFF_PUBLISHED",
+    "HANDOFF_READY_CONFIRMED", "RUN_PRECHECK_TRIGGER",
+    "ASSIGNMENT_TRIGGERED", "RUN_CORRELATED",
+    "TARGET_SELF_CHECKED", "COMPLETED",
+]
+AGENT_CE = "8bc546ab-ffd8-4aa6-ad30-58583346c065"
+AGENT_DR = "b6335f8e-8147-45f7-aac0-8079d85423b5"
+AGENT_QA = "30ce43d4-97a7-42a8-ab3e-78df0d894702"
+ART = TOOLS / "fixtures" / "artifact-contract"
+STORE_FILE = str(ART / "store-chain.json")
+READY_SE = json.loads((ART / "ready-se.json").read_text(encoding="utf-8"))
 
 
 def base_spec(**overrides) -> dict:
@@ -70,7 +84,9 @@ class FakeMultica:
                  create_malformed=False, create_exit=2,
                  create_assignee=None, assign_exit=0, assign_stdout=None,
                  assign_applies=True, drop_note=False, note_corruptor=None,
-                 extra_record_body=None):
+                 extra_record_body=None, extra_runs=None, runs_fail=False,
+                 runs_malformed=False, truncate_runs=False,
+                 duplicate_assign_run=False):
         self.version = version
         self.create_fails = create_fails
         self.create_malformed = create_malformed
@@ -88,6 +104,11 @@ class FakeMultica:
         self.create_calls: list = []
         self.created_response: dict | None = None
         self.seq = 0
+        self.runs: list = list(extra_runs or [])
+        self.runs_fail = runs_fail
+        self.runs_malformed = runs_malformed
+        self.truncate_runs = truncate_runs
+        self.duplicate_assign_run = duplicate_assign_run
         self.issues[PARENT_UUID] = {
             "id": PARENT_UUID,
             "identifier": "YZT-39X",
@@ -180,16 +201,68 @@ class FakeMultica:
                 return self.assign_exit, "", "assign failed"
             if self.assign_applies and issue_id in self.issues:
                 self.issues[issue_id]["assignee_id"] = agent_id
+            self.seq += 1
+            run = {
+                "id": f"run-{self.seq:04d}",
+                "issue_id": issue_id,
+                "agent_id": agent_id,
+                "status": "queued",
+                "kind": "direct",
+                "created_at": "2026-09-10T09:00:00Z",
+                "started_at": "2026-09-10T09:00:00Z",
+                "completed_at": None,
+            }
+            self.runs.append(run)
+            if self.duplicate_assign_run:
+                self.seq += 1
+                dup = dict(run)
+                dup["id"] = f"run-{self.seq:04d}"
+                self.runs.append(dup)
             out = self.assign_stdout if self.assign_stdout is not None \
                 else json.dumps({"id": issue_id, "assignee_id": agent_id})
             return 0, out, ""
+        if tail[:2] == ["issue", "update"]:
+            issue_id = tail[2]
+            doc = self.issues.get(issue_id) or self.by_identifier.get(issue_id)
+            if doc is None:
+                return 2, "", "issue not found"
+            if "--assignee" in tail or "--assignee-id" in tail:
+                return 2, "", "assignee not allowed in fixture"
+            if "--no-start" not in tail:
+                return 2, "", "update missing --no-start"
+            if "--title" in tail:
+                doc["title"] = tail[tail.index("--title") + 1]
+            if "--description-file" in tail:
+                doc["description"] = Path(
+                    tail[tail.index("--description-file") + 1]
+                ).read_bytes().decode("utf-8")
+            return 0, json.dumps(doc), ""
+        if tail[:2] == ["issue", "runs"]:
+            if self.runs_fail:
+                return 2, "", "runs failed"
+            if self.runs_malformed:
+                return 0, '{"not":"a list"}', ""
+            issue_id = tail[2]
+            active = "--active" in tail
+            siblings = "--siblings" in tail
+            rows = []
+            for run in self.runs:
+                if run["issue_id"] == issue_id or (
+                        siblings and run.get("sibling")):
+                    rows.append(run)
+            if active:
+                rows = [r for r in rows if r["status"] in (
+                    "queued", "dispatched", "running",
+                    "waiting_local_directory")]
+            err = "truncated at cap" if self.truncate_runs else ""
+            return 0, json.dumps(rows), err
         return 2, "", "unexpected command"
 
 
 def run_tx(fake=None, *, spec=None, caller="engineering-lead",
-           target="software-engineer", tx="tx-t09-0001", parent=PARENT_UUID,
+           target="software-engineer", tx="tx-u06-0001", parent=PARENT_UUID,
            ledger=None, policy=None, world=None, finding_store=None,
-           bundle_dir=None):
+           bundle_dir=None, crash_at=None, resume=None):
     spec = dict(spec if spec is not None else base_spec())
     if parent is not None and "parent_issue_id" not in spec:
         spec["parent_issue_id"] = parent
@@ -199,7 +272,7 @@ def run_tx(fake=None, *, spec=None, caller="engineering-lead",
         spec, caller_role=caller, target_role_spec=target, runner=fake,
         ledger=ledger, compose_fn=COMPOSE, transaction_id=tx,
         policy=policy, clock=CLOCK, finding_store=finding_store or fake_store(),
-        world=world, bundle_dir=bundle_dir)
+        world=world, bundle_dir=bundle_dir, crash_at=crash_at, resume=resume)
     return result, fake, ledger
 
 
@@ -211,8 +284,9 @@ class DispatcherUnitTests(unittest.TestCase):
             ("multica", "issue", "comment", "add", "I", "--content-file", "p"): "comment_publish",
             ("multica", "issue", "get", "I"): "read",
             ("multica", "issue", "comment", "list", "I"): "read",
+            ("multica", "issue", "runs", "I"): "read",
             ("multica", "version"): "read",
-            ("multica", "issue", "update", "I"): "other",
+            ("multica", "issue", "update", "I"): "issue_update",
         }
         for argv, expected in cases.items():
             self.assertEqual(dispatch.classify_command(list(argv)), expected)
@@ -335,7 +409,7 @@ class CreateBoundaryTests(unittest.TestCase):
 
     def test_description_temp_file_deleted(self):
         result, fake, _ = run_tx()
-        stray = [p for p in Path.cwd().glob(".t09-create-*.md")]
+        stray = [p for p in Path.cwd().glob(".u06-create-*.md")]
         self.assertEqual(stray, [])
 
 
@@ -358,6 +432,8 @@ class MainPathTests(unittest.TestCase):
                          [("11111111-2222-3333-4444-000000000001", AGENT_SE)])
         self.assertEqual(result["self_check"]["status"], "READY")
         self.assertEqual(result["self_check"]["attempts"], 1)
+        self.assertEqual((result.get("intended_run") or {}).get("count"), 1)
+        self.assertEqual(result["intended_run"]["agent_id"], AGENT_SE)
         audit = result["audit"]
         self.assertTrue(audit["ok"])
         self.assertEqual(audit["command_counts"].get("issue_create"), 1)
@@ -404,12 +480,13 @@ class MainPathTests(unittest.TestCase):
         result, _, ledger = run_tx()
         classes = [r["command_class"] for r in ledger.commands()]
         self.assertEqual(classes[0], "issue_create")
-        self.assertEqual(classes[-1], "assignment_trigger")
         publishes = [i for i, c in enumerate(classes)
                      if c == "comment_publish"]
         assigns = [i for i, c in enumerate(classes) if c == "assignment_trigger"]
         self.assertEqual(len(assigns), 1)
         self.assertTrue(all(p < assigns[0] for p in publishes))
+        self.assertIn("assignment_trigger", classes)
+        self.assertEqual(classes.count("assignment_trigger"), 1)
         transitions = [r["to"] for r in ledger.records
                        if r.get("kind") == "state_transition"]
         self.assertEqual(transitions, MAIN_TRANSITIONS[1:])
@@ -427,9 +504,22 @@ class RoutingTests(unittest.TestCase):
         self.assertEqual(result["escalation"]["route_to"],
                          "engineering-lead-or-squad")
 
-    def test_context_engineer_is_never_a_dispatch_target(self):
+    def test_context_engineer_is_a_permitted_assignment_target(self):
         result, _, _ = run_tx(target="context-engineer", tx="tx-ce")
+        self.assertTrue(result["ok"], result)
+        self.assertEqual(result["target"]["role"], "context-engineer")
+        self.assertEqual(result["target"]["agent_id"], AGENT_CE)
+
+    def test_feature_reviewer_does_not_resolve_or_alias(self):
+        result, _, ledger = run_tx(target=RETIRED_05, tx="tx-old-05")
         self.assertEqual(result["terminal_status"], "ROUTING_REQUIRED")
+        self.assertEqual(result["audit"]["assignment_trigger"]["count"], 0)
+        live_name, _, _ = run_tx(target=LIVE_05_NAME, tx="tx-old-05-name")
+        self.assertEqual(live_name["terminal_status"], "ROUTING_REQUIRED")
+        staged, _, _ = run_tx(target="delivery-reviewer", tx="tx-dr")
+        self.assertTrue(staged["ok"], staged)
+        self.assertEqual(staged["target"]["role"], "delivery-reviewer")
+        self.assertEqual(staged["target"]["agent_id"], AGENT_DR)
 
     def test_stale_bundle_without_baseline_fails_closed(self):
         result, _, _ = run_tx(bundle_dir=Path(tempfile.mkdtemp()),
@@ -454,7 +544,8 @@ class RoutingTests(unittest.TestCase):
                 encoding="utf-8")
             result, _, _ = run_tx(bundle_dir=bundle, tx="tx-stale-role")
         self.assertEqual(result["terminal_status"], "ROUTING_REQUIRED")
-        self.assertIn("baseline", (result["stop_reason"] or "").lower())
+        reason = (result["stop_reason"] or "").lower()
+        self.assertTrue("u05" in reason or "role-mapping" in reason, reason)
 
     def test_role_not_bound_in_t08_plan_fails_closed(self):
         with tempfile.TemporaryDirectory() as tmp:
@@ -800,6 +891,184 @@ class CliTests(unittest.TestCase):
             self.assertEqual(proc.returncode, 0, proc.stderr)
             self.assertEqual(json.loads(proc.stdout)["terminal_status"],
                              "COMPLETED")
+
+
+class ArtifactAndIdentityTests(unittest.TestCase):
+    def test_stale_artifact_stops_before_trigger(self):
+        stale = [{
+            "artifact_type": "implementation",
+            "artifact_id": "ART-WIMG-031",
+            "version": "superseded-or-missing",
+            "required": True,
+        }]
+        spec = base_spec(required_artifacts=stale,
+                         artifact_store_file=STORE_FILE,
+                         review_level="R1")
+        result, fake, _ = run_tx(spec=spec, tx="tx-art-stale")
+        self.assertEqual(result["terminal_status"], "PACKAGE_STALE")
+        self.assertEqual(len(fake.assign_calls), 0)
+        self.assertEqual(result["audit"]["command_counts"]
+                         .get("comment_publish", 0), 0)
+
+    def test_ready_artifacts_bind_digest_and_complete(self):
+        spec = base_spec(required_artifacts=READY_SE["requirements"],
+                         artifact_store_file=STORE_FILE,
+                         review_level="R1")
+        result, fake, ledger = run_tx(spec=spec, tx="tx-art-ready")
+        self.assertTrue(result["ok"], result)
+        self.assertEqual(result["artifacts"]["status"], "ARTIFACT_READY")
+        self.assertTrue(result["artifacts"]["digest"])
+        gates = [r for r in ledger.records if r.get("kind") == "artifact_gate"]
+        self.assertTrue(gates)
+        self.assertEqual(len(fake.assign_calls), 1)
+
+    def test_old_05_package_role_cannot_be_rewritten(self):
+        result, _, _ = run_tx(target=RETIRED_05, tx="tx-no-rewrite")
+        self.assertNotEqual(result["terminal_status"], "COMPLETED")
+        self.assertEqual(result["audit"]["assignment_trigger"]["count"], 0)
+
+    def test_all_six_v22_roles_can_be_assignment_targets(self):
+        roles = {
+            "engineering-lead": AGENT_LEAD,
+            "context-engineer": AGENT_CE,
+            "solution-architect": AGENT_SA,
+            "software-engineer": AGENT_SE,
+            "delivery-reviewer": AGENT_DR,
+            "qa": AGENT_QA,
+        }
+        for role, agent_id in roles.items():
+            result, _, _ = run_tx(target=role, tx=f"tx-six-{role}")
+            self.assertTrue(result["ok"], (role, result))
+            self.assertEqual(result["target"]["agent_id"], agent_id)
+            self.assertEqual(result["trigger"]["count"], 1)
+
+
+class RunPrecheckTests(unittest.TestCase):
+    def test_unexpected_active_run_blocks_without_trigger(self):
+        fake = FakeMultica(extra_runs=[{
+            "id": "run-pre-0001",
+            "issue_id": "11111111-2222-3333-4444-000000000001",
+            "agent_id": AGENT_SE,
+            "status": "running",
+            "sibling": False,
+        }])
+        # extra run is attached after create; seed via parent sibling flag
+        fake.runs[0]["issue_id"] = PARENT_UUID
+        fake.runs[0]["sibling"] = True
+        result, fake, _ = run_tx(fake, tx="tx-unexpected")
+        self.assertEqual(result["terminal_status"], "UNEXPECTED_RUN")
+        self.assertEqual(len(fake.assign_calls), 0)
+
+    def test_undetermined_runs_fail_closed(self):
+        result, fake, _ = run_tx(FakeMultica(runs_malformed=True),
+                                 tx="tx-runs-bad")
+        self.assertEqual(result["terminal_status"], "RUN_STATE_UNDETERMINED")
+        self.assertEqual(len(fake.assign_calls), 0)
+
+    def test_truncated_runs_fail_closed(self):
+        result, fake, _ = run_tx(FakeMultica(truncate_runs=True),
+                                 tx="tx-runs-trunc")
+        self.assertEqual(result["terminal_status"], "RUN_STATE_UNDETERMINED")
+        self.assertEqual(len(fake.assign_calls), 0)
+
+    def test_duplicate_intended_run_fails_closed(self):
+        result, fake, _ = run_tx(FakeMultica(duplicate_assign_run=True),
+                                 tx="tx-dup-run")
+        self.assertEqual(result["terminal_status"], "RUN_CORRELATION_FAILED")
+        self.assertEqual(len(fake.assign_calls), 1)
+
+
+class RecoveryTests(unittest.TestCase):
+    def test_pre_publish_crash_continues_uniquely(self):
+        result, fake, ledger = run_tx(crash_at="ARTIFACT_READY",
+                                      tx="tx-crash-pre")
+        self.assertEqual(result["terminal_status"], "CRASH_SIMULATED")
+        self.assertEqual(len(fake.assign_calls), 0)
+        recovered = asm.recover_assignment_handoff(
+            base_spec(parent_issue_id=PARENT_UUID),
+            caller_role="engineering-lead",
+            target_role_spec="software-engineer",
+            runner=fake, ledger=ledger, compose_fn=COMPOSE,
+            transaction_id="tx-crash-pre", clock=CLOCK,
+            finding_store=fake_store())
+        self.assertTrue(recovered["ok"], recovered)
+        self.assertEqual(recovered["recovery"]["boundary"], "pre_publish")
+        self.assertEqual(len(fake.assign_calls), 1)
+        self.assertEqual(recovered["audit"]["assignment_trigger"]["count"], 1)
+
+    def test_post_publish_pre_trigger_reuses_note(self):
+        result, fake, ledger = run_tx(crash_at="HANDOFF_READY_CONFIRMED",
+                                      tx="tx-crash-pub")
+        self.assertEqual(result["terminal_status"], "CRASH_SIMULATED")
+        comments_before = len(
+            fake.comments["11111111-2222-3333-4444-000000000001"])
+        recovered = asm.recover_assignment_handoff(
+            base_spec(parent_issue_id=PARENT_UUID),
+            caller_role="engineering-lead",
+            target_role_spec="software-engineer",
+            runner=fake, ledger=ledger, compose_fn=COMPOSE,
+            transaction_id="tx-crash-pub", clock=CLOCK,
+            finding_store=fake_store())
+        self.assertTrue(recovered["ok"], recovered)
+        self.assertEqual(recovered["recovery"]["boundary"],
+                         "post_publish_pre_trigger")
+        comments_after = len(
+            fake.comments["11111111-2222-3333-4444-000000000001"])
+        self.assertEqual(comments_after, comments_before)
+        self.assertEqual(len(fake.assign_calls), 1)
+
+    def test_post_trigger_ambiguous_never_retried(self):
+        result, fake, ledger = run_tx(crash_at="ASSIGNMENT_TRIGGERED",
+                                      tx="tx-crash-trig")
+        self.assertEqual(result["terminal_status"], "CRASH_SIMULATED")
+        assigns_before = len(fake.assign_calls)
+        recovered = asm.recover_assignment_handoff(
+            base_spec(parent_issue_id=PARENT_UUID),
+            caller_role="engineering-lead",
+            target_role_spec="software-engineer",
+            runner=fake, ledger=ledger, compose_fn=COMPOSE,
+            transaction_id="tx-crash-trig", clock=CLOCK,
+            finding_store=fake_store())
+        self.assertEqual(recovered["terminal_status"],
+                         "TRIGGER_CONFIRMATION_REQUIRED")
+        self.assertEqual(len(fake.assign_calls), assigns_before)
+
+    def test_completed_recovery_is_idempotent(self):
+        result, fake, ledger = run_tx(tx="tx-crash-done")
+        self.assertTrue(result["ok"])
+        assigns_before = len(fake.assign_calls)
+        recovered = asm.recover_assignment_handoff(
+            base_spec(parent_issue_id=PARENT_UUID),
+            caller_role="engineering-lead",
+            target_role_spec="software-engineer",
+            runner=fake, ledger=ledger, compose_fn=COMPOSE,
+            transaction_id="tx-crash-done", clock=CLOCK,
+            finding_store=fake_store())
+        self.assertTrue(recovered.get("replayed"))
+        self.assertEqual(recovered["commands"], [])
+        self.assertEqual(len(fake.assign_calls), assigns_before)
+
+
+class PinAndCliRoleTests(unittest.TestCase):
+    def test_u05_pins_are_exact(self):
+        mapping = asm.u05_mapping()
+        self.assertEqual(mapping["instruction_bundle_revision"],
+                         asm.PINNED_INSTRUCTION_BUNDLE)
+        self.assertEqual(mapping["binding_plan_revision"],
+                         asm.PINNED_BINDING_PLAN)
+        self.assertIsNone(mapping["feature_reviewer_resolves_to"])
+        self.assertFalse(mapping["old_05_package_accepted"])
+
+    def test_cli_resolves_all_six_and_rejects_retired(self):
+        proc = CliTests()._run_cli("resolve-role", "--role-spec",
+                                   "context-engineer")
+        self.assertEqual(proc.returncode, 0, proc.stderr)
+        self.assertEqual(json.loads(proc.stdout)["target"]["agent_id"],
+                         AGENT_CE)
+        proc = CliTests()._run_cli("resolve-role", "--role-spec",
+                                   RETIRED_05)
+        self.assertEqual(proc.returncode, 3)
+        self.assertTrue(json.loads(proc.stdout)["routing_required"])
 
 
 if __name__ == "__main__":

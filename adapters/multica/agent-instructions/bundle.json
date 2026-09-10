@@ -37,7 +37,7 @@
     "candidates/qa.md": "sha256:357263a64bb7474ee3a89b623e931069af1b0351971f33c2995510369909cc05",
     "candidates/software-engineer.md": "sha256:2d07e2bbd837e2dc57b0d19af3533791759b6de8121c7795096d3faf7ebe8baa",
     "candidates/solution-architect.md": "sha256:a405caf83fbe1cd4df3e25fc3263f909e347987c771655630a57aed7bcb90984",
-    "old-role-inventory.json": "sha256:8a1ea9c6cbbfb811d5141b046cb66a4dc0e52f4098f806224f6541ba756c3b86",
+    "old-role-inventory.json": "sha256:5e4e92f0387b2c46092f145a943d029fb43cc3bf75a430430235aed098eb9a17",
     "package-invalidation.json": "sha256:46b9d0d2669821fe32dfe85497790cbf1d1da25e62e19ed773f2297b3876c62c",
     "preconditions.json": "sha256:d3f07cc4bf3a050234276d9b8871aadd0ca4b048e832d90cebe79f8ecce7f739",
     "role-mapping.json": "sha256:eea0cbac2b8d480f805dd668fec1730d7bc4059fa89081c116de4d27de7a1bb6",

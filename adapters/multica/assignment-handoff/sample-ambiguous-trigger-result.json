@@ -3,7 +3,7 @@
     "ambiguous_trigger_response_fails_closed": true,
     "artifact_ready_before_publish_and_trigger": true,
     "assignment_is_only_trigger": true,
-    "blocked_or_unresolved_refresh_stops_work": true,
+    "blocked_or_unresolved_refresh_stops_work": null,
     "intended_run_correlated": true,
     "intended_run_count_per_handoff": 1,
     "live_mutations": 0,
@@ -29,7 +29,7 @@
         "assignment_trigger": 1,
         "comment_publish": 1,
         "issue_create": 1,
-        "read": 10
+        "read": 9
       },
       "comment_publish": {
         "count": 1
@@ -52,6 +52,12 @@
     },
     "compose_fn_source": "injected",
     "escalation": null,
+    "extra": {
+      "error": {
+        "code": "assignment_response_unconfirmable",
+        "message": "issue assign returned non-JSON output: Expecting value: line 1 column 1 (char 0); the trigger state is unconfirmed and must not be retried"
+      }
+    },
     "guarantees": {
       "canonical_writes": 0,
       "frozen_schema_changes": 0,
@@ -61,19 +67,13 @@
       "run_triggers_outside_assignment": 0
     },
     "handoff_ready": true,
-    "intended_run": {
-      "agent_id": "fa7d16a7-2dae-4994-80b8-7435b3fcca47",
-      "count": 1,
-      "id": "run-0003",
-      "issue_id": "11111111-2222-3333-4444-000000000001",
-      "status": "queued"
-    },
+    "intended_run": null,
     "issue": {
       "id": "11111111-2222-3333-4444-000000000001",
       "identifier": "YZT-9001"
     },
     "mode": "simulation",
-    "ok": true,
+    "ok": false,
     "orchestrator": "U06/2.2",
     "package": {
       "package_id": "CTX-software-engineer-f72f7166de276fb7",
@@ -86,13 +86,8 @@
       "skill_md_digest": "sha256:f369cee40ada061364d91ef48a9cb7d467039931e922c1db18d85fe1d7e0638a"
     },
     "published_comment_id": "c-0002",
-    "self_check": {
-      "attempts": 1,
-      "reasons": [],
-      "refreshes": 0,
-      "status": "READY"
-    },
-    "stop_reason": null,
+    "self_check": null,
+    "stop_reason": "assignment response is unconfirmable; fail closed; reconciliation is a later read-only operator action, never a second trigger",
     "target": {
       "agent_id": "fa7d16a7-2dae-4994-80b8-7435b3fcca47",
       "agent_name": "04 Software Engineer",
@@ -103,8 +98,8 @@
       "role_name": "04 Software Engineer"
     },
     "task_ref": "multica://issue/YZT-9001",
-    "terminal_status": "COMPLETED",
-    "transaction_id": "tx-u06-sample-0001",
+    "terminal_status": "TRIGGER_CONFIRMATION_REQUIRED",
+    "transaction_id": "tx-u06-amb",
     "transitions": [
       "INIT",
       "ISSUE_CREATED",
@@ -114,24 +109,11 @@
       "ARTIFACT_READY",
       "HANDOFF_PUBLISHED",
       "HANDOFF_READY_CONFIRMED",
-      "RUN_PRECHECK_TRIGGER",
-      "ASSIGNMENT_TRIGGERED",
-      "RUN_CORRELATED",
-      "TARGET_SELF_CHECKED",
-      "COMPLETED"
+      "RUN_PRECHECK_TRIGGER"
     ],
     "trigger": {
-      "argv": [
-        "multica",
-        "issue",
-        "assign",
-        "11111111-2222-3333-4444-000000000001",
-        "--to-id",
-        "fa7d16a7-2dae-4994-80b8-7435b3fcca47",
-        "--output",
-        "json"
-      ],
-      "confirmed": true,
+      "argv": null,
+      "confirmed": false,
       "count": 1,
       "type": "issue_assign"
     },

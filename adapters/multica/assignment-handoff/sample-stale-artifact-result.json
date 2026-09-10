@@ -2,13 +2,13 @@
   "acceptance_evidence": {
     "ambiguous_trigger_response_fails_closed": true,
     "artifact_ready_before_publish_and_trigger": true,
-    "assignment_is_only_trigger": true,
-    "blocked_or_unresolved_refresh_stops_work": true,
+    "assignment_is_only_trigger": false,
+    "blocked_or_unresolved_refresh_stops_work": null,
     "intended_run_correlated": true,
-    "intended_run_count_per_handoff": 1,
+    "intended_run_count_per_handoff": 0,
     "live_mutations": 0,
     "mention_count": 0,
-    "published_handoff_confirmed_before_assignment": true,
+    "published_handoff_confirmed_before_assignment": false,
     "retry_does_not_duplicate_trigger": true,
     "run_before_handoff": 0,
     "self_check_ready_before_work": true,
@@ -16,23 +16,20 @@
   },
   "transaction_result": {
     "artifacts": {
-      "count": 0,
-      "digest": "sha256:4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
-      "status": "ARTIFACT_READY"
+      "count": 1,
+      "digest": "sha256:ad430e71d98e500ae3b467776a94739e1cb3691923543d07f3e031497391cb62",
+      "status": "ARTIFACT_NOT_READY"
     },
     "audit": {
       "assignment_trigger": {
-        "argv_ok": true,
-        "count": 1
+        "argv_ok": false,
+        "count": 0
       },
       "command_counts": {
-        "assignment_trigger": 1,
-        "comment_publish": 1,
-        "issue_create": 1,
-        "read": 10
+        "issue_create": 1
       },
       "comment_publish": {
-        "count": 1
+        "count": 0
       },
       "issue_create": {
         "count": 1,
@@ -52,6 +49,23 @@
     },
     "compose_fn_source": "injected",
     "escalation": null,
+    "extra": {
+      "artifact_ready": {
+        "failures": [
+          {
+            "artifact_id": "ART-WIMG-031",
+            "artifact_type": "implementation",
+            "correction_owner": "software-engineer",
+            "reason": "no envelope for ART-WIMG-031@missing",
+            "reason_code": "MISSING",
+            "ref": "implementation:ART-WIMG-031@missing",
+            "route": "producer_correction",
+            "version": "missing"
+          }
+        ],
+        "status": "ARTIFACT_NOT_READY"
+      }
+    },
     "guarantees": {
       "canonical_writes": 0,
       "frozen_schema_changes": 0,
@@ -60,39 +74,25 @@
       "mentions": 0,
       "run_triggers_outside_assignment": 0
     },
-    "handoff_ready": true,
-    "intended_run": {
-      "agent_id": "fa7d16a7-2dae-4994-80b8-7435b3fcca47",
-      "count": 1,
-      "id": "run-0003",
-      "issue_id": "11111111-2222-3333-4444-000000000001",
-      "status": "queued"
-    },
+    "handoff_ready": false,
+    "intended_run": null,
     "issue": {
       "id": "11111111-2222-3333-4444-000000000001",
       "identifier": "YZT-9001"
     },
     "mode": "simulation",
-    "ok": true,
+    "ok": false,
     "orchestrator": "U06/2.2",
-    "package": {
-      "package_id": "CTX-software-engineer-f72f7166de276fb7",
-      "status": "READY"
-    },
+    "package": null,
     "pins": {
       "artifact_contract_revision": "sha256:9c2857ae252e1916ef79a4816dfb57c05a6f32ec1b97f31419cdfddfd9e83bfc",
       "binding_plan_revision": "sha256:7f83bfd523e2c0da3cd0dac4568869f3c9937e2d3ae6c0dc66b9853094a27c22",
       "instruction_bundle_revision": "sha256:a93e146d6586cf6f474148aeed092032e3a9c871ad3138ee1152d28108b5b98f",
       "skill_md_digest": "sha256:f369cee40ada061364d91ef48a9cb7d467039931e922c1db18d85fe1d7e0638a"
     },
-    "published_comment_id": "c-0002",
-    "self_check": {
-      "attempts": 1,
-      "reasons": [],
-      "refreshes": 0,
-      "status": "READY"
-    },
-    "stop_reason": null,
+    "published_comment_id": null,
+    "self_check": null,
+    "stop_reason": "artifact_ready_check is not ARTIFACT_READY; package_stale / REFRESH_REQUIRED before trigger",
     "target": {
       "agent_id": "fa7d16a7-2dae-4994-80b8-7435b3fcca47",
       "agent_name": "04 Software Engineer",
@@ -103,36 +103,16 @@
       "role_name": "04 Software Engineer"
     },
     "task_ref": "multica://issue/YZT-9001",
-    "terminal_status": "COMPLETED",
-    "transaction_id": "tx-u06-sample-0001",
+    "terminal_status": "PACKAGE_STALE",
+    "transaction_id": "tx-u06-stale",
     "transitions": [
       "INIT",
-      "ISSUE_CREATED",
-      "TARGET_BOUND",
-      "RUN_PRECHECK_PREPARE",
-      "HANDOFF_PREPARED",
-      "ARTIFACT_READY",
-      "HANDOFF_PUBLISHED",
-      "HANDOFF_READY_CONFIRMED",
-      "RUN_PRECHECK_TRIGGER",
-      "ASSIGNMENT_TRIGGERED",
-      "RUN_CORRELATED",
-      "TARGET_SELF_CHECKED",
-      "COMPLETED"
+      "ISSUE_CREATED"
     ],
     "trigger": {
-      "argv": [
-        "multica",
-        "issue",
-        "assign",
-        "11111111-2222-3333-4444-000000000001",
-        "--to-id",
-        "fa7d16a7-2dae-4994-80b8-7435b3fcca47",
-        "--output",
-        "json"
-      ],
-      "confirmed": true,
-      "count": 1,
+      "argv": null,
+      "confirmed": false,
+      "count": 0,
       "type": "issue_assign"
     },
     "uncertainty": [
