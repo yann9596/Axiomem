@@ -674,15 +674,24 @@ class HappyPathTests(unittest.TestCase):
         self.assertEqual(evidence["intended_run_count_per_handoff"], 1)
         self.assertEqual(evidence["live_mutations"], 0)
 
-    def test_lead_invokes_feature_reviewer_no_transfer(self):
+    def test_retired_feature_reviewer_fails_closed_no_transfer(self):
+        # U02/YZT-69: feature-reviewer is retired without an alias; routing a
+        # mention to it must fail closed at PREPARE (role vocabulary resolves
+        # from role-profile data), with zero triggers and no assignee transfer.
         result, fake, ledger = run_tx(caller="engineering-lead",
                                       target="feature-reviewer",
-                                      tx="tx-happy-fr")
-        self.assertTrue(result["ok"], result)
+                                      tx="tx-retired-fr")
+        self.assertFalse(result["ok"], result)
+        self.assertEqual(result["terminal_status"], "PREPARE_FAILED")
+        self.assertEqual(result["stop_reason"], "T05 snapshot failed")
         self.assertEqual(result["target"]["role"], "feature-reviewer")
-        self.assertEqual(result["target"]["agent_id"], AGENT_FR)
+        self.assertEqual(result["trigger"]["count"], 0)
         self.assertEqual(result["assignee"]["unchanged"], True)
-        self.assertEqual(result["assignee"]["before"]["assignee_id"], AGENT_SA)
+        self.assertEqual(result["guarantees"]["live_mutations"], 0)
+        self.assertEqual(
+            result["extra"]["error"]["code"], "request_schema_violation")
+        self.assertIn("feature-reviewer",
+                      result["extra"]["error"]["message"])
 
     def test_lead_invokes_qa_no_transfer(self):
         result, fake, ledger = run_tx(caller="engineering-lead", target="qa",

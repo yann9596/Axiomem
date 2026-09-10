@@ -16,3 +16,6 @@ sources/candidates/*.json -text
 # YZT-63: byte-stability for the T08 captured live-state fixtures and staged
 # instruction-contract bundles (instruction digests are re-verified offline).
 adapters/multica/agent-instructions/** -text
+# YZT-69: byte-stability for the V2 agent-UUID→role binding evidence (live
+# platform roster capture; binding validator cross-checks file bytes).
+adapters/multica/role-bindings/** -text
