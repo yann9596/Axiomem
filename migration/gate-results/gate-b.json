@@ -10,7 +10,7 @@
     {
       "test": "derived_index_not_canonical",
       "passed": true,
-      "detail": "index dir deleted -> rebuilt 22 objects from zero; retrieval identical (True); 42 canonical files byte-identical (True)"
+      "detail": "index dir deleted -> rebuilt 22 objects from zero; retrieval identical (True); 41 canonical files byte-identical (True)"
     },
     {
       "test": "index_not_git_tracked",
@@ -53,5 +53,5 @@
       "detail": "task=b10-probe cases=0 search_performed=False"
     }
   ],
-  "generated_at": "2026-09-10T01:23:07Z"
+  "generated_at": "2026-09-10T08:31:57Z"
 }

@@ -13,7 +13,7 @@
     "facts": 5,
     "cases": 1,
     "checkpoints": 3,
-    "role_profiles": 7,
+    "role_profiles": 6,
     "migration_findings": 5
   },
   "accounting": {
@@ -32,5 +32,5 @@
     "fail_closed": false
   },
   "missing_evidence": [],
-  "generated_at": "2026-09-10T01:23:26Z"
+  "generated_at": "2026-09-10T08:31:57Z"
 }
