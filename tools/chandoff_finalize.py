@@ -29,7 +29,10 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 from cauthority import evaluate_rule_authority, load_authority_evidence  # noqa: E402
 from cbuild import anchor_digest  # noqa: E402
 from cdata import load_all_docs, load_role_profile  # noqa: E402
-from chandoff import canonical_json, compute_built_from, validate_semantic_result  # noqa: E402
+from chandoff import (  # noqa: E402
+    canonical_json, compute_built_from, split_checkpoint_candidate_id,
+    validate_semantic_result,
+)
 from crole import kind_limit, policy_of  # noqa: E402
 from cutil import TEAM, now_iso, object_scope, scope_allows  # noqa: E402
 from schema_mini import Schema, load_schema_file  # noqa: E402
@@ -542,6 +545,37 @@ def _minimal_package(request: dict, plan: dict | None, *, clock, blocked_by: lis
     }
 
 
+def _checkpoint_index(entries: list) -> dict:
+    """Index PLAN checkpoint candidates by globally unique id.
+
+    Last-wins dict compression is forbidden: a duplicate candidate id is an
+    implementation collision, not a selection. Canonical local ids may still
+    collide across checkpoint sources; those must already be namespaced.
+    """
+    by_id = {}
+    collisions = []
+    for entry in entries or []:
+        cid = entry.get("id")
+        if not cid:
+            continue
+        if cid in by_id:
+            collisions.append(cid)
+        by_id[cid] = entry
+    if collisions:
+        raise ValueError(
+            "ambiguous checkpoint_entry candidate ids (last-wins is forbidden): "
+            + ", ".join(sorted(set(collisions)))
+        )
+    for cid, entry in by_id.items():
+        source, _local = split_checkpoint_candidate_id(cid)
+        if entry.get("checkpoint") and entry.get("checkpoint") != source:
+            raise ValueError(
+                f"checkpoint candidate id {cid!r} does not match "
+                f"entry.checkpoint {entry.get('checkpoint')!r}"
+            )
+    return by_id
+
+
 def _activation_reason(plan: dict, case_id: str, doc: dict) -> str:
     for item in (plan.get("candidates") or {}).get("cases") or []:
         if item.get("id") == case_id:
@@ -563,8 +597,8 @@ def _assemble_package(request: dict, plan: dict, result: dict, by_id: dict,
     phase = _phase_of(registry, scope.get("project_id")) if scope.get("type") == "project" else None
     digest = _anchor_digest_for(scope)
 
-    cp_by_id = {e["id"]: e for e in (plan.get("candidates") or {}).get("checkpoint_entries") or []
-                if e.get("id")}
+    cp_by_id = _checkpoint_index(
+        (plan.get("candidates") or {}).get("checkpoint_entries") or [])
     team_state, project_state = [], []
     for cid in result.get("checkpoint_entry_ids") or []:
         entry = cp_by_id.get(cid)

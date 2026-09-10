@@ -413,6 +413,8 @@ class FrozenSchemaTests(unittest.TestCase):
         known = adapter.current_role_ids()
         self.assertIn("context-engineer", known)
         self.assertIn("software-engineer", known)
+        self.assertIn("delivery-reviewer", known)
+        self.assertNotIn("feature-reviewer", known)
         self.assertNotIn("wizard", known)
 
     def test_invalid_project_id_pattern_fails_closed(self):

@@ -6,8 +6,13 @@ capability, not a new public Native API. Default processing never writes
 Canonical Memory; Canonical-changing dispositions either apply through an
 injected mutator or block the PLAN.
 
-FIND-WIMG-HO00-000001 remains parked: rule/fact/case candidates carry
-canonical ids and omit `ref` unless a grammar-valid URI already exists.
+FIND-WIMG-HO00-000001 is closed in T03 FINALIZE (package refs use the frozen
+evidence-ref grammar). PLAN candidates still carry canonical object ids;
+`ref` is omitted unless a grammar-valid URI already exists.
+
+Checkpoint candidate identity is globally namespaced `{checkpoint}:{local_id}`
+so a duplicate canonical local id (team vs project) stays independently
+addressable. Canonical checkpoint YAML is not rewritten to hide the collision.
 """
 from __future__ import annotations
 
@@ -28,7 +33,8 @@ from cbuild import (  # noqa: E402
 )
 from cdata import checkpoint_docs, load_all_docs, load_role_profile  # noqa: E402
 from chandoff import (  # noqa: E402
-    canonical_json, compute_built_from, fingerprint_from_request, memory_revision,
+    canonical_json, checkpoint_candidate_id, compute_built_from,
+    fingerprint_from_request, memory_revision,
 )
 from crole import (  # noqa: E402
     kind_limit, policy_of, posture_entries, relevance_required, role_rank,
@@ -501,6 +507,50 @@ def _scenario_match(case: dict, task_tokens: set) -> bool:
     return True
 
 
+def _as_checkpoint_candidate(entry: dict) -> dict:
+    """Copy a checkpoint slice entry and namespace its candidate id."""
+    mapped = dict(entry)
+    mapped["id"] = checkpoint_candidate_id(mapped.get("checkpoint"), mapped.get("id"))
+    return mapped
+
+
+def inventory_canonical_checkpoint_ids(checkpoints: list | None = None) -> dict:
+    """Inventory locally-scoped canonical checkpoint ids across sources.
+
+    Does not rewrite canonical checkpoint content. Duplicate local ids are
+    expected (schema is per-checkpoint); PLAN candidate ids must still be
+    globally unique after namespacing.
+    """
+    cps = checkpoints if checkpoints is not None else checkpoint_docs()
+    by_local: dict[str, list] = {}
+    for cp in cps:
+        scope = cp.get("scope") or {}
+        if scope.get("type") == "team":
+            source = "team"
+        else:
+            source = scope.get("project_id") or cp.get("checkpoint_level") or "unknown"
+        for section in ("confirmed", "open", "conflicts"):
+            for entry in cp.get(section) or []:
+                local = entry.get("id")
+                if not local:
+                    continue
+                rec = {
+                    "checkpoint": source,
+                    "section": section,
+                    "local_id": local,
+                    "candidate_id": checkpoint_candidate_id(source, local),
+                }
+                by_local.setdefault(local, []).append(rec)
+    duplicates = {k: v for k, v in sorted(by_local.items()) if len(v) > 1}
+    return {
+        "entry_count": sum(len(v) for v in by_local.values()),
+        "unique_local_ids": len(by_local),
+        "duplicate_local_ids": duplicates,
+        "canonical_content_rewritten": False,
+        "candidate_last_wins_resolution": False,
+    }
+
+
 def _collect_evidence(docs: list, checkpoint_entries: list) -> list:
     refs = []
     seen = set()
@@ -770,11 +820,12 @@ def prepare_handoff_plan(request: dict, *, findings: list | None = None,
                 for entry in posture_entries(cp):
                     mapped = dict(entry)
                     mapped["section"] = "confirmed"
-                    checkpoint_entries.append(mapped)
+                    checkpoint_entries.append(_as_checkpoint_candidate(mapped))
             slice_ok = task_scope["type"] != "project" or wants_team_slice(policy)
             if slice_ok:
                 rel = relevance_required(policy, "checkpoint")
                 checkpoint_entries.extend(
+                    _as_checkpoint_candidate(e) for e in
                     _checkpoint_entries(cp, "team", task_tokens, rel))
     want_project = task_scope["type"] == "project" and wants_project_slice(policy)
     if want_project and task_scope["type"] == "project":
@@ -786,9 +837,10 @@ def prepare_handoff_plan(request: dict, *, findings: list | None = None,
             pcp = doc_at(PROJECTS / task_scope["project_id"] / "checkpoint.yaml")
         rel = relevance_required(policy, "checkpoint")
         checkpoint_entries.extend(
+            _as_checkpoint_candidate(e) for e in
             _checkpoint_entries(pcp, task_scope["project_id"], task_tokens, rel))
 
-    # de-dupe checkpoint entries by (checkpoint, section, id)
+    # de-dupe checkpoint entries by (checkpoint, section, namespaced id)
     seen_cp = set()
     unique_cp = []
     for entry in checkpoint_entries:
@@ -798,6 +850,13 @@ def prepare_handoff_plan(request: dict, *, findings: list | None = None,
         seen_cp.add(key)
         unique_cp.append(entry)
     checkpoint_entries = unique_cp
+    candidate_ids = [e.get("id") for e in checkpoint_entries if e.get("id")]
+    if len(candidate_ids) != len(set(candidate_ids)):
+        dupes = sorted({i for i in candidate_ids if candidate_ids.count(i) > 1})
+        raise ValueError(
+            "ambiguous checkpoint_entry candidate ids after namespacing "
+            f"(last-wins is forbidden): {dupes}"
+        )
 
     anchors = []
     if task_scope["type"] == "project":

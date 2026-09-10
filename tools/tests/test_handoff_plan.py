@@ -235,9 +235,9 @@ class RoleAndAuthorityTests(unittest.TestCase):
         lead_cp = {(e["checkpoint"], e["section"], e["id"])
                    for e in lead["plan"]["candidates"]["checkpoint_entries"]}
         self.assertNotEqual(se_cp, lead_cp)
-        self.assertTrue(any(e["id"].startswith("posture-")
+        self.assertTrue(any(e["id"].startswith("team:posture-")
                             for e in lead["plan"]["candidates"]["checkpoint_entries"]))
-        self.assertFalse(any(e["id"].startswith("posture-")
+        self.assertFalse(any(e["id"].startswith("team:posture-")
                              for e in se["plan"]["candidates"]["checkpoint_entries"]))
         self.assertTrue(any(e["checkpoint"] == "web-imagegen"
                             for e in se["plan"]["candidates"]["checkpoint_entries"]))
@@ -310,7 +310,7 @@ class FindingGateTests(unittest.TestCase):
             project_id="app1",
             summary="App1 teacher VOC follow-up reminder hypothesis",
             intent="observation",
-            discovered_by="feature-reviewer",
+            discovered_by="delivery-reviewer",
         )
         store = plan.MemoryFindingStore([relevant, irrelevant])
         result = plan.prepare_handoff_plan(

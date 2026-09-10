@@ -48,6 +48,13 @@ SELF_CHECK_REASONS = (
     "role_profile_revision_changed",
 )
 
+# PLAN candidate identity for checkpoint entries (T01/U03). Canonical
+# checkpoint YAML keeps locally-scoped ids (cp-confirmed-001 may exist in
+# both team and a project checkpoint). PLAN serializes a globally unique
+# candidate id `{checkpoint}:{local_id}` so compose/finalize never last-wins.
+# This is candidate serialization, not a frozen Public Schema amendment.
+CHECKPOINT_CANDIDATE_SEP = ":"
+
 # Dispatch-framework vocabulary that must never appear in the Native API or
 # Core schemas. Prose documents are exempt (they name the concepts in order
 # to prohibit them). The table below is scan-exempt: it exists to detect the
@@ -164,6 +171,96 @@ def compute_built_from(request: dict) -> dict:
         "registry_revision": registry_revision(),
         "role_profile_revision": role_profile_revision(),
     }
+
+
+def checkpoint_candidate_id(checkpoint: str, local_id: str) -> str:
+    """Globally unique PLAN/compose/finalize id for one checkpoint entry.
+
+    Canonical checkpoint documents keep `local_id`. The candidate id namespaces
+    it with the checkpoint source (`team` or the project_id).
+    """
+    source = (checkpoint or "").strip()
+    local = (local_id or "").strip()
+    if not source or not local:
+        raise ValueError(
+            "checkpoint candidate identity requires checkpoint source and local id")
+    if CHECKPOINT_CANDIDATE_SEP in source:
+        raise ValueError(
+            f"checkpoint source must not contain {CHECKPOINT_CANDIDATE_SEP!r}: "
+            f"{source!r}")
+    return f"{source}{CHECKPOINT_CANDIDATE_SEP}{local}"
+
+
+def split_checkpoint_candidate_id(candidate_id: str) -> tuple:
+    """Return (checkpoint_source, local_id) for a namespaced candidate id."""
+    value = (candidate_id or "").strip()
+    source, sep, local = value.partition(CHECKPOINT_CANDIDATE_SEP)
+    if not sep or not source or not local:
+        raise ValueError(
+            f"checkpoint candidate id is not globally namespaced: {candidate_id!r}")
+    return source, local
+
+
+def artifact_handoff_compatibility() -> dict:
+    """C0/S1: can frozen T00 *express* artifact-handoff semantics?
+
+    Implementation of artifact readiness / dependency binding is U04/U10.
+    This reports expressibility against the frozen Public Schema only.
+    """
+    from schema_mini import load_schema_file
+
+    common = load_schema_file("context-handoff/handoff-common.schema.json")
+    pkg = load_schema_file("context-package.schema.json")
+    evidence = load_schema_file("evidence-ref.schema.json")
+    fact = load_schema_file("fact.schema.json")
+    self_status = tuple(common["$defs"]["self_check_status"]["enum"])
+    self_reasons = SELF_CHECK_REASONS
+    built = set(common["$defs"]["built_from"]["required"])
+    ref_pattern = evidence["$defs"]["ref_string"]["pattern"]
+    task_evidence_items = pkg["properties"]["task_evidence"]["items"]
+    source_refs = pkg["properties"]["source_refs"]
+    fact_status = tuple((fact.get("properties") or {}).get("status", {}).get("enum") or ())
+    if not fact_status:
+        fact_status = tuple(
+            pkg["properties"]["current_facts"]["items"]["properties"]["status"]["enum"])
+    exact_version_example = "repo://web-imagegen@600225a/DESIGN.md"
+    report = {
+        "frozen_package_can_reference_authoritative_artifacts": (
+            ref_pattern == r"^(multica|adr|doc|repo|registry|project|git)://\S+$"
+            and source_refs.get("type") == "array"
+        ),
+        "frozen_validity_model_can_detect_artifact_dependency_change": (
+            built == {
+                "task_fingerprint", "memory_revision", "registry_revision",
+                "role_profile_revision",
+            }
+            and "package_stale" in self_reasons
+            and "REFRESH_REQUIRED" in self_status
+        ),
+        "frozen_self_check_can_detect_stale_required_artifact": (
+            "REFRESH_REQUIRED" in self_status
+            and "package_stale" in self_reasons
+            and "memory_revision_changed" in self_reasons
+        ),
+        "can_resolve_exact_artifact_version": bool(
+            re.match(ref_pattern, exact_version_example)
+        ),
+        "can_detect_superseded_artifact": "superseded" in fact_status,
+        "can_detect_stale_baseline": (
+            "package_stale" in self_reasons
+            and "memory_revision_changed" in self_reasons
+        ),
+        "can_bind_role_profile_revision": "role_profile_revision" in built,
+        "extensible_payload_without_schema_amendment": (
+            task_evidence_items.get("type") == "object"
+            and task_evidence_items.get("additionalProperties") is not False
+        ),
+        "t00_public_schema_amended": False,
+    }
+    report["ok"] = all(
+        v is True for k, v in report.items() if k != "t00_public_schema_amended"
+    ) and report["t00_public_schema_amended"] is False
+    return report
 
 
 def validate_semantic_result(plan: dict, result: dict) -> list:

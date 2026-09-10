@@ -205,8 +205,18 @@ package is schema-validated against both `context-package.schema.json` and
 
 `cbuild.build_package` still emits historical `rule:<id>` / `fact:<id>` /
 `case:<id>` prefixes so Gate C replay expectation locks remain valid. PLAN
-candidate identity is unaffected: candidates carry canonical `id`s; `ref` is
-optional and only used for real URI targets.
+rule/fact/case candidate identity is unaffected: those candidates carry
+canonical `id`s; `ref` is omitted unless a grammar-valid URI already exists.
+
+PLAN checkpoint *candidate* identity (U03 / YZT-70; additive serialization,
+no frozen field change): canonical checkpoint YAML keeps locally-scoped
+entry ids (`cp-confirmed-001` may exist in both team and a project
+checkpoint). PLAN serializes each selected entry as
+`{checkpoint}:{local_id}` (for example `team:cp-confirmed-001` vs
+`web-imagegen:cp-confirmed-001`) so compose/finalize never collapse a
+duplicate local id by last-wins. Canonical checkpoint content is not
+rewritten to hide the collision. The frozen `checkpoint_entry.id` field
+remains an unconstrained non-empty string.
 
 ---
 
