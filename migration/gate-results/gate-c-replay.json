@@ -18,7 +18,7 @@
           "case:CASE-APP1"
         ],
         "expected_case_search": "none",
-        "expected_conflicts": 1
+        "expected_conflicts": 0
       },
       "actual": {
         "scope": "team",
@@ -27,9 +27,8 @@
           "rule:RULE-TEAM-000001"
         ],
         "cases_search_performed": false,
-        "conflicts": 1,
+        "conflicts": 0,
         "blocked_by": [
-          "multica://issue/YZT-40",
           "multica://issue/YZT-34",
           "multica://issue/YZT-35",
           "multica://issue/YZT-36"
@@ -51,7 +50,7 @@
             "not_active": 0,
             "role_policy": 0
           },
-          "generated_at": "2026-09-10T01:23:07Z"
+          "generated_at": "2026-09-10T05:38:12Z"
         }
       },
       "result": {
@@ -92,7 +91,7 @@
           "fact:FACT-WIMG"
         ],
         "expected_case_search": "none",
-        "expected_conflicts": 1
+        "expected_conflicts": 0
       },
       "actual": {
         "scope": "project",
@@ -112,9 +111,8 @@
           "fact:FACT-APP1-000004"
         ],
         "cases_search_performed": false,
-        "conflicts": 1,
+        "conflicts": 0,
         "blocked_by": [
-          "multica://issue/YZT-40",
           "multica://issue/YZT-34",
           "multica://issue/YZT-35",
           "multica://issue/YZT-36"
@@ -137,7 +135,7 @@
             "not_active": 0,
             "role_policy": 0
           },
-          "generated_at": "2026-09-10T01:23:07Z"
+          "generated_at": "2026-09-10T05:38:12Z"
         }
       },
       "result": {
@@ -221,7 +219,7 @@
             "not_active": 0,
             "role_policy": 0
           },
-          "generated_at": "2026-09-10T01:23:07Z"
+          "generated_at": "2026-09-10T05:38:12Z"
         }
       },
       "result": {
@@ -306,7 +304,7 @@
             "not_active": 0,
             "role_policy": 0
           },
-          "generated_at": "2026-09-10T01:23:07Z"
+          "generated_at": "2026-09-10T05:38:12Z"
         }
       },
       "result": {
@@ -343,7 +341,7 @@
         ],
         "must_exclude": [],
         "expected_case_search": "performed_no_match",
-        "expected_conflicts": 1
+        "expected_conflicts": 0
       },
       "actual": {
         "scope": "cross_project",
@@ -364,9 +362,8 @@
           "fact:FACT-WIMG-000001"
         ],
         "cases_search_performed": true,
-        "conflicts": 1,
+        "conflicts": 0,
         "blocked_by": [
-          "multica://issue/YZT-40",
           "multica://issue/YZT-34",
           "multica://issue/YZT-35",
           "multica://issue/YZT-36"
@@ -390,7 +387,7 @@
             "not_active": 0,
             "role_policy": 0
           },
-          "generated_at": "2026-09-10T01:23:07Z"
+          "generated_at": "2026-09-10T05:38:12Z"
         }
       },
       "result": {
@@ -465,7 +462,7 @@
             "not_active": 0,
             "role_policy": 0
           },
-          "generated_at": "2026-09-10T01:23:07Z"
+          "generated_at": "2026-09-10T05:38:12Z"
         }
       },
       "result": {
@@ -496,7 +493,7 @@
     "status": "computed",
     "missing_evidence": [],
     "mismatches": [],
-    "committed_at_revision": "71b7e967448beb369c5b976140feda1d5794624e"
+    "committed_at_revision": "379b5e39f166fca0bdfdc07fbdefb982bda2da9b"
   },
   "missing_evidence": [],
   "aggregate": {
@@ -510,5 +507,5 @@
     "context_density_avg": 0.54,
     "context_size_avg": 9.5
   },
-  "generated_at": "2026-09-10T01:23:07Z"
+  "generated_at": "2026-09-10T05:38:12Z"
 }
