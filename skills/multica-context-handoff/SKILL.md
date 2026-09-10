@@ -80,3 +80,17 @@ command.
    discovery, or a missing project mapping stops the protocol at that step
    with the exact reason — it never falls back to an older or unverified
    artifact.
+10. **Artifact readiness is fail-closed.** When the caller declares required
+    artifacts, PREPARE_HANDOFF calls the repository Artifact Contract
+    `artifact_ready_check` on those exact versions before a publishable
+    normal READY result. `ARTIFACT_NOT_READY` keeps the exact failure rows
+    (`artifact/ref/reason_code/reason/correction_owner/route`), stops
+    publication and trigger eligibility, and never substitutes `latest` /
+    `current`, guesses a version, or wakes another role. `ARTIFACT_READY`
+    exports the dependency set only through existing
+    `package.task_evidence` and grammar-valid `package.source_refs`.
+    SELF_CHECK and the pre-publication boundary re-resolve that set; a
+    digest mismatch or newly invalid artifact maps to frozen
+    `package_stale` → `REFRESH_REQUIRED`. Artifact Runtime owns
+    `ARTIFACT_READY` / `ARTIFACT_NOT_READY`; T00/T04 retain `READY` /
+    `REFRESH_REQUIRED` / `BLOCKED`. This skill only orchestrates.

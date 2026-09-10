@@ -32,6 +32,11 @@ import tempfile
 from pathlib import Path
 from typing import Callable
 
+_SCRIPTS = Path(__file__).resolve().parent
+if str(_SCRIPTS) not in sys.path:
+    sys.path.insert(0, str(_SCRIPTS))
+import artifact_gate  # noqa: E402
+
 PIPELINE_VERSION = "T07/1.0"
 
 READY_EXIT, BOUNDED_EXIT, BLOCKED_EXIT, STOP_EXIT = 0, 2, 3, 4
@@ -163,6 +168,48 @@ def _candidate_counts(plan: dict) -> dict:
             for key in ("rules", "facts", "cases", "checkpoint_entries", "conflicts")}
 
 
+def _artifact_binding(args) -> dict:
+    return artifact_gate.binding_from_args(args)
+
+
+def _artifact_inputs(args, *, target_role: str, package: dict | None = None):
+    """Resolve caller-supplied / previously exported artifact requirements.
+
+    Empty or absent declarations skip the gate (legacy T00-T07 path). A
+    declared non-empty set without a store fails closed — versions are
+    never guessed.
+    """
+    bind = _artifact_binding(args)
+    extracted = artifact_gate.extract_dependency_records(package)
+    requirements = None
+    review_level = bind["review_level"]
+    file_role = None
+    if bind["requirements_file"]:
+        doc = artifact_gate.load_requirements_doc(bind["requirements_file"])
+        requirements = list(doc.get("requirements") or [])
+        review_level = review_level or doc.get("review_level")
+        file_role = doc.get("target_role")
+    elif extracted["requirements"]:
+        requirements = list(extracted["requirements"])
+    declared = bool(requirements)
+    if not declared:
+        return None
+    if not bind["store_file"]:
+        raise PipelineError(
+            artifact_gate.STORE_REQUIRED,
+            "declared artifact requirements cannot be checked without an "
+            "exact envelope store; versions are never guessed",
+            requirements_file=bind["requirements_file"] or "")
+    return {
+        "store_file": bind["store_file"],
+        "requirements": requirements,
+        "review_level": review_level,
+        "target_role": target_role or file_role,
+        "previous_digest": extracted.get("digest"),
+        "previous_requirements": extracted.get("requirements") or [],
+    }
+
+
 # ---------------------------------------------------------------------------
 # PREPARE_HANDOFF: T05 snapshot -> T01 PLAN.
 # ---------------------------------------------------------------------------
@@ -292,26 +339,57 @@ def run_finalize(args, *, compose_fn: Callable | None = None,
 
     finalize_fn = finalize_fn or tools["finalize"].finalize_handoff
     result = finalize_fn(plan_input, validation, request)
-    _json_write(out / "result.json", result)
 
     status = result.get("status")
+    artifact_view = None
+    try:
+        inputs = _artifact_inputs(
+            args, target_role=result.get("role") or request.get("target", {}).get("role"),
+            package=(result.get("package") or {}))
+    except PipelineError as exc:
+        _json_write(out / "result.t03.json", result)
+        payload = _bounded_error("artifact", exc)
+        payload["status"] = status
+        payload["t03_status"] = status
+        payload["publish"] = {"publishable": False, "normal_ready": False,
+                              "blocked_by": "ARTIFACT_NOT_READY"}
+        payload["artifacts"] = {"dir": str(out),
+                                "compose_validation": str(out / "compose-validation.json")}
+        return payload, BOUNDED_EXIT
+    if inputs is not None:
+        cartifact = artifact_gate.load_cartifact(root)
+        store = artifact_gate.load_store(cartifact, inputs["store_file"])
+        artifact_view = artifact_gate.apply_finalize_gate(
+            cartifact, result, store=store,
+            requirements=inputs["requirements"],
+            target_role=inputs["target_role"],
+            review_level=inputs.get("review_level"))
+        _json_write(out / "artifact-ready-check.json", artifact_view)
+
+    _json_write(out / "result.json", result)
+
     package = result.get("package") or {}
     gaps = sorted(set((package.get("blocked_by") or []) +
                       [c.get("id") for c in (package.get("open_conflicts") or [])
                        if c.get("id")]))
-    if status == "READY":
+    artifact_blocks = bool(
+        artifact_view and artifact_view.get("status") != "ARTIFACT_READY")
+    if status == "READY" and not artifact_blocks:
         publish = {"publishable": True,
                    "requires_authorization": "--authorize-publish",
                    "normal_ready": True}
-    elif status == "PARTIAL":
+    elif status == "PARTIAL" and not artifact_blocks:
         publish = {"publishable": "only_with_explicit_caller_authorization",
                    "requires_authorization": ["--authorize-publish", "--allow-partial"],
                    "normal_ready": False,
                    "gaps_preserved": True}
+    elif artifact_blocks:
+        publish = {"publishable": False, "normal_ready": False,
+                   "blocked_by": "ARTIFACT_NOT_READY"}
     else:
         publish = {"publishable": False, "normal_ready": False,
                    "never_published": True}
-    return {
+    payload = {
         "ok": True,
         "stage": "finalize",
         "status": status,
@@ -328,7 +406,26 @@ def run_finalize(args, *, compose_fn: Callable | None = None,
             "compose_validation": str(out / "compose-validation.json"),
         },
         "guarantees": dict(GUARANTEES),
-    }, {"READY": READY_EXIT, "PARTIAL": BOUNDED_EXIT, "BLOCKED": BLOCKED_EXIT}[status]
+    }
+    if artifact_view is not None:
+        payload["artifact_status"] = artifact_view.get("status")
+        payload["artifact_ready"] = {
+            "status": artifact_view.get("status"),
+            "blocks_handoff": artifact_view.get("blocks_handoff"),
+            "failures": artifact_view.get("failures") or [],
+            "dependency_digest": artifact_view.get("dependency_digest")
+            or artifact_view.get("exported_digest"),
+            "correction_owner": artifact_view.get("correction_owner"),
+            "route": artifact_view.get("route"),
+            "checks": artifact_view.get("checks") or {},
+        }
+        payload["artifacts"]["artifact_ready_check"] = str(
+            out / "artifact-ready-check.json")
+    if artifact_blocks:
+        payload["ok"] = False
+        return payload, BOUNDED_EXIT
+    return payload, {"READY": READY_EXIT, "PARTIAL": BOUNDED_EXIT,
+                     "BLOCKED": BLOCKED_EXIT}[status]
 
 
 # ---------------------------------------------------------------------------
@@ -463,6 +560,59 @@ def run_selfcheck(args, *, selfcheck_fn: Callable | None = None,
             "task_ref": task_ref,
             "target_role": role,
         }
+
+    candidate = packages[-1] if packages else None
+    try:
+        inputs = _artifact_inputs(
+            args, target_role=role,
+            package=(candidate.get("package") if candidate else None))
+    except PipelineError as exc:
+        overlay = _bounded_error("artifact", exc)
+        overlay["status"] = "REFRESH_REQUIRED"
+        overlay["action"] = "REFRESH"
+        overlay["reasons"] = list(payload.get("reasons") or []) + [
+            artifact_gate.PACKAGE_STALE]
+        overlay["consequential_work"] = "stopped_until_refreshed_ready"
+        overlay["package_id"] = payload.get("package_id")
+        overlay["task_ref"] = task_ref
+        overlay["current_role"] = role
+        overlay["refresh"] = {
+            "instruction": ("run PREPARE_HANDOFF for the same task and the "
+                            "current role; consequential work stays stopped "
+                            "until the refreshed result is READY"),
+            "task_ref": task_ref,
+            "target_role": role,
+        }
+        overlay["guarantees"] = dict(GUARANTEES)
+        return overlay, BOUNDED_EXIT
+    if inputs is not None:
+        cartifact = artifact_gate.load_cartifact(root)
+        store = artifact_gate.load_store(cartifact, inputs["store_file"])
+        current_reqs = inputs["requirements"]
+        previous_reqs = inputs.get("previous_requirements") or current_reqs
+        previous_digest = inputs.get("previous_digest")
+        # Caller-supplied current set wins; otherwise re-resolve live versions.
+        supplied = bool(_artifact_binding(args)["requirements_file"])
+        freshness = artifact_gate.evaluate_freshness(
+            cartifact, store,
+            previous_requirements=previous_reqs,
+            previous_digest=previous_digest,
+            current_requirements=current_reqs if supplied else None,
+            target_role=role,
+            review_level=inputs.get("review_level"))
+        _json_write(out / "artifact-freshness.json", {
+            "dependency_changed": freshness["dependency_changed"],
+            "previous_digest": freshness["previous_digest"],
+            "current_digest": freshness["current_digest"],
+            "stale": freshness["stale"],
+            "ready_current": freshness["ready_current"],
+            "ready_previous": freshness["ready_previous"],
+        })
+        payload["artifacts"]["artifact_freshness"] = str(
+            out / "artifact-freshness.json")
+        payload = artifact_gate.overlay_selfcheck(payload, freshness)
+        status = payload["status"]
+
     return payload, {"READY": READY_EXIT, "REFRESH_REQUIRED": BOUNDED_EXIT,
                      "BLOCKED": BLOCKED_EXIT}[status]
 
@@ -501,6 +651,42 @@ def run_publish(args, *, note_cli_factory: Callable | None = None) -> tuple[dict
             "guarantees": dict(GUARANTEES),
         }, BOUNDED_EXIT
 
+    try:
+        inputs = _artifact_inputs(
+            args, target_role=envelope.get("role"),
+            package=(envelope.get("package") or {}))
+    except PipelineError as exc:
+        payload = _bounded_error("publish", exc)
+        payload["error"]["code"] = exc.code
+        return payload, BOUNDED_EXIT
+    if inputs is not None:
+        cartifact = artifact_gate.load_cartifact(root)
+        store = artifact_gate.load_store(cartifact, inputs["store_file"])
+        supplied = bool(_artifact_binding(args)["requirements_file"])
+        freshness = artifact_gate.evaluate_freshness(
+            cartifact, store,
+            previous_requirements=inputs.get("previous_requirements")
+            or inputs["requirements"],
+            previous_digest=inputs.get("previous_digest"),
+            current_requirements=inputs["requirements"] if supplied else None,
+            target_role=inputs["target_role"],
+            review_level=inputs.get("review_level"))
+        ready = freshness["ready_current"]
+        if freshness["stale"] or ready.get("status") != "ARTIFACT_READY":
+            return {
+                "ok": False, "stage": "publish",
+                "error": {
+                    "code": "artifact_not_ready",
+                    "message": (
+                        "publication is refused: artifact readiness failed "
+                        "or the accepted dependency set is no longer fresh"
+                    ),
+                    "artifact_ready": artifact_gate.public_ready_view(ready),
+                    "dependency_changed": freshness["dependency_changed"],
+                },
+                "guarantees": dict(GUARANTEES),
+            }, BOUNDED_EXIT
+
     cli = note_cli_factory() if note_cli_factory \
         else tools["note"].NoteCli(executable=args.executable)
     if args.dry_run:
@@ -536,6 +722,16 @@ def _add_out_arg(p: argparse.ArgumentParser) -> None:
                    help="artifact output directory (default: fresh temp dir)")
 
 
+def _add_artifact_args(p: argparse.ArgumentParser) -> None:
+    p.add_argument("--artifact-store-file", default=None,
+                   help="caller-supplied Artifact Contract envelope store JSON")
+    p.add_argument("--artifact-requirements-file", default=None,
+                   help="exact required artifact identity/version set JSON")
+    p.add_argument("--artifact-review-level", default=None,
+                   choices=("R0", "R1", "R2"),
+                   help="optional R0/R1/R2 for the Artifact Contract ready-check")
+
+
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
         description="multica-context-handoff deterministic pipeline driver")
@@ -559,6 +755,7 @@ def build_parser() -> argparse.ArgumentParser:
     prep.add_argument("--executable", default="multica")
     _add_repo_arg(prep)
     _add_out_arg(prep)
+    _add_artifact_args(prep)
 
     fin = sub.add_parser("finalize", help="T02 compose validation + T03 FINALIZE")
     fin.add_argument("--plan-file", required=True)
@@ -569,6 +766,7 @@ def build_parser() -> argparse.ArgumentParser:
                      help="bounded same-PLAN repairs already spent")
     _add_repo_arg(fin)
     _add_out_arg(fin)
+    _add_artifact_args(fin)
 
     chk = sub.add_parser("selfcheck", help="T06 discovery + T04 SELF_CHECK")
     chk.add_argument("--issue", default=None)
@@ -584,6 +782,7 @@ def build_parser() -> argparse.ArgumentParser:
     chk.add_argument("--executable", default="multica")
     _add_repo_arg(chk)
     _add_out_arg(chk)
+    _add_artifact_args(chk)
 
     pub = sub.add_parser("publish", help="T06 /note publication (authorized)")
     pub.add_argument("--issue", required=True)
@@ -597,6 +796,7 @@ def build_parser() -> argparse.ArgumentParser:
     pub.add_argument("--authorize-publish", action="store_true",
                      help="explicit caller authorization for this publication")
     _add_repo_arg(pub)
+    _add_artifact_args(pub)
 
     return parser
 

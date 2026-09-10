@@ -104,9 +104,12 @@ python <skill>/scripts/handoff_pipeline.py finalize \
 
 ## Step 4 — FINALIZE status (deterministic; never yours to choose)
 
-- **READY** → normal-ready. Publish (Step 5) when publication was part of the
-  caller's request, and return a `HANDOFF_READY` result carrying
-  `package_id`, `built_from`, and the comment provenance from the publisher.
+- **READY** → T03 normal-ready. A publishable normal READY still requires
+  the Artifact Contract gate in this step when requirements were declared
+  (see below). Publish (Step 5) only when both T03 is READY and artifacts
+  are `ARTIFACT_READY` (or none were declared), and return a
+  `HANDOFF_READY` result carrying `package_id`, `built_from`, and the
+  comment provenance from the publisher.
 - **PARTIAL** → never normal-ready. Do **not** start any downstream work.
   Publish only if the caller explicitly authorizes PARTIAL publication (the
   `publish` command refuses without `--allow-partial` plus
@@ -114,6 +117,36 @@ python <skill>/scripts/handoff_pipeline.py finalize \
   unchanged. Return a review-required result with the gap list.
 - **BLOCKED** → never published, never triggered. Return the deterministic
   escalation reason (`escalation.reason`, `gaps`) and stop.
+
+When the caller declared required artifacts, pass the same exact set into
+`finalize` (and later `publish` / SELF_CHECK):
+
+```bash
+python <skill>/scripts/handoff_pipeline.py finalize \
+  --repo <root> --out-dir <scratch> \
+  --plan-file <scratch>/plan-envelope.json \
+  --result-file <scratch>/compose-result.json \
+  --request-file <scratch>/request.json \
+  --artifact-store-file <envelopes.json> \
+  --artifact-requirements-file <exact-requirements.json> \
+  [--artifact-review-level R0|R1|R2]
+```
+
+The pipeline imports the repository `tools/cartifact.py` callables. It does
+not duplicate catalog, resolver, digest, or routing logic.
+
+- `ARTIFACT_READY` → `export_t00_surfaces` is merged into the T03 package
+  through existing `task_evidence` (`kind: artifact_dependency` /
+  `artifact_dependency_set` including `dependency_digest`) and only
+  grammar-valid `source_refs`. T03 status is unchanged. Normal READY is
+  eligible only when T03 status is READY.
+- `ARTIFACT_NOT_READY` → keep the exact failure rows. Do not publish, do
+  not trigger, do not substitute `latest`/`current`, do not guess a
+  version, and do not mention or assign another role. Surface
+  `correction_owner` and `route` (`producer_correction` or `lead_replan`)
+  as recorded by the Artifact Runtime. T03 status is not rewritten.
+- A declared non-empty set without an envelope store fails closed. No
+  declared set leaves the legacy T00–T07 path unchanged.
 
 ## Step 5 — Publication (T06, authorized, non-trigger)
 
@@ -128,11 +161,14 @@ python <skill>/scripts/handoff_pipeline.py publish \
 
 Use `--dry-run` first when the caller wants to inspect the rendered `/note`
 record. The publisher re-validates the frozen envelope, refuses BLOCKED and
-unauthorized PARTIAL before any write, is idempotent for an identical
-already-published record, and performs exactly one allowlisted
-`issue comment add` write (the temp body file is deleted afterwards). The
-returned provenance includes the comment reference and the zero-side-effect
-`trace.guarantees`.
+unauthorized PARTIAL before any write, re-resolves any accepted artifact
+dependency set (pass `--artifact-store-file` and, when the current set is
+known, `--artifact-requirements-file`), refuses publication when the set is
+missing, stale, superseded, ineligible, or digest-mismatched, is idempotent
+for an identical already-published record, and performs exactly one
+allowlisted `issue comment add` write (the temp body file is deleted
+afterwards). The returned provenance includes the comment reference and the
+zero-side-effect `trace.guarantees`.
 
 This skill never performs the downstream assignment or mention for the
 handoff — not on READY, PARTIAL, or BLOCKED. If the caller's workflow expects

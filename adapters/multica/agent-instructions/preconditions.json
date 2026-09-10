@@ -205,9 +205,9 @@
   "issue_ref": "YZT-63",
   "schema_version": "T08-preconditions/1.0",
   "skill": {
-    "bundle_digest": "sha256:986bbc42390536b73649d0cf0667a79f39a3a96607b7acd59d041910b7b8bbaa",
+    "bundle_digest": "sha256:324db1ba1afc816c5da1010045dbf29527f1520b67f008b5e1684a531a908c53",
     "name": "multica-context-handoff",
-    "skill_md_digest": "sha256:f62fa00300cb9b63fab749965ea9671c87121986e62307c22397272aba419834"
+    "skill_md_digest": "sha256:f369cee40ada061364d91ef48a9cb7d467039931e922c1db18d85fe1d7e0638a"
   },
   "updated_at_is_provenance_only": true
 }

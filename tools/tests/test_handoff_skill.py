@@ -633,7 +633,7 @@ class SkillShapeTests(unittest.TestCase):
                  and "__pycache__" not in p.parts}
         self.assertEqual(names, {
             "SKILL.md", "agents/openai.yaml",
-            "scripts/handoff_pipeline.py",
+            "scripts/handoff_pipeline.py", "scripts/artifact_gate.py",
             "references/prepare-handoff.md", "references/self-check.md"})
 
     def test_skill_files_are_location_free(self):

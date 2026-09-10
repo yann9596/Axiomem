@@ -49,6 +49,18 @@ task/role/scope/status/fingerprint/revisions and, for Registry-verified
 package scopes, reuses the T01 Finding Gate verbatim with the current-role
 boundary. None of that logic is reimplemented here.
 
+When the discovered package carries an accepted artifact dependency set, or
+the caller supplies `--artifact-requirements-file`, also pass
+`--artifact-store-file` with the exact envelope store. The pipeline
+re-resolves the required identity/version set through `cartifact` and
+compares it with `dependency_changed`. A digest mismatch, a newly stale or
+superseded artifact, an ambiguous or missing exact version, or a now
+ineligible status fails closed. The skill maps that failure onto the frozen
+T04 reason `package_stale` and status `REFRESH_REQUIRED`. T04 BLOCKED is
+not rewritten. Missing store for a declared or previously exported set is
+also fail-closed — never guess `latest` / `current`. A bounded refresh must
+run PREPARE_HANDOFF and build a fresh package before consequential work.
+
 ## Step 3 — Map the verdict (deterministic)
 
 - **READY / USE_EXISTING** (`consequential_work: "allowed"`) → the discovered
