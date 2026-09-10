@@ -1,26 +1,35 @@
-# Replay expectation freeze lock (YZT-43).
-# Immutable pre-run record: sha256 of the 6 rebuilt expectation manifests and
-# the 6 metric-evidence inputs, as committed in the expectation-freeze commit
-# recorded below. Gate C (tools/cmetrics.verify_expectation_lock) recomputes
-# these hashes at run time; any post-freeze modification fails the gate.
-# Git history proves ordering: freeze commit < this lock commit < result
-# commit (the lock must never be committed after the results it governs).
+# Replay expectation freeze lock (YZT-43; re-frozen YZT-68 bootstrap repair).
+# Pre-run record: sha256 of the rebuilt expectation manifests and the metric-
+# evidence inputs, as committed in the expectation-freeze commit recorded below.
+# Gate C (tools/cmetrics.verify_expectation_lock) recomputes these hashes at run
+# time; any post-freeze modification fails the gate. Git history proves ordering:
+# freeze commit < this lock commit < result commit (the lock must never be
+# committed after the results it governs).
+#
+# Supersession (YZT-68 bootstrap repair, Human-approved on YZT-66 comment
+# 01a089be-a6e5-7b7a-b344-7e002ef9d835): the canonical team checkpoint closed
+# cp-team-conflict-001 and reclassified the stale YZT-40 pre-cutover entries.
+# The three affected replay expectations (replay-yzt-10/22/39) were re-derived
+# (expected_conflicts 1 -> 0) and re-frozen BEFORE rerunning Gate C. The
+# previous freeze (committed_at_revision 71b7e967448beb369c5b976140feda1d5794624e,
+# results green at cutover R10 and through T10) remains inspectable in git
+# history and is superseded only for the closed-conflict dimension.
 schema_version: "1.1"
 kind: replay_expectation_lock
-committed_at_revision: 71b7e967448beb369c5b976140feda1d5794624e
+committed_at_revision: 379b5e39f166fca0bdfdc07fbdefb982bda2da9b
 files:
   - path: migration/replay/replay-yzt-9.yaml
     sha256: c28f70053e9706a3a3b556862c12c339f798edcba8f7a3433fdac298c79e2d1e
   - path: migration/replay/replay-yzt-10.yaml
-    sha256: 4efb87eaaa06a274bb20ccb6a740e0f0fc0e9dce6119119286b3309d7303d76c
+    sha256: e943d6cf61706aaa59832e3c1c19efbe57e0af333b46ac57697b2d83bc24fac1
   - path: migration/replay/replay-yzt-22.yaml
-    sha256: 5ff38b3e9a62f8d7e17877fe989a1e457aa8de7431e8c3646acd93458bb68e96
+    sha256: c0a64d97e08369d04bac3faec033e9dccf44509409a0a73372f5fd6e3aabe239
   - path: migration/replay/replay-yzt-26.yaml
     sha256: 54f072d22188fac28457fb3bc1e858443fed7c6384c08df99217269b7fdf62e5
   - path: migration/replay/replay-yzt-36.yaml
     sha256: 92b3c571c9bce2dc76d6b2687b4f15ad36132ed9dc80d4ad6f66f0d7ecff6183
   - path: migration/replay/replay-yzt-39.yaml
-    sha256: 3fe1a81dd4068f67c4c88d90285d41d26d43a51764bfa9e5e0a56bd20c0ae125
+    sha256: f1a4213421b0f827b9ecfe7422f5bacd67fc9a7cb41ee52876349abd79d4108f
   - path: migration/replay-evidence/replay-yzt-9.yaml
     sha256: 5d65062de4c124777478ceaee3a2f18386996ac312f2d59c08174ff99b4d96c9
   - path: migration/replay-evidence/replay-yzt-10.yaml
