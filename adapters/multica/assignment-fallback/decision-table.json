@@ -1,0 +1,209 @@
+{
+  "schema_version": "U08-cross-route-decision-table/1.0",
+  "note": "Deterministic decision rows. Classification is computed from durable ledger evidence plus trusted read-only issue-runs/issue evidence; free-form operator judgment cannot choose a state. CROSS_ROUTE_REQUIRED is permitted only from NO_TRIGGER_PROVEN.",
+  "rows": [
+    {
+      "boundary": "source_pre_publish",
+      "source_state": "recorded terminal stop; zero publish; zero MENTION_READY; zero trigger; zero target run proven",
+      "classification": "NO_TRIGGER_PROVEN",
+      "next_action": "close_source_and_open_fallback",
+      "fallback_allowed": true,
+      "requirements": ["Lead cross-route authorization", "exact canonical issue", "trusted untruncated run evidence"]
+    },
+    {
+      "boundary": "source_pre_publish_crash",
+      "source_state": "no recorded transaction_result; zero publish; zero MENTION_READY",
+      "classification": "ROUTE_RESUMABLE",
+      "next_action": "resume_mention_route",
+      "fallback_allowed": false,
+      "requirements": ["resume via U07 recover_mention_handoff"]
+    },
+    {
+      "boundary": "source_post_publish_pre_ready",
+      "source_state": "recorded terminal stop; note published; zero MENTION_READY; zero trigger; zero target run proven",
+      "classification": "NO_TRIGGER_PROVEN",
+      "next_action": "close_source_and_open_fallback",
+      "fallback_allowed": true,
+      "requirements": ["Lead cross-route authorization", "old note preserved", "idempotent publication (no duplicate note)"]
+    },
+    {
+      "boundary": "source_post_publish_pre_ready_crash",
+      "source_state": "no recorded transaction_result; note published; zero MENTION_READY",
+      "classification": "ROUTE_RESUMABLE",
+      "next_action": "resume_mention_route",
+      "fallback_allowed": false,
+      "requirements": ["resume reuses the published note if fresh"]
+    },
+    {
+      "boundary": "mention_ready_pre_native_send",
+      "source_state": "MENTION_READY staged (or recorded authorization without a receipt)",
+      "classification": "TRIGGER_AMBIGUOUS",
+      "next_action": "stop_forever_reconcile_readonly",
+      "fallback_allowed": false,
+      "requirements": ["possibly issued mention forbids fallback"]
+    },
+    {
+      "boundary": "native_send_response_absent",
+      "source_state": "execute attempted; MENTION_CONFIRMATION_REQUIRED; no accepted receipt",
+      "classification": "TRIGGER_AMBIGUOUS",
+      "next_action": "stop_forever_reconcile_readonly",
+      "fallback_allowed": false,
+      "requirements": ["reconcile read-only; never retry"]
+    },
+    {
+      "boundary": "native_receipt_rejected",
+      "source_state": "MENTION_EVIDENCE_REJECTED; no accepted receipt",
+      "classification": "TRIGGER_AMBIGUOUS",
+      "next_action": "stop_forever_reconcile_readonly",
+      "fallback_allowed": false,
+      "requirements": ["untrusted native evidence forbids fallback"]
+    },
+    {
+      "boundary": "native_receipt_confirmed_pre_run",
+      "source_state": "accepted native receipt; no correlated run",
+      "classification": "TRIGGERED",
+      "next_action": "continue_readonly_reconciliation",
+      "fallback_allowed": false,
+      "requirements": ["continue U07 run correlation; never a second mention"]
+    },
+    {
+      "boundary": "source_run_confirmed",
+      "source_state": "mention-correlated target run; SELF_CHECK pending",
+      "classification": "TRIGGERED",
+      "next_action": "continue_readonly_reconciliation",
+      "fallback_allowed": false,
+      "requirements": ["resume the frozen route inside U07"]
+    },
+    {
+      "boundary": "completed",
+      "source_state": "recorded COMPLETED result (any route)",
+      "classification": "COMPLETED",
+      "next_action": "replay_zero_side_effects",
+      "fallback_allowed": false,
+      "requirements": ["byte-identical replay; zero note/assignment/mention/status/run"]
+    },
+    {
+      "boundary": "fallback_pre_publish",
+      "source_state": "fallback crash before publish; closure/supersession/authorization recorded",
+      "classification": "CRASH_SIMULATED",
+      "next_action": "recover_unique_continuation",
+      "fallback_allowed": true,
+      "requirements": ["continue the SAME fallback transaction; never a second transaction"]
+    },
+    {
+      "boundary": "fallback_post_publish_pre_assignment",
+      "source_state": "fallback crash after publish before the assignment",
+      "classification": "CRASH_SIMULATED",
+      "next_action": "recover_reuse_note",
+      "fallback_allowed": true,
+      "requirements": ["reuse the exact recorded note; never republish from a lost local response"]
+    },
+    {
+      "boundary": "assignment_response_absent",
+      "source_state": "assignment command recorded without confirmation (either route)",
+      "classification": "TRIGGER_AMBIGUOUS",
+      "suggested_status": "ASSIGNMENT_CONFIRMATION_REQUIRED",
+      "next_action": "stop_forever_reconcile_readonly",
+      "fallback_allowed": false,
+      "requirements": ["never a second assignment, never a mention fallback, never status-based triggering"]
+    },
+    {
+      "boundary": "assignment_confirmed_pre_run",
+      "source_state": "assignment confirmed; intended run not yet correlated",
+      "classification": "TRIGGERED",
+      "next_action": "continue_readonly_reconciliation",
+      "fallback_allowed": false
+    },
+    {
+      "boundary": "run_confirmed_pre_self_check",
+      "source_state": "intended run correlated; SELF_CHECK pending",
+      "classification": "TRIGGERED",
+      "next_action": "continue_readonly_reconciliation",
+      "fallback_allowed": false
+    },
+    {
+      "boundary": "fallback_completed",
+      "source_state": "recorded COMPLETED fallback result",
+      "classification": "COMPLETED",
+      "next_action": "replay_zero_side_effects",
+      "fallback_allowed": false
+    },
+    {
+      "boundary": "run_evidence_untrusted",
+      "source_state": "truncated/unreadable/malformed issue-runs listing, or a non-read command without a settled result",
+      "classification": "EVIDENCE_UNTRUSTED",
+      "suggested_status": "RUN_STATE_UNDETERMINED",
+      "next_action": "stop_refresh_read_only_evidence",
+      "fallback_allowed": false
+    },
+    {
+      "boundary": "unexpected_active_run",
+      "source_state": "active/queued/dispatched/running run observable on the exact issue",
+      "classification": "TRIGGER_AMBIGUOUS",
+      "suggested_status": "UNEXPECTED_RUN",
+      "next_action": "stop_forever_reconcile_readonly",
+      "fallback_allowed": false
+    },
+    {
+      "boundary": "target_run_may_derive_from_mention",
+      "source_state": "a target-agent run not provably pre-existing",
+      "classification": "TRIGGER_AMBIGUOUS",
+      "next_action": "stop_forever_reconcile_readonly",
+      "fallback_allowed": false
+    },
+    {
+      "boundary": "source_unknown",
+      "source_state": "no durable records for the source transaction",
+      "classification": "SOURCE_UNKNOWN",
+      "next_action": "stop_escalate",
+      "fallback_allowed": false
+    },
+    {
+      "boundary": "source_route_unknown",
+      "source_state": "route not derivable from durable evidence",
+      "classification": "SOURCE_ROUTE_UNKNOWN",
+      "next_action": "stop_escalate",
+      "fallback_allowed": false
+    },
+    {
+      "boundary": "route_collision",
+      "source_state": "one transaction carries both assignment and mention evidence",
+      "classification": "TRIGGER_AMBIGUOUS",
+      "next_action": "stop_forever_reconcile_readonly",
+      "fallback_allowed": false
+    },
+    {
+      "boundary": "assignment_route_no_mention_fallback",
+      "source_state": "assignment-route source stopped with zero trigger",
+      "classification": "SOURCE_ROUTE_UNSUPPORTED",
+      "suggested_status": "V2_2_REBASE_BLOCKED",
+      "next_action": "stop_escalate",
+      "fallback_allowed": false,
+      "requirements": ["assignment→mention fallback is categorically forbidden; route choice is Lead-owned"]
+    },
+    {
+      "boundary": "stage_wake_plus_lead",
+      "source_state": "stage completion wake already applies and the fallback target is engineering-lead",
+      "classification": "n/a",
+      "suggested_status": "STAGE_WAKE_DUPLICATE",
+      "next_action": "stop",
+      "fallback_allowed": false
+    },
+    {
+      "boundary": "closure_conflict",
+      "source_state": "the source transaction is already closed by another fallback transaction",
+      "classification": "n/a",
+      "suggested_status": "CLOSURE_CONFLICT",
+      "next_action": "stop_forever_reconcile_readonly",
+      "fallback_allowed": false
+    },
+    {
+      "boundary": "authorization_invalid",
+      "source_state": "missing/stale/non-Lead/wrong-issue/wrong-target/wrong-assignee authorization",
+      "classification": "n/a",
+      "suggested_status": "AUTHORIZATION_REQUIRED_OR_INVALID",
+      "next_action": "authorize_then_fallback",
+      "fallback_allowed": false
+    }
+  ]
+}

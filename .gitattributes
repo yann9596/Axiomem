@@ -29,3 +29,5 @@ skills/multica-context-handoff/** -text
 adapters/multica/assignment-handoff/** -text
 # YZT-75: byte-stability for U07 mention evidence hashed in the U07 report.
 adapters/multica/mention-handoff/** -text
+# YZT-76: byte-stability for U08 fallback evidence hashed in the U08 report.
+adapters/multica/assignment-fallback/** -text

@@ -1,0 +1,103 @@
+{
+  "schema_version": "U08-historical-inventory/1.0",
+  "source": "historical T09/T10 direct-assignment + fallback material (migration evidence only; superseded by the U06/U07/U10 contracts)",
+  "items": [
+    {
+      "assumption": "the target issue already exists and is reused, never created by a fallback",
+      "class": "retained"
+    },
+    {
+      "assumption": "non-trigger mutation and the trigger are separate operations",
+      "class": "adapted",
+      "note": "the fallback issues NO mutation at all inside its transaction; the exact canonical issue is bound read-only and the audit asserts issue_create=0 and issue_update=0"
+    },
+    {
+      "assumption": "exact logical role/UUID binding before any action",
+      "class": "retained"
+    },
+    {
+      "assumption": "exactly one non-trigger /note before any trigger",
+      "class": "retained"
+    },
+    {
+      "assumption": "unexpected-run precheck before publish and before the trigger",
+      "class": "retained"
+    },
+    {
+      "assumption": "run correlation against a pre-trigger run snapshot",
+      "class": "retained"
+    },
+    {
+      "assumption": "assignee observed before/after; drift fails closed",
+      "class": "adapted",
+      "note": "the fallback MUTATES the assignee intentionally; expected before and expected after are bound by the Lead authorization and both observations must match exactly"
+    },
+    {
+      "assumption": "target SELF_CHECK READY before consequential work",
+      "class": "retained"
+    },
+    {
+      "assumption": "completed replay is idempotent; incomplete replay refused",
+      "class": "retained"
+    },
+    {
+      "assumption": "simulation default; live requires a separate authorization document",
+      "class": "retained"
+    },
+    {
+      "assumption": "T08 baseline identity mapping is the dispatch authority",
+      "class": "adapted",
+      "note": "U08 uses the accepted U05 u05_mapping (six V2.2 roles, no feature-reviewer alias) and the V2.2 role policy"
+    },
+    {
+      "assumption": "the fallback may create a replacement issue",
+      "class": "invalid",
+      "note": "the fallback operates only on the exact canonical target issue; issue creation is a prior Lead-owned non-trigger mutation outside the trigger command"
+    },
+    {
+      "assumption": "route can be switched by timing out or by operator preference",
+      "class": "invalid",
+      "note": "CROSS_ROUTE_REQUIRED is permitted only from NO_TRIGGER_PROVEN with trusted zero-trigger/zero-run evidence; fallback is never a convenience retry"
+    },
+    {
+      "assumption": "a mention that might have been issued can be retried or repaired by Assignment",
+      "class": "invalid",
+      "note": "any MENTION_READY authorization, native receipt, mention-correlated run or uncertain native evidence forbids fallback forever"
+    },
+    {
+      "assumption": "an uncertain Assignment may be retried or downgraded to a mention",
+      "class": "invalid",
+      "note": "ASSIGNMENT_CONFIRMATION_REQUIRED stops forever; a second assignment and any status/mention trigger are refused"
+    },
+    {
+      "assumption": "the source package or READY envelope can be reused as the fallback authorization",
+      "class": "invalid",
+      "note": "the fallback prepares its own package through the U06 pipeline and requires a typed Lead-owned cross-route authorization bound to the durable source evidence digest"
+    },
+    {
+      "assumption": "a source transaction can be mutated in place to carry the fallback route",
+      "class": "invalid",
+      "note": "the source transaction is closed as a non-trigger terminal and its records are never modified; closure/supersession records are scoped to the NEW fallback transaction"
+    },
+    {
+      "assumption": "published notes may be reused across transactions",
+      "class": "adapted",
+      "note": "when the freshly prepared package is byte-identical to the source package the publisher is idempotent (zero duplicate publications) and the old note is preserved verbatim; no note is ever deleted or edited"
+    },
+    {
+      "assumption": "arbitrary operator judgment can pick the route state",
+      "class": "invalid",
+      "note": "classification is computed from durable ledger evidence plus read-only platform evidence; free-form judgment cannot choose the state"
+    },
+    {
+      "assumption": "U08 may start 05 Delivery Review / 06 QA",
+      "class": "invalid",
+      "note": "Review/QA activation stays Lead-owned and parked until U11/U12"
+    },
+    {
+      "assumption": "U08 Finding/Challenge semantics alignment, joint replay, live enablement, non-set skill removal",
+      "class": "deferred",
+      "note": "U09 / U11 / U12 own these; U08 only records the terminal route decision and carries findings forward"
+    }
+  ]
+}

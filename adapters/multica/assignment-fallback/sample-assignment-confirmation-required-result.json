@@ -1,0 +1,297 @@
+{
+  "acceptance_evidence": {
+    "assignment_fallback": {
+      "assignment_is_only_trigger": true,
+      "exact_role_and_artifacts_bound": true,
+      "handoff_ready_before_assignment": true,
+      "intended_assignment_count": 0,
+      "intended_run_count": 0,
+      "intentional_reassignment_authorized": true,
+      "note_count": 1,
+      "one_note": true,
+      "self_check_ready_before_work": true,
+      "unexpected_run_precheck": true
+    },
+    "compatibility": {
+      "exact_u07_u06_u05_artifact_pins": true,
+      "feature_reviewer_resolves": false,
+      "old_05_package_accepted": false,
+      "u07_byte_state_preserved": true
+    },
+    "cross_route": {
+      "fallback_transaction_is_new_and_linked": true,
+      "route_mutation_or_package_reuse": false,
+      "source_route_reconciled_from_trusted_evidence": true,
+      "source_run_count": 0,
+      "source_transaction_closed_before_fallback": true,
+      "source_trigger_count": 0
+    },
+    "recovery": {
+      "assignment_ambiguity_never_retries_or_switches": true,
+      "completed_replay_idempotent": true,
+      "mention_ambiguity_never_falls_back": true,
+      "resumable_route_prefers_resume": true
+    },
+    "safety": {
+      "canonical_writes": 0,
+      "frozen_t00_amended": false,
+      "live_mutations_or_triggers": 0,
+      "product_repo_changes": 0,
+      "unaccounted_open_findings": 0
+    }
+  },
+  "assignee": {
+    "after": "fa7d16a7-2dae-4994-80b8-7435b3fcca47",
+    "before": null,
+    "expected_after": "fa7d16a7-2dae-4994-80b8-7435b3fcca47",
+    "intentional_reassignment": false,
+    "observations": [
+      {
+        "assignee_id": null,
+        "expected_assignee_id": null,
+        "issue_id": "22222222-0000-0000-0000-000000000065",
+        "kind": "cross_route_assignee_observation",
+        "matched": true,
+        "phase": "pre_trigger",
+        "schema_version": "U08-assignee-observation/2.2",
+        "transaction_id": "tx-u08-sample-6"
+      },
+      {
+        "assignee_id": "fa7d16a7-2dae-4994-80b8-7435b3fcca47",
+        "expected_assignee_id": "fa7d16a7-2dae-4994-80b8-7435b3fcca47",
+        "issue_id": "22222222-0000-0000-0000-000000000065",
+        "kind": "cross_route_assignee_observation",
+        "matched": true,
+        "phase": "after",
+        "schema_version": "U08-assignee-observation/2.2",
+        "transaction_id": "tx-u08-sample-6"
+      }
+    ]
+  },
+  "audit": {
+    "assignment_route_audit": {
+      "assignment_trigger": {
+        "argv_ok": true,
+        "count": 1
+      },
+      "command_counts": {
+        "assignment_trigger": 1,
+        "comment_publish": 1,
+        "read": 13
+      },
+      "comment_publish": {
+        "count": 1
+      },
+      "issue_create": {
+        "count": 0,
+        "unassigned_argv_ok": false
+      },
+      "issue_update": {
+        "count": 0,
+        "non_trigger_argv_ok": true
+      },
+      "mention_hits": [],
+      "ok": true,
+      "unexpected_write_classes": []
+    },
+    "fallback_audit": {
+      "assignee_observations": [
+        {
+          "assignee_id": null,
+          "expected_assignee_id": null,
+          "matched": true,
+          "phase": "pre_trigger"
+        },
+        {
+          "assignee_id": "fa7d16a7-2dae-4994-80b8-7435b3fcca47",
+          "expected_assignee_id": "fa7d16a7-2dae-4994-80b8-7435b3fcca47",
+          "matched": true,
+          "phase": "after"
+        }
+      ],
+      "assignment_trigger": {
+        "count": 1
+      },
+      "authorizations": 1,
+      "closure_before_fallback_actions": true,
+      "closures": 1,
+      "command_counts": {
+        "assignment_trigger": 1,
+        "comment_publish": 1,
+        "read": 13
+      },
+      "comment_publish": {
+        "count": 1
+      },
+      "issue_create": {
+        "count": 0
+      },
+      "issue_update": {
+        "count": 0
+      },
+      "mention_authorizations": 0,
+      "mention_hits": [],
+      "ok": true,
+      "reconciliations": 1,
+      "run_correlations": 0,
+      "source_transaction_id": "tx-src-sample-6",
+      "supersessions": 1,
+      "unexpected_write_classes": []
+    },
+    "ok": true
+  },
+  "authorization_digest": null,
+  "authorization_ref": "YZT-66#u08-auth-0001",
+  "base": "yzt-75-u07-mention-handoff@a8fcab19488f38d622ff731eb56eb14b39f8adb5",
+  "boundary": "source_pre_publish",
+  "branch": "yzt-76-u08-direct-assignment-fallback",
+  "classification": "NO_TRIGGER_PROVEN",
+  "cross_route_audit": {
+    "closures": 1,
+    "conflicts": [],
+    "ok": true,
+    "package_route_bindings": {
+      "CTX-software-engineer-bd1774003c35e048": [
+        "assignment"
+      ]
+    },
+    "route_transactions": {
+      "assignment": [
+        "tx-u08-sample-6"
+      ],
+      "mention": []
+    },
+    "supersessions": 1
+  },
+  "fallback_artifacts": {
+    "count": 0,
+    "digest": "sha256:4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+    "status": "ARTIFACT_READY"
+  },
+  "fallback_audit": {
+    "assignment_route_audit": {
+      "assignment_trigger": {
+        "argv_ok": true,
+        "count": 1
+      },
+      "command_counts": {
+        "assignment_trigger": 1,
+        "comment_publish": 1,
+        "read": 13
+      },
+      "comment_publish": {
+        "count": 1
+      },
+      "issue_create": {
+        "count": 0,
+        "unassigned_argv_ok": false
+      },
+      "issue_update": {
+        "count": 0,
+        "non_trigger_argv_ok": true
+      },
+      "mention_hits": [],
+      "ok": true,
+      "unexpected_write_classes": []
+    },
+    "fallback_audit": {
+      "assignee_observations": [
+        {
+          "assignee_id": null,
+          "expected_assignee_id": null,
+          "matched": true,
+          "phase": "pre_trigger"
+        },
+        {
+          "assignee_id": "fa7d16a7-2dae-4994-80b8-7435b3fcca47",
+          "expected_assignee_id": "fa7d16a7-2dae-4994-80b8-7435b3fcca47",
+          "matched": true,
+          "phase": "after"
+        }
+      ],
+      "assignment_trigger": {
+        "count": 1
+      },
+      "authorizations": 1,
+      "closure_before_fallback_actions": true,
+      "closures": 1,
+      "command_counts": {
+        "assignment_trigger": 1,
+        "comment_publish": 1,
+        "read": 13
+      },
+      "comment_publish": {
+        "count": 1
+      },
+      "issue_create": {
+        "count": 0
+      },
+      "issue_update": {
+        "count": 0
+      },
+      "mention_authorizations": 0,
+      "mention_hits": [],
+      "ok": true,
+      "reconciliations": 1,
+      "run_correlations": 0,
+      "source_transaction_id": "tx-src-sample-6",
+      "supersessions": 1,
+      "unexpected_write_classes": []
+    },
+    "ok": true
+  },
+  "fallback_pins": {
+    "artifact_contract_revision": "sha256:9c2857ae252e1916ef79a4816dfb57c05a6f32ec1b97f31419cdfddfd9e83bfc",
+    "binding_plan_revision": "sha256:7f83bfd523e2c0da3cd0dac4568869f3c9937e2d3ae6c0dc66b9853094a27c22",
+    "instruction_bundle_revision": "sha256:a93e146d6586cf6f474148aeed092032e3a9c871ad3138ee1152d28108b5b98f",
+    "skill_md_digest": "sha256:f369cee40ada061364d91ef48a9cb7d467039931e922c1db18d85fe1d7e0638a"
+  },
+  "fallback_transitions": [
+    "INIT",
+    "ISSUE_CREATED",
+    "TARGET_BOUND",
+    "RUN_PRECHECK_PREPARE",
+    "HANDOFF_PREPARED",
+    "ARTIFACT_READY",
+    "HANDOFF_PUBLISHED",
+    "HANDOFF_READY_CONFIRMED",
+    "RUN_PRECHECK_TRIGGER"
+  ],
+  "handoff_ready": true,
+  "intended_run": null,
+  "next_action": "reconcile_readonly",
+  "ok": false,
+  "package": {
+    "package_id": "CTX-software-engineer-bd1774003c35e048",
+    "status": "READY"
+  },
+  "published_comment_id": "c-0001",
+  "self_check": null,
+  "source": {
+    "comment_id": null,
+    "known_run_ids": [],
+    "last_state": "RUN_PRECHECK_PREPARE",
+    "mention_ready_authorized": false,
+    "package_id": null,
+    "published": false,
+    "run_count": 0,
+    "spec_digest": null,
+    "stage": "ready",
+    "terminal_status": "PREPARE_FAILED",
+    "trigger_count": 0
+  },
+  "stop_reason": "the assignment response is unconfirmable; issuance is uncertain — reconcile read-only, never a second assignment and never a mention fallback",
+  "supersession": {
+    "fallback_transaction_id": "tx-u08-sample-6",
+    "supersedes_package_id": null,
+    "supersedes_transaction_id": "tx-src-sample-6"
+  },
+  "terminal_status": "ASSIGNMENT_CONFIRMATION_REQUIRED",
+  "transition_count": 9,
+  "trigger": {
+    "argv": null,
+    "confirmed": false,
+    "count": 1,
+    "type": "issue_assign"
+  }
+}

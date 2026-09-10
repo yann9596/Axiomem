@@ -1,0 +1,118 @@
+{
+  "acceptance_evidence": {
+    "assignment_fallback": {
+      "assignment_is_only_trigger": true,
+      "exact_role_and_artifacts_bound": false,
+      "handoff_ready_before_assignment": true,
+      "intended_assignment_count": 0,
+      "intended_run_count": 0,
+      "intentional_reassignment_authorized": false,
+      "note_count": 0,
+      "one_note": true,
+      "self_check_ready_before_work": true,
+      "unexpected_run_precheck": true
+    },
+    "compatibility": {
+      "exact_u07_u06_u05_artifact_pins": true,
+      "feature_reviewer_resolves": false,
+      "old_05_package_accepted": false,
+      "u07_byte_state_preserved": true
+    },
+    "cross_route": {
+      "fallback_transaction_is_new_and_linked": false,
+      "route_mutation_or_package_reuse": false,
+      "source_route_reconciled_from_trusted_evidence": false,
+      "source_run_count": null,
+      "source_transaction_closed_before_fallback": false,
+      "source_trigger_count": 0
+    },
+    "recovery": {
+      "assignment_ambiguity_never_retries_or_switches": true,
+      "completed_replay_idempotent": true,
+      "mention_ambiguity_never_falls_back": true,
+      "resumable_route_prefers_resume": true
+    },
+    "safety": {
+      "canonical_writes": 0,
+      "frozen_t00_amended": false,
+      "live_mutations_or_triggers": 0,
+      "product_repo_changes": 0,
+      "unaccounted_open_findings": 0
+    }
+  },
+  "assignee": null,
+  "audit": {
+    "assignment_route_audit": null,
+    "fallback_audit": {
+      "assignee_observations": [],
+      "assignment_trigger": {
+        "count": 0
+      },
+      "authorizations": 0,
+      "closure_before_fallback_actions": null,
+      "closures": 0,
+      "command_counts": {
+        "read": 1
+      },
+      "comment_publish": {
+        "count": 0
+      },
+      "issue_create": {
+        "count": 0
+      },
+      "issue_update": {
+        "count": 0
+      },
+      "mention_authorizations": 0,
+      "mention_hits": [],
+      "ok": true,
+      "reconciliations": 0,
+      "run_correlations": 0,
+      "source_transaction_id": null,
+      "supersessions": 0,
+      "unexpected_write_classes": []
+    },
+    "ok": true
+  },
+  "authorization_digest": null,
+  "authorization_ref": null,
+  "base": "yzt-75-u07-mention-handoff@a8fcab19488f38d622ff731eb56eb14b39f8adb5",
+  "boundary": null,
+  "branch": "yzt-76-u08-direct-assignment-fallback",
+  "classification": null,
+  "cross_route_audit": {
+    "closures": 1,
+    "conflicts": [],
+    "ok": true,
+    "package_route_bindings": {
+      "CTX-software-engineer-bd1774003c35e048": [
+        "assignment"
+      ]
+    },
+    "route_transactions": {
+      "assignment": [
+        "tx-u08-sample-9a"
+      ],
+      "mention": []
+    },
+    "supersessions": 1
+  },
+  "handoff_ready": false,
+  "intended_run": null,
+  "next_action": null,
+  "ok": false,
+  "package": null,
+  "published_comment_id": null,
+  "self_check": null,
+  "source": {},
+  "stop_reason": "the source transaction is already closed by another fallback transaction; one source route has at most one fallback",
+  "supersession": null,
+  "terminal_status": "CLOSURE_CONFLICT",
+  "transition_count": 1,
+  "trigger": {
+    "argv": null,
+    "confirmed": false,
+    "count": 0,
+    "type": "issue_assign"
+  }
+}

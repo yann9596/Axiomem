@@ -1,0 +1,57 @@
+{
+  "schema_version": "U08-capabilities/1.0",
+  "captured_at": "2026-09-10T12:00:00Z",
+  "cli_version_observed": "v0.4.42",
+  "mode": "read_only_surface_reused_from_u06_u07",
+  "live_mutations": 0,
+  "commands": {
+    "issue_get": {
+      "usage": "multica issue get <id> --output json",
+      "read_only": true,
+      "used_for": [
+        "bind the exact canonical target issue (never created)",
+        "observe the assignee before reconciliation, immediately before the trigger, after the trigger and at finish"
+      ]
+    },
+    "issue_runs": {
+      "usage": "multica issue runs <issue-id> [--active] [--siblings] --output json",
+      "read_only": true,
+      "observed_json_contract": {
+        "type": "array_of_objects",
+        "required_fields": ["id", "issue_id", "agent_id", "status"],
+        "extra_fields_ignored": true,
+        "observed_on": "YZT-74 U06 contract reused by U07/U08",
+        "not_a_frozen_public_schema": true
+      },
+      "fail_closed": "unreadable, malformed or truncated listings can never prove zero trigger/zero run (EVIDENCE_UNTRUSTED)"
+    },
+    "issue_comment_list": {
+      "usage": "multica issue comment list <issue-id> --full --output json",
+      "read_only": true,
+      "used_for": [
+        "idempotent publication discovery",
+        "re-validating HANDOFF_READY before the fallback Assignment trigger"
+      ]
+    },
+    "issue_comment_add": {
+      "usage": "multica issue comment add <issue-id> --content-file <path> --output json",
+      "non_trigger": true,
+      "body_prefix": "/note",
+      "refused": ["mention://", "plain-text @Name as a trigger"],
+      "count": "at most one publish per fallback transaction; a byte-identical record already published by the stopped source transaction is reused idempotently with zero writes"
+    },
+    "issue_assign": {
+      "usage": "multica issue assign <issue-id> --to-id <uuid> --output json",
+      "trigger": true,
+      "count": "exactly one on the fallback route; forbidden on the mention route"
+    },
+    "issue_create_update": {
+      "usage": "refused inside a fallback transaction",
+      "note": "the fallback binds the exact existing canonical issue read-only: zero issue create and zero issue update commands are issued; any such command fails the fallback audit"
+    }
+  },
+  "native_mention": {
+    "constructed_by_adapter": false,
+    "note": "U08 never emits a mention; a mention-route source with any MENTION_READY authorization is TRIGGER_AMBIGUOUS and can never Assignment-fallback"
+  }
+}
