@@ -1,29 +1,31 @@
 #!/usr/bin/env python3
-"""T10 — Mention Handoff path orchestrator (YZT-65).
+"""U07 — Artifact-aware Mention SAFE_DISPATCH orchestrator (YZT-75).
 
-Implements the frozen strict order (impl doc §35.2) as a staged, fail-closed
-state machine over the accepted T00–T09 boundaries. It is the MENTION route —
-mutually exclusive with the T09 assignment route:
+Rebases the historical T10 mention route onto the accepted U06 V2.2
+identity, Artifact gate, durable ledger, unexpected-run precheck, and
+run-correlation contract. Assignment stays with U06; cross-route
+fallback stays with U08.
 
-    1. bind an EXISTING canonical issue   (read-only issue get; no issue is
-                                           ever created, no id is guessed)
-    2. resolve target role                (constrained to the T08 baseline)
-    3. PREPARE_HANDOFF                    (T05 snapshot -> T01 PLAN -> caller
-                                           semantic compose -> T02/T03 finalize)
-    4. publish non-trigger note           (T06, explicit authorization policy)
-    5. confirm HANDOFF_READY              (T06 discovery re-resolution with
-                                           exact issue/task/role/package/comment
-                                           binding)
-    6. emit MENTION_READY                 (bounded auditable envelope for the
-                                           CURRENT agent; stage terminal)
-    7. accept native mention evidence     (injected; proves ONE target-agent
-                                           mention on the exact issue by the
-                                           expected current agent, with the
-                                           expected target id and no
-                                           assignment mutation)
-    8. correlate the target run           (injected; ONE run traceable to the
-                                           single accepted mention)
-    9. target SELF_CHECK                  (T04; bounded refresh, then work gate)
+Parent sequence (mention route; existing issue, assignee preserved):
+
+    verify existing issue/caller/assignee
+    → exact target role/artifact/route bind
+    → zero-unexpected-run check
+    → PREPARE_HANDOFF
+    → ARTIFACT_READY
+    → publish one non-trigger /note
+    → re-resolve HANDOFF_READY + freshness
+    → zero-unexpected-run check
+    → emit MENTION_READY
+    → current agent emits exactly one native structured mention
+    → validate exact native receipt
+    → correlate exactly one intended run
+    → target SELF_CHECK
+    → consequential work
+
+The adapter may authorize and validate a mention, but must never
+construct mention Markdown, turn plain text into a trigger, post the
+triggering comment, transfer ownership, or retry an ambiguous trigger.
 
 Boundary this module keeps (§35.4 and §22):
 
@@ -64,6 +66,7 @@ Boundary this module keeps (§35.4 and §22):
 from __future__ import annotations
 
 import argparse
+import hashlib
 import json
 import sys
 from pathlib import Path
@@ -71,6 +74,7 @@ from typing import Callable
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 
+import cartifact  # noqa: E402
 import chandoff  # noqa: E402
 import chandoff_adapter as adapter  # noqa: E402
 import chandoff_assignment as asm  # noqa: E402
@@ -80,14 +84,41 @@ import chandoff_finalize as finalize  # noqa: E402
 import chandoff_note as note  # noqa: E402
 import chandoff_plan as plan  # noqa: E402
 import chandoff_selfcheck as selfcheck  # noqa: E402
-from cutil import now_iso  # noqa: E402
+from chandoff_instructions import (  # noqa: E402
+    PINNED_ARTIFACT_CONTRACT,
+    PINNED_SKILL_MD,
+    STAGED_DISPLAY_NAME,
+)
+from cutil import ROOT, now_iso  # noqa: E402
 
-ORCHESTRATOR_VERSION = "T10/1.0"
-MENTION_READY_SCHEMA = "T10-mention-ready/1.0"
-MENTION_EVIDENCE_SCHEMA = "T10-mention-evidence/1.0"
-RUN_EVIDENCE_SCHEMA = "T10-run-evidence/1.0"
+ORCHESTRATOR_VERSION = "U07/2.2"
+MENTION_READY_SCHEMA = "U07-mention-ready/2.2"
+MENTION_EVIDENCE_SCHEMA = "U07-mention-evidence/2.2"
+RUN_EVIDENCE_SCHEMA = "U07-run-evidence/2.2"
 MAX_SELF_CHECK_ATTEMPTS = 2
 MAX_COMPOSE_ATTEMPTS = 2
+
+PINNED_U06_COMMIT = "f35afdf91133c3ea21432684fa62f34f0eae12c1"
+PINNED_U05_COMMIT = "b43b68b5deae6d8636f02293f2abb52ecb5f65e3"
+PINNED_U04_COMMIT = "702cb9bb11120c154a216e66c6ed1d3d632d3b49"
+PINNED_U10_COMMIT = "73f922ea33c2e2867ba51b6843588c5aa4980ff6"
+PINNED_U06_ASSIGNMENT = (
+    "sha256:2d701541662c1862741202a6326eff7cccf39a2b2ad662f488332406c0b43129")
+PINNED_U06_DISPATCH = (
+    "sha256:62dbd08160dea730a9c9264449dbb7d6e7dd7c40ff01ee3b16dad43fab24cfaa")
+PINNED_INSTRUCTION_BUNDLE = (
+    "sha256:a93e146d6586cf6f474148aeed092032e3a9c871ad3138ee1152d28108b5b98f")
+PINNED_BINDING_PLAN = (
+    "sha256:7f83bfd523e2c0da3cd0dac4568869f3c9937e2d3ae6c0dc66b9853094a27c22")
+PINNED_SKILL_BUNDLE = (
+    "sha256:7f861c320c115b328fb45db7356573ae449a5e443ac08b3572a764c79934fce9")
+
+REVIEW_GATE_TYPES = frozenset({
+    "implementation", "design_baseline", "issue_definition"})
+QA_GATE_TYPES = frozenset({
+    "product_expectation", "design_baseline", "implementation",
+    "delivery_review"})
+FORBIDDEN_VERSION_TOKENS = frozenset({"latest", "current", "当前代码"})
 
 PHASE_READY = "ready"
 PHASE_EXECUTE = "execute"
@@ -96,11 +127,19 @@ NATIVE_SURFACE = "native_agent_reply"
 MENTION_SOURCE = "mention"
 
 STATES = (
-    "INIT", "ISSUE_BOUND", "ROUTE_FROZEN", "TARGET_RESOLVED",
-    "HANDOFF_PREPARED", "HANDOFF_PUBLISHED", "HANDOFF_READY_CONFIRMED",
+    "INIT", "ISSUE_BOUND", "TARGET_RESOLVED", "ROUTE_FROZEN",
+    "RUN_PRECHECK_PREPARE", "HANDOFF_PREPARED", "ARTIFACT_READY",
+    "HANDOFF_PUBLISHED", "HANDOFF_READY_CONFIRMED", "RUN_PRECHECK_MENTION",
     "MENTION_READY", "MENTION_EVIDENCE_ACCEPTED", "TARGET_RUN_CORRELATED",
     "TARGET_SELF_CHECKED", "COMPLETED",
 )
+PRE_PUBLISH_STATES = {
+    "INIT", "ISSUE_BOUND", "TARGET_RESOLVED", "ROUTE_FROZEN",
+    "RUN_PRECHECK_PREPARE", "HANDOFF_PREPARED", "ARTIFACT_READY",
+}
+POST_PUBLISH_PRE_MENTION_STATES = {
+    "HANDOFF_PUBLISHED", "HANDOFF_READY_CONFIRMED", "RUN_PRECHECK_MENTION",
+}
 
 COMPLETED = "COMPLETED"
 MENTION_READY = "MENTION_READY"
@@ -122,6 +161,15 @@ RUN_CORRELATION_FAILED = "RUN_CORRELATION_FAILED"
 SELF_CHECK_BLOCKED = "SELF_CHECK_BLOCKED"
 SELF_REFRESH_EXHAUSTED = "SELF_REFRESH_EXHAUSTED"
 ASSIGNMENT_MUTATION_DETECTED = "ASSIGNMENT_MUTATION_DETECTED"
+PACKAGE_STALE = "PACKAGE_STALE"
+OLD_05_PACKAGE_REJECTED = "OLD_05_PACKAGE_REJECTED"
+UNEXPECTED_RUN = "UNEXPECTED_RUN"
+RUN_STATE_UNDETERMINED = "RUN_STATE_UNDETERMINED"
+U05_DIGEST_DRIFT = "U05_DIGEST_DRIFT"
+CROSS_ROUTE_REQUIRED = "CROSS_ROUTE_REQUIRED"
+V2_2_REBASE_BLOCKED = "V2_2_REBASE_BLOCKED"
+CRASH_SIMULATED = "CRASH_SIMULATED"
+STAGE_WAKE_DUPLICATE = "STAGE_WAKE_DUPLICATE"
 
 TERMINAL_STATUSES = (
     COMPLETED, MENTION_READY, INVALID_INPUT, REPLAY_REFUSED, ROUTING_REQUIRED,
@@ -129,7 +177,10 @@ TERMINAL_STATUSES = (
     PREPARE_BLOCKED, PREPARE_PARTIAL_STOPPED, COMPOSE_REJECTED, PUBLISH_FAILED,
     CONFIRMATION_FAILED, MENTION_CONFIRMATION_REQUIRED, MENTION_EVIDENCE_REJECTED,
     RUN_CORRELATION_FAILED, SELF_CHECK_BLOCKED, SELF_REFRESH_EXHAUSTED,
-    ASSIGNMENT_MUTATION_DETECTED,
+    ASSIGNMENT_MUTATION_DETECTED, PACKAGE_STALE, OLD_05_PACKAGE_REJECTED,
+    UNEXPECTED_RUN, RUN_STATE_UNDETERMINED, U05_DIGEST_DRIFT,
+    CROSS_ROUTE_REQUIRED, V2_2_REBASE_BLOCKED, CRASH_SIMULATED,
+    STAGE_WAKE_DUPLICATE,
 )
 
 STAGED_TERMINALS = (COMPLETED, MENTION_READY)
@@ -140,12 +191,16 @@ UNCERTAINTY = (
     "native mention evidence is injected over the deployed platform's "
     "observable reply surface; distinguishing one real native agent mention "
     "from forged markdown relies on the bounded evidence contract validated "
-    "here plus the run correlation step — T12 owns live observation",
-    "the target run and its SELF_CHECK are simulated inside this transaction "
-    "with injected evidence; platform-level pre-run guarantees do not exist",
+    "here plus U06 issue-runs correlation — U12 owns live observation",
+    "the target SELF_CHECK runs inside this transaction as a Run-start "
+    "boundary simulation; platform-level pre-run guarantees do not exist",
     "assignee stability is proven against the observed issue responses at "
     "transaction start and finish; concurrent platform-side mutations between "
     "the two reads are not observable here",
+    "run correlation uses the observed issue-runs list-of-objects contract "
+    "(id, issue_id, agent_id, status); extra fields are ignored; a missing "
+    "required field fails closed; injected T10-style run evidence is a "
+    "provenance check only and cannot override the listing",
 )
 
 GUARANTEES = {
@@ -192,6 +247,18 @@ class AmbiguousMentionError(MentionHandoffError):
 
 class RunCorrelationError(MentionHandoffError):
     code = "run_correlation_failed"
+
+
+class StageWakeError(MentionHandoffError):
+    code = "stage_wake_duplicate"
+
+
+class CrashSimulated(Exception):
+    """Test-only interrupt: ledger has evidence, no transaction_result."""
+
+    def __init__(self, state: str):
+        super().__init__(state)
+        self.state = state
 
 
 class _Stop(Exception):
@@ -286,8 +353,8 @@ def _validate_spec_fields(spec, caller_role, transaction_id, compose_fn) -> dict
         caller_slug = asm._slug_of(caller_role)
     except asm.RoutingRequiredError:
         raise _Stop(INVALID_INPUT,
-                    f"caller_role {caller_role!r} is not in the frozen T08 "
-                    "role table") from None
+                    f"caller_role {caller_role!r} is not in the accepted U05 "
+                    "V2.2 role table") from None
     if not isinstance(transaction_id, str) or not transaction_id.strip() \
             or len(transaction_id) > 80 or any(c.isspace() for c in transaction_id):
         raise _Stop(INVALID_INPUT,
@@ -299,10 +366,28 @@ def _validate_spec_fields(spec, caller_role, transaction_id, compose_fn) -> dict
                     "must be injected (the orchestrator never calls a model)")
     if not callable(compose_fn):
         raise _Stop(INVALID_INPUT, "compose_fn must be callable")
+    artifacts = spec.get("required_artifacts")
+    if artifacts is None:
+        artifacts = []
+    if not isinstance(artifacts, list) or not all(isinstance(a, dict) for a in artifacts):
+        raise _Stop(INVALID_INPUT, "spec.required_artifacts must be a list of objects")
+    review_level = spec.get("review_level")
+    if review_level is not None:
+        review_level = dispatch._require_text(review_level, "spec.review_level", 8)
+    store_file = spec.get("artifact_store_file")
+    if store_file is not None and not isinstance(store_file, str):
+        raise _Stop(INVALID_INPUT, "spec.artifact_store_file must be a string or None")
+    stage_wake = spec.get("stage_wake_applies")
+    if stage_wake is not None and not isinstance(stage_wake, bool):
+        raise _Stop(INVALID_INPUT, "spec.stage_wake_applies must be a bool or None")
     return {
         "issue_id": issue_id, "project_id": project_id, "purpose": purpose,
         "options": options, "decision_markers": markers,
         "caller_role": caller_slug,
+        "required_artifacts": artifacts,
+        "review_level": review_level,
+        "artifact_store_file": store_file,
+        "stage_wake_applies": bool(stage_wake),
     }
 
 
@@ -344,6 +429,103 @@ def _assignee_equal(before: dict | None, after: dict | None) -> bool | None:
     if before is None or after is None:
         return None
     return before == after
+
+
+def _exact_gate_artifacts(requirements: list, needed: set) -> bool:
+    present = {}
+    for item in requirements or []:
+        if not isinstance(item, dict):
+            continue
+        artifact_type = item.get("artifact_type")
+        version = item.get("version")
+        if artifact_type not in needed:
+            continue
+        if not isinstance(version, str) or not version.strip():
+            return False
+        if version.strip() in FORBIDDEN_VERSION_TOKENS:
+            return False
+        present[artifact_type] = version.strip()
+    return set(present) >= needed
+
+
+def apply_mention_role_policy(caller_role: str, target_role: str, *,
+                              policy: dict | None, artifacts: list,
+                              stage_wake_applies: bool) -> None:
+    """V2.2 mention routing. Fail closed; never alias or auto-route."""
+    policy = policy or {}
+    artifacts = artifacts or []
+    if target_role == "context-engineer":
+        if not policy.get("unresolved_material_exception"):
+            raise asm.RoutingRequiredError(
+                "ordinary-path mention of context-engineer is rejected; "
+                "02 is exception-only and requires explicit unresolved "
+                "material-exception authorization",
+                caller_role=caller_role, target_role=target_role)
+    if target_role == "delivery-reviewer":
+        if caller_role != "engineering-lead":
+            raise asm.RoutingRequiredError(
+                "producer→05 automatic mention routing is rejected; "
+                "05 requires Lead-owned Review routing",
+                caller_role=caller_role, target_role=target_role)
+        if not policy.get("lead_owned_review_routing"):
+            raise asm.RoutingRequiredError(
+                "delivery-reviewer mention requires Lead-owned Review "
+                "routing authorization and exact gate artifacts",
+                caller_role=caller_role, target_role=target_role)
+        if not _exact_gate_artifacts(artifacts, REVIEW_GATE_TYPES):
+            raise asm.RoutingRequiredError(
+                "delivery-reviewer mention requires exact Review gate "
+                "artifacts (implementation, design_baseline, "
+                "issue_definition) with pinned versions",
+                caller_role=caller_role, target_role=target_role)
+    if target_role == "qa":
+        if caller_role != "engineering-lead":
+            raise asm.RoutingRequiredError(
+                "05→06 and producer→06 automatic mention routing is "
+                "rejected; 06 requires Lead-owned QA routing",
+                caller_role=caller_role, target_role=target_role)
+        if not policy.get("lead_owned_qa_routing"):
+            raise asm.RoutingRequiredError(
+                "qa mention requires Lead-owned QA routing authorization "
+                "and exact gate artifacts",
+                caller_role=caller_role, target_role=target_role)
+        if not _exact_gate_artifacts(artifacts, QA_GATE_TYPES):
+            raise asm.RoutingRequiredError(
+                "qa mention requires exact QA gate artifacts "
+                "(product_expectation, design_baseline, implementation, "
+                "delivery_review) with pinned versions",
+                caller_role=caller_role, target_role=target_role)
+    if target_role == "engineering-lead" and stage_wake_applies:
+        raise StageWakeError(
+            "platform stage completion already wakes or will wake "
+            "Engineering Lead; explicit Lead mention is forbidden "
+            "(stage-wake XOR structured Lead mention)",
+            target_role=target_role)
+
+
+def resolve_mention_target(role_spec: str, *, bundle_dir=None,
+                           caller_role: str, policy: dict | None,
+                           artifacts: list, stage_wake_applies: bool) -> dict:
+    """U07 mention-route resolver: U05 identity + V2.2 role policy."""
+    slug = asm._slug_of(role_spec)
+    apply_mention_role_policy(
+        caller_role, slug, policy=policy, artifacts=artifacts,
+        stage_wake_applies=stage_wake_applies)
+    mapping = asm.u05_mapping(bundle_dir)
+    entry = mapping["agents"].get(slug)
+    if entry is None:
+        raise asm.RoutingRequiredError(
+            f"target role {slug!r} is missing from the U05 staged role map",
+            role=slug)
+    return {
+        "role": slug,
+        "role_name": STAGED_DISPLAY_NAME[slug],
+        "agent_id": entry["agent_id"],
+        "agent_name": entry["agent_name"],
+        "resolution_source": "U05-role-mapping:" + mapping["bundle"],
+        "instruction_bundle_revision": mapping["instruction_bundle_revision"],
+        "binding_plan_revision": mapping["binding_plan_revision"],
+    }
 
 
 def route_conflicts(records: list, *, transaction_id: str, issue_id: str,
@@ -607,10 +789,12 @@ def validate_mention_evidence(evidence, *, ready: dict) -> dict:
         raise EvidenceError("mention evidence kind must be "
                             "native_mention_evidence",
                             kind=str(evidence.get("kind"))[:80])
-    if not str(evidence.get("schema_version", "")).startswith("T10-mention-evidence/"):
+    schema = str(evidence.get("schema_version", ""))
+    if not (schema.startswith("U07-mention-evidence/")
+            or schema.startswith("T10-mention-evidence/")):
         raise EvidenceError("mention evidence schema_version is not "
-                            "T10-mention-evidence",
-                            schema_version=str(evidence.get("schema_version"))[:80])
+                            "U07-mention-evidence",
+                            schema_version=schema[:80])
     if evidence.get("transaction_id") != ready["transaction_id"]:
         raise EvidenceError("mention evidence belongs to another transaction",
                             transaction_id=str(evidence.get("transaction_id"))[:80])
@@ -681,7 +865,7 @@ def validate_mention_evidence(evidence, *, ready: dict) -> dict:
                             kind=type(mention).__name__)
     if mention.get("agent_id") != ready["target"]["agent_id"]:
         raise EvidenceError(
-            "the mention names the wrong agent; the resolved T08 target is "
+            "the mention names the wrong agent; the resolved U05 target is "
             "the only authorized mention target",
             mention_agent_id=str(mention.get("agent_id"))[:80],
             expected_agent_id=str(ready["target"]["agent_id"])[:80])
@@ -721,10 +905,12 @@ def validate_run_evidence(evidence, *, ready: dict, mention: dict) -> dict:
     if evidence.get("kind") != "target_run_evidence":
         raise RunCorrelationError("run evidence kind must be target_run_evidence",
                                   kind=str(evidence.get("kind"))[:80])
-    if not str(evidence.get("schema_version", "")).startswith("T10-run-evidence/"):
+    schema = str(evidence.get("schema_version", ""))
+    if not (schema.startswith("U07-run-evidence/")
+            or schema.startswith("T10-run-evidence/")):
         raise RunCorrelationError("run evidence schema_version is not "
-                                  "T10-run-evidence",
-                                  schema_version=str(evidence.get("schema_version"))[:80])
+                                  "U07-run-evidence",
+                                  schema_version=schema[:80])
     if evidence.get("transaction_id") != ready["transaction_id"]:
         raise RunCorrelationError("run evidence belongs to another transaction",
                                   transaction_id=str(evidence.get("transaction_id"))[:80])
@@ -784,7 +970,8 @@ class MentionHandoff:
     def __init__(self, *, validated: dict, target_role_spec: str, recorder,
                  ledger, compose_fn: Callable, clock: Callable,
                  bundle_dir=None, finding_store=None, world: dict | None,
-                 policy: dict | None, workdir: Path, executable: str):
+                 policy: dict | None, workdir: Path, executable: str,
+                 crash_at: str | None = None, resume: dict | None = None):
         self.spec = validated
         self.target_role_spec = target_role_spec
         self.recorder = recorder
@@ -796,6 +983,8 @@ class MentionHandoff:
         self.world = world or {}
         self.policy = policy or {}
         self.executable = executable
+        self.crash_at = crash_at
+        self.resume = resume or {}
 
         self.dispatch_cli = dispatch.DispatchCli(
             executable, runner=recorder, workdir=workdir)
@@ -814,25 +1003,54 @@ class MentionHandoff:
         self.ready_envelope: dict | None = None
         self.mention_evidence: dict | None = None
         self.run_evidence: dict | None = None
+        self.intended_run: dict | None = None
         self.assignee_before: dict | None = None
         self.assignee_after: dict | None = None
         self.self_check_evidence: dict | None = None
         self._last_request: dict | None = None
+        self.artifact_binding: dict | None = None
+        self.known_run_ids: set = set()
+        self.u05_pins: dict | None = None
+
+    def _maybe_crash(self) -> None:
+        if self.crash_at and self.machine is not None \
+                and self.machine.state == self.crash_at:
+            raise CrashSimulated(self.crash_at)
 
     # -- phase A -----------------------------------------------------------
 
     def run_ready(self) -> dict:
         self.machine = _Machine(self.ledger, self.recorder.transaction_id)
         try:
-            self._step_bind_issue()
+            if self.resume.get("issue"):
+                self._restore_issue(self.resume["issue"])
+            else:
+                self._step_bind_issue()
+            self._maybe_crash()
             self._step_route_precheck_handoff()
             self._step_resolve()
+            self._maybe_crash()
             self._step_freeze_route()
+            self._step_run_precheck("prepare")
+            self._maybe_crash()
             envelope = self._prepare_pipeline()
             self._step_finalize(envelope)
+            self._maybe_crash()
+            self._step_artifact_ready()
+            self._maybe_crash()
             self._step_route_precheck_package()
-            self._step_publish()
+            if self.resume.get("skip_publish"):
+                self._reuse_published_note()
+            else:
+                self._step_publish()
+            self._maybe_crash()
             self._step_confirm()
+            self._maybe_crash()
+            self._step_freshness_before_mention()
+            self._step_run_precheck("mention")
+            self._maybe_crash()
+        except CrashSimulated:
+            raise
         except _Stop as stop:
             return self._finish(stop.status, stop.reason,
                                 escalation=stop.escalation, extra=stop.extra,
@@ -843,15 +1061,14 @@ class MentionHandoff:
                                             "reason": exc.code},
                                 extra={"error": exc.envelope()},
                                 stage=PHASE_READY)
-        except asm.RoutingRequiredError as exc:
-            return self._finish(ROUTING_REQUIRED, exc.message,
-                                escalation=_escalation(
-                                    "engineering-lead-or-squad", exc.code,
-                                    **exc.details),
+        except StageWakeError as exc:
+            return self._finish(STAGE_WAKE_DUPLICATE, exc.message,
                                 extra={"error": exc.envelope()},
                                 stage=PHASE_READY)
-        except asm.T08BundleError as exc:
-            return self._finish(ROUTING_REQUIRED, exc.message,
+        except asm.AssignmentError as exc:
+            status = U05_DIGEST_DRIFT if isinstance(exc, asm.U05BundleError) \
+                and "drift" in exc.message.lower() else ROUTING_REQUIRED
+            return self._finish(status, exc.message,
                                 escalation=_escalation(
                                     "engineering-lead-or-squad", exc.code,
                                     **exc.details),
@@ -886,6 +1103,7 @@ class MentionHandoff:
             "published_comment_id": self.published_comment_id,
             "authorized_mentions": 1,
             "adapter_constructs_mention_markdown": False,
+            "known_run_ids": sorted(self.known_run_ids),
         })
         self.machine.to("MENTION_READY")
         return self._finish(MENTION_READY, None, stage=PHASE_READY)
@@ -917,6 +1135,29 @@ class MentionHandoff:
         })
         self.machine.to("ISSUE_BOUND")
 
+    def _restore_issue(self, issue: dict) -> None:
+        self.machine.require("INIT")
+        if not issue.get("identifier"):
+            try:
+                issue = self.dispatch_cli.issue_get(issue["id"])
+            except Exception as exc:
+                raise _Stop(ISSUE_UNVERIFIED,
+                            "recovery could not re-read the bound issue",
+                            extra={"error": _bounded_reason(exc)}) from None
+        self.issue = {"id": issue["id"], "identifier": issue["identifier"]}
+        self.task_ref = adapter.task_ref_of(issue["identifier"])
+        self.assignee_before = _assignee_of(issue)
+        self.ledger.append({
+            "kind": "assignee_observation",
+            "transaction_id": self.recorder.transaction_id,
+            "phase": "before",
+            "issue_id": issue["id"],
+            "assignee_id": issue.get("assignee_id"),
+            "assignee": issue.get("assignee"),
+            "restored": True,
+        })
+        self.machine.to("ISSUE_BOUND")
+
     def _step_route_precheck_handoff(self) -> None:
         self.machine.require("ISSUE_BOUND")
         conflicts = route_conflicts(
@@ -936,18 +1177,37 @@ class MentionHandoff:
     def _step_resolve(self) -> None:
         self.machine.require("ISSUE_BOUND")
         try:
-            self.target = asm.resolve_target(self.target_role_spec,
-                                             bundle_dir=self.bundle_dir)
-        except (asm.RoutingRequiredError, asm.T08BundleError):
+            self.target = resolve_mention_target(
+                self.target_role_spec, bundle_dir=self.bundle_dir,
+                caller_role=self.spec["caller_role"], policy=self.policy,
+                artifacts=self.spec.get("required_artifacts") or [],
+                stage_wake_applies=bool(
+                    self.spec.get("stage_wake_applies")
+                    or self.policy.get("stage_wake_applies")))
+            mapping = asm.u05_mapping(self.bundle_dir)
+        except StageWakeError:
             raise
-        mapping = asm.t08_mapping(self.bundle_dir)
+        except (asm.RoutingRequiredError, asm.U05BundleError) as exc:
+            status = U05_DIGEST_DRIFT if isinstance(exc, asm.U05BundleError) \
+                and "drift" in exc.message.lower() else ROUTING_REQUIRED
+            raise _Stop(status, exc.message,
+                        escalation=_escalation("engineering-lead-or-squad",
+                                               exc.code, **exc.details),
+                        extra={"error": exc.envelope()}) from None
         caller_entry = mapping["agents"].get(self.spec["caller_role"])
         if caller_entry is None:
             raise asm.RoutingRequiredError(
-                f"caller role {self.spec['caller_role']!r} has no T08 "
-                "baseline agent; T08 preconditions drifted",
+                f"caller role {self.spec['caller_role']!r} has no U05 "
+                "staged agent",
                 caller_role=self.spec["caller_role"])
         self.caller_agent_id = caller_entry["agent_id"]
+        self.u05_pins = {
+            "instruction_bundle_revision": mapping["instruction_bundle_revision"],
+            "binding_plan_revision": mapping["binding_plan_revision"],
+            "artifact_contract_revision": PINNED_ARTIFACT_CONTRACT,
+            "skill_md_digest": PINNED_SKILL_MD,
+        }
+        self._bind_artifacts()
         self.machine.to("TARGET_RESOLVED")
 
     def _step_freeze_route(self) -> None:
@@ -972,8 +1232,106 @@ class MentionHandoff:
         })
         self.machine.to("ROUTE_FROZEN")
 
+    def _bind_artifacts(self) -> None:
+        requirements = list(self.spec.get("required_artifacts") or [])
+        digest = cartifact.dependency_digest(requirements)
+        self.artifact_binding = {
+            "requirements": requirements,
+            "digest": digest,
+            "review_level": self.spec.get("review_level"),
+            "store_file": self.spec.get("artifact_store_file")
+            or self.world.get("artifact_store_file"),
+        }
+        if not requirements:
+            self.artifact_binding["status"] = "ARTIFACT_READY"
+            self.artifact_binding["empty"] = True
+            return
+        store_file = self.artifact_binding["store_file"]
+        if not store_file:
+            raise _Stop(PACKAGE_STALE,
+                        "required artifacts declared but no artifact store "
+                        "was bound; fail closed as package_stale",
+                        extra={"reason": "artifact_store_required"})
+        try:
+            store = cartifact._store_from_file(store_file)
+            ready = cartifact.artifact_ready_check(
+                store,
+                {
+                    "schema_version": "1.0",
+                    "kind": "artifact_ready_check_request",
+                    "target_role": self.target["role"],
+                    "requirements": requirements,
+                    **({"review_level": self.spec["review_level"]}
+                       if self.spec.get("review_level") else {}),
+                })
+        except Exception as exc:
+            raise _Stop(PACKAGE_STALE, "artifact_ready_check failed closed",
+                        extra={"error": _bounded_reason(exc)}) from None
+        self.artifact_binding["status"] = ready.get("status")
+        self.artifact_binding["failures"] = ready.get("failures") or []
+        self.artifact_binding["dependency_digest"] = (
+            ready.get("dependency_digest") or digest)
+        if ready.get("status") != "ARTIFACT_READY" or ready.get("blocks_handoff"):
+            raise _Stop(PACKAGE_STALE,
+                        "artifact_ready_check is not ARTIFACT_READY; "
+                        "package_stale / REFRESH_REQUIRED before trigger",
+                        extra={"artifact_ready": {
+                            "status": ready.get("status"),
+                            "failures": (ready.get("failures") or [])[:8],
+                        }})
+
+    def _step_run_precheck(self, phase: str) -> None:
+        expected = "ROUTE_FROZEN" if phase == "prepare" \
+            else "HANDOFF_READY_CONFIRMED"
+        self.machine.require(expected)
+        try:
+            listing = self.dispatch_cli.list_runs(
+                self.issue["id"], active=True, siblings=True)
+        except dispatch.RunStateUndeterminedError as exc:
+            raise _Stop(RUN_STATE_UNDETERMINED,
+                        "unexpected-run state cannot be determined; "
+                        "zero mention authorization",
+                        extra={"error": exc.envelope()}) from None
+        except dispatch.RunsResponseInvalidError as exc:
+            raise _Stop(RUN_STATE_UNDETERMINED,
+                        "issue runs response is not the documented list "
+                        "contract; fail closed",
+                        extra={"error": exc.envelope()}) from None
+        unexpected = dispatch.unexpected_active_runs(
+            listing["runs"], issue_id=self.issue["id"],
+            ignore_ids=self.known_run_ids)
+        try:
+            history = self.dispatch_cli.list_runs(
+                self.issue["id"], active=False, siblings=False)
+        except (dispatch.RunStateUndeterminedError,
+                dispatch.RunsResponseInvalidError) as exc:
+            raise _Stop(RUN_STATE_UNDETERMINED,
+                        "issue run history cannot be determined; "
+                        "zero mention authorization",
+                        extra={"error": exc.envelope()}) from None
+        self.ledger.append({
+            "kind": "run_precheck",
+            "transaction_id": self.recorder.transaction_id,
+            "phase": phase,
+            "active_count": len(listing["runs"]),
+            "unexpected_count": len(unexpected),
+        })
+        if unexpected:
+            raise _Stop(UNEXPECTED_RUN,
+                        "unexpected active target/sibling run observed; "
+                        "zero mention authorization",
+                        extra={"unexpected_runs": [
+                            {"id": r["id"], "issue_id": r["issue_id"],
+                             "agent_id": r["agent_id"], "status": r["status"]}
+                            for r in unexpected[:8]]})
+        self.known_run_ids.update(r["id"] for r in listing["runs"])
+        self.known_run_ids.update(r["id"] for r in history["runs"])
+        self.machine.to("RUN_PRECHECK_PREPARE" if phase == "prepare"
+                        else "RUN_PRECHECK_MENTION")
+
     def _prepare_pipeline(self) -> dict:
-        if self.machine.state not in ("ROUTE_FROZEN", "TARGET_RUN_CORRELATED"):
+        if self.machine.state not in (
+                "RUN_PRECHECK_PREPARE", "TARGET_RUN_CORRELATED"):
             raise _Stop(INVALID_INPUT,
                         f"prepare pipeline reached from state "
                         f"{self.machine.state!r}")
@@ -1071,7 +1429,14 @@ class MentionHandoff:
         return envelope
 
     def _step_finalize(self, envelope: dict) -> None:
-        self.machine.require("ROUTE_FROZEN")
+        self.machine.require("RUN_PRECHECK_PREPARE")
+        role = (envelope.get("role")
+                or (envelope.get("package") or {}).get("request", {}).get("role"))
+        if role == "feature-reviewer" or self.target["role"] == "feature-reviewer":
+            raise _Stop(OLD_05_PACKAGE_REJECTED,
+                        "old feature-reviewer package cannot READY, mention, "
+                        "or rewrite onto delivery-reviewer",
+                        extra={"role": role})
         if envelope["status"] == "PARTIAL":
             if not self.policy.get("allow_partial_publication"):
                 raise _Stop(PREPARE_PARTIAL_STOPPED,
@@ -1091,8 +1456,94 @@ class MentionHandoff:
         self.envelope = envelope
         self.machine.to("HANDOFF_PREPARED")
 
-    def _step_route_precheck_package(self) -> None:
+    def _step_artifact_ready(self) -> None:
         self.machine.require("HANDOFF_PREPARED")
+        binding = self.artifact_binding or {}
+        requirements = binding.get("requirements") or []
+        if not requirements:
+            self.ledger.append({
+                "kind": "artifact_gate",
+                "transaction_id": self.recorder.transaction_id,
+                "status": "ARTIFACT_READY",
+                "digest": binding.get("digest"),
+                "empty": True,
+            })
+            self.machine.to("ARTIFACT_READY")
+            return
+        store_file = binding.get("store_file")
+        try:
+            gate = _load_artifact_gate()
+            store = cartifact._store_from_file(store_file)
+            view = gate.apply_finalize_gate(
+                cartifact, self.envelope, store=store,
+                requirements=requirements,
+                target_role=self.target["role"],
+                review_level=binding.get("review_level"))
+        except Exception as exc:
+            raise _Stop(PACKAGE_STALE, "U04 artifact finalize gate failed",
+                        extra={"error": _bounded_reason(exc)}) from None
+        self.ledger.append({
+            "kind": "artifact_gate",
+            "transaction_id": self.recorder.transaction_id,
+            "status": view.get("status"),
+            "digest": view.get("exported_digest") or binding.get("digest"),
+            "merged": bool(view.get("merged")),
+        })
+        if view.get("status") != "ARTIFACT_READY" or view.get("blocks_handoff"):
+            raise _Stop(PACKAGE_STALE,
+                        "ARTIFACT_READY check failed after PREPARE_HANDOFF; "
+                        "no publish, no mention authorization",
+                        extra={"artifact_ready": {
+                            "status": view.get("status"),
+                            "failures": (view.get("failures") or [])[:8],
+                        }})
+        self.machine.to("ARTIFACT_READY")
+
+    def _reuse_published_note(self) -> None:
+        self.machine.require("ARTIFACT_READY")
+        comment_id = self.resume.get("published_comment_id")
+        package_id = self.resume.get("package_id") or (
+            self.envelope or {}).get("package_id")
+        try:
+            resolved = note.resolve_latest_handoff(
+                self.issue["id"], task_ref=self.task_ref,
+                target_role=self.target["role"], cli=self.note_cli)
+        except Exception as exc:
+            raise _Stop(CONFIRMATION_FAILED,
+                        "published note could not be re-resolved during "
+                        "recovery; never republish from a lost local response",
+                        extra={"error": _bounded_reason(exc)}) from None
+        if not resolved.get("found"):
+            raise _Stop(CONFIRMATION_FAILED,
+                        "recovery found no published note to reuse; never "
+                        "republish merely because a local response was lost")
+        resolved_env = resolved["envelope"]
+        comment = resolved.get("comment") or {}
+        resolved_id = comment.get("id")
+        if comment_id and resolved_id != comment_id:
+            raise _Stop(CONFIRMATION_FAILED,
+                        "recovery note comment id does not match the "
+                        "recorded publication")
+        if package_id and resolved_env.get("package_id") != package_id:
+            raise _Stop(CONFIRMATION_FAILED,
+                        "recovery note package_id does not match the "
+                        "recorded publication")
+        self.envelope = resolved_env
+        self.published_comment_id = resolved_id
+        self.published_comment_created_at = comment.get("created_at")
+        self.ledger.append({
+            "kind": "publish_outcome",
+            "transaction_id": self.recorder.transaction_id,
+            "published": False,
+            "idempotent": True,
+            "reused": True,
+            "comment_id": self.published_comment_id,
+            "package_id": resolved_env.get("package_id"),
+        })
+        self.machine.to("HANDOFF_PUBLISHED")
+
+    def _step_route_precheck_package(self) -> None:
+        self.machine.require("ARTIFACT_READY")
         conflicts = route_conflicts(
             self.ledger.records,
             transaction_id=self.recorder.transaction_id,
@@ -1105,7 +1556,7 @@ class MentionHandoff:
                 conflicts=conflicts)
 
     def _step_publish(self) -> None:
-        self.machine.require("HANDOFF_PREPARED")
+        self.machine.require("ARTIFACT_READY")
         try:
             result = note.publish_handoff(
                 self.envelope,
@@ -1169,6 +1620,39 @@ class MentionHandoff:
         self.confirmed = resolved_env
         self.machine.to("HANDOFF_READY_CONFIRMED")
         return resolved_env
+
+    def _step_freshness_before_mention(self) -> None:
+        self.machine.require("HANDOFF_READY_CONFIRMED")
+        binding = self.artifact_binding or {}
+        requirements = binding.get("requirements") or []
+        if not requirements:
+            return
+        store_file = binding.get("store_file")
+        try:
+            gate = _load_artifact_gate()
+            store = cartifact._store_from_file(store_file)
+            freshness = gate.evaluate_freshness(
+                cartifact, store,
+                previous_requirements=requirements,
+                previous_digest=binding.get("digest"),
+                current_requirements=None,
+                target_role=self.target["role"],
+                review_level=binding.get("review_level"))
+        except Exception as exc:
+            raise _Stop(PACKAGE_STALE, "artifact freshness re-check failed",
+                        extra={"error": _bounded_reason(exc)}) from None
+        self.ledger.append({
+            "kind": "artifact_freshness",
+            "transaction_id": self.recorder.transaction_id,
+            "stale": bool(freshness.get("stale")),
+            "previous_digest": freshness.get("previous_digest"),
+            "current_digest": freshness.get("current_digest"),
+        })
+        if freshness.get("stale"):
+            raise _Stop(PACKAGE_STALE,
+                        "artifact dependencies stale or changed after "
+                        "publication; no mention authorization",
+                        extra={"reason": "package_stale"})
 
     # -- phase B -----------------------------------------------------------
 
@@ -1273,6 +1757,17 @@ class MentionHandoff:
                 "published_comment_created_at")
         self.ready_envelope = prior.get("mention_ready_envelope")
         self.confirmed = None
+        known = prior.get("known_run_ids") or []
+        if isinstance(known, list):
+            self.known_run_ids = {str(x) for x in known if x}
+        artifacts = prior.get("artifacts") or {}
+        if artifacts:
+            self.artifact_binding = {
+                "digest": artifacts.get("digest"),
+                "status": artifacts.get("status"),
+                "requirements": (self.spec.get("required_artifacts") or []),
+            }
+        self.u05_pins = prior.get("pins")
 
     def _step_reconfirm(self) -> None:
         self.machine.require("MENTION_READY")
@@ -1378,25 +1873,66 @@ class MentionHandoff:
             "issue": self.issue,
             "target": self.target,
         })
+        injected = None
+        if evidence is not None:
+            try:
+                injected = validate_run_evidence(
+                    evidence, ready=ready, mention=self.mention_evidence)
+            except RunCorrelationError as exc:
+                details = dict(exc.details)
+                detail_reason = details.pop("reason", None)
+                raise _Stop(RUN_CORRELATION_FAILED, exc.message,
+                            escalation=_escalation(
+                                "engineering-lead-or-squad",
+                                detail_reason or exc.code, **details),
+                            extra={"error": exc.envelope()}) from None
         try:
-            self.run_evidence = validate_run_evidence(
-                evidence, ready=ready, mention=self.mention_evidence)
-        except RunCorrelationError as exc:
-            details = dict(exc.details)
-            detail_reason = details.pop("reason", None)
-            raise _Stop(RUN_CORRELATION_FAILED, exc.message,
-                        escalation=_escalation(
-                            "engineering-lead-or-squad",
-                            detail_reason or exc.code, **details),
+            listing = self.dispatch_cli.list_runs(
+                self.issue["id"], active=False, siblings=False)
+            correlated = dispatch.correlate_intended_run(
+                listing["runs"], issue_id=self.issue["id"],
+                agent_id=self.target["agent_id"],
+                known_ids=self.known_run_ids)
+        except (dispatch.RunStateUndeterminedError,
+                dispatch.RunsResponseInvalidError) as exc:
+            raise _Stop(RUN_CORRELATION_FAILED,
+                        "intended run listing is unreadable; fail closed",
                         extra={"error": exc.envelope()}) from None
+        except dispatch.RunCorrelationError as exc:
+            raise _Stop(RUN_CORRELATION_FAILED, exc.message,
+                        extra={"error": exc.envelope()}) from None
+        run = correlated["run"]
+        if injected is not None:
+            if injected.get("agent_id") != run["agent_id"]:
+                raise _Stop(RUN_CORRELATION_FAILED,
+                            "injected run evidence disagrees with the "
+                            "observed issue-runs listing",
+                            extra={"injected_agent_id": injected.get("agent_id"),
+                                   "listed_agent_id": run["agent_id"]})
+        self.intended_run = {
+            "id": run["id"],
+            "issue_id": run["issue_id"],
+            "agent_id": run["agent_id"],
+            "status": run["status"],
+            "count": 1,
+        }
+        self.run_evidence = {
+            "correlated": True,
+            "run_id": run["id"],
+            "agent_id": run["agent_id"],
+            "mention_comment_id": self.mention_evidence["comment_id"],
+            "run_count": 1,
+            "source": MENTION_SOURCE,
+            "listing_contract": "issue-runs",
+        }
         self.ledger.append({
             "kind": "run_outcome",
             "transaction_id": self.recorder.transaction_id,
             "outcome": "correlated",
             "issue_id": self.issue["id"],
             "mention_comment_id": self.mention_evidence["comment_id"],
-            "target_agent_id": self.run_evidence["agent_id"],
-            "run_id": self.run_evidence["run_id"],
+            "target_agent_id": run["agent_id"],
+            "run_id": run["id"],
             "run_count": 1,
         })
         self.machine.to("TARGET_RUN_CORRELATED")
@@ -1598,6 +2134,14 @@ class MentionHandoff:
                                              self.assignee_after),
             },
             "self_check": self.self_check_evidence or (extra or {}).get("self_check"),
+            "intended_run": dict(self.intended_run) if self.intended_run else None,
+            "artifacts": ({
+                "digest": (self.artifact_binding or {}).get("digest"),
+                "status": (self.artifact_binding or {}).get("status"),
+                "count": len((self.artifact_binding or {}).get("requirements") or []),
+            } if self.artifact_binding else None),
+            "pins": dict(self.u05_pins) if self.u05_pins else None,
+            "known_run_ids": sorted(self.known_run_ids),
             "transitions": (self.machine.transitions
                             if self.machine is not None else ["INIT"]),
             "compose_fn_source": "injected",
@@ -1698,7 +2242,19 @@ def _dispatch_terminal(exc: dispatch.DispatchError) -> str:
         "assignment_argv_invalid": ROUTE_CONFLICT,
         "assignment_command_failed": ROUTE_CONFLICT,
         "assignment_response_unconfirmable": ROUTE_CONFLICT,
+        "unexpected_run": UNEXPECTED_RUN,
+        "run_state_undetermined": RUN_STATE_UNDETERMINED,
+        "runs_response_invalid": RUN_STATE_UNDETERMINED,
+        "run_correlation_failed": RUN_CORRELATION_FAILED,
     }.get(exc.code, PREPARE_FAILED)
+
+
+def _load_artifact_gate():
+    scripts = ROOT / "skills" / "multica-context-handoff" / "scripts"
+    if str(scripts) not in sys.path:
+        sys.path.insert(0, str(scripts))
+    import artifact_gate  # noqa: WPS433
+    return artifact_gate
 
 
 def _evidence_terminal(exc: MentionHandoffError) -> str:
@@ -1764,7 +2320,9 @@ def run_mention_handoff(spec, *, caller_role: str, target_role_spec: str,
                         world: dict | None = None,
                         workdir=None, executable: str = "multica",
                         mention_evidence=None, run_evidence=None,
-                        stage: str = PHASE_FULL) -> dict:
+                        stage: str = PHASE_FULL,
+                        crash_at: str | None = None,
+                        resume: dict | None = None) -> dict:
     """Run one mention-handoff transaction (simulation default).
 
     stage:
@@ -1847,20 +2405,41 @@ def run_mention_handoff(spec, *, caller_role: str, target_role_spec: str,
         validated=validated, target_role_spec=target_role_spec,
         recorder=recorder, ledger=ledger, compose_fn=compose_fn,
         clock=clock, bundle_dir=bundle_dir, finding_store=finding_store,
-        world=world, policy=policy, workdir=workdir, executable=executable)
+        world=world, policy=policy, workdir=workdir, executable=executable,
+        crash_at=crash_at, resume=resume)
     ready_result = None
     if ready_already_staged:
         # The ready stage already ran for this id: never re-publish or
         # re-authorize; continue with the execute stage only.
         ready_result = dict(prior)
     else:
-        ready_result = handoff.run_ready()
+        try:
+            ready_result = handoff.run_ready()
+        except CrashSimulated as crash:
+            return {
+                "ok": False,
+                "orchestrator": ORCHESTRATOR_VERSION,
+                "transaction_id": transaction_id,
+                "stage": PHASE_READY,
+                "mode": "simulation",
+                "route": "mention",
+                "terminal_status": CRASH_SIMULATED,
+                "crash_at": crash.state,
+                "stop_reason": f"simulated crash at {crash.state}",
+                "audit": audit_mention_ledger(
+                    _tx_records(ledger, transaction_id), executable),
+                "guarantees": dict(GUARANTEES),
+                "uncertainty": list(UNCERTAINTY),
+            }
     if stage == PHASE_READY:
         if ready_already_staged:
             return dict(prior, replayed=True, commands=[])
         return ready_result
     if ready_result.get("terminal_status") != MENTION_READY:
         return ready_result
+    release = getattr(runner, "on_mention_authorized", None)
+    if callable(release):
+        release(ready_result)
     return handoff.run_execute(mention_evidence=mention_evidence,
                                run_evidence=run_evidence)
 
@@ -1914,6 +2493,10 @@ def run_execute_stage(ledger: dispatch.TransactionLedger, transaction_id: str,
         "options": spec["options"],
         "decision_markers": spec["decision_markers"],
         "caller_role": caller_role,
+        "required_artifacts": context.get("required_artifacts") or [],
+        "review_level": context.get("review_level"),
+        "artifact_store_file": context.get("artifact_store_file"),
+        "stage_wake_applies": bool(context.get("stage_wake_applies")),
     }
     recorder = dispatch.RecordingRunner(runner, ledger, executable=executable,
                                         transaction_id=transaction_id)
@@ -1925,6 +2508,9 @@ def run_execute_stage(ledger: dispatch.TransactionLedger, transaction_id: str,
         finding_store=finding_store, world=world, policy=policy,
         workdir=Path(workdir) if workdir is not None else Path.cwd(),
         executable=executable)
+    release = getattr(runner, "on_mention_authorized", None)
+    if callable(release):
+        release(prior)
     return handoff.run_execute(mention_evidence=mention_evidence,
                                run_evidence=run_evidence)
 
@@ -1992,6 +2578,19 @@ def acceptance_evidence(result: dict, ledger: dispatch.TransactionLedger) -> dic
             or (result.get("trigger") or {}).get("confirmed") is False),
         "adapter_constructs_mention_markdown": False,
         "live_mutations": 0 if result.get("mode") == "simulation" else 1,
+        "artifact_ready_before_publish_and_mention": bool(
+            result.get("terminal_status") not in (COMPLETED, MENTION_READY)
+            or any(r.get("kind") == "state_transition"
+                   and r.get("to") == "ARTIFACT_READY" for r in tx_records)),
+        "unexpected_run_precheck": bool(
+            result.get("terminal_status") not in (COMPLETED, MENTION_READY)
+            or sum(1 for r in tx_records if r.get("kind") == "run_precheck") >= 2),
+        "intended_run_correlated": bool(
+            result.get("terminal_status") != COMPLETED
+            or (result.get("intended_run") or {}).get("count") == 1),
+        "stage_wake_plus_lead_mention_rejected": bool(
+            result.get("terminal_status") != STAGE_WAKE_DUPLICATE
+            or (result.get("trigger") or {}).get("count") == 0),
     }
 
 
@@ -2008,13 +2607,186 @@ def replay_transaction(transaction_id: str,
             "result": prior}
 
 
+def classify_crash_boundary(ledger: dispatch.TransactionLedger,
+                            transaction_id: str) -> dict:
+    """Classify a crash from durable ledger evidence. Never guess."""
+    records = _tx_records(ledger, transaction_id)
+    prior = _recorded_result(transaction_id, ledger)
+    commands = [r for r in records if r.get("kind") == "command"]
+    publish_cmds = [r for r in commands
+                    if r.get("command_class") == "comment_publish"]
+    mention_outcomes = [r for r in records if r.get("kind") == "mention_outcome"]
+    run_outcomes = [r for r in records if r.get("kind") == "run_outcome"]
+    last_state = "INIT"
+    for rec in records:
+        if rec.get("kind") == "state_transition" and rec.get("to"):
+            last_state = rec["to"]
+    issue = None
+    for rec in records:
+        if rec.get("kind") == "assignee_observation" and rec.get("phase") == "before":
+            issue = {"id": rec.get("issue_id"),
+                     "identifier": None,
+                     "assignee_id": rec.get("assignee_id"),
+                     "assignee": rec.get("assignee")}
+    published_comment_id = None
+    package_id = None
+    for rec in records:
+        if rec.get("kind") == "publish_outcome":
+            published_comment_id = rec.get("comment_id")
+            package_id = rec.get("package_id")
+    if prior and prior.get("terminal_status") == COMPLETED:
+        return {"boundary": "completed", "next": "replay",
+                "last_state": last_state}
+    if prior and prior.get("stage") == PHASE_EXECUTE \
+            and prior.get("terminal_status") != COMPLETED:
+        return {"boundary": "recorded_incomplete", "next": "stop",
+                "status": REPLAY_REFUSED, "last_state": last_state,
+                "prior_terminal_status": prior.get("terminal_status")}
+    if mention_outcomes and not run_outcomes:
+        return {"boundary": "post_confirmation_pre_run_correlation",
+                "next": "continue_correlation",
+                "last_state": last_state,
+                "published_comment_id": published_comment_id,
+                "package_id": package_id}
+    if last_state in ("MENTION_EVIDENCE_ACCEPTED",) or (
+            prior and prior.get("terminal_status") == MENTION_READY
+            and mention_outcomes):
+        return {"boundary": "post_mention_pre_confirmation", "next": "stop",
+                "status": MENTION_CONFIRMATION_REQUIRED,
+                "last_state": last_state,
+                "reason": "a mention was possibly issued; never retry"}
+    if prior and prior.get("terminal_status") == MENTION_READY \
+            and not mention_outcomes:
+        return {"boundary": "post_publish_pre_mention",
+                "next": "await_native_mention",
+                "last_state": last_state,
+                "published_comment_id": published_comment_id,
+                "package_id": package_id,
+                "reason": "MENTION_READY is staged; execute after the native "
+                          "mention. Never re-emit a mention."}
+    if publish_cmds or last_state in POST_PUBLISH_PRE_MENTION_STATES:
+        return {"boundary": "post_publish_pre_mention",
+                "next": "reuse_note_if_fresh",
+                "issue": issue,
+                "published_comment_id": published_comment_id,
+                "package_id": package_id, "last_state": last_state}
+    if issue or last_state in PRE_PUBLISH_STATES:
+        return {"boundary": "pre_publish", "next": "continue_from_issue",
+                "issue": issue, "last_state": last_state}
+    if prior is not None:
+        return {"boundary": "recorded_incomplete", "next": "stop",
+                "status": REPLAY_REFUSED, "last_state": last_state,
+                "prior_terminal_status": prior.get("terminal_status")}
+    return {"boundary": "ambiguous", "next": "stop",
+            "status": V2_2_REBASE_BLOCKED, "last_state": last_state}
+
+
+def recover_mention_handoff(spec, *, caller_role: str, target_role_spec: str,
+                            runner, ledger: dispatch.TransactionLedger,
+                            compose_fn: Callable, transaction_id: str,
+                            **kwargs) -> dict:
+    """Resume from durable evidence. Unique next action only; never guess."""
+    classified = classify_crash_boundary(ledger, transaction_id)
+    ledger.append({
+        "kind": "recovery_classification",
+        "transaction_id": transaction_id,
+        "boundary": classified["boundary"],
+        "next": classified["next"],
+    })
+    if classified["boundary"] == "completed":
+        prior = _recorded_result(transaction_id, ledger)
+        replayed = dict(prior)
+        replayed["replayed"] = True
+        replayed["commands"] = []
+        replayed["recovery"] = classified
+        return replayed
+    if classified["next"] in ("stop", "await_native_mention"):
+        status = classified.get("status") or (
+            MENTION_READY if classified["next"] == "await_native_mention"
+            else V2_2_REBASE_BLOCKED)
+        prior = _recorded_result(transaction_id, ledger)
+        if classified["next"] == "await_native_mention" and prior:
+            out = dict(prior)
+            out["recovery"] = classified
+            out["commands"] = []
+            return out
+        return {
+            "ok": False,
+            "orchestrator": ORCHESTRATOR_VERSION,
+            "transaction_id": transaction_id,
+            "mode": "simulation",
+            "route": "mention",
+            "terminal_status": status,
+            "stop_reason": classified.get("reason") or (
+                "recovery has no unique safe action; never retry a "
+                "possibly-issued mention. Assignment fallback is U08."),
+            "recovery": classified,
+            "cross_route_required": classified["boundary"] == "ambiguous",
+            "audit": audit_mention_ledger(
+                _tx_records(ledger, transaction_id),
+                kwargs.get("executable", "multica")),
+            "guarantees": dict(GUARANTEES),
+            "uncertainty": list(UNCERTAINTY),
+        }
+    resume = {}
+    if classified["boundary"] == "pre_publish" and classified.get("issue") \
+            and classified["issue"].get("id"):
+        resume["issue"] = classified["issue"]
+    if classified["boundary"] == "post_publish_pre_mention" \
+            and classified["next"] == "reuse_note_if_fresh":
+        resume["issue"] = classified.get("issue")
+        resume["skip_publish"] = True
+        resume["published_comment_id"] = classified.get("published_comment_id")
+        resume["package_id"] = classified.get("package_id")
+    if classified["boundary"] == "post_confirmation_pre_run_correlation":
+        return {
+            "ok": False,
+            "orchestrator": ORCHESTRATOR_VERSION,
+            "transaction_id": transaction_id,
+            "mode": "simulation",
+            "route": "mention",
+            "terminal_status": RUN_CORRELATION_FAILED,
+            "stop_reason": "mention is confirmed; continue correlation from "
+                           "the execute stage with observed issue-runs — "
+                           "never a second mention",
+            "recovery": classified,
+            "guarantees": dict(GUARANTEES),
+            "uncertainty": list(UNCERTAINTY),
+        }
+    # Crash recovery continues the ready stage on a fresh transaction_result
+    # slot: drop any incomplete ready result first is forbidden. If a
+    # transaction_result exists, recover refuses. Continue only when the
+    # crash left no transaction_result.
+    if _recorded_result(transaction_id, ledger) is not None:
+        return {
+            "ok": False,
+            "orchestrator": ORCHESTRATOR_VERSION,
+            "transaction_id": transaction_id,
+            "mode": "simulation",
+            "route": "mention",
+            "terminal_status": REPLAY_REFUSED,
+            "stop_reason": "a recorded result already exists; reconcile "
+                           "read-only — never retry a mention",
+            "recovery": classified,
+            "guarantees": dict(GUARANTEES),
+            "uncertainty": list(UNCERTAINTY),
+        }
+    result = run_mention_handoff(
+        spec, caller_role=caller_role, target_role_spec=target_role_spec,
+        runner=runner, ledger=ledger, compose_fn=compose_fn,
+        transaction_id=transaction_id, resume=resume, **kwargs)
+    result = dict(result)
+    result["recovery"] = classified
+    return result
+
+
 def _deterministic_compose(plan_obj: dict, request: dict, errors=None) -> dict:
     return compose.subset_result(plan_obj)
 
 
 def main(argv=None) -> int:
     parser = argparse.ArgumentParser(
-        description="T10 Mention Handoff path orchestrator (simulation)")
+        description="U07 Mention SAFE_DISPATCH orchestrator (simulation)")
     sub = parser.add_subparsers(dest="command", required=True)
 
     def ready_p(p):
@@ -2056,9 +2828,10 @@ def main(argv=None) -> int:
     val.add_argument("--caller-role", required=True)
     val.add_argument("--transaction-id", required=True)
 
-    role = sub.add_parser("resolve-role", help="T08-constrained role resolution")
+    role = sub.add_parser("resolve-role", help="U05/V2.2 mention role resolution")
     role.add_argument("--role-spec", required=True)
     role.add_argument("--bundle-dir", default=None)
+    role.add_argument("--caller-role", default="engineering-lead")
 
     audit_p = sub.add_parser("audit", help="audit one mention-route ledger")
     audit_p.add_argument("--ledger-file", required=True)
@@ -2081,8 +2854,11 @@ def main(argv=None) -> int:
 
     if args.command == "resolve-role":
         try:
-            target = asm.resolve_target(args.role_spec, bundle_dir=args.bundle_dir)
-        except (asm.RoutingRequiredError, asm.T08BundleError) as exc:
+            target = resolve_mention_target(
+                args.role_spec, bundle_dir=args.bundle_dir,
+                caller_role=args.caller_role, policy=None, artifacts=[],
+                stage_wake_applies=False)
+        except (asm.RoutingRequiredError, asm.U05BundleError, StageWakeError) as exc:
             return emit({"ok": False, "routing_required": True,
                          "error": exc.envelope()}, 3)
         return emit({"ok": True, "target": target}, 0)

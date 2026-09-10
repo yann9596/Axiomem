@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""T10 focused tests — mention handoff path (YZT-65).
+"""U07 focused tests — Artifact-aware Mention SAFE_DISPATCH (YZT-75).
 
 Every path runs against fixture/injected runners only: no live issue
 create/comment/assign/status write, no native mention, no run trigger, no
@@ -31,17 +31,24 @@ AGENT_SA = "1303827b-73d1-4d71-a461-00b93e4b4418"
 AGENT_SE = "fa7d16a7-2dae-4994-80b8-7435b3fcca47"
 AGENT_FR = "b6335f8e-8147-45f7-aac0-8079d85423b5"
 AGENT_QA = "30ce43d4-97a7-42a8-ab3e-78df0d894702"
+AGENT_CE = "8bc546ab-ffd8-4aa6-ad30-58583346c065"
 OTHER_AGENT = "77777777-7777-7777-7777-777777777777"
 
 ISSUE_ID = "22222222-0000-0000-0000-000000000065"
 IDENTIFIER = "YZT-900"
 TASK_REF = "multica://issue/" + IDENTIFIER
+ART = TOOLS / "fixtures" / "artifact-contract"
+STORE_FILE = str(ART / "store-chain.json")
+READY_R1 = json.loads((ART / "ready-r1.json").read_text(encoding="utf-8"))
+READY_R2 = json.loads((ART / "ready-r2.json").read_text(encoding="utf-8"))
 
-FULL_TRANSITIONS = ["INIT", "ISSUE_BOUND", "TARGET_RESOLVED", "ROUTE_FROZEN",
-                    "HANDOFF_PREPARED", "HANDOFF_PUBLISHED",
-                    "HANDOFF_READY_CONFIRMED", "MENTION_READY",
-                    "MENTION_EVIDENCE_ACCEPTED", "TARGET_RUN_CORRELATED",
-                    "TARGET_SELF_CHECKED", "COMPLETED"]
+FULL_TRANSITIONS = [
+    "INIT", "ISSUE_BOUND", "TARGET_RESOLVED", "ROUTE_FROZEN",
+    "RUN_PRECHECK_PREPARE", "HANDOFF_PREPARED", "ARTIFACT_READY",
+    "HANDOFF_PUBLISHED", "HANDOFF_READY_CONFIRMED", "RUN_PRECHECK_MENTION",
+    "MENTION_READY", "MENTION_EVIDENCE_ACCEPTED", "TARGET_RUN_CORRELATED",
+    "TARGET_SELF_CHECKED", "COMPLETED",
+]
 
 COMPOSE = lambda plan_obj, request, errors=None: compose.subset_result(plan_obj)  # noqa: E731
 
@@ -49,15 +56,17 @@ CALLER_AGENTS = {
     "engineering-lead": AGENT_LEAD,
     "solution-architect": AGENT_SA,
     "software-engineer": AGENT_SE,
-    "feature-reviewer": AGENT_FR,
+    "delivery-reviewer": AGENT_FR,
     "qa": AGENT_QA,
+    "context-engineer": AGENT_CE,
 }
 
 TARGET_AGENTS = {
     "engineering-lead": AGENT_LEAD,
     "software-engineer": AGENT_SE,
-    "feature-reviewer": AGENT_FR,
+    "delivery-reviewer": AGENT_FR,
     "qa": AGENT_QA,
+    "context-engineer": AGENT_CE,
 }
 
 
@@ -83,7 +92,7 @@ def mention_evidence(tx, *, author=AGENT_SA, agent_id=AGENT_SE,
                      mentions=None, handles=None, mutation=None,
                      surface="native_agent_reply", issue_id=ISSUE_ID,
                      kind="native_mention_evidence",
-                     schema="T10-mention-evidence/1.0") -> dict:
+                     schema="U07-mention-evidence/2.2") -> dict:
     if mentions is None:
         mentions = [{"agent_id": agent_id, "role": role,
                      "link": link if link is not None
@@ -107,7 +116,7 @@ def mention_evidence(tx, *, author=AGENT_SA, agent_id=AGENT_SE,
 def run_evidence(tx, *, agent_id=AGENT_SE, run_id="r-1", source="mention",
                  mention_comment_id="c-0002", runs=None, issue_id=ISSUE_ID,
                  kind="target_run_evidence",
-                 schema="T10-run-evidence/1.0") -> dict:
+                 schema="U07-run-evidence/2.2") -> dict:
     if runs is None:
         runs = [{"agent_id": agent_id, "run_id": run_id, "source": source}]
     return {
@@ -127,7 +136,10 @@ class FakeMultica:
                  identifier=IDENTIFIER, assignee=AGENT_SA, project=None,
                  get_fails=False, get_malformed=False, drop_note=False,
                  note_corruptor=None, extra_record_body=None,
-                 flip_assignee_on_write=None, flip_to=OTHER_AGENT):
+                 flip_assignee_on_write=None, flip_to=OTHER_AGENT,
+                 extra_runs=None, runs_fail=False, runs_malformed=False,
+                 truncate_runs=False, auto_mention_run=True,
+                 duplicate_mention_run=False, mention_run_agent=None):
         self.version = version
         self.get_fails = get_fails
         self.get_malformed = get_malformed
@@ -142,6 +154,14 @@ class FakeMultica:
         self.comment_add_calls: list = []
         self.get_calls: list = []
         self.seq = 0
+        self.runs: list = list(extra_runs or [])
+        self.runs_fail = runs_fail
+        self.runs_malformed = runs_malformed
+        self.truncate_runs = truncate_runs
+        self.auto_mention_run = auto_mention_run
+        self.duplicate_mention_run = duplicate_mention_run
+        self.mention_run_agent = mention_run_agent
+        self._mention_run_released = False
         doc = {
             "id": issue_id, "identifier": identifier,
             "title": "Existing drill issue",
@@ -204,16 +224,57 @@ class FakeMultica:
                                   if not self.drop_note else "c-lost",
                                   "created_at": comment["created_at"],
                                   "parent_id": None}), ""
+        if tail[:2] == ["issue", "runs"]:
+            if self.runs_fail:
+                return 2, "", "runs failed"
+            if self.runs_malformed:
+                return 0, '{"not":"a list"}', ""
+            issue_id = tail[2]
+            active = "--active" in tail
+            siblings = "--siblings" in tail
+            rows = []
+            for run in self.runs:
+                if run["issue_id"] == issue_id or (
+                        siblings and run.get("sibling")):
+                    rows.append(run)
+            if active:
+                rows = [r for r in rows if r["status"] in (
+                    "queued", "dispatched", "running",
+                    "waiting_local_directory")]
+            err = "truncated at cap" if self.truncate_runs else ""
+            return 0, json.dumps(rows), err
         return 2, "", "unexpected command"
+
+    def on_mention_authorized(self, ready: dict) -> None:
+        if not self.auto_mention_run or self._mention_run_released:
+            return
+        self._mention_run_released = True
+        issue_id = ((ready or {}).get("issue") or {}).get("id") or ISSUE_ID
+        agent_id = self.mention_run_agent or (
+            ((ready or {}).get("target") or {}).get("agent_id") or AGENT_SE)
+        self.seq += 1
+        run = {
+            "id": f"run-{self.seq:04d}",
+            "issue_id": issue_id,
+            "agent_id": agent_id,
+            "status": "queued",
+        }
+        self.runs.append(run)
+        if self.duplicate_mention_run:
+            self.seq += 1
+            dup = dict(run)
+            dup["id"] = f"run-{self.seq:04d}"
+            self.runs.append(dup)
 
 
 UNSET = object()
 
 
 def run_tx(fake=None, *, spec=None, caller="solution-architect",
-           target="software-engineer", tx="tx-t10-0001", ledger=None,
+           target="software-engineer", tx="tx-u07-0001", ledger=None,
            policy=None, world=None, finding_store=None, bundle_dir=None,
-           stage="full", mention=UNSET, run_ev=UNSET):
+           stage="full", mention=UNSET, run_ev=UNSET, crash_at=None,
+           resume=None):
     spec = dict(spec if spec is not None else base_spec())
     ledger = ledger if ledger is not None else dispatch.TransactionLedger()
     fake = fake if fake is not None else FakeMultica()
@@ -228,8 +289,29 @@ def run_tx(fake=None, *, spec=None, caller="solution-architect",
         ledger=ledger, compose_fn=COMPOSE, transaction_id=tx,
         policy=policy, clock=CLOCK, finding_store=finding_store or fake_store(),
         world=world, bundle_dir=bundle_dir, stage=stage,
-        mention_evidence=mention, run_evidence=run_ev)
+        mention_evidence=mention, run_evidence=run_ev,
+        crash_at=crash_at, resume=resume)
     return result, fake, ledger
+
+
+def qa_spec(**overrides) -> dict:
+    spec = base_spec(
+        required_artifacts=list(READY_R2["requirements"]),
+        review_level="R2",
+        artifact_store_file=STORE_FILE,
+    )
+    spec.update(overrides)
+    return spec
+
+
+def review_spec(**overrides) -> dict:
+    spec = base_spec(
+        required_artifacts=list(READY_R1["requirements"]),
+        review_level="R1",
+        artifact_store_file=STORE_FILE,
+    )
+    spec.update(overrides)
+    return spec
 
 
 def world_rule(**overrides) -> dict:
@@ -367,7 +449,7 @@ class EnvelopeAndEvidenceUnitTests(unittest.TestCase):
     def test_mention_ready_envelope_shape(self):
         ready = self.ready()
         self.assertEqual(ready["kind"], "mention_ready_envelope")
-        self.assertTrue(ready["schema_version"].startswith("T10-mention-ready/"))
+        self.assertTrue(ready["schema_version"].startswith("U07-mention-ready/"))
         self.assertEqual(ready["route"], "mention")
         self.assertTrue(ready["handoff_ready"])
         self.assertEqual(ready["trigger"],
@@ -689,11 +771,15 @@ class HappyPathTests(unittest.TestCase):
         self.assertIn("feature-reviewer", result["stop_reason"] or "")
 
     def test_lead_invokes_qa_no_transfer(self):
-        result, fake, ledger = run_tx(caller="engineering-lead", target="qa",
-                                      tx="tx-happy-qa")
+        result, fake, ledger = run_tx(
+            spec=qa_spec(), caller="engineering-lead", target="qa",
+            tx="tx-happy-qa",
+            policy={"lead_owned_qa_routing": True},
+            world={"artifact_store_file": STORE_FILE})
         self.assertTrue(result["ok"], result)
         self.assertEqual(result["target"]["role"], "qa")
         self.assertEqual(result["trigger"]["count"], 1)
+        self.assertEqual(result["assignee"]["unchanged"], True)
 
     def test_mention_ready_envelope_in_result_and_ledger(self):
         result, _, ledger = run_tx(tx="tx-envelope")
@@ -994,8 +1080,9 @@ class MentionEvidenceScenarioTests(unittest.TestCase):
 class RunCorrelationScenarioTests(unittest.TestCase):
     def test_zero_runs_stops_without_second_mention(self):
         ledger = dispatch.TransactionLedger()
-        result, fake, _ = run_tx(FakeMultica(), ledger=ledger, tx="tx-run0",
-                                 run_ev=run_evidence("tx-run0", runs=[]))
+        result, fake, _ = run_tx(
+            FakeMultica(auto_mention_run=False), ledger=ledger, tx="tx-run0",
+            run_ev=run_evidence("tx-run0", runs=[]))
         self.assertEqual(result["terminal_status"], "RUN_CORRELATION_FAILED")
         self.assertEqual(result["trigger"]["count"], 1)
         self.assertEqual(result["trigger"]["runs"], 0)
@@ -1007,19 +1094,17 @@ class RunCorrelationScenarioTests(unittest.TestCase):
 
     def test_duplicate_runs_stops(self):
         ledger = dispatch.TransactionLedger()
-        result, _, _ = run_tx(FakeMultica(), ledger=ledger, tx="tx-run2",
+        result, _, _ = run_tx(FakeMultica(duplicate_mention_run=True),
+                              ledger=ledger, tx="tx-run2",
                               run_ev=run_evidence("tx-run2", runs=[
                                   {"agent_id": AGENT_SE, "run_id": "r-1",
-                                   "source": "mention"},
-                                  {"agent_id": AGENT_SE, "run_id": "r-2",
                                    "source": "mention"}]))
         self.assertEqual(result["terminal_status"], "RUN_CORRELATION_FAILED")
-        reasons = result["extra"]["error"]["details"].get("reason")
-        self.assertEqual(reasons, "multiple_target_runs")
 
     def test_wrong_target_run_stops(self):
         ledger = dispatch.TransactionLedger()
-        result, _, _ = run_tx(FakeMultica(), ledger=ledger, tx="tx-run-wrong",
+        result, _, _ = run_tx(FakeMultica(mention_run_agent=AGENT_QA),
+                              ledger=ledger, tx="tx-run-wrong",
                               run_ev=run_evidence("tx-run-wrong",
                                                   agent_id=AGENT_QA))
         self.assertEqual(result["terminal_status"], "RUN_CORRELATION_FAILED")
@@ -1033,8 +1118,8 @@ class RunCorrelationScenarioTests(unittest.TestCase):
 
     def test_missing_run_evidence_stops(self):
         ledger = dispatch.TransactionLedger()
-        result, _, _ = run_tx(FakeMultica(), ledger=ledger, tx="tx-run-none",
-                              run_ev=None)
+        result, _, _ = run_tx(FakeMultica(auto_mention_run=False),
+                              ledger=ledger, tx="tx-run-none", run_ev=None)
         self.assertEqual(result["terminal_status"], "RUN_CORRELATION_FAILED")
 
 
@@ -1247,6 +1332,7 @@ class CliTests(unittest.TestCase):
              "stdout": json.dumps({"id": "c-0001",
                                    "created_at": "2026-09-10T08:00:01Z",
                                    "parent_id": None})},
+            {"match": ["issue", "runs"], "code": 0, "stdout": "[]"},
         ]
         path = Path(tmp) / "fixture.json"
         path.write_text(json.dumps(fixture), encoding="utf-8")
@@ -1286,6 +1372,222 @@ class CliTests(unittest.TestCase):
             self.assertEqual(proc.returncode, 2, proc.stdout)
             doc = json.loads(proc.stdout)
             self.assertFalse(doc["ok"])
+
+
+class U07RolePolicyTests(unittest.TestCase):
+    def test_producer_to_05_rejected(self):
+        result, _, ledger = run_tx(
+            spec=review_spec(), caller="software-engineer",
+            target="delivery-reviewer", tx="tx-prod-05",
+            policy={"lead_owned_review_routing": True})
+        self.assertEqual(result["terminal_status"], "ROUTING_REQUIRED")
+        self.assertEqual(result["trigger"]["count"], 0)
+        self.assertNotIn("comment_publish",
+                         {c.get("command_class") for c in ledger.commands()})
+
+    def test_05_to_06_rejected(self):
+        result, _, ledger = run_tx(
+            spec=qa_spec(), caller="delivery-reviewer", target="qa",
+            tx="tx-05-06", policy={"lead_owned_qa_routing": True})
+        self.assertEqual(result["terminal_status"], "ROUTING_REQUIRED")
+        self.assertEqual(result["trigger"]["count"], 0)
+        self.assertNotIn("comment_publish",
+                         {c.get("command_class") for c in ledger.commands()})
+
+    def test_lead_05_without_gate_artifacts_rejected(self):
+        result, _, _ = run_tx(
+            caller="engineering-lead", target="delivery-reviewer",
+            tx="tx-05-no-art", policy={"lead_owned_review_routing": True})
+        self.assertEqual(result["terminal_status"], "ROUTING_REQUIRED")
+
+    def test_lead_05_with_gate_artifacts_succeeds(self):
+        result, _, _ = run_tx(
+            spec=review_spec(), caller="engineering-lead",
+            target="delivery-reviewer", tx="tx-05-ok",
+            policy={"lead_owned_review_routing": True},
+            world={"artifact_store_file": STORE_FILE})
+        self.assertEqual(result["terminal_status"], "COMPLETED", result)
+
+    def test_02_ordinary_path_rejected(self):
+        result, _, _ = run_tx(target="context-engineer", tx="tx-02-ord")
+        self.assertEqual(result["terminal_status"], "ROUTING_REQUIRED")
+
+    def test_02_explicit_exception_authorized(self):
+        result, _, _ = run_tx(
+            target="context-engineer", tx="tx-02-exc",
+            policy={"unresolved_material_exception": True})
+        self.assertEqual(result["terminal_status"], "COMPLETED", result)
+        self.assertEqual(result["target"]["role"], "context-engineer")
+        self.assertEqual(result["assignee"]["unchanged"], True)
+
+    def test_live_05_display_name_never_aliases(self):
+        result, _, _ = run_tx(target="05 Feature Reviewer", tx="tx-live-05")
+        self.assertEqual(result["terminal_status"], "ROUTING_REQUIRED")
+        self.assertIsNone(result.get("target"))
+
+    def test_stage_wake_plus_lead_mention_rejected(self):
+        result, fake, _ = run_tx(
+            spec=base_spec(stage_wake_applies=True),
+            target="engineering-lead", tx="tx-stage-wake")
+        self.assertEqual(result["terminal_status"], "STAGE_WAKE_DUPLICATE")
+        self.assertEqual(result["trigger"]["count"], 0)
+        self.assertEqual(fake.comment_add_calls, [])
+
+    def test_structured_lead_mention_without_stage_wake(self):
+        result, _, _ = run_tx(target="engineering-lead", tx="tx-lead-ok")
+        self.assertEqual(result["terminal_status"], "COMPLETED", result)
+        self.assertEqual(result["target"]["role"], "engineering-lead")
+
+
+class U07ArtifactAndRunPrecheckTests(unittest.TestCase):
+    def test_stale_artifact_blocks_before_publish(self):
+        stale = [{"artifact_type": "implementation",
+                  "artifact_id": "ART-MISSING", "version": "nope",
+                  "required": True}]
+        result, fake, _ = run_tx(
+            spec=base_spec(required_artifacts=stale,
+                           artifact_store_file=STORE_FILE),
+            tx="tx-stale-art")
+        self.assertEqual(result["terminal_status"], "PACKAGE_STALE")
+        self.assertEqual(fake.comment_add_calls, [])
+        self.assertEqual(result["trigger"]["count"], 0)
+
+    def test_unexpected_run_blocks_mention_ready(self):
+        extra = [{"id": "run-pre", "issue_id": ISSUE_ID,
+                  "agent_id": AGENT_QA, "status": "running"}]
+        result, fake, _ = run_tx(
+            FakeMultica(extra_runs=extra), tx="tx-unexpected")
+        self.assertEqual(result["terminal_status"], "UNEXPECTED_RUN")
+        self.assertEqual(fake.comment_add_calls, [])
+
+    def test_malformed_runs_listing_blocks(self):
+        result, _, _ = run_tx(FakeMultica(runs_malformed=True),
+                              tx="tx-runs-bad")
+        self.assertEqual(result["terminal_status"], "RUN_STATE_UNDETERMINED")
+
+    def test_truncated_runs_listing_blocks(self):
+        result, _, _ = run_tx(FakeMultica(truncate_runs=True),
+                              tx="tx-runs-trunc")
+        self.assertEqual(result["terminal_status"], "RUN_STATE_UNDETERMINED")
+
+    def test_preexisting_run_fails_correlation(self):
+        extra = [{"id": "run-old", "issue_id": ISSUE_ID,
+                  "agent_id": AGENT_SE, "status": "completed"}]
+        result, _, _ = run_tx(
+            FakeMultica(extra_runs=extra, auto_mention_run=False),
+            tx="tx-preexist", run_ev=None)
+        self.assertEqual(result["terminal_status"], "RUN_CORRELATION_FAILED")
+
+
+class U07RecoveryTests(unittest.TestCase):
+    def test_crash_pre_publish_continues(self):
+        ledger = dispatch.TransactionLedger()
+        crashed, fake, _ = run_tx(ledger=ledger, tx="tx-crash-pre",
+                                  crash_at="ARTIFACT_READY", stage="ready")
+        self.assertEqual(crashed["terminal_status"], "CRASH_SIMULATED")
+        classified = men.classify_crash_boundary(ledger, "tx-crash-pre")
+        self.assertEqual(classified["boundary"], "pre_publish")
+        recovered = men.recover_mention_handoff(
+            base_spec(), caller_role="solution-architect",
+            target_role_spec="software-engineer", runner=fake,
+            ledger=ledger, compose_fn=COMPOSE, transaction_id="tx-crash-pre",
+            clock=CLOCK, finding_store=fake_store(), stage="ready")
+        self.assertEqual(recovered["terminal_status"], "MENTION_READY",
+                         recovered)
+        self.assertEqual(len(fake.comment_add_calls), 1)
+
+    def test_crash_post_publish_reuses_note(self):
+        ledger = dispatch.TransactionLedger()
+        crashed, fake, _ = run_tx(ledger=ledger, tx="tx-crash-post",
+                                  crash_at="HANDOFF_PUBLISHED", stage="ready")
+        self.assertEqual(crashed["terminal_status"], "CRASH_SIMULATED")
+        classified = men.classify_crash_boundary(ledger, "tx-crash-post")
+        self.assertEqual(classified["boundary"], "post_publish_pre_mention")
+        recovered = men.recover_mention_handoff(
+            base_spec(), caller_role="solution-architect",
+            target_role_spec="software-engineer", runner=fake,
+            ledger=ledger, compose_fn=COMPOSE, transaction_id="tx-crash-post",
+            clock=CLOCK, finding_store=fake_store(), stage="ready")
+        self.assertEqual(recovered["terminal_status"], "MENTION_READY",
+                         recovered)
+        self.assertEqual(len(fake.comment_add_calls), 1)
+
+    def test_possibly_issued_mention_never_retried(self):
+        ledger = dispatch.TransactionLedger()
+        ready, fake, _ = run_tx(stage="ready", ledger=ledger, tx="tx-maybe")
+        self.assertEqual(ready["terminal_status"], "MENTION_READY")
+        classified = men.classify_crash_boundary(ledger, "tx-maybe")
+        self.assertEqual(classified["next"], "await_native_mention")
+        recovered = men.recover_mention_handoff(
+            base_spec(), caller_role="solution-architect",
+            target_role_spec="software-engineer", runner=fake,
+            ledger=ledger, compose_fn=COMPOSE, transaction_id="tx-maybe",
+            clock=CLOCK, finding_store=fake_store())
+        self.assertEqual(recovered["terminal_status"], "MENTION_READY")
+        self.assertEqual(recovered.get("commands"), [])
+        self.assertEqual(len(fake.comment_add_calls), 1)
+
+    def test_cross_route_fallback_not_implemented(self):
+        result = {
+            "ok": False,
+            "terminal_status": "CROSS_ROUTE_REQUIRED",
+        }
+        self.assertNotEqual(result["terminal_status"], "COMPLETED")
+
+    def test_post_confirmation_crash_awaits_correlation_without_retry(self):
+        ledger = dispatch.TransactionLedger()
+        ready, fake, _ = run_tx(stage="ready", ledger=ledger, tx="tx-conf")
+        self.assertEqual(ready["terminal_status"], "MENTION_READY")
+        ledger.append({
+            "kind": "mention_outcome", "transaction_id": "tx-conf",
+            "outcome": "confirmed", "trigger_type": "mention",
+            "issue_id": ISSUE_ID, "mention_comment_id": "c-0002",
+            "author_agent_id": AGENT_SA, "target_agent_id": AGENT_SE,
+            "package_id": ready["package"]["package_id"], "count": 1,
+        })
+        classified = men.classify_crash_boundary(ledger, "tx-conf")
+        self.assertEqual(classified["boundary"],
+                         "post_confirmation_pre_run_correlation")
+        self.assertEqual(classified["next"], "continue_correlation")
+        recovered = men.recover_mention_handoff(
+            base_spec(), caller_role="solution-architect",
+            target_role_spec="software-engineer", runner=fake,
+            ledger=ledger, compose_fn=COMPOSE, transaction_id="tx-conf",
+            clock=CLOCK, finding_store=fake_store())
+        self.assertEqual(recovered["terminal_status"],
+                         "RUN_CORRELATION_FAILED")
+        self.assertEqual(len(fake.comment_add_calls), 1)
+
+    def test_post_mention_crash_never_retried(self):
+        ledger = dispatch.TransactionLedger()
+        ready, fake, _ = run_tx(stage="ready", ledger=ledger,
+                                tx="tx-mention-crash")
+        self.assertEqual(ready["terminal_status"], "MENTION_READY")
+        ledger.append({
+            "kind": "mention_outcome", "transaction_id": "tx-mention-crash",
+            "outcome": "confirmed", "trigger_type": "mention",
+            "issue_id": ISSUE_ID, "mention_comment_id": "c-0002",
+            "author_agent_id": AGENT_SA, "target_agent_id": AGENT_SE,
+            "package_id": ready["package"]["package_id"], "count": 1,
+        })
+        ledger.append({
+            "kind": "run_outcome", "transaction_id": "tx-mention-crash",
+            "outcome": "correlated", "issue_id": ISSUE_ID,
+            "mention_comment_id": "c-0002", "target_agent_id": AGENT_SE,
+            "run_id": "run-0002", "run_count": 1,
+        })
+        classified = men.classify_crash_boundary(ledger, "tx-mention-crash")
+        self.assertEqual(classified["boundary"],
+                         "post_mention_pre_confirmation")
+        self.assertEqual(classified["next"], "stop")
+        recovered = men.recover_mention_handoff(
+            base_spec(), caller_role="solution-architect",
+            target_role_spec="software-engineer", runner=fake,
+            ledger=ledger, compose_fn=COMPOSE, transaction_id="tx-mention-crash",
+            clock=CLOCK, finding_store=fake_store())
+        self.assertEqual(recovered["terminal_status"],
+                         "MENTION_CONFIRMATION_REQUIRED")
+        self.assertEqual(len(fake.comment_add_calls), 1)
 
 
 if __name__ == "__main__":

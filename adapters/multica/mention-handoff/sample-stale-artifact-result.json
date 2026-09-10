@@ -1,0 +1,193 @@
+{
+  "acceptance_evidence": {
+    "adapter_constructs_mention_markdown": false,
+    "ambiguous_trigger_response_fails_closed": true,
+    "artifact_ready_before_publish_and_mention": true,
+    "assignee_unchanged": true,
+    "assignment_not_used": true,
+    "assignment_plus_mention_rejected": false,
+    "existing_issue_reused": true,
+    "handoff_confirmed_before_mention": false,
+    "intended_mention_count_per_handoff": 0,
+    "intended_run_correlated": true,
+    "intended_run_count_per_handoff": 0,
+    "live_mutations": 0,
+    "mention_is_only_trigger": true,
+    "retry_does_not_duplicate_trigger": true,
+    "stage_wake_plus_lead_mention_rejected": true,
+    "target_self_check_ready_before_work": true,
+    "unexpected_run_precheck": true
+  },
+  "base": "yzt-74-u06-assignment-handoff@f35afdf91133c3ea21432684fa62f34f0eae12c1",
+  "branch": "yzt-75-u07-mention-handoff",
+  "cross_route_audit": {
+    "command_counts": {
+      "read": 2
+    },
+    "conflicts": [],
+    "mention_outcomes": 0,
+    "ok": true,
+    "package_route_bindings": {},
+    "route_transactions": {
+      "assignment": [],
+      "mention": []
+    },
+    "run_outcomes": 0
+  },
+  "note": "staged simulation; zero live multica mutations",
+  "orchestrator": "U07/2.2",
+  "result": {
+    "artifacts": {
+      "count": 1,
+      "digest": "sha256:a27ea714805c3b52cd83b4572e05fc2b5c0e67463284dca7a5699b8c6e2182e8",
+      "status": "ARTIFACT_NOT_READY"
+    },
+    "assignee": {
+      "after": {
+        "assignee": null,
+        "assignee_id": "1303827b-73d1-4d71-a461-00b93e4b4418"
+      },
+      "before": {
+        "assignee": null,
+        "assignee_id": "1303827b-73d1-4d71-a461-00b93e4b4418"
+      },
+      "unchanged": true
+    },
+    "audit": {
+      "assignment_trigger": {
+        "count": 0
+      },
+      "command_counts": {
+        "read": 2
+      },
+      "comment_publish": {
+        "count": 0,
+        "note": "main note + at most one bounded self-refresh publish"
+      },
+      "issue_create": {
+        "count": 0
+      },
+      "mention_authorizations": 0,
+      "mention_hits": [],
+      "ok": true,
+      "route_conflicts_internal": [],
+      "run_correlations": 0,
+      "unexpected_write_classes": []
+    },
+    "caller": {
+      "agent_id": "1303827b-73d1-4d71-a461-00b93e4b4418",
+      "role": "solution-architect"
+    },
+    "compose_fn_source": "injected",
+    "context": {
+      "artifact_store_file": "D:\\AI\\worktrees\\multica-memory-yzt-75-u07\\tools\\fixtures\\artifact-contract\\store-chain.json",
+      "caller_role": "solution-architect",
+      "decision_markers": null,
+      "issue_id": "22222222-0000-0000-0000-000000000065",
+      "options": {
+        "limit": 8
+      },
+      "project_id": "web-imagegen",
+      "purpose": "implementation",
+      "required_artifacts": [
+        {
+          "artifact_id": "ART-MISSING",
+          "artifact_type": "implementation",
+          "required": true,
+          "version": "nope"
+        }
+      ],
+      "review_level": null,
+      "stage_wake_applies": false
+    },
+    "escalation": null,
+    "extra": {
+      "artifact_ready": {
+        "failures": [
+          {
+            "artifact_id": "ART-MISSING",
+            "artifact_type": "implementation",
+            "correction_owner": "software-engineer",
+            "reason": "no envelope for ART-MISSING@nope",
+            "reason_code": "MISSING",
+            "ref": "implementation:ART-MISSING@nope",
+            "route": "producer_correction",
+            "version": "nope"
+          }
+        ],
+        "status": "ARTIFACT_NOT_READY"
+      }
+    },
+    "guarantees": {
+      "assignments": 0,
+      "canonical_writes": 0,
+      "frozen_schema_changes": 0,
+      "issues_created": 0,
+      "live_mutations": 0,
+      "llm_calls_in_orchestrator": 0,
+      "mentions_constructed_by_adapter": 0,
+      "run_triggers_outside_native_mention": 0
+    },
+    "handoff_ready": false,
+    "intended_run": null,
+    "issue": {
+      "assignee": null,
+      "assignee_id": "1303827b-73d1-4d71-a461-00b93e4b4418",
+      "description": "Drill: - Requirement: build X\n- Acceptance: works",
+      "id": "22222222-0000-0000-0000-000000000065",
+      "identifier": "YZT-900",
+      "parent_issue_id": null,
+      "project_id": null,
+      "status": "in_progress",
+      "title": "Existing drill issue"
+    },
+    "known_run_ids": [],
+    "mention_evidence": null,
+    "mention_ready_envelope": null,
+    "mode": "simulation",
+    "ok": false,
+    "orchestrator": "U07/2.2",
+    "package": null,
+    "pins": {
+      "artifact_contract_revision": "sha256:9c2857ae252e1916ef79a4816dfb57c05a6f32ec1b97f31419cdfddfd9e83bfc",
+      "binding_plan_revision": "sha256:7f83bfd523e2c0da3cd0dac4568869f3c9937e2d3ae6c0dc66b9853094a27c22",
+      "instruction_bundle_revision": "sha256:a93e146d6586cf6f474148aeed092032e3a9c871ad3138ee1152d28108b5b98f",
+      "skill_md_digest": "sha256:f369cee40ada061364d91ef48a9cb7d467039931e922c1db18d85fe1d7e0638a"
+    },
+    "published_comment_id": null,
+    "route": "mention",
+    "run_evidence": null,
+    "self_check": null,
+    "stage": "ready",
+    "stop_reason": "artifact_ready_check is not ARTIFACT_READY; package_stale / REFRESH_REQUIRED before trigger",
+    "target": {
+      "agent_id": "fa7d16a7-2dae-4994-80b8-7435b3fcca47",
+      "agent_name": "04 Software Engineer",
+      "binding_plan_revision": "sha256:7f83bfd523e2c0da3cd0dac4568869f3c9937e2d3ae6c0dc66b9853094a27c22",
+      "instruction_bundle_revision": "sha256:a93e146d6586cf6f474148aeed092032e3a9c871ad3138ee1152d28108b5b98f",
+      "resolution_source": "U05-role-mapping:D:\\AI\\worktrees\\multica-memory-yzt-75-u07\\adapters\\multica\\agent-instructions",
+      "role": "software-engineer",
+      "role_name": "04 Software Engineer"
+    },
+    "task_ref": "multica://issue/YZT-900",
+    "terminal_status": "PACKAGE_STALE",
+    "transaction_id": "tx-u07-stale",
+    "transitions": [
+      "INIT",
+      "ISSUE_BOUND"
+    ],
+    "trigger": {
+      "confirmed": false,
+      "count": 0,
+      "runs": 0,
+      "type": "mention"
+    },
+    "uncertainty": [
+      "exactly-once is evidenced only by this transaction's observable ledger; platform-side atomicity of native mentions and run dispatch is not proven",
+      "native mention evidence is injected over the deployed platform's observable reply surface; distinguishing one real native agent mention from forged markdown relies on the bounded evidence contract validated here plus U06 issue-runs correlation — U12 owns live observation",
+      "the target SELF_CHECK runs inside this transaction as a Run-start boundary simulation; platform-level pre-run guarantees do not exist",
+      "assignee stability is proven against the observed issue responses at transaction start and finish; concurrent platform-side mutations between the two reads are not observable here",
+      "run correlation uses the observed issue-runs list-of-objects contract (id, issue_id, agent_id, status); extra fields are ignored; a missing required field fails closed; injected T10-style run evidence is a provenance check only and cannot override the listing"
+    ]
+  }
+}

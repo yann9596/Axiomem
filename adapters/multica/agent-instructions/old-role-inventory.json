@@ -1,7 +1,7 @@
 {
   "counts": {
     "active_to_migrate": 28,
-    "historical_only": 42,
+    "historical_only": 41,
     "negative_fixture": 27
   },
   "entries": [
@@ -481,32 +481,26 @@
     },
     {
       "classification": "historical_only",
-      "excerpt": "\"feature-reviewer\": AGENT_FR,",
-      "line": 52,
-      "path": "tools/tests/test_handoff_mention.py"
-    },
-    {
-      "classification": "historical_only",
-      "excerpt": "\"feature-reviewer\": AGENT_FR,",
-      "line": 59,
-      "path": "tools/tests/test_handoff_mention.py"
-    },
-    {
-      "classification": "historical_only",
       "excerpt": "# U02/YZT-69 + U05/YZT-73: feature-reviewer is retired without an",
-      "line": 678,
+      "line": 760,
       "path": "tools/tests/test_handoff_mention.py"
     },
     {
       "classification": "historical_only",
       "excerpt": "target=\"feature-reviewer\",",
-      "line": 682,
+      "line": 764,
       "path": "tools/tests/test_handoff_mention.py"
     },
     {
       "classification": "historical_only",
       "excerpt": "self.assertIn(\"feature-reviewer\", result[\"stop_reason\"] or \"\")",
-      "line": 689,
+      "line": 771,
+      "path": "tools/tests/test_handoff_mention.py"
+    },
+    {
+      "classification": "historical_only",
+      "excerpt": "result, _, _ = run_tx(target=\"05 Feature Reviewer\", tx=\"tx-live-05\")",
+      "line": 1424,
       "path": "tools/tests/test_handoff_mention.py"
     },
     {

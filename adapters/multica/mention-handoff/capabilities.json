@@ -1,0 +1,42 @@
+{
+  "captured_at": "2026-09-10T12:30:00Z",
+  "cli_version_observed": "v0.4.42",
+  "mode": "read_only_help_and_issue_runs_shape",
+  "live_mutations": 0,
+  "commands": {
+    "issue_get": {
+      "usage": "multica issue get <id> --output json",
+      "read_only": true,
+      "note": "binds the existing canonical issue; never guessed"
+    },
+    "issue_comment_add": {
+      "usage": "multica issue comment add <issue-id> --content-file <path> --output json",
+      "non_trigger": true,
+      "body_prefix": "/note",
+      "refused": ["mention://", "plain-text @Name as a trigger"]
+    },
+    "issue_runs": {
+      "usage": "multica issue runs <issue-id> [--active] [--siblings] --output json",
+      "active_statuses_from_help": ["queued", "dispatched", "running", "waiting_local_directory"],
+      "observed_json_contract": {
+        "type": "array_of_objects",
+        "required_fields": ["id", "issue_id", "agent_id", "status"],
+        "extra_fields_ignored": true,
+        "observed_on": "YZT-74 U06 accepted contract reused by U07",
+        "not_a_frozen_public_schema": true
+      },
+      "truncation": "siblings cap 20; stderr reports truncation; U07 treats truncation as RUN_STATE_UNDETERMINED"
+    },
+    "issue_assign": {
+      "usage": "refused on the mention route",
+      "sole_trigger_on_assignment_route": true,
+      "mention_route": "any assignment command is ROUTE_CONFLICT / audit fail"
+    }
+  },
+  "native_mention": {
+    "constructed_by_adapter": false,
+    "surface": "native_agent_reply",
+    "authorized_by": "MENTION_READY envelope",
+    "receipt_contract": "U07-mention-evidence/2.2 (T10-mention-evidence/1.0 accepted as historical provenance)"
+  }
+}

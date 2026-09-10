@@ -1,0 +1,31 @@
+{
+  "schema_version": "U07-historical-inventory/1.0",
+  "source": "CTX-HO-10 / YZT-65 tools/chandoff_mention.py",
+  "items": [
+    {"assumption": "existing canonical issue is reused; never created", "class": "retained"},
+    {"assumption": "assignee observed before and after; drift fails closed", "class": "retained"},
+    {"assumption": "adapter never constructs mention markdown or posts the trigger", "class": "retained"},
+    {"assumption": "exactly one non-trigger /note then MENTION_READY then one native mention", "class": "retained"},
+    {"assumption": "native receipt must prove one target-agent mention by the caller on native_agent_reply", "class": "retained"},
+    {"assumption": "plain text @Name, fabricated link, wrong author/issue/target fail closed", "class": "retained"},
+    {"assumption": "Assignment XOR Mention per transaction/package/handoff", "class": "retained"},
+    {"assumption": "ambiguous mention is MENTION_CONFIRMATION_REQUIRED and never retried", "class": "retained"},
+    {"assumption": "COMPLETED replay is idempotent; incomplete replay is refused", "class": "retained"},
+    {"assumption": "injected compose_fn; no model in orchestrator", "class": "retained"},
+    {"assumption": "simulation default; live requires separate authorization", "class": "retained"},
+    {"assumption": "PARTIAL default-stop; explicit policy to continue", "class": "retained"},
+    {"assumption": "T08 baseline mapping is identity authority", "class": "adapted", "note": "Mention uses U05 role-mapping.json / u05_mapping; t08_mapping remains in assignment.py for historical T10 compatibility only"},
+    {"assumption": "context-engineer is never a mention target", "class": "adapted", "note": "02 is exception-only; ordinary-path rejected; explicit unresolved_material_exception authorizes without ownership transfer"},
+    {"assumption": "role lookup by live display name including 05 Feature Reviewer", "class": "invalid", "note": "live old-role display name is refused; only staged V2.2 names/slugs resolve; feature-reviewer never aliases to delivery-reviewer"},
+    {"assumption": "injected T10-run-evidence is the run-correlation authority", "class": "adapted", "note": "U06 issue-runs list-of-objects contract is the correlation authority; injected evidence is provenance-only"},
+    {"assumption": "no artifact_ready_check / dependency digest", "class": "adapted", "note": "U04 artifact_gate + U10 cartifact bound before publish and re-checked before MENTION_READY"},
+    {"assumption": "no unexpected-run precheck", "class": "adapted", "note": "issue runs --active --siblings before publish and before MENTION_READY"},
+    {"assumption": "incomplete replay always REPLAY_REFUSED", "class": "adapted", "note": "crash recovery continues uniquely for pre-publish and post-publish-pre-mention; possibly-issued mention never retried"},
+    {"assumption": "T09/T12/T13 live activation ownership", "class": "deferred", "note": "U12 owns live enablement; U07 never exercises live writes"},
+    {"assumption": "cross-route direct-assignment fallback", "class": "deferred", "note": "U08; U07 emits CROSS_ROUTE_REQUIRED recommendation only"},
+    {"assumption": "Finding/Challenge semantic alignment", "class": "deferred", "note": "U09; T04 Finding gate reused as-is"},
+    {"assumption": "joint end-to-end replay", "class": "deferred", "note": "U11"},
+    {"assumption": "non-set skill removal path", "class": "deferred", "note": "U12 enablement blocker, unchanged"},
+    {"assumption": "T08 as current authority for 05 Feature Reviewer identity", "class": "invalid", "note": "U05 supersedes; 05 UUID maps only to delivery-reviewer"}
+  ]
+}

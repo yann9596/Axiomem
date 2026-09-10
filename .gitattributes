@@ -27,3 +27,5 @@ skills/delivery-review/** -text
 skills/product-quality-gate/** -text
 skills/multica-context-handoff/** -text
 adapters/multica/assignment-handoff/** -text
+# YZT-75: byte-stability for U07 mention evidence hashed in the U07 report.
+adapters/multica/mention-handoff/** -text
