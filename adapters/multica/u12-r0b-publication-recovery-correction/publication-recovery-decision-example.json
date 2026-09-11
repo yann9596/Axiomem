@@ -1,0 +1,76 @@
+{
+  "approval_ref": "multica://comment/01a09003-f830-79ac-b022-c7aaf2cf4039",
+  "approved_at": "2026-09-11T06:30:00Z",
+  "approved_by": "Yann (Human)",
+  "decision_digest": "sha256:4e47c949d233dd8985c5d3acaee94614afff9370480480efd488f699d91280ce",
+  "decision_id": "lead-u12-r0b-publication-recovery-1",
+  "design_digest": "sha256:0df4cec9a7cfb26a2b9146806280a2dcae4924f6cdb29190560ab17db32c8997",
+  "design_ref": "attachment/01a08ffa-604f-70c3-a03e-0d166505fa3d",
+  "disposition": "RECOVER_BLOCKED_PUBLICATION",
+  "execution_migration": {
+    "accepted_commit": "265d73bed6c80380febbf340bff6f2f212689ba2",
+    "accepted_tree": "48009494fffa0a353c131a1a4ba4da9a9c97d252",
+    "adapter_lf_digest": "sha256:cc25465db5f48f4125a78781af05eef43ca62fec1d71db0ec4328bf9877d72a8",
+    "adapter_raw_digest": "sha256:cc25465db5f48f4125a78781af05eef43ca62fec1d71db0ec4328bf9877d72a8",
+    "artifact_dependency_digest": "sha256:937521a64efecdc762090fbf8d914eabba89fe7a703b7cda896886807af5402f",
+    "note_file_digest": "sha256:3d871117c472053eba8f7cefc429282bdb9b836b6e3b14dd82d9f9d458f49983",
+    "store_file_digest": "sha256:50093f7fe9e58c646247d9a1371e98ef432db4739efe063bb16f6014afcb43a6"
+  },
+  "expected_blocker": {
+    "digest": "sha256:2ead481a3025a5ad7224b9c89055fdd73cc7bb5cedb1e31adf987b212cd7412f",
+    "evidence_code": "PUBLICATION_NOTE_NOT_FOUND",
+    "evidence_event": {
+      "digest": "sha256:239a4566839730b80fcccb259cda4ba2fb305b41696406a5d0ee931cfcb3c1b5",
+      "seq": 36
+    },
+    "reason": "PUBLICATION_PROVENANCE_INCOMPLETE",
+    "seq": 37
+  },
+  "expected_intent_revision": 4,
+  "expected_note": {
+    "author_id": "24f04aba-7da9-4371-bf89-685d7505a411",
+    "author_type": "agent",
+    "created_at": "2026-09-11T06:30:00Z",
+    "note_comment_id": "01a08ff0-bce4-79b6-9116-a830baca4049",
+    "observed_raw_digest": "sha256:0b9e1254f9e0855391bf07faf4a5660a33f725fe236242d0160db620b255c391",
+    "parent_id": null,
+    "rendered_raw_digest": "sha256:542a9860cf53a9f49fe54ccd6d5f6349d3687ad2ee954e0027786f4562372e03",
+    "revision": 1,
+    "source_task_id": "01a08f14-0000-7000-8000-000000000001",
+    "updated_at": "2026-09-11T06:30:00Z"
+  },
+  "expected_target_id": "01a0aaaa-bbbb-7ccc-8ddd-eeeeffff0000",
+  "human_approval_ref": "multica://comment/01a09003-f830-79ac-b022-c7aaf2cf4039",
+  "intent_id": "DI-78edb89da56d207e",
+  "lead_approval_ref": "multica://comment/01a08ffb-fb18-7135-bc19-c17297426127",
+  "original_create_recovery": {
+    "accepted_adapter_digest": "sha256:40ccf07dd088d6a4077213714deef45c83f46116478ccc462c203ef7f07641fa",
+    "accepted_commit": "da99c112093ea576a449a1f3c8ce355652805a40",
+    "decision_digest": "sha256:14c85a5353e3fa8ce4c312c432c1cd4a8cf568f18efcc5e59dd58893375061aa",
+    "execution_binding_digest": "sha256:c7175fa7c67a4a26d4a8512ea8c77790f3a78be1a85f9a9415c637da9e3d2ab6",
+    "proof_digest": "sha256:cb6a5a13596650146ccfbca7c248494ca35a87ce018e727202b55fe1737f1d88"
+  },
+  "publication_attempt": {
+    "digest": "sha256:16988e390c0a1d1a4d7da719a7b6376ce95e4e7573acda94862d75c63f6485cb",
+    "operation_id": "OP-519fa676cb9ae775",
+    "seq": 34
+  },
+  "purpose": "SINGLE_PUBLICATION_RECOVERY_COMMIT",
+  "schema": "u12-r0b-publication-recovery-decision/1.1",
+  "scope": "PUBLICATION_TRANSPORT_REPAIR",
+  "source_activation": {
+    "author_id": "24f04aba-7da9-4371-bf89-685d7505a411",
+    "author_type": "agent",
+    "comment_content_raw_digest": "sha256:f71d6fd3b1a39dde71fb47d35c4a8e0db86d77a40404e3bdc791848821d058a6",
+    "comment_id": "01a0ac71-0000-7000-8000-0000000000a1",
+    "envelope_digest": "sha256:7b00e0ee0b86ca7f03e2480ec090ba740744bc405ce982c3e50f02056ac265f0",
+    "package_id": "CTX-software-engineer-a49af6f711087856",
+    "parent_issue_id": "01a08921-207c-7a39-8a99-b431e75bed9f",
+    "request_attachment_id": "01a0ac71-0000-7000-8000-0000000000a3",
+    "request_raw_digest": "sha256:c36edbefdf0ab16519f8f9111fabd329c2050d732665ce6fed23284dcaa6e217",
+    "resolution_attachment_id": "01a0ac71-0000-7000-8000-0000000000a2",
+    "resolution_raw_digest": "sha256:ff45c905c4526531f582ecf593b4484693e0f910c39af8adbc20d5a1c04abbef",
+    "task_fingerprint": "sha256:8f67808703080ce8e05a50d939f90cadf2c0b433c4948a41a069d7f3346d416c"
+  },
+  "trigger_policy": "NO_TRIGGER_ARM_OR_CREATE"
+}

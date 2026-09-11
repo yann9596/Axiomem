@@ -1,0 +1,258 @@
+{
+  "adapter_digest_lf": "sha256:cc25465db5f48f4125a78781af05eef43ca62fec1d71db0ec4328bf9877d72a8",
+  "adapter_module": "tools/u12_r0_binding.py",
+  "decision_schema": "u12-r0b-publication-recovery-decision/1.1",
+  "live_access": false,
+  "migration_schema": "u12-r0b-publication-execution-migration/1.1",
+  "ok": true,
+  "passed": 10,
+  "previous_adapter_commit": "ac1e5b423cd3e065505304107997902d32d2a661",
+  "previous_adapter_digest": "sha256:37877f694c61ee13a098c2686f7a08cf55bfe40d95772f6e8cbee939e4991b56",
+  "production_ledger_access": false,
+  "proof_schema": "u12-r0b-publication-recovery-proof/1.1",
+  "rows": [
+    {
+      "observed": {
+        "assigns": 1,
+        "comment_adds": 1,
+        "creates": 1,
+        "migration_present": true,
+        "proof_schema": "u12-r0b-publication-recovery-proof/1.1",
+        "replay": {
+          "intent_id": "DI-50f26ea7d58ea110",
+          "ledger_commits": 0,
+          "migration_digest": "sha256:719fbe100bbf491a04a6f7100b652e04b6e5c95ba44fab249eae5e6b21971e29",
+          "next_action": "LEAD_DECISION_ARM_OR_STOP",
+          "note_comment_id": "01a08ff0-bce4-79b6-9116-a830baca4049",
+          "notes_sent": 0,
+          "outcome": "PUBLICATION_RECOVERED",
+          "platform_writes": 0,
+          "proof_digest": "sha256:6ecfb10f55b4510b99b53d1e8fac87e8fd1617d925d9eb39f31a2310f6711f89",
+          "replayed": true,
+          "revision": 5,
+          "status": "HANDOFF_PUBLISHED",
+          "triggers_issued": 0
+        },
+        "reruns": 0,
+        "result": {
+          "intent_id": "DI-50f26ea7d58ea110",
+          "ledger_commits": 1,
+          "migration_digest": "sha256:719fbe100bbf491a04a6f7100b652e04b6e5c95ba44fab249eae5e6b21971e29",
+          "next_action": "LEAD_DECISION_ARM_OR_STOP",
+          "note_comment_id": "01a08ff0-bce4-79b6-9116-a830baca4049",
+          "notes_sent": 0,
+          "outcome": "PUBLICATION_RECOVERED",
+          "platform_writes": 0,
+          "proof_digest": "sha256:6ecfb10f55b4510b99b53d1e8fac87e8fd1617d925d9eb39f31a2310f6711f89",
+          "revision": 5,
+          "status": "HANDOFF_PUBLISHED",
+          "triggers_issued": 0
+        },
+        "revision": 5,
+        "state": "HANDOFF_PUBLISHED"
+      },
+      "pass": true,
+      "required_outcome": "HANDOFF_PUBLISHED rev5; ledger_commits 1 then 0; zero native writes",
+      "row": "valid_exact_historical_chain_recovers_once",
+      "validation_focus": "the one approved recovery still commits once to HANDOFF_PUBLISHED rev5 with the v1.1 proof/migration, replays idempotently and issues no second publication/trigger"
+    },
+    {
+      "observed": {
+        "comment_adds": 1,
+        "outcome": "R0BValidationRefused: decision.source_activation must stay within the exact schema",
+        "state_still_blocked": true
+      },
+      "pass": true,
+      "required_outcome": "R0BValidationRefused and BLOCKED rev4 with no commit and no note",
+      "row": "lead_counterexample_source_activation_old_shape",
+      "validation_focus": "the independently reproduced counterexample payload (nonexistent comment/attachment and zero resolution digest, decision digest recomputed) must fail closed"
+    },
+    {
+      "observed": {
+        "downloads": 0,
+        "parent_reads": 1,
+        "result": {
+          "detail": "the parent activation record is missing or duplicated; the unique Lead-authored activation is required",
+          "intent_id": "DI-d44bb211b852835e",
+          "ledger_commits": 0,
+          "outcome": "RECOVERY_REFUSED",
+          "platform_writes": 0,
+          "reason": "PUBLICATION_PROVENANCE_INCOMPLETE",
+          "recovered": false,
+          "status": "BLOCKED"
+        },
+        "state_still_blocked": true
+      },
+      "pass": true,
+      "required_outcome": "RECOVERY_REFUSED PUBLICATION_PROVENANCE_INCOMPLETE; parent read performed; zero downloads and zero commit",
+      "row": "lead_counterexample_source_activation_nonexistent_ids",
+      "validation_focus": "the same attack re-expressed on the v1.1 schema: the resolver must actually read the parent activation record, find it missing and refuse instead of shape-checking"
+    },
+    {
+      "observed": {
+        "duplicate_activation": {
+          "downloads": 0,
+          "outcome": "RECOVERY_REFUSED",
+          "reason": "PUBLICATION_PROVENANCE_INCOMPLETE",
+          "stuck": true
+        },
+        "edited_activation": {
+          "downloads": 0,
+          "outcome": "RECOVERY_REFUSED",
+          "reason": "PUBLICATION_PROVENANCE_INCOMPLETE",
+          "stuck": true
+        },
+        "forged_digest": {
+          "downloads": 0,
+          "outcome": "RECOVERY_REFUSED",
+          "reason": "PUBLICATION_PROVENANCE_INCOMPLETE",
+          "stuck": true
+        },
+        "tampered_attachment_bytes": {
+          "downloads": 2,
+          "outcome": "RECOVERY_REFUSED",
+          "reason": "PUBLICATION_PROVENANCE_INCOMPLETE",
+          "stuck": true
+        },
+        "wrong_author": {
+          "downloads": 0,
+          "outcome": "RECOVERY_REFUSED",
+          "reason": "PUBLICATION_PROVENANCE_INCOMPLETE",
+          "stuck": true
+        }
+      },
+      "pass": true,
+      "required_outcome": "every variant RECOVERY_REFUSED and still BLOCKED rev4; the attachment bytes are actually downloaded and re-hashed",
+      "row": "resolved_source_activation_content_enforced",
+      "validation_focus": "recomputed raw attachment hashes, unique Lead-authored activation record and exact resolution/request fingerprints; missing, duplicate, edited or wrong-author records and false hashes refuse"
+    },
+    {
+      "observed": {
+        "human_mismatch": {
+          "detail": "the actual human approval comment does not match the accepted author/content; a fixed reference string alone is never authority",
+          "intent_id": "DI-7aeb2ae285b83d9b",
+          "ledger_commits": 0,
+          "outcome": "RECOVERY_REFUSED",
+          "platform_writes": 0,
+          "reason": "PUBLICATION_PROVENANCE_INCOMPLETE",
+          "recovered": false,
+          "status": "BLOCKED"
+        },
+        "lead_author_mismatch": {
+          "detail": "the actual lead_boundary approval comment does not match the accepted author/content; a fixed reference string alone is never authority",
+          "intent_id": "DI-38ea31698a5d0c87",
+          "ledger_commits": 0,
+          "outcome": "RECOVERY_REFUSED",
+          "platform_writes": 0,
+          "reason": "PUBLICATION_PROVENANCE_INCOMPLETE",
+          "recovered": false,
+          "status": "BLOCKED"
+        },
+        "stuck": true,
+        "stuck2": true
+      },
+      "pass": true,
+      "required_outcome": "both variants RECOVERY_REFUSED and still BLOCKED rev4",
+      "row": "actual_approval_authority_content_enforced",
+      "validation_focus": "the actual Human approval and Lead boundary comment author and content digests are read and pinned; a fixed reference string or a caller digest alone is never authority"
+    },
+    {
+      "observed": {
+        "stale": {
+          "detail": "target issue fields changed around the publication: title",
+          "intent_id": "DI-80f6e61120af1148",
+          "ledger_commits": 0,
+          "outcome": "RECOVERY_REFUSED",
+          "platform_writes": 0,
+          "reason": "PUBLICATION_DELTA_NOT_ATTRIBUTABLE",
+          "recovered": false,
+          "status": "BLOCKED"
+        },
+        "stuck": true,
+        "stuck2": true,
+        "substituted": {
+          "detail": "the parent activation record does not bind the exact E package/envelope/fingerprint/target/intent/attachments",
+          "intent_id": "DI-edc35331a84d6fab",
+          "ledger_commits": 0,
+          "outcome": "RECOVERY_REFUSED",
+          "platform_writes": 0,
+          "reason": "PUBLICATION_PROVENANCE_INCOMPLETE",
+          "recovered": false,
+          "status": "BLOCKED"
+        }
+      },
+      "pass": true,
+      "required_outcome": "both variants RECOVERY_REFUSED and still BLOCKED rev4",
+      "row": "fresh_request_reconstruction_enforced",
+      "validation_focus": "reconstruct from the freshly read target body plus the accepted explicit decisions, bind the unique actual E envelope/fingerprint and refuse a substituted or stale request"
+    },
+    {
+      "observed": {
+        "helper": "R0BValidationRefused: the committed runs observations do not correspond to the persisted raw responses; the projection is edited or substituted",
+        "reducer": "LedgerCorruptionError: publication recovery commit failed strict validation; fail closed: the committed runs observations do not correspond to the persisted raw responses; the projection is edited or substituted",
+        "replay": "R0BValidationRefused: the committed runs observations do not correspond to the persisted raw responses; the projection is edited or substituted",
+        "valid_commit": "HANDOFF_PUBLISHED",
+        "writer": "R0BValidationRefused: the committed runs observations do not correspond to the persisted raw responses; the projection is edited or substituted"
+      },
+      "pass": true,
+      "required_outcome": "helper/writer/replay R0BValidationRefused; reducer LedgerCorruptionError; valid record HANDOFF_PUBLISHED",
+      "row": "lead_counterexample_rehashed_runs_all_paths",
+      "validation_focus": "the independently reproduced proof counterexample (nonempty runs with every local digest recomputed) must be refused by the helper, the actual writer, the reducer and the committed replay - while the untampered record still commits once"
+    },
+    {
+      "observed": {
+        "deep_note_removed": {
+          "helper": "R0BValidationRefused: the derived comment inventory does not carry exactly one note matching the rendered or observed raw identity; duplicates, R/R-minus-one pairs and missing notes all refuse",
+          "reducer": "LedgerCorruptionError: publication recovery commit failed strict validation; fail closed: the derived comment inventory does not carry exactly one note matching the rendered or observed raw identity; duplicates, R/R-minus-one pairs and missing notes all refuse",
+          "stuck": true
+        },
+        "projection_mismatch": {
+          "helper": "R0BValidationRefused: the committed comments observations do not correspond to the persisted raw responses; the projection is edited or substituted",
+          "reducer": "LedgerCorruptionError: publication recovery commit failed strict validation; fail closed: the committed comments observations do not correspond to the persisted raw responses; the projection is edited or substituted",
+          "stuck": true
+        },
+        "relabeled_create": {
+          "helper": "R0BValidationRefused: a stored shared-history classification is relabelled; the record semantics do not reproduce the committed label",
+          "reducer": "LedgerCorruptionError: publication recovery commit failed strict validation; fail closed: a stored shared-history classification is relabelled; the record semantics do not reproduce the committed label",
+          "stuck": true
+        },
+        "relabeled_ownership": {
+          "helper": "R0BValidationRefused: a stored shared-history classification is relabelled; the record semantics do not reproduce the committed label",
+          "reducer": "LedgerCorruptionError: publication recovery commit failed strict validation; fail closed: a stored shared-history classification is relabelled; the record semantics do not reproduce the committed label",
+          "stuck": true
+        }
+      },
+      "pass": true,
+      "required_outcome": "every variant refused in helper and reducer; still BLOCKED rev4",
+      "row": "semantic_rehash_tampering_refused",
+      "validation_focus": "raw-response/projection mismatch, a removed note rehashed in both the raw responses and the projection, and shared commands relabelled as reads with a recomputed classification digest are all refused by semantics, not by digests"
+    },
+    {
+      "observed": {
+        "absence": "R0BValidationRefused: publication recovery proof must stay within the exact schema",
+        "authority_edit": "R0BValidationRefused: the committed human approval identity/content does not equal the accepted authority",
+        "cross_intent": "R0BValidationRefused: the publication recovery proof belongs to a different intent (cross-intent proof refused)",
+        "old_schema": "R0BValidationRefused: publication recovery proof schema is unsupported; an old or hash-only proof is never accepted recovery authority"
+      },
+      "pass": true,
+      "required_outcome": "every variant R0BValidationRefused",
+      "row": "corrected_proof_content_fences",
+      "validation_focus": "absence, edits, cross-intent copying and the frozen v1.0 schema are never accepted as recovery authority"
+    },
+    {
+      "observed": {
+        "decision": "R0BValidationRefused: publication recovery decision schema is unsupported; an old or hash-only disposition is never accepted",
+        "new_loader_v1_0_decision": "R0BValidationRefused: publication recovery decision schema is unsupported; an old or hash-only disposition is never accepted",
+        "new_loader_v1_0_proof": "R0BValidationRefused: publication recovery proof schema is unsupported; an old or hash-only proof is never accepted recovery authority",
+        "proof": "R0BValidationRefused: publication recovery proof must stay within the exact schema",
+        "reducer": "LedgerCorruptionError: publication recovery commit failed strict validation; fail closed: publication recovery proof must stay within the exact schema"
+      },
+      "pass": true,
+      "required_outcome": "every old/legacy variant refused",
+      "row": "old_reader_and_v1_0_payload_refusal",
+      "validation_focus": "the immediately previous ac1e5b4 reader refuses every corrected payload and the new loader refuses the frozen v1.0 decision/proof (no silent upgrade, no rollback readability)"
+    }
+  ],
+  "schema": "u12-r0b-publication-recovery-correction-matrix/1.0",
+  "total": 10
+}
