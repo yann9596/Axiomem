@@ -1,0 +1,421 @@
+{
+  "adapter_digest": "sha256:37877f694c61ee13a098c2686f7a08cf55bfe40d95772f6e8cbee939e4991b56",
+  "adapter_raw_digest": "sha256:37877f694c61ee13a098c2686f7a08cf55bfe40d95772f6e8cbee939e4991b56",
+  "approved_exception": {
+    "design_digest": "sha256:0df4cec9a7cfb26a2b9146806280a2dcae4924f6cdb29190560ab17db32c8997",
+    "design_ref": "attachment/01a08ffa-604f-70c3-a03e-0d166505fa3d",
+    "human_approval_ref": "multica://comment/01a09003-f830-79ac-b022-c7aaf2cf4039",
+    "lead_boundary_ref": "multica://comment/01a08ffb-fb18-7135-bc19-c17297426127"
+  },
+  "branch": "yzt-84-u12-r0b-forward-adapter",
+  "execution_migration_commit": "09e109182ba4e54d3d50b2f8487470b84c1a902a",
+  "kind": "u12_r0b_publication_transport_acceptance_matrix",
+  "publication_migration_schema": "u12-r0b-publication-execution-migration/1.0",
+  "publication_recovery_decision_schema": "u12-r0b-publication-recovery-decision/1.0",
+  "publication_recovery_op": "publication_recovery_commit_v1",
+  "publication_recovery_proof_schema": "u12-r0b-publication-recovery-proof/1.0",
+  "publication_transport_profile": "publication-single-terminal-lf-v1",
+  "rows": [
+    {
+      "observed": {
+        "attempts": 1,
+        "blocker_reason": "PUBLICATION_PROVENANCE_INCOMPLETE",
+        "comment_adds": 1,
+        "create_commands": 1,
+        "note_not_found_on_old_confirm": true,
+        "ownership": 1,
+        "relation": {
+          "accepted": true,
+          "detail": "",
+          "reason": null,
+          "relation": "single-terminal-lf-removed",
+          "removed_lf": true
+        },
+        "reruns": 0,
+        "responses": 1,
+        "revision": 4,
+        "state": "BLOCKED"
+      },
+      "pass": true,
+      "required_outcome": "BLOCKED rev4 with the exact relation; no note resend; every other predicate verified",
+      "row": "1_real_observation_shape",
+      "validation_focus": "real observation shape: R single LF, O=R[:-1]; the old predicate NOTE_NOT_FOUND; the new historical proof passes the body relation and still verifies every other predicate"
+    },
+    {
+      "observed": {
+        "binding_body_digest": "sha256:194715642cbf7b5b921114358d1f4cd842dc0b4277cf3ac6b9633ac5b6f0581e",
+        "binding_body_digest_method": "raw_utf8",
+        "commits": 1,
+        "ledger_commits": 1,
+        "no_duplicate_native_writes": true,
+        "observed_raw_digest": "sha256:194715642cbf7b5b921114358d1f4cd842dc0b4277cf3ac6b9633ac5b6f0581e",
+        "platform_writes": 0,
+        "recovery_issued_reads_only": true,
+        "replay_idempotent": true,
+        "replay_ledger_commits": 0,
+        "revision": 5,
+        "status": "HANDOFF_PUBLISHED"
+      },
+      "pass": true,
+      "required_outcome": "one commit to HANDOFF_PUBLISHED rev5; replay is idempotent with zero new commits and zero sends",
+      "row": "2_exact_recovered_da99c11_chain",
+      "validation_focus": "exact old create-recovered da99c11 intent, ownership, E, one attempt, revision4 blocker; the controlled migration commits exactly once to revision5 with no duplicate create/ownership/publication/trigger"
+    },
+    {
+      "observed": {
+        "attempt_keeps_rendered": true,
+        "binding_binds_o": true,
+        "binding_body_digest_method": "raw_utf8",
+        "comment_adds": 1,
+        "file_bytes_equal_transport": true,
+        "o_equals_t": true,
+        "profile": "publication-single-terminal-lf-v1",
+        "rendered_ends_lf_fence_lf": true,
+        "sent_has_no_bom": true,
+        "status": "HANDOFF_PUBLISHED",
+        "transport_is_render_minus_one_lf": true
+      },
+      "pass": true,
+      "required_outcome": "verified exact bytes sent once; O==T; separate R/T/O identities persisted",
+      "row": "3_future_transport_o_equals_t",
+      "validation_focus": "future send T with no terminal LF; the simulated CLI link that deletes one terminal LF has nothing to delete: file bytes are T, O=T, exactly one comment_add"
+    },
+    {
+      "observed": [
+        {
+          "accepted": false,
+          "pass": true,
+          "reason": "R0B_TRANSPORT_SOURCE_UNSUPPORTED",
+          "variant": "leading_ws"
+        },
+        {
+          "accepted": false,
+          "pass": true,
+          "reason": "R0B_TRANSPORT_SOURCE_UNSUPPORTED",
+          "variant": "internal_ws"
+        },
+        {
+          "accepted": false,
+          "pass": true,
+          "reason": "R0B_TRANSPORT_SOURCE_UNSUPPORTED",
+          "variant": "crlf"
+        },
+        {
+          "accepted": false,
+          "pass": true,
+          "reason": "R0B_TRANSPORT_SOURCE_UNSUPPORTED",
+          "variant": "bom"
+        },
+        {
+          "accepted": false,
+          "pass": true,
+          "reason": "R0B_TRANSPORT_SOURCE_UNSUPPORTED",
+          "variant": "trailing_space"
+        },
+        {
+          "accepted": false,
+          "pass": true,
+          "reason": "R0B_TRANSPORT_SOURCE_UNSUPPORTED",
+          "variant": "double_lf"
+        },
+        {
+          "accepted": false,
+          "pass": true,
+          "reason": "R0B_TRANSPORT_SOURCE_UNSUPPORTED",
+          "variant": "unicode_change"
+        },
+        {
+          "accepted": true,
+          "pass": true,
+          "reason": null,
+          "variant": "exact"
+        },
+        {
+          "accepted": false,
+          "pass": true,
+          "variant": "missing_renderer_tail"
+        },
+        {
+          "accepted": false,
+          "pass": true,
+          "variant": "crlf_tail"
+        },
+        {
+          "accepted": false,
+          "pass": true,
+          "variant": "double_terminal_lf"
+        },
+        {
+          "accepted": false,
+          "pass": true,
+          "variant": "trailing_space_before_lf"
+        },
+        {
+          "accepted": false,
+          "pass": true,
+          "variant": "bom_body"
+        }
+      ],
+      "pass": true,
+      "required_outcome": "every non-exact variant refuses; a wrong renderer shape stops without guessing",
+      "row": "4_raw_relation_refusal_matrix",
+      "validation_focus": "leading/internal whitespace, CRLF, BOM, trailing spaces, doubled terminal LF, Unicode changes: the raw relation refuses and JSON parseability never exempts"
+    },
+    {
+      "observed": [
+        {
+          "detail": "expected exactly one note matching the rendered or observed raw identity, found 0; duplicates and R/R-minus-one pairs are never resolved by choice",
+          "pass": true,
+          "reason": "PUBLICATION_PROVENANCE_INCOMPLETE",
+          "variant": "zero_note"
+        },
+        {
+          "detail": "expected exactly one note matching the rendered or observed raw identity, found 2; duplicates and R/R-minus-one pairs are never resolved by choice",
+          "pass": true,
+          "reason": "PUBLICATION_PROVENANCE_INCOMPLETE",
+          "variant": "two_identical_notes"
+        },
+        {
+          "detail": "expected exactly one note matching the rendered or observed raw identity, found 2; duplicates and R/R-minus-one pairs are never resolved by choice",
+          "pass": true,
+          "reason": "PUBLICATION_PROVENANCE_INCOMPLETE",
+          "variant": "r_and_r_minus_one_pair"
+        },
+        {
+          "detail": "the observed note author_id does not match the disposition",
+          "pass": true,
+          "reason": "PUBLICATION_PROVENANCE_INCOMPLETE",
+          "variant": "wrong_author"
+        },
+        {
+          "detail": "the observed note source_task_id does not match the disposition",
+          "pass": true,
+          "reason": "PUBLICATION_PROVENANCE_INCOMPLETE",
+          "variant": "wrong_source_run"
+        },
+        {
+          "detail": "the observed note parent_id does not match the disposition",
+          "pass": true,
+          "reason": "PUBLICATION_PROVENANCE_INCOMPLETE",
+          "variant": "wrong_thread"
+        },
+        {
+          "detail": "the observed note updated_at does not match the disposition",
+          "pass": true,
+          "reason": "PUBLICATION_PROVENANCE_INCOMPLETE",
+          "variant": "edited_timestamp"
+        },
+        {
+          "detail": "the observed note revision does not match the disposition",
+          "pass": true,
+          "reason": "PUBLICATION_PROVENANCE_INCOMPLETE",
+          "variant": "edited_revision"
+        },
+        {
+          "detail": "expected exactly one note matching the rendered or observed raw identity, found 0; duplicates and R/R-minus-one pairs are never resolved by choice",
+          "pass": true,
+          "reason": "PUBLICATION_PROVENANCE_INCOMPLETE",
+          "variant": "edited_body"
+        }
+      ],
+      "pass": true,
+      "required_outcome": "typed refusal keeping BLOCKED; no note ever resent",
+      "row": "5_note_candidate_refusals",
+      "validation_focus": "zero note, two identical notes, one R plus one R-minus-one note, wrong author/source/thread/timestamps/revision: refuse with no resend and no latest-pick"
+    },
+    {
+      "observed": [
+        {
+          "detail": "the before/after comment delta is not exactly the single observed note",
+          "pass": true,
+          "reason": "PUBLICATION_DELTA_NOT_ATTRIBUTABLE",
+          "variant": "extra_comment"
+        },
+        {
+          "detail": "target issue fields changed around the publication: title",
+          "pass": true,
+          "reason": "PUBLICATION_DELTA_NOT_ATTRIBUTABLE",
+          "variant": "issue_projection_drift"
+        },
+        {
+          "detail": "timeline activity delta around the publication is not attributable",
+          "pass": true,
+          "reason": "PUBLICATION_DELTA_NOT_ATTRIBUTABLE",
+          "variant": "timeline_delta"
+        },
+        {
+          "detail": "the target already carries run(s): RUN-DONE",
+          "pass": true,
+          "reason": "R0B_MATERIAL_STALE",
+          "variant": "terminal_run"
+        },
+        {
+          "pass": true,
+          "reason": "EVIDENCE_REVISION_MOVING",
+          "variant": "second_read_drift"
+        },
+        {
+          "pass": true,
+          "reason": "R0B_PREFLIGHT_INPUT_MISSING",
+          "variant": "missing_findings_source"
+        }
+      ],
+      "pass": true,
+      "required_outcome": "typed refusals keeping BLOCKED, zero writes",
+      "row": "6_delta_and_material_refusals",
+      "validation_focus": "target projection drift, timeline add/remove/edit, baseline note change, any active or terminal run, and a drifting second read all refuse"
+    },
+    {
+      "observed": {
+        "inspection_reads_pre_migration": true,
+        "new_loader_accepts_post_migration": true,
+        "new_loader_refuses_pre_migration": true,
+        "old_da99c11_reader_refuses_new_op": true,
+        "recovered": "HANDOFF_PUBLISHED"
+      },
+      "pass": true,
+      "required_outcome": "pre-migration bytes refuse under new bytes; old readers refuse the new op; post-migration load validates the chain",
+      "row": "7_loader_fences",
+      "validation_focus": "the new loader without migration and the old da99c11 reader on the new op both fail closed; inspection may only read the historical evidence"
+    },
+    {
+      "observed": [
+        {
+          "refused": true,
+          "tamper": "old_execution_binding_digest"
+        },
+        {
+          "refused": true,
+          "tamper": "old_recovery_proof_digest"
+        },
+        {
+          "refused": true,
+          "tamper": "old_decision_digest"
+        },
+        {
+          "refused": true,
+          "tamper": "store_file_digest"
+        },
+        {
+          "refused": true,
+          "tamper": "note_file_digest"
+        },
+        {
+          "refused": true,
+          "tamper": "new_adapter_lf_digest"
+        },
+        {
+          "refused": true,
+          "tamper": "new_adapter_raw_digest"
+        },
+        {
+          "refused": true,
+          "tamper": "artifact_dependency_digest"
+        },
+        {
+          "refused": true,
+          "tamper": "cross_intent_copy"
+        },
+        {
+          "refused": true,
+          "tamper": "wrong_commit_revision"
+        },
+        {
+          "refused": true,
+          "tamper": "edited_committed_proof"
+        }
+      ],
+      "pass": true,
+      "required_outcome": "every tampered identity refuses; no adapter-only hash substitution or cross-intent copy",
+      "row": "8_migration_and_proof_tamper_refusals",
+      "validation_focus": "old proof/decision edits, copied migrations, hash-only acceptance and changed new dependency bytes all refuse"
+    },
+    {
+      "observed": {
+        "duplicate_commit_reducer_refused": true,
+        "duplicate_commit_writer_refused": true,
+        "forged_revision_refused": true,
+        "not_blocked_on_tail": true,
+        "ordinary_blocked_exit_refused": true,
+        "prepared_record_was_never_committed": true,
+        "single_commit": true
+      },
+      "pass": true,
+      "required_outcome": "no writer/reducer path admits a non-incident or duplicate commit",
+      "row": "9_writer_reducer_refusals",
+      "validation_focus": "ordinary BLOCKED -> PUBLISHED, wrong reason/revision/attempt and a duplicate recovery commit are refused by both writer and reducer"
+    },
+    {
+      "observed": [
+        {
+          "pass": true,
+          "variant": "other_writer_lease"
+        },
+        {
+          "detail": "an unexpected shared tail record appeared at the same revision; the append is refused",
+          "pass": true,
+          "variant": "foreign_tail_command"
+        },
+        {
+          "detail": "a conflicting open intent owns the same logical task key; no commit",
+          "pass": true,
+          "variant": "conflicting_logical_intent"
+        }
+      ],
+      "pass": true,
+      "required_outcome": "the OS-lock recheck refuses every interleaving",
+      "row": "10_lease_tail_conflict_refusals",
+      "validation_focus": "missing/expired/other-holder lease, CAS drift, a shared tail command inserted at the same revision and a competing intent on the same logical key refuse with no commit"
+    },
+    {
+      "observed": {
+        "bad_line_fails_closed": true,
+        "crash_left_blocked": true,
+        "one_commit": true,
+        "recovered_after_crash": true,
+        "replay_idempotent": true,
+        "replay_zero_new_commits": true
+      },
+      "pass": true,
+      "required_outcome": "no second publication and no second commit ever",
+      "row": "11_crash_replay_corruption",
+      "validation_focus": "crash before commit, crash after commit, restart, the same decision replayed and a corrupt ledger line: uncommitted never executes, committed is idempotent, corruption fails closed"
+    },
+    {
+      "observed": {
+        "arm_added_reads": true,
+        "armed": "TRIGGER_READY",
+        "assign_commands": 1,
+        "checkpoints": [
+          "ARM",
+          "TRIGGER"
+        ],
+        "comment_adds": 1,
+        "create_commands": 1,
+        "no_trigger_from_recovery": true,
+        "recovered": "HANDOFF_PUBLISHED",
+        "recovery_was_read_only": true,
+        "reruns": 1,
+        "triggered": "RUN_CORRELATED"
+      },
+      "pass": true,
+      "required_outcome": "zero trigger at recovery; one strict rerun after arm; one create, one ownership, one note in total",
+      "row": "12_post_recovery_lifecycle",
+      "validation_focus": "after recovery the arm/trigger/restart paths exactly re-check the O-bound note and run the fresh artifact/request/SELF_CHECK/strict gates; recovery issues zero triggers and the later authorized path issues at most one"
+    },
+    {
+      "observed": {
+        "reruns": 0,
+        "status": "REFRESH_REQUIRED"
+      },
+      "pass": true,
+      "required_outcome": "typed stop, zero triggers",
+      "row": "13_post_recovery_note_drift",
+      "validation_focus": "a note-relation drift after recovery refuses at the fresh preflight without a trigger"
+    }
+  ],
+  "rows_passed": 13,
+  "rows_total": 13,
+  "task": "YZT-84",
+  "verdict": "ALL_PUBLICATION_TRANSPORT_VALIDATION_ROWS_PASS"
+}

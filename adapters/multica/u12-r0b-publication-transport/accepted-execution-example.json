@@ -1,0 +1,9 @@
+{
+  "accepted_commit": "09e109182ba4e54d3d50b2f8487470b84c1a902a",
+  "accepted_tree": "30481bfabaedd0c88f927e9e061eed2296967a42",
+  "adapter_lf_digest": "sha256:37877f694c61ee13a098c2686f7a08cf55bfe40d95772f6e8cbee939e4991b56",
+  "adapter_raw_digest": "sha256:37877f694c61ee13a098c2686f7a08cf55bfe40d95772f6e8cbee939e4991b56",
+  "artifact_dependency_digest": "sha256:937521a64efecdc762090fbf8d914eabba89fe7a703b7cda896886807af5402f",
+  "note_file_digest": "sha256:3d871117c472053eba8f7cefc429282bdb9b836b6e3b14dd82d9f9d458f49983",
+  "store_file_digest": "sha256:50093f7fe9e58c646247d9a1371e98ef432db4739efe063bb16f6014afcb43a6"
+}
