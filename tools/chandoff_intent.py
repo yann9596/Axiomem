@@ -1622,10 +1622,21 @@ def new_intent_id(*, source_task_id: str, logical_task_key: str,
 
 def _latest_field(intent: dict, key: str):
     value = intent["fields"].get(key)
-    for transition in reversed(intent["transitions"]):
+    # Regular transitions and the registered extension commits both carry
+    # field updates; the later record by ledger sequence wins. Without an
+    # extension commit this is byte-identical to the original transition-only
+    # lookup.
+    candidates = []
+    for transition in intent["transitions"]:
         fields = transition.get("fields") or {}
         if key in fields:
-            return fields[key]
+            candidates.append((transition.get("seq") or 0, fields[key]))
+    for commit in intent.get("recovery_commits") or []:
+        fields = commit.get("fields") or {}
+        if key in fields:
+            candidates.append((commit.get("seq") or 0, fields[key]))
+    if candidates:
+        return max(candidates, key=lambda item: item[0])[1]
     return value
 
 

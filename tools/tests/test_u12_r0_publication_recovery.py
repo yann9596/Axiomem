@@ -636,9 +636,16 @@ class HistoricalShapeTests(unittest.TestCase):
         self.assertEqual(
             u12.canonical_json(data_after["execution_context"]),
             u12.canonical_json(data_before["execution_context"]))
+        # only the post-publication baseline is added to the target binding;
+        # every pre-publication field is preserved byte-for-byte
         self.assertEqual(
-            u12.canonical_json(data_after["target_binding"]),
-            u12.canonical_json(data_before["target_binding"]))
+            {k: v for k, v in data_after["target_binding"].items()
+             if not k.startswith("post_publication")},
+            {k: v for k, v in data_before["target_binding"].items()
+             if not k.startswith("post_publication")})
+        self.assertEqual(
+            data_after["target_binding"]["post_publication_revision"],
+            fx.cli.issues[TARGET_ID]["revision"])
         self.assertTrue(fx.ledger_bytes().startswith(ledger_before))
         self.assertEqual(len(fx.store.read_records()), records_before + 4)
 
