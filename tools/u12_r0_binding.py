@@ -2666,6 +2666,15 @@ def _publication_commit_fields(intent: dict, data: dict, proof: dict,
     }
     binding["publication_recovery_proof"] = dict(proof)
     binding["publication_execution_migration"] = dict(migration)
+    target = dict(binding.get("target_binding") or {})
+    after_issue = proof["observations"]["target_issue"] or {}
+    target.update({
+        "post_publication_revision": after_issue.get("revision"),
+        "post_publication_snapshot_digest":
+            digest(issue_projection(after_issue)),
+        "post_publication_projection": issue_projection(after_issue),
+    })
+    binding["target_binding"] = target
     allowed_top = {
         "note_comment_id", "publish_receipt_digest", "published_at",
         "expected_issue_revision", "expected_status_category",
@@ -2782,12 +2791,37 @@ def validate_publication_recovery_commit_record(record: dict,
             "the recovery commit carries no namespaced binding")
     for key, old_value in data.items():
         if key in ("phase", "publication_binding", "publication_recovery_proof",
-                   "publication_execution_migration"):
+                   "publication_execution_migration", "target_binding"):
             continue
         if canonical_json(binding.get(key)) != canonical_json(old_value):
             raise R0BValidationRefused(
                 "the recovery commit would rewrite a preserved original "
                 "binding section", section=key)
+    old_target = data.get("target_binding") or {}
+    new_target = binding.get("target_binding")
+    if not isinstance(new_target, dict):
+        raise R0BValidationRefused(
+            "the recovery commit carries no target binding")
+    target_extras = sorted(set(new_target) - set(old_target) - {
+        "post_publication_revision", "post_publication_snapshot_digest",
+        "post_publication_projection"})
+    if target_extras:
+        raise R0BValidationRefused(
+            "the recovery commit would add unapproved target-binding fields",
+            fields=target_extras)
+    for key, old_value in old_target.items():
+        if canonical_json(new_target.get(key)) != canonical_json(old_value):
+            raise R0BValidationRefused(
+                "the recovery commit would rewrite a preserved target-binding "
+                "field", field=key)
+    after_issue = proof["observations"]["target_issue"] or {}
+    if new_target.get("post_publication_revision") != \
+            after_issue.get("revision") or \
+            canonical_json(new_target.get("post_publication_projection")) != \
+            canonical_json(issue_projection(after_issue)):
+        raise R0BValidationRefused(
+            "the recovery commit target baseline does not match the committed "
+            "observation")
     if canonical_json(binding.get("execution_binding")) != \
             canonical_json(data.get("execution_binding")) or \
             canonical_json(binding.get("recovery_proof")) != \

@@ -640,7 +640,7 @@ class HistoricalShapeTests(unittest.TestCase):
             u12.canonical_json(data_after["target_binding"]),
             u12.canonical_json(data_before["target_binding"]))
         self.assertTrue(fx.ledger_bytes().startswith(ledger_before))
-        self.assertEqual(len(fx.store.read_records()), records_before + 3)
+        self.assertEqual(len(fx.store.read_records()), records_before + 4)
 
     def test_recovery_is_one_single_fsync_commit_record(self):
         fx = self.fx
@@ -665,6 +665,9 @@ class HistoricalShapeTests(unittest.TestCase):
 
     def test_ordinary_blocked_exit_stays_refused(self):
         fx = self.fx
+        self.assertNotIn(o2.S_HANDOFF_PUBLISHED,
+                         o2.TRANSITIONS[o2.S_BLOCKED])
+        fx.store.claim(fx.intent_id, DISPATCHER)
         with self.assertRaises(o2.IllegalTransitionError):
             fx.store.transition(
                 fx.intent_id, o2.S_HANDOFF_PUBLISHED,
@@ -958,14 +961,14 @@ class RecoveryRefusalTests(unittest.TestCase):
 
     def test_wrong_decision_target_and_attempt_digest_refuse(self):
         fx = self.fx
+        # a forged target is a hard validation refusal before any commit
         decision = fx.decision(expected_target_id=TARGET_AGENT)
-        result = fx.recover(decision=decision,
-                            accepted_execution=dict(
-                                decision["execution_migration"]))
-        # actual execution migration matches; but the target mismatch is
-        # caught by the proof/predicate binding, never silently accepted
-        assert_recovery_refused(
-            self, fx, result, u12.REASON_PUBLICATION_PROVENANCE)
+        with self.assertRaises(u12.R0BValidationRefused):
+            fx.recover(decision=decision,
+                       accepted_execution=dict(
+                           decision["execution_migration"]))
+        self.assertEqual(fx.store.get(fx.intent_id)["state"], o2.S_BLOCKED)
+        # a forged attempt operation id is a typed stop that keeps BLOCKED
         decision = fx.decision()
         decision["publication_attempt"]["operation_id"] = "OP-forged"
         decision["decision_digest"] = u12.digest(
@@ -1183,22 +1186,28 @@ class CrashReplayTests(unittest.TestCase):
     def test_shared_tail_insertion_at_same_revision_refuses(self):
         fx = self.fx
         record, bundle, _decision = fx.prepare_commit()
+        claim = fx.store.claim(fx.intent_id, DISPATCHER)
+        expected = [u12.digest(claim["record"])]
         # a foreign shared command appears after the audited prefix at the
-        # same intent revision
+        # same intent revision; the tail no longer matches what the proof
+        # observed, so the commit is refused
         fx.store.append({
             "kind": "command", "transaction_id": "tx-foreign",
             "command_class": o2.C_READ,
             "argv": ["multica", "issue", "get", TARGET_ID, "--output", "json"]})
-        with self.assertRaises(u12.PreflightRefusal):
+        with self.assertRaises(u12.PreflightRefusal) as caught:
             fx.factory._commit_publication_recovery(
                 fx.intent_id, record=record, expected_revision=4,
-                expected_tail_digests=[], prefix_count=0,
+                expected_tail_digests=expected,
+                prefix_count=bundle["ledger_prefix_count"],
                 prefix_raw_digest=bundle["ledger_prefix_raw_digest"])
+        self.assertIn("shared tail", str(caught.exception))
         self.assertEqual(fx.store.get(fx.intent_id)["state"], o2.S_BLOCKED)
 
     def test_conflicting_open_intent_on_the_same_logical_key_refuses(self):
         fx = self.fx
         record, bundle, decision = fx.prepare_commit()
+        claim = fx.store.claim(fx.intent_id, DISPATCHER)
         original = fx.store.get(fx.intent_id)["fields"]
         twin_id = "DI-" + "f" * 16
         twin = {
@@ -1216,14 +1225,17 @@ class CrashReplayTests(unittest.TestCase):
             "provenance": {"fixture": True},
             "state": o2.S_INTENT_RECORDED,
         }
-        fx.store.append({
+        twin_record = fx.store.append({
             "kind": "intent", "record_type": o2.INTENT_RECORD_TYPE,
             "schema_version": o2.O2_SCHEMA, "op": "recorded",
             "intent_id": twin_id, "at": CLOCK, "intent": twin})
+        expected = [u12.digest(claim["record"]),
+                    u12.digest(twin_record)]
         with self.assertRaises(u12.PreflightRefusal) as caught:
             fx.factory._commit_publication_recovery(
                 fx.intent_id, record=record, expected_revision=4,
-                expected_tail_digests=[], prefix_count=0,
+                expected_tail_digests=expected,
+                prefix_count=bundle["ledger_prefix_count"],
                 prefix_raw_digest=bundle["ledger_prefix_raw_digest"])
         self.assertIn("conflicting", str(caught.exception).lower())
         self.assertEqual(fx.store.get(fx.intent_id)["state"], o2.S_BLOCKED)
