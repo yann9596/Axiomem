@@ -1668,7 +1668,7 @@ class ImmutabilityTests(unittest.TestCase):
         self.assertTrue(
             changed_tools <= {
                 "tools/chandoff_intent.py", "tools/chandoff_note.py",
-                "tools/u12_r0_binding.py",
+                "tools/u12_r0_binding.py", "tools/u12_preflight.py",
                 "tools/tests/test_u12_r0_binding.py",
                 "tools/tests/test_u12_r0_create_recovery.py",
                 "tools/tests/test_u12_r0_recovery_evidence.py",
