@@ -18,10 +18,10 @@
   "code_commit": "09e109182ba4e54d3d50b2f8487470b84c1a902a",
   "contract_version": "U12-R0B/1.1",
   "digest_convention": "every listed digest is the LF-normalized SHA256 of the committed blob at evidence_commit; verify with git show <commit>:<path> and normalize CRLF to LF before hashing",
-  "evidence_commit": "ffbd5cfad43a1c37c4e57e2b9ec59345038516fb",
+  "evidence_commit": "0ad2113bcd5417ad79b910a62edc277799ef1f8b",
   "files": {
     "adapters/multica/u12-r0b-publication-transport/OPERATOR_INSTRUCTIONS.md": "sha256:cf438517113f8362f828e8a65004574636897c91b51a738b57834abaad9e914c",
-    "adapters/multica/u12-r0b-publication-transport/U12_R0B_PUBLICATION_TRANSPORT_REPORT.md": "sha256:b4d3f5b5b9a71b49e0fd740aaa3a6683fcc43e6d31505cfe3de920a74d647298",
+    "adapters/multica/u12-r0b-publication-transport/U12_R0B_PUBLICATION_TRANSPORT_REPORT.md": "sha256:90e896d3338f76362aae86bd343af6ffb182653776c3aaa1559865cb42e87457",
     "adapters/multica/u12-r0b-publication-transport/accepted-execution-example.json": "sha256:5be235917234bd5f7d60306d81960f8efc1b54b2ebabdb329d7f9d8377afbac1",
     "adapters/multica/u12-r0b-publication-transport/generate_examples.py": "sha256:1a078acfd286958645135857f498b3081ec4e0476fba816cd6b1441c5be651da",
     "adapters/multica/u12-r0b-publication-transport/publication-recovery-decision-example.json": "sha256:6eec726eab7b9746aea9a880fa98a9213a6059938cb1b62073f788d62d735282",
@@ -66,7 +66,7 @@
   "tests": {
     "create_recovery_suite": "63/63 OK",
     "frozen_lifecycle_suite": "78/78 OK",
-    "full_tools_tests": "1256 run / 4 failures-or-errors, all pre-classified P0R genesis pin drift in test_u12_p0r_evidence.py (frozen bundle deliberately not rewritten)",
+    "full_tools_tests": "1256 run / 3 failures-or-errors (2 errors + 1 failure), all pre-classified P0R genesis pin drift in test_u12_p0r_evidence.py (frozen bundle deliberately not rewritten)",
     "handoff_intent_suite": "118/118 OK",
     "handoff_note_suite": "84/84 OK",
     "new_publication_recovery_module": "45/45 OK",
