@@ -1,0 +1,92 @@
+[
+  {
+    "case": "intent_persisted_before_target_create",
+    "expected": "PASS",
+    "reason": "INTENT_RECORDED is written before any create argv"
+  },
+  {
+    "case": "create_without_intent",
+    "expected": "REFUSED",
+    "reason": "create/bind requires an existing durable intent"
+  },
+  {
+    "case": "ambiguous_create",
+    "expected": "BLOCKED_CREATE_AMBIGUOUS",
+    "reason": "never duplicates a target; discovery may attach exactly one"
+  },
+  {
+    "case": "backlog_assigned",
+    "expected": "ONE_RERUN",
+    "reason": "assignment no-op on backlog is not repeated"
+  },
+  {
+    "case": "backlog_unassigned_or_different",
+    "expected": "ASSIGN_NO_START_THEN_ONE_RERUN",
+    "reason": "ownership binding is not counted as a trigger"
+  },
+  {
+    "case": "active_unassigned_or_different",
+    "expected": "ONE_ASSIGNMENT",
+    "reason": "Assignment remains the trigger on active issues"
+  },
+  {
+    "case": "active_assigned",
+    "expected": "ONE_RERUN",
+    "reason": "prefer explicit rerun for the exact assigned target"
+  },
+  {
+    "case": "status_promotion_route",
+    "expected": "REJECTED",
+    "reason": "not independently proven; never combined"
+  },
+  {
+    "case": "mention_route",
+    "expected": "OWN_U07_ROUTE",
+    "reason": "native receipt semantics; never combined"
+  },
+  {
+    "case": "trigger_success_without_run",
+    "expected": "NOT_SUCCESS",
+    "reason": "one exact correlated run is required"
+  },
+  {
+    "case": "lost_trigger_response",
+    "expected": "TRIGGER_AMBIGUOUS",
+    "reason": "no automatic retry and no route switch"
+  },
+  {
+    "case": "delayed_run_visibility",
+    "expected": "RECONCILE_READ_ONLY",
+    "reason": "later exactly-one-run proof attaches without a new trigger"
+  },
+  {
+    "case": "duplicate_or_wrong_run",
+    "expected": "BLOCKED",
+    "reason": "correlation anomalies fail closed"
+  },
+  {
+    "case": "artifact_or_package_drift",
+    "expected": "REFRESH_REQUIRED",
+    "reason": "refresh precedes any issuance"
+  },
+  {
+    "case": "provider_failure_after_run",
+    "expected": "EXECUTION_RECOVERY",
+    "reason": "not a dispatch orphan; no redispatch"
+  },
+  {
+    "case": "parent_wake_failure",
+    "expected": "REPAIR_OR_ONE_WAKE",
+    "reason": "failed wake with a run is repaired, not duplicated"
+  },
+  {
+    "case": "completed_replay",
+    "expected": "ZERO_SIDE_EFFECTS",
+    "reason": "terminal intents emit no note/trigger/run/write"
+  },
+  {
+    "case": "legacy_terminal_ledger",
+    "expected": "READABLE_UNCHANGED",
+    "reason": "no backfill and no intent inference"
+  }
+]

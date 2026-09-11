@@ -1,0 +1,39 @@
+{
+  "exit_gate": {
+    "due_target_without_intent_or_terminal_stop": 0,
+    "parked_target_without_dependency_owner_wake": 0
+  },
+  "foundation": {
+    "cross_run_ledger_durable_and_enumerable": true,
+    "intent_persisted_before_target_mutation": true,
+    "single_writer_claim_or_cas": true
+  },
+  "intent": {
+    "append_only_schema_versioned": true,
+    "legacy_terminal_history_rewritten": false,
+    "target_issue_and_exact_artifacts_bound": true
+  },
+  "planner": {
+    "cli_success_without_correlated_run_is_success": false,
+    "exactly_one_selected_trigger": true,
+    "ownership_binding_counted_as_trigger": false,
+    "status_and_assignee_bound": true
+  },
+  "recovery": {
+    "ambiguous_issuance_auto_retry": false,
+    "completed_replay_side_effects": 0,
+    "exactly_one_correlated_run": true,
+    "trigger_issuing_recorded_before_call": true
+  },
+  "safety": {
+    "canonical_writes": 0,
+    "duplicate_correlated_run": 0,
+    "duplicate_note": 0,
+    "duplicate_trigger": 0,
+    "frozen_t00_amended": false,
+    "live_mutations_or_triggers": 0,
+    "product_repo_changes": 0,
+    "u09_or_predecessor_pin_change": 0,
+    "unaccounted_findings": 0
+  }
+}

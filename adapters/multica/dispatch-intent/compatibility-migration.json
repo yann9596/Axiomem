@@ -1,0 +1,17 @@
+{
+  "legacy_records": "read and ignored by the intent fold; no rewrite",
+  "nonterminal_preassigned_targets": "fixture inventory only",
+  "predecessor_files": "not modified; no re-pin",
+  "rollback": {
+    "effect": "disable new intent creation and reconciliation",
+    "removed": [],
+    "retained": [
+      "append-only intent records",
+      "correlated run ids"
+    ]
+  },
+  "schema": "forward_only",
+  "terminal_u06_u08_transactions": "immutable",
+  "u09_semantics": "byte-unchanged",
+  "yzt_77_yzt_78": "captured fixtures; never re-dispatched"
+}

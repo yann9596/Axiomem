@@ -1,0 +1,55 @@
+{
+  "category": "persistent orphan (lost follow-up after Lead exit)",
+  "fixture": "YZT-77",
+  "historical_trigger_attempt": {
+    "assignee_after": "fa7d16a7-2dae-4994-80b8-7435b3fcca47",
+    "assignee_before": "fa7d16a7-2dae-4994-80b8-7435b3fcca47",
+    "command": "issue assign <id> --to-id <target> --output json",
+    "matrix_selected_today": false,
+    "response": "success marker",
+    "run_delta": 0
+  },
+  "issue": {
+    "id": "01a08c2e-596c-78df-8865-d00d10fdad9c",
+    "identifier": "YZT-77",
+    "parent_issue_id": "01a08921-207c-7a39-8a99-b431e75bed9f",
+    "target_agent_id": "fa7d16a7-2dae-4994-80b8-7435b3fcca47",
+    "target_role": "software-engineer",
+    "title": "U09 — Runtime Finding / Challenge alignment"
+  },
+  "post": {
+    "assignee_id": "fa7d16a7-2dae-4994-80b8-7435b3fcca47",
+    "issue_revision": 4,
+    "runs": [
+      {
+        "agent_id": "fa7d16a7-2dae-4994-80b8-7435b3fcca47",
+        "id": "01a08ddc-7698-7c18-943b-f354ee6ec8fb",
+        "issue_id": "01a08c2e-596c-78df-8865-d00d10fdad9c",
+        "status": "completed"
+      }
+    ],
+    "status_category": "in_review"
+  },
+  "pretrigger": {
+    "assignee_id": "fa7d16a7-2dae-4994-80b8-7435b3fcca47",
+    "issue_revision": 1,
+    "package": {
+      "artifact_dependency_digest": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "artifact_ready": true,
+      "package_id": "CTX-software-engineer-9f2c41d7b8e05a13"
+    },
+    "ready_note": {
+      "artifact_dependency_digest": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "comment_id": "01a08e36-3421-76a7-9ccc-ccb56634746b",
+      "package_id": "CTX-software-engineer-9f2c41d7b8e05a13"
+    },
+    "runs": [],
+    "status_category": "backlog"
+  },
+  "recovery": {
+    "attribution_kind": "issue_assignment",
+    "command": "issue rerun <id> --output json",
+    "note": "run history alone cannot distinguish Assignment from rerun",
+    "returned_run_id": "01a08ddc-7698-7c18-943b-f354ee6ec8fb"
+  }
+}

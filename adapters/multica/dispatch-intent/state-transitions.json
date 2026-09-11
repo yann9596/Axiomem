@@ -1,0 +1,120 @@
+[
+  {
+    "from": "INTENT_RECORDED",
+    "to": [
+      "TARGET_BOUND",
+      "CREATE_AMBIGUOUS",
+      "PARKED_NOT_DUE",
+      "BLOCKED",
+      "CANCELLED",
+      "REFRESH_REQUIRED"
+    ]
+  },
+  {
+    "from": "CREATE_AMBIGUOUS",
+    "to": [
+      "TARGET_BOUND",
+      "BLOCKED",
+      "CANCELLED"
+    ]
+  },
+  {
+    "from": "TARGET_BOUND",
+    "to": [
+      "HANDOFF_PREPARED",
+      "PARKED_NOT_DUE",
+      "BLOCKED",
+      "CANCELLED",
+      "REFRESH_REQUIRED"
+    ]
+  },
+  {
+    "from": "HANDOFF_PREPARED",
+    "to": [
+      "HANDOFF_PUBLISHED",
+      "REFRESH_REQUIRED",
+      "BLOCKED",
+      "CANCELLED",
+      "PARKED_NOT_DUE"
+    ]
+  },
+  {
+    "from": "HANDOFF_PUBLISHED",
+    "to": [
+      "TRIGGER_READY",
+      "REFRESH_REQUIRED",
+      "BLOCKED",
+      "CANCELLED",
+      "PARKED_NOT_DUE"
+    ]
+  },
+  {
+    "from": "TRIGGER_READY",
+    "to": [
+      "TRIGGER_ISSUING",
+      "REFRESH_REQUIRED",
+      "BLOCKED",
+      "CANCELLED",
+      "PARKED_NOT_DUE"
+    ]
+  },
+  {
+    "from": "TRIGGER_ISSUING",
+    "to": [
+      "RUN_CORRELATED",
+      "TRIGGER_AMBIGUOUS",
+      "BLOCKED",
+      "CANCELLED"
+    ]
+  },
+  {
+    "from": "TRIGGER_AMBIGUOUS",
+    "to": [
+      "RUN_CORRELATED",
+      "BLOCKED",
+      "CANCELLED"
+    ]
+  },
+  {
+    "from": "RUN_CORRELATED",
+    "to": [
+      "SELF_CHECKED",
+      "BLOCKED",
+      "CANCELLED",
+      "REFRESH_REQUIRED"
+    ]
+  },
+  {
+    "from": "SELF_CHECKED",
+    "to": [
+      "COMPLETED",
+      "BLOCKED",
+      "CANCELLED"
+    ]
+  },
+  {
+    "from": "REFRESH_REQUIRED",
+    "to": [
+      "HANDOFF_PREPARED",
+      "PARKED_NOT_DUE",
+      "BLOCKED",
+      "CANCELLED"
+    ]
+  },
+  {
+    "from": "PARKED_NOT_DUE",
+    "to": []
+  },
+  {
+    "from": "BLOCKED",
+    "to": []
+  },
+  {
+    "from": "CANCELLED",
+    "to": []
+  },
+  {
+    "from": "COMPLETED",
+    "to": []
+  }
+]

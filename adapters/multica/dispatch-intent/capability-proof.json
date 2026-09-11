@@ -1,0 +1,51 @@
+{
+  "all_passed": true,
+  "method": "independent OS processes, independent workdirs, one absolute shared ledger path",
+  "observations": [
+    {
+      "append_exit": 0,
+      "enumerate_exit": 0,
+      "id": "cross_process_append_enumerate",
+      "passed": true,
+      "visible_intents": 1
+    },
+    {
+      "id": "single_writer_race",
+      "issuing_transitions": 1,
+      "loser_codes": [
+        "lease_held"
+      ],
+      "losers": 1,
+      "passed": true,
+      "seed_exit": 0,
+      "winners": 1
+    },
+    {
+      "expired_previous": true,
+      "first_claim_exit": 0,
+      "id": "stale_lease_recovery",
+      "passed": true,
+      "recovered": true
+    },
+    {
+      "first_exit": 0,
+      "id": "cas_conflict",
+      "passed": true,
+      "second_code": "cas_conflict",
+      "second_exit": 5
+    },
+    {
+      "code": "duplicate_intent",
+      "exit": 6,
+      "id": "duplicate_intent_fail_closed",
+      "passed": true
+    },
+    {
+      "code": "ledger_corruption",
+      "exit": 4,
+      "id": "partial_record_fail_closed",
+      "passed": true
+    }
+  ],
+  "store_basename": "shared-ledger.jsonl"
+}

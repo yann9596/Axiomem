@@ -1,0 +1,13 @@
+{
+  "automatic_retry_on_ambiguity": false,
+  "compare_and_set_transitions": true,
+  "cross_process_durability": true,
+  "cross_process_enumeration": true,
+  "duplicate_intent_fails_closed": true,
+  "duplicate_logical_key_fails_closed": true,
+  "new_service_or_database": false,
+  "partial_record_fails_closed": true,
+  "platform_exactly_once_claim": false,
+  "single_writer_lease": true,
+  "stale_lease_recovers": true
+}

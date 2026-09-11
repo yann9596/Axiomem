@@ -1,0 +1,23 @@
+[
+  {
+    "action": "fixture only; must never receive another live dispatch",
+    "classification": "ALREADY_DISPATCHED",
+    "evidence": "rerun recovery run 01a08ddc-7698-7c18-943b-f354ee6ec8fb",
+    "identifier": "YZT-77",
+    "issue_id": "01a08c2e-596c-78df-8865-d00d10fdad9c"
+  },
+  {
+    "action": "fixture only; must never receive another live dispatch",
+    "classification": "ALREADY_DISPATCHED",
+    "evidence": "rerun recovery run 01a08de0-e0cb-7adc-890e-c87fcadce826",
+    "identifier": "YZT-78",
+    "issue_id": "01a08ddd-b6b2-75e1-9de5-2145e18e2165"
+  },
+  {
+    "action": "fixture only; U11 replay input",
+    "classification": "DISPATCHED_WITH_HANDOFF_RECORD",
+    "evidence": "READY note 01a08e36-3421-76a7-9ccc-ccb56634746b; correlated run 01a08e36-9c49-73ea-8435-de14523d0675",
+    "identifier": "YZT-79",
+    "issue_id": "01a08e1b-a226-7b0c-a6ff-57397897034d"
+  }
+]

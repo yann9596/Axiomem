@@ -1,0 +1,120 @@
+{
+  "arm": {
+    "intent_id": "DI-21c7a5ff2469b859",
+    "plan": {
+      "decision": "TRIGGER_READY",
+      "expect": {
+        "assignee_id": null,
+        "issue_id": "01a08ddd-b6b2-75e1-9de5-2145e18e2165",
+        "issue_revision": 1,
+        "run_set_digest": "sha256:4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+        "snapshot_digest": "sha256:c35210bc50e861e455bef433c092276277ec6f882f5d974b8b38f0df22b1a7f0",
+        "status_category": "backlog"
+      },
+      "ownership_binding": "issue_assign_no_start",
+      "plan_digest": "sha256:9d3ea55b2613e414a2f2cb2a1604de87fe5d70d7f4b6bdb35729af17ff1165eb",
+      "reason": "backlog + unassigned/different: bind ownership without starting, re-read, then rerun",
+      "route": "assignment",
+      "selected_trigger": "issue_rerun"
+    },
+    "revision": 4,
+    "side_effects": 0,
+    "status": "TRIGGER_READY"
+  },
+  "audit": {
+    "command_counts": {
+      "ownership_binding": 1,
+      "read": 2,
+      "rerun_trigger": 1
+    },
+    "creates": 0,
+    "issuance": {
+      "DI-21c7a5ff2469b859": {
+        "correlated_transitions": 1,
+        "issuing_precedes_trigger_command": false,
+        "issuing_transitions": 1,
+        "trigger_commands": 0
+      }
+    },
+    "mention_argument_hits": [],
+    "mention_triggers": 0,
+    "ok": true,
+    "ownership_bindings": 1,
+    "status_triggers": 0,
+    "triggers": 1,
+    "unexpected_write_classes": []
+  },
+  "correlated_run_id": "01a08de0-e0cb-7adc-890e-c87fcadce826",
+  "fixture": "YZT-78",
+  "fixture_commands": [
+    [
+      "multica",
+      "issue",
+      "assign",
+      "01a08ddd-b6b2-75e1-9de5-2145e18e2165",
+      "--to-id",
+      "1303827b-73d1-4d71-a461-00b93e4b4418",
+      "--no-start",
+      "--output",
+      "json"
+    ],
+    [
+      "multica",
+      "issue",
+      "get",
+      "01a08ddd-b6b2-75e1-9de5-2145e18e2165",
+      "--output",
+      "json"
+    ],
+    [
+      "multica",
+      "issue",
+      "rerun",
+      "01a08ddd-b6b2-75e1-9de5-2145e18e2165",
+      "--output",
+      "json"
+    ],
+    [
+      "multica",
+      "issue",
+      "runs",
+      "01a08ddd-b6b2-75e1-9de5-2145e18e2165",
+      "--output",
+      "json"
+    ]
+  ],
+  "intent_id": "DI-21c7a5ff2469b859",
+  "live_mutations": 0,
+  "ownership_binding": "issue_assign_no_start",
+  "replay_zero_side_effect_issues": true,
+  "result": {
+    "intent_id": "DI-21c7a5ff2469b859",
+    "revision": 6,
+    "run_id": "01a08de0-e0cb-7adc-890e-c87fcadce826",
+    "side_effects": 0,
+    "status": "RUN_CORRELATED"
+  },
+  "selected_trigger": "issue_rerun",
+  "state": "RUN_CORRELATED",
+  "write_commands": [
+    [
+      "multica",
+      "issue",
+      "assign",
+      "01a08ddd-b6b2-75e1-9de5-2145e18e2165",
+      "--to-id",
+      "1303827b-73d1-4d71-a461-00b93e4b4418",
+      "--no-start",
+      "--output",
+      "json"
+    ],
+    [
+      "multica",
+      "issue",
+      "rerun",
+      "01a08ddd-b6b2-75e1-9de5-2145e18e2165",
+      "--output",
+      "json"
+    ]
+  ]
+}

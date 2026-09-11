@@ -34,3 +34,7 @@ adapters/multica/assignment-fallback/** -text
 # YZT-77: byte-stability for U09 Finding/Challenge evidence (deterministic
 # bundle regeneration is asserted byte-for-byte in the focused tests).
 adapters/multica/finding-challenge/** -text
+
+# YZT-79: byte-stability for O2 durable dispatch intent evidence (deterministic
+# bundle regeneration is asserted byte-for-byte in the focused tests).
+adapters/multica/dispatch-intent/** -text

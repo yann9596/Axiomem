@@ -1,0 +1,12 @@
+{
+  "data_preserved": true,
+  "predecessor_history_mutated": false,
+  "steps": [
+    "stop creating new dispatch intents",
+    "stop reconciliation reads/writes of new schema",
+    "retain the append-only ledger and all correlated run ids",
+    "do not delete or rewrite terminal records",
+    "route handoffs back to the accepted U06/U08 commands"
+  ],
+  "trigger": "acceptance failure or unsafe ambiguity in live replay"
+}

@@ -1,0 +1,55 @@
+{
+  "category": "backlog Assignment no-enqueue, then rerun recovery",
+  "fixture": "YZT-78",
+  "historical_trigger_attempt": {
+    "assignee_after": "1303827b-73d1-4d71-a461-00b93e4b4418",
+    "assignee_before": null,
+    "assignee_event": "01a08de0-6fe2-794c-9055-5403e0064f54",
+    "command": "issue assign <id> --to-id <target> --output json",
+    "matrix_selected_today": false,
+    "response": "success marker",
+    "run_delta": 0
+  },
+  "issue": {
+    "id": "01a08ddd-b6b2-75e1-9de5-2145e18e2165",
+    "identifier": "YZT-78",
+    "parent_issue_id": "01a08921-207c-7a39-8a99-b431e75bed9f",
+    "target_agent_id": "1303827b-73d1-4d71-a461-00b93e4b4418",
+    "target_role": "solution-architect",
+    "title": "Dispatch liveness architecture assessment"
+  },
+  "post": {
+    "assignee_id": "1303827b-73d1-4d71-a461-00b93e4b4418",
+    "issue_revision": 10,
+    "runs": [
+      {
+        "agent_id": "1303827b-73d1-4d71-a461-00b93e4b4418",
+        "id": "01a08de0-e0cb-7adc-890e-c87fcadce826",
+        "issue_id": "01a08ddd-b6b2-75e1-9de5-2145e18e2165",
+        "status": "completed"
+      }
+    ],
+    "status_category": "in_review"
+  },
+  "pretrigger": {
+    "assignee_id": null,
+    "issue_revision": 1,
+    "package": {
+      "artifact_dependency_digest": "sha256:bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+      "artifact_ready": true,
+      "package_id": "CTX-solution-architect-3ba9c10f2de4b771"
+    },
+    "ready_note": {
+      "artifact_dependency_digest": "sha256:bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+      "comment_id": "01a08def-9b00-72e0-be46-692c105b1e78",
+      "package_id": "CTX-solution-architect-3ba9c10f2de4b771"
+    },
+    "runs": [],
+    "status_category": "backlog"
+  },
+  "recovery": {
+    "attribution_kind": "issue_assignment",
+    "command": "issue rerun <id> --output json",
+    "returned_run_id": "01a08de0-e0cb-7adc-890e-c87fcadce826"
+  }
+}

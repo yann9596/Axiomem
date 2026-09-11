@@ -1,0 +1,51 @@
+[
+  {
+    "assignee": "target_assigned",
+    "ownership_binding": null,
+    "route": "assignment",
+    "selected_trigger": "issue_rerun",
+    "status_category": "backlog",
+    "trigger_count": 1
+  },
+  {
+    "assignee": "unassigned_or_different",
+    "ownership_binding": "issue_assign_no_start",
+    "route": "assignment",
+    "selected_trigger": "issue_rerun",
+    "status_category": "backlog",
+    "trigger_count": 1
+  },
+  {
+    "assignee": "unassigned_or_different",
+    "ownership_binding": null,
+    "route": "assignment",
+    "selected_trigger": "issue_assign",
+    "status_category": "active",
+    "trigger_count": 1
+  },
+  {
+    "assignee": "target_assigned",
+    "ownership_binding": null,
+    "route": "assignment",
+    "selected_trigger": "issue_rerun",
+    "status_category": "active",
+    "trigger_count": 1
+  },
+  {
+    "note": "rejected in the minimum implementation (R2)",
+    "ownership_binding": null,
+    "route": "issue_status_promotion",
+    "selected_trigger": null,
+    "status_category": "assigned_backlog_promoted",
+    "trigger_count": 0
+  },
+  {
+    "assignee": "any",
+    "note": "U07 route; never combined with Assignment/rerun/status",
+    "ownership_binding": null,
+    "route": "mention",
+    "selected_trigger": "native_mention",
+    "status_category": "any",
+    "trigger_count": 1
+  }
+]
