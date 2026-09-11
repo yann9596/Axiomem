@@ -18,7 +18,7 @@ production-ledger write, no YZT-85 mutation, no Canonical/role activation, no 05
 | Adapter | `tools/u12_r0_binding.py`, LF `sha256:40ccf07dd088d6a4077213714deef45c83f46116478ccc462c203ef7f07641fa` |
 | Existing recovery tests | `tools/tests/test_u12_r0_create_recovery.py`, LF `sha256:a1710c2f59873fc071ba7af98f1ee8f41f69eaa103b6eaec4928435db8c27c7d` (63→63 cases, fixture upgraded) |
 | New evidence tests | `tools/tests/test_u12_r0_recovery_evidence.py`, LF `sha256:bbca242004eb4dc36a4d5091bd01fadac8d7ff09448e35565e045060a774bb11` (35 cases) |
-| Acceptance matrix | `recovery-evidence-acceptance-matrix.json`, SHA256 `sha256:2db88ee4d2e907ad8b62d8d5595e89a31d40de1d8059ebfdabaf0746979a4c3c`, 33/33 rows |
+| Acceptance matrix | `recovery-evidence-acceptance-matrix.json`, committed-blob LF SHA256 `sha256:597bfd8043654d3b6f0ba173560a91b0f03ca2431a314c507f04bfd677943177`, 33/33 rows |
 | Reproduction | `reproduce_recovery_evidence.py`, SHA256 `sha256:a617c2d7117c30581f9eaa02ff763050a0bfdb10d27868d2bf1c90d0bd0a7345` |
 | Disposition schema | `u12-r0b-create-recovery-decision/1.1` (old `1.0` refused, no silent upgrade) |
 | Proof schema | `u12-r0b-recovery-proof/1.1` (old/hash-only refused) |

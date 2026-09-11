@@ -38,13 +38,13 @@
     "tools/u12_r0_binding.py": "sha256:40ccf07dd088d6a4077213714deef45c83f46116478ccc462c203ef7f07641fa",
     "tools/tests/test_u12_r0_create_recovery.py": "sha256:a1710c2f59873fc071ba7af98f1ee8f41f69eaa103b6eaec4928435db8c27c7d",
     "tools/tests/test_u12_r0_recovery_evidence.py": "sha256:bbca242004eb4dc36a4d5091bd01fadac8d7ff09448e35565e045060a774bb11",
-    "adapters/multica/u12-r0b-recovery-evidence/U12_R0B_RECOVERY_EVIDENCE_CORRECTION_REPORT.md": "sha256:5996cd34b54aea418a89943276f4dc06ab2a56d179b2726ff62d326248eb25e8",
+    "adapters/multica/u12-r0b-recovery-evidence/U12_R0B_RECOVERY_EVIDENCE_CORRECTION_REPORT.md": "sha256:9ce758d2b6dba870d34da200ca4adc1c22f3a5cfc86c2cdb2e3e0da5d79c7f07",
     "adapters/multica/u12-r0b-recovery-evidence/OPERATOR_INSTRUCTIONS.md": "sha256:1893fc32f25f9bbbd057372c3a10d3b90420fd79268018311bc3c1225e078a94",
-    "adapters/multica/u12-r0b-recovery-evidence/recovery-decision-example.json": "sha256:bfeba627edd2dd414475d926ce815634283e9615c37dfdb945c6c53a4dcf5a17",
-    "adapters/multica/u12-r0b-recovery-evidence/recovery-evidence-acceptance-matrix.json": "sha256:2db88ee4d2e907ad8b62d8d5595e89a31d40de1d8059ebfdabaf0746979a4c3c",
+    "adapters/multica/u12-r0b-recovery-evidence/recovery-decision-example.json": "sha256:27ed454d56e159578cd19fe0b917493eeb330b6a61db36e29bfd8f98be53f0d6",
+    "adapters/multica/u12-r0b-recovery-evidence/recovery-evidence-acceptance-matrix.json": "sha256:597bfd8043654d3b6f0ba173560a91b0f03ca2431a314c507f04bfd677943177",
     "adapters/multica/u12-r0b-recovery-evidence/reproduce_recovery_evidence.py": "sha256:a617c2d7117c30581f9eaa02ff763050a0bfdb10d27868d2bf1c90d0bd0a7345"
   },
-  "adapters_digest_note": "all listed digests are raw-file SHA256; the operation computes LF-normalized digests for the adapter and pinned blobs (adapter LF digest is identical to the raw digest here)",
+  "digest_convention": "every listed digest is the LF-normalized SHA256 of the committed blob at the evidence commit; verify with `git cat-file blob <commit>:<path>` and normalize CRLF to LF before hashing (identical to the raw digest for the LF adapter and markdown/py files)",
   "acceptance_matrix": {
     "file": "adapters/multica/u12-r0b-recovery-evidence/recovery-evidence-acceptance-matrix.json",
     "rows_total": 33,
