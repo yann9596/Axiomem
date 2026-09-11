@@ -316,19 +316,36 @@ def creation_package():
         "Create one unassigned backlog target under YZT-66."))
 
 
-def target_execution_request(title, description):
+def target_execution_request(title, description, relevant_decisions=None):
     """The E request derived from the actual target snapshot (YZT-83)."""
-    return _request(f"multica://issue/{TARGET_IDENTIFIER}", u12.EXECUTION_ROLE,
-                    title, description)
+    request = _request(f"multica://issue/{TARGET_IDENTIFIER}",
+                       u12.EXECUTION_ROLE, title, description)
+    if relevant_decisions is not None:
+        request["task_snapshot"]["relevant_decisions"] = \
+            [str(item) for item in relevant_decisions]
+    return request
 
 
-def execution_context_for(cli):
+def snapshot_derived_request(cli, *, relevant_decisions=None):
+    """Build the request exactly as the accepted fresh-snapshot derivation.
+
+    Publication recovery re-derives the E request from the freshly read target
+    body plus the accepted explicit decisions and compares it verbatim with
+    the attached request, so fixture requests use the same derivation.
+    """
     issue = cli.issues[TARGET_ID]
+    base = target_execution_request(issue["title"], issue["description"] or "",
+                                    relevant_decisions)
+    return u12.reconstruct_request_from_fresh_snapshot(issue, base)
+
+
+def execution_context_for(cli, *, relevant_decisions=None):
+    request = snapshot_derived_request(
+        cli, relevant_decisions=relevant_decisions)
     key = "E:" + hashlib.sha256(
-        (issue["title"] + "\x00" + (issue["description"] or ""))
-        .encode("utf-8")).hexdigest()
-    e = cached_context(key, target_execution_request(
-        issue["title"], issue["description"] or ""))
+        json.dumps(request, ensure_ascii=False,
+                   sort_keys=True).encode("utf-8")).hexdigest()
+    e = cached_context(key, request)
     return {"result": e["result"], "request": e["request"],
             "self_check": e["self_check"],
             "target_task_ref": f"multica://issue/{TARGET_IDENTIFIER}"}
@@ -498,9 +515,7 @@ class LifecycleHarness:
         return self.factory.publish_handoff_once(self.intent_id, **kwargs)
 
     def current_request(self):
-        issue = self.cli.issues[TARGET_ID]
-        return target_execution_request(issue["title"],
-                                        issue["description"] or "")
+        return snapshot_derived_request(self.cli)
 
     def arm(self, **overrides):
         kwargs = {"actor": DISPATCHER, "current_request": self.current_request(),

@@ -44,7 +44,8 @@ from test_u12_r0_binding import (  # noqa: E402
 
 READ_PREFIXES = (["issue", "get"], ["issue", "comment", "list"],
                  ["issue", "timeline"], ["issue", "runs"],
-                 ["issue", "children"], ["version"])
+                 ["issue", "children"], ["version"],
+                 ["attachment", "download"])
 WRITE_PREFIXES = (["issue", "create"], ["issue", "assign"],
                   ["issue", "comment", "add"], ["issue", "rerun"],
                   ["issue", "status"], ["issue", "update"])

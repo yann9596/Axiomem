@@ -57,7 +57,8 @@ WRITE_PREFIXES = (["issue", "create"], ["issue", "assign"],
                   ["issue", "status"], ["issue", "update"])
 READ_PREFIXES = (["issue", "get"], ["issue", "comment", "list"],
                  ["issue", "timeline"], ["issue", "runs"],
-                 ["issue", "children"], ["version"])
+                 ["issue", "children"], ["version"],
+                 ["attachment", "download"])
 
 
 # ---------------------------------------------------------------------------
@@ -132,6 +133,13 @@ def load_forward_intent_module():
 # ---------------------------------------------------------------------------
 _REAL_NOTE_ID = "01a08ff0-bce4-79b6-9116-a830baca4049"
 
+# The exact accepted approval/authority comment contents. The adapter pins
+# their raw digests; the fixture serves the real authority content so the
+# content verification is exercised, not a lookalike.
+HUMAN_APPROVAL_TEXT = "批准附件定义的最小例外，由 04 实现并验证"
+LEAD_BOUNDARY_TEXT = (
+    'Project State：接受 03 的发布边界诊断。已核对附件及 O2 writer/reducer：`BLOCKED` 无合法出口；单改 adapter、直接 append 或放宽 Issue revision 均不能闭合恢复。YZT-83 保持 in_review，诊断无需再往返。\n\nDecision / Changes to Plan：`V2_2_REBASE_BLOCKED — O2_PUBLICATION_RECOVERY_TRANSITION_NOT_AUTHORIZED`。此前 Human 批准的是当前方案及执行问题分析，未明确批准改变冻结 O2 写入/重放契约；本轮不推定这项新权限。暂停 04 实现派发，YZT-66 置 blocked 等待这一范围裁决。\n\nHuman Decision Needed：[@Yann](mention://member/1338bca6-ea41-4886-83bb-3375322a3049) 是否批准附件定义的最小例外，由 04 实现并验证？建议批准，但范围严格限于：\n\n- 未来 publication 发送正文仅删除 renderer 的一个终末 LF，读回必须逐字匹配；不放宽其他正文或归属检查。\n- 仅为原 `DI-e5e2b856f6b7cd36` / YZT-85 的这次发布，新增带完整证明、CAS/lease/shared-tail 校验的一次性 recovery commit，允许 `BLOCKED revision 4 → HANDOFF_PUBLISHED revision 5`；writer 与 reducer 同时验证，普通 BLOCKED 出口仍禁止。\n- 同一 commit 绑定精确执行器身份迁移；旧 C/E、正文、pins、create recovery proof 和历史事件不改。旧 reader 对新记录必须拒绝，不允许回滚后静默继续。\n\n批准只开放上述有界实现与验收；生产恢复仍须 Lead 验收 exact artifact、完整历史证据和当时授权，恢复本身不得触发 worker，后续 fresh preflight/strict 不省略。Core/T00、普通 trigger matrix、最终 Human Merge 不变。若不批准，保留当前停止状态，不新建 intent/canary 或重发 note。\n\nCurrent Goal / Active Tasks / Risks：当前唯一前置是例外批准，没有新增 specialist run。原 intent 保留 revision 4/BLOCKED；本轮重读 YZT-85 为 revision 3/backlog/04、完整 runs `[]`。不执行确认、恢复、重发、ARM/TRIGGER；本轮无生产 ledger、目标、产品代码或 Canonical 写入，无需 PR。\n\n裁决附件：`U12_R0_PUBLICATION_TRANSPORT_DECISION.md`，原附件 ID `01a08ffa-604f-70c3-a03e-0d166505fa3d`，raw SHA256 `0df4cec9a7cfb26a2b9146806280a2dcae4924f6cdb29190560ab17db32c8997`。adaptive-task-planning 的权限升级停止规则促使本轮停在此处；不是再次请求批准整个项目。')
+
 
 class HistoricalPublicationCli(LostTerminalLfCli):
     """Create loses one terminal LF; the publication link loses the last LF.
@@ -139,7 +147,8 @@ class HistoricalPublicationCli(LostTerminalLfCli):
     The stored comment body is exactly what the platform kept, so publishing
     R yields O == R[:-1] (the incident), while publishing the prepared T has
     no terminal LF left to lose (O == T). Raw content-file bytes are retained,
-    and the first note carries a real UUID-shaped comment id.
+    the first note carries a real UUID-shaped comment id, and the parent
+    activation attachment downloads are served from an in-memory inventory.
     """
 
     def __init__(self, **kwargs):
@@ -147,6 +156,33 @@ class HistoricalPublicationCli(LostTerminalLfCli):
         self.raw_comment_contents: list = []
         self.comment_list_count = 0
         self.on_comment_list = None
+        self.attachment_files: dict = {}
+
+    def add_attachment(self, attachment_id, filename, content):
+        data = content.encode("utf-8") if isinstance(content, str) else content
+        self.attachment_files[attachment_id] = {
+            "filename": filename, "data": data}
+
+    def __call__(self, argv):
+        record = self._argv(argv)
+        if record[1:3] == ["attachment", "download"]:
+            self.commands.append(record)
+            return self._attachment_download(record[1:])
+        return super().__call__(argv)
+
+    def _attachment_download(self, core):
+        attachment_id = core[2]
+        out_dir = Path(core[core.index("--output-dir") + 1])
+        stored = self.attachment_files.get(attachment_id)
+        if stored is None:
+            return (1, "", f"attachment {attachment_id} not found")
+        out_dir.mkdir(parents=True, exist_ok=True)
+        target = out_dir / stored["filename"]
+        target.write_bytes(stored["data"])
+        return self._json({"id": attachment_id,
+                           "filename": stored["filename"],
+                           "path": str(target),
+                           "size": len(stored["data"])})
 
     def _comment_add(self, core):
         raw = Path(core[core.index("--content-file") + 1]).read_bytes()
@@ -270,9 +306,19 @@ def make_publication_decision(fx, **overrides):
             "accepted_adapter_digest": u12.PREDECESSOR_FORWARD_ADAPTER_DIGEST,
         },
         "source_activation": {
-            "comment_id": "01a08ff4-83c5-7b0c-a075-ec60184a843a",
-            "resolution_digest": "sha256:" + "e" * 64,
-            "attachment_id": "01a08fec-29a9-75ec-ad1c-0f3ecbb96649",
+            "parent_issue_id": PARENT_ID,
+            "comment_id": fx.activation_comment_id,
+            "author_id": u12.LEAD_AGENT_ID,
+            "author_type": "agent",
+            "comment_content_raw_digest":
+                u12._sha256_utf8(fx.activation_content),
+            "resolution_attachment_id": fx.resolution_attachment_id,
+            "resolution_raw_digest": u12._sha256_utf8(fx.resolution_text),
+            "request_attachment_id": fx.request_attachment_id,
+            "request_raw_digest": u12._sha256_utf8(fx.request_text),
+            "package_id": fx.execution_package_id,
+            "envelope_digest": fx.envelope_digest,
+            "task_fingerprint": fx.task_fingerprint,
         },
         "execution_migration":
             overrides.pop("execution_migration", None)
@@ -360,8 +406,19 @@ class PublicationRecoveryFixture:
         assert recovered["status"] == o2.S_TARGET_BOUND, recovered
         self.forward_factory.assign_ownership_once(self.intent_id,
                                                    actor=DISPATCHER)
+        self.resolution_text = (
+            "## Lead operational source-location disposition\n\n"
+            "Fixture activation record for " + self.intent_id + " only.\n")
+        self.resolution_hex = hashlib.sha256(
+            self.resolution_text.encode("utf-8")).hexdigest()
+        self.accepted_decisions = [
+            self.resolution_text,
+            "Resolution artifact raw SHA256: " + self.resolution_hex,
+        ]
         prepared = self.forward_factory.bind_execution_package(
-            self.intent_id, execution_context=execution_context_for(self.cli),
+            self.intent_id,
+            execution_context=execution_context_for(
+                self.cli, relevant_decisions=self.accepted_decisions),
             actor=DISPATCHER)
         assert prepared["status"] == o2.S_HANDOFF_PREPARED, prepared
         published = self.forward_factory.publish_handoff_once(
@@ -379,6 +436,77 @@ class PublicationRecoveryFixture:
             self.store, runner=self.cli, artifact_blob_reader=base_reader,
             authority_reader=authority)
         self.finding_source: list = []
+        self._prepare_source_activation()
+
+    def _prepare_source_activation(self):
+        """Register the Lead activation record and its attached inputs.
+
+        The fixture serves the real authority content: a unique Lead-authored
+        activation comment binding the actual E package/envelope/fingerprint,
+        target and intent, plus the two attached artifacts and the exact
+        Human/Lead approval comments.
+        """
+        execution = self.binding()["execution_context"]
+        self.execution_package_id = execution["package_id"]
+        self.envelope_digest = u12.digest(execution["result"])
+        self.task_fingerprint = (execution.get("built_from") or {}).get(
+            "task_fingerprint")
+        self.request_text = json.dumps(execution["request"],
+                                       ensure_ascii=False, sort_keys=True,
+                                       indent=2) + "\n"
+        self.activation_comment_id = "01a0ac71-0000-7000-8000-0000000000a1"
+        self.resolution_attachment_id = \
+            "01a0ac71-0000-7000-8000-0000000000a2"
+        self.request_attachment_id = "01a0ac71-0000-7000-8000-0000000000a3"
+        self.activation_content = (
+            "## R0 SOURCE ACTIVATION — fixture source binding only\n\n"
+            f"Actual E: `{self.execution_package_id}`; full envelope digest "
+            f"`{self.envelope_digest}`.\n"
+            f"Task fingerprint: `{self.task_fingerprint}`.\n"
+            f"Target: `{TARGET_ID}`; intent: `{self.intent_id}`.\n"
+            f"Attachment r0-source-disposition.md raw SHA256: "
+            f"`{self.resolution_hex}`.\n"
+            f"Attachment request.json raw SHA256: "
+            f"`{u12._sha256_utf8(self.request_text)}`.\n")
+        self.cli.add_attachment(self.resolution_attachment_id,
+                                "r0-source-disposition.md",
+                                self.resolution_text)
+        self.cli.add_attachment(self.request_attachment_id, "request.json",
+                                self.request_text)
+        parent = self.cli.comments.setdefault(PARENT_ID, [])
+        parent.extend([
+            self._parent_comment(self.activation_comment_id,
+                                 u12.LEAD_AGENT_ID, "agent",
+                                 self.activation_content,
+                                 [self.resolution_attachment_id,
+                                  self.request_attachment_id]),
+            self._parent_comment(
+                u12.PUBLICATION_RECOVERY_HUMAN_APPROVAL_COMMENT_ID,
+                u12.HUMAN_APPROVER_ID, "member", HUMAN_APPROVAL_TEXT, []),
+            self._parent_comment(
+                u12.PUBLICATION_RECOVERY_LEAD_APPROVAL_COMMENT_ID,
+                u12.LEAD_AGENT_ID, "agent", LEAD_BOUNDARY_TEXT, []),
+        ])
+
+    @staticmethod
+    def _parent_comment(comment_id, author_id, author_type, content,
+                        attachments):
+        return {
+            "id": comment_id,
+            "content": content,
+            "created_at": CLOCK,
+            "updated_at": CLOCK,
+            "parent_id": None,
+            "author_id": author_id,
+            "author_type": author_type,
+            "source_task_id": None,
+            "issue_id": PARENT_ID,
+            "resolved_at": None,
+            "revision": 1,
+            "type": "comment",
+            "attachments": [{"id": attachment_id}
+                            for attachment_id in attachments],
+        }
 
     # -- creation of the historical shape -----------------------------------
     def _audit_pins(self) -> tuple:
@@ -454,16 +582,18 @@ class PublicationRecoveryFixture:
             current_findings=(self.finding_source if findings is _SENTINEL
                               else findings))
 
+    def current_request(self):
+        return execution_context_for(
+            self.cli, relevant_decisions=self.accepted_decisions)["request"]
+
     def arm(self, **overrides):
-        kwargs = {"actor": DISPATCHER,
-                  "current_request": execution_context_for(self.cli)["request"],
+        kwargs = {"actor": DISPATCHER, "current_request": self.current_request(),
                   "current_findings": []}
         kwargs.update(overrides)
         return self.factory.arm(self.intent_id, **kwargs)
 
     def trigger(self, **overrides):
-        kwargs = {"actor": DISPATCHER,
-                  "current_request": execution_context_for(self.cli)["request"],
+        kwargs = {"actor": DISPATCHER, "current_request": self.current_request(),
                   "current_findings": []}
         kwargs.update(overrides)
         return self.factory.trigger(self.intent_id, **kwargs)

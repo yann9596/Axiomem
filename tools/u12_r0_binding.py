@@ -66,11 +66,14 @@ from __future__ import annotations
 
 import argparse
 import ast
+import copy
 import hashlib
 import json
 import re
+import shutil
 import subprocess
 import sys
+import tempfile
 import uuid
 from pathlib import Path
 
@@ -237,10 +240,19 @@ PUBLICATION_TRANSPORT_PROFILES = (PUBLICATION_TRANSPORT_PROFILE,)
 PUBLICATION_TRANSPORT_RENDERER_TAIL = "\n```\n"
 PUBLICATION_RELATION_DIRECTIONAL = "publication-single-terminal-lf-removed"
 PUBLICATION_RECOVERY_OP = "publication_recovery_commit_v1"
+# v1.1 adds the resolved source-activation/authority-content verification and
+# the shared pure semantic proof reconstruction. The frozen v1.0 payloads are
+# preserved for inspection but are never accepted as recovery authority.
 PUBLICATION_RECOVERY_DECISION_SCHEMA = \
-    "u12-r0b-publication-recovery-decision/1.0"
-PUBLICATION_RECOVERY_PROOF_SCHEMA = "u12-r0b-publication-recovery-proof/1.0"
+    "u12-r0b-publication-recovery-decision/1.1"
+PUBLICATION_RECOVERY_PROOF_SCHEMA = "u12-r0b-publication-recovery-proof/1.1"
 PUBLICATION_MIGRATION_SCHEMA = \
+    "u12-r0b-publication-execution-migration/1.1"
+PUBLICATION_RECOVERY_DECISION_SCHEMA_V1_0 = \
+    "u12-r0b-publication-recovery-decision/1.0"
+PUBLICATION_RECOVERY_PROOF_SCHEMA_V1_0 = \
+    "u12-r0b-publication-recovery-proof/1.0"
+PUBLICATION_MIGRATION_SCHEMA_V1_0 = \
     "u12-r0b-publication-execution-migration/1.0"
 PUBLICATION_RECOVERY_DISPOSITION = "RECOVER_BLOCKED_PUBLICATION"
 PUBLICATION_RECOVERY_SCOPE = "PUBLICATION_TRANSPORT_REPAIR"
@@ -250,12 +262,27 @@ PUBLICATION_TRANSPORT_DESIGN_REF = \
     "attachment/01a08ffa-604f-70c3-a03e-0d166505fa3d"
 PUBLICATION_TRANSPORT_DESIGN_DIGEST = (
     "sha256:0df4cec9a7cfb26a2b9146806280a2dcae4924f6cdb29190560ab17db32c8997")
+LEAD_AGENT_ID = "24f04aba-7da9-4371-bf89-685d7505a411"
+HUMAN_APPROVER_ID = "1338bca6-ea41-4886-83bb-3375322a3049"
+PUBLICATION_RECOVERY_HUMAN_APPROVAL_COMMENT_ID = \
+    "01a09003-f830-79ac-b022-c7aaf2cf4039"
+PUBLICATION_RECOVERY_HUMAN_APPROVAL_AUTHOR_ID = HUMAN_APPROVER_ID
+PUBLICATION_RECOVERY_HUMAN_APPROVAL_CONTENT_DIGEST = (
+    "sha256:2c47b6069230fdb2e1db7d60a58ed3738e5348a6c88d1b979f88e4b4031d9315")
+PUBLICATION_RECOVERY_LEAD_APPROVAL_COMMENT_ID = \
+    "01a08ffb-fb18-7135-bc19-c17297426127"
+PUBLICATION_RECOVERY_LEAD_APPROVAL_AUTHOR_ID = LEAD_AGENT_ID
+PUBLICATION_RECOVERY_LEAD_APPROVAL_CONTENT_DIGEST = (
+    "sha256:4700cf98d489c044765381f8ba1a1ac6b9110e763212b7c27d4e0a7ac37e486d")
+PUBLICATION_SOURCE_ACTIVATION_COMMENT_ID = \
+    "01a08ff4-83c5-7b0c-a075-ec60184a843a"
+PUBLICATION_SOURCE_ACTIVATION_AUTHOR_ID = LEAD_AGENT_ID
 PUBLICATION_RECOVERY_HUMAN_APPROVAL_REF = \
-    "multica://comment/01a09003-f830-79ac-b022-c7aaf2cf4039"
+    "multica://comment/" + PUBLICATION_RECOVERY_HUMAN_APPROVAL_COMMENT_ID
 PUBLICATION_RECOVERY_LEAD_APPROVAL_REF = \
-    "multica://comment/01a08ffb-fb18-7135-bc19-c17297426127"
+    "multica://comment/" + PUBLICATION_RECOVERY_LEAD_APPROVAL_COMMENT_ID
 PUBLICATION_SOURCE_ACTIVATION_REF = \
-    "multica://comment/01a08ff4-83c5-7b0c-a075-ec60184a843a"
+    "multica://comment/" + PUBLICATION_SOURCE_ACTIVATION_COMMENT_ID
 PREDECESSOR_FORWARD_COMMIT = "da99c112093ea576a449a1f3c8ce355652805a40"
 PREDECESSOR_FORWARD_ADAPTER_DIGEST = (
     "sha256:40ccf07dd088d6a4077213714deef45c83f46116478ccc462c203ef7f07641fa")
@@ -905,6 +932,61 @@ class EvidenceReader:
         except dispatch.DispatchError as exc:
             raise PublicationProvenanceIncomplete(
                 f"issue runs contract violated: {exc.message}") from exc
+
+    def attachment_content(self, attachment_id: str) -> dict:
+        """Authenticated read of one attachment's exact bytes.
+
+        Uses the documented CLI download and requires the returned local file
+        to stay inside the private scratch directory, to parse as UTF-8 and to
+        carry the exact declared attachment id. Returns the raw text plus its
+        raw (non-normalized) digest; nothing is cached and the scratch
+        directory is removed afterwards.
+        """
+        _require_uuid(attachment_id, "attachment id")
+        holder = Path(tempfile.mkdtemp(prefix="u12-r0b-attachment-"))
+        try:
+            data = self._json(
+                ["attachment", "download", str(attachment_id),
+                 "--output-dir", str(holder)], "attachment download")
+            if not isinstance(data, dict) or \
+                    str(data.get("id")) != str(attachment_id):
+                raise PublicationProvenanceIncomplete(
+                    "attachment download did not return the requested "
+                    "attachment identity", attachment_id=str(attachment_id))
+            filename = data.get("filename")
+            if not isinstance(filename, str) or not filename or \
+                    filename != Path(filename).name:
+                raise PublicationProvenanceIncomplete(
+                    "attachment download returned an unsafe filename",
+                    attachment_id=str(attachment_id))
+            target = holder / filename
+            try:
+                raw = target.read_bytes()
+            except OSError as exc:
+                raise PublicationProvenanceIncomplete(
+                    f"downloaded attachment is unreadable: {exc}",
+                    attachment_id=str(attachment_id))
+            try:
+                text = raw.decode("utf-8")
+            except UnicodeDecodeError as exc:
+                raise PublicationProvenanceIncomplete(
+                    f"attachment is not UTF-8 text: {exc}",
+                    attachment_id=str(attachment_id))
+            if isinstance(data.get("size"), int) and \
+                    data["size"] != len(raw):
+                raise PublicationProvenanceIncomplete(
+                    "attachment size does not match the downloaded bytes",
+                    attachment_id=str(attachment_id))
+            return {
+                "attachment_id": str(attachment_id),
+                "filename": filename,
+                "text": text,
+                "raw_digest": _sha256_utf8(text),
+                "chars": len(text),
+                "utf8_bytes": len(raw),
+            }
+        finally:
+            shutil.rmtree(holder, ignore_errors=True)
 
     def issue_children(self, parent_issue_id: str) -> dict:
         """Complete parent-child discovery including the live `unstaged` child.
@@ -1996,14 +2078,38 @@ def validate_publication_recovery_decision(decision: dict) -> dict:
                          "decision.original_create_recovery.accepted_commit")
     activation = _strict_keys(
         decision["source_activation"],
-        ("comment_id", "resolution_digest", "attachment_id"),
+        ("parent_issue_id", "comment_id", "author_id", "author_type",
+         "comment_content_raw_digest", "resolution_attachment_id",
+         "resolution_raw_digest", "request_attachment_id",
+         "request_raw_digest", "package_id", "envelope_digest",
+         "task_fingerprint"),
         "decision.source_activation")
-    _require_text(activation["comment_id"], "decision.source_activation."
+    _require_uuid(activation["parent_issue_id"],
+                  "decision.source_activation.parent_issue_id")
+    _require_uuid(activation["comment_id"], "decision.source_activation."
                                             "comment_id")
-    _require_digest(activation["resolution_digest"],
-                    "decision.source_activation.resolution_digest")
-    _require_text(activation["attachment_id"], "decision.source_activation."
-                                               "attachment_id")
+    _require_uuid(activation["author_id"], "decision.source_activation."
+                                           "author_id")
+    if activation["author_type"] != "agent":
+        raise R0BValidationRefused(
+            "decision.source_activation.author_type must be agent",
+            author_type=activation["author_type"])
+    _require_digest(activation["comment_content_raw_digest"],
+                    "decision.source_activation.comment_content_raw_digest")
+    _require_uuid(activation["resolution_attachment_id"],
+                  "decision.source_activation.resolution_attachment_id")
+    _require_digest(activation["resolution_raw_digest"],
+                    "decision.source_activation.resolution_raw_digest")
+    _require_uuid(activation["request_attachment_id"],
+                  "decision.source_activation.request_attachment_id")
+    _require_digest(activation["request_raw_digest"],
+                    "decision.source_activation.request_raw_digest")
+    _require_text(activation["package_id"],
+                  "decision.source_activation.package_id")
+    _require_digest(activation["envelope_digest"],
+                    "decision.source_activation.envelope_digest")
+    _require_digest(activation["task_fingerprint"],
+                    "decision.source_activation.task_fingerprint")
     migration = _strict_keys(
         decision["execution_migration"],
         ("accepted_commit", "accepted_tree", "adapter_raw_digest",
@@ -2237,24 +2343,752 @@ def validate_publication_execution_migration(intent: dict, data: dict,
     return dict(migration)
 
 
+def reconstruct_request_from_fresh_snapshot(fresh_issue: dict,
+                                            accepted_request: dict) -> dict:
+    """Pure replay of the accepted fresh-target request reconstruction.
+
+    Mirrors the accepted `build_snapshot_request` derivation for the exact
+    accepted mapping: title/description/requirements/acceptance come from the
+    freshly read target issue, the explicitly accepted decision array and
+    every other caller input come from the accepted request. Callers compare
+    the result verbatim with the accepted E request, so an edited or stale
+    target body never reproduces it and an attached decision list is never
+    silently substituted.
+    """
+    import chandoff_adapter as adapter
+    if not isinstance(fresh_issue, dict) or \
+            not isinstance(accepted_request, dict):
+        raise R0BValidationRefused(
+            "fresh-request reconstruction requires the target issue and the "
+            "accepted request objects")
+    title = fresh_issue.get("title")
+    description = fresh_issue.get("description")
+    identifier = fresh_issue.get("identifier")
+    if not isinstance(title, str) or not title or \
+            not isinstance(description, str) or not description or \
+            not isinstance(identifier, str) or not identifier:
+        raise R0BValidationRefused(
+            "the fresh target issue does not carry title/description/"
+            "identifier; the request cannot be reconstructed")
+    snapshot = accepted_request.get("task_snapshot")
+    if not isinstance(snapshot, dict):
+        raise R0BValidationRefused(
+            "the accepted request carries no task_snapshot")
+    decisions = snapshot.get("relevant_decisions")
+    if not isinstance(decisions, list) or \
+            any(not isinstance(item, str) for item in decisions):
+        raise R0BValidationRefused(
+            "the accepted request relevant_decisions is not a string list")
+    requirements, acceptance = adapter.extract_structured(description)
+    rebuilt_snapshot = {
+        "title": title,
+        "description": description,
+        "requirements": [item["value"] for item in requirements],
+        "acceptance_criteria": [item["value"] for item in acceptance],
+        "relevant_decisions": list(decisions),
+    }
+    if snapshot.get("parent_task_ref") is not None:
+        rebuilt_snapshot["parent_task_ref"] = snapshot["parent_task_ref"]
+    return {
+        "schema_version": "1.1",
+        "kind": "prepare_handoff_request",
+        "task_ref": "multica://issue/" + identifier,
+        "project": dict(accepted_request.get("project") or {}),
+        "target": dict(accepted_request.get("target") or {}),
+        "purpose": accepted_request.get("purpose"),
+        "task_snapshot": rebuilt_snapshot,
+        "caller": dict(accepted_request.get("caller") or {}),
+        "options": copy.deepcopy(accepted_request.get("options") or {}),
+    }
+
+
+def _digest_present(text: str, digest_value: str) -> bool:
+    """True when the text carries the digest, with or without the sha256 tag."""
+    if not isinstance(text, str) or not isinstance(digest_value, str):
+        return False
+    body = digest_value.split(":", 1)[-1]
+    return digest_value in text or (bool(body) and body in text)
+
+
+def _publication_raw_read_plan(*, target_id: str, parent_id: str,
+                               resolution_id: str, request_id: str) -> list:
+    """The exact accepted read sequence of one publication recovery proof."""
+    out = ["--output", "json"]
+    return [
+        ("parent_comments",
+         ["issue", "comment", "list", parent_id, "--full"] + out),
+        ("download_resolution",
+         ["attachment", "download", resolution_id, "--output-dir", None]),
+        ("download_request",
+         ["attachment", "download", request_id, "--output-dir", None]),
+        ("target_get", ["issue", "get", target_id] + out),
+        ("target_comments",
+         ["issue", "comment", "list", target_id, "--full"] + out),
+        ("target_timeline",
+         ["issue", "timeline", target_id, "--activity-only"] + out),
+        ("target_runs", ["issue", "runs", target_id] + out),
+        ("target_get", ["issue", "get", target_id] + out),
+        ("target_comments",
+         ["issue", "comment", "list", target_id, "--full"] + out),
+        ("target_timeline",
+         ["issue", "timeline", target_id, "--activity-only"] + out),
+        ("target_runs", ["issue", "runs", target_id] + out),
+        ("target_get", ["issue", "get", target_id] + out),
+    ]
+
+
+def _publication_parse_raw_reads(proof: dict, *, target_id: str,
+                                 parent_id: str, resolution_id: str,
+                                 request_id: str) -> list:
+    """Require the complete persisted raw responses to be the exact reads.
+
+    No substituted, duplicated, extra or missing read is accepted: the
+    sequence is the accepted evidence collection shape, every exit is a
+    success and every stdout digest reproduces.
+    """
+    responses = proof["observations"]["raw_responses"]
+    plan = _publication_raw_read_plan(
+        target_id=target_id, parent_id=parent_id,
+        resolution_id=resolution_id, request_id=request_id)
+    if not isinstance(responses, list) or len(responses) != len(plan):
+        raise R0BValidationRefused(
+            "the publication recovery proof raw responses are not the exact "
+            "accepted read sequence; a rehashed or incomplete trace is never "
+            "recovery authority",
+            expected=len(plan),
+            found=len(responses) if isinstance(responses, list) else None)
+    reads: list = []
+    for response, (kind, expected) in zip(responses, plan):
+        entry = _strict_keys(
+            response, ("argv", "exit_code", "stdout", "stdout_digest"),
+            "proof.observations.raw_responses[]")
+        if entry["exit_code"] != 0:
+            raise R0BValidationRefused(
+                "a publication recovery proof raw read was not a successful "
+                "read", kind=kind, exit_code=entry["exit_code"])
+        argv = entry["argv"]
+        if not isinstance(argv, list) or len(argv) < 2 or \
+                not all(isinstance(item, str) for item in argv):
+            raise R0BValidationRefused(
+                "a publication recovery proof raw read argv is malformed",
+                kind=kind)
+        core = argv[1:]
+        if expected[-1] is None:
+            if core[:4] != expected[:4] or len(core) != 5:
+                raise R0BValidationRefused(
+                    "a publication recovery proof attachment download did not "
+                    "use the exact accepted argv", kind=kind, argv=core[:8])
+        elif core != expected:
+            raise R0BValidationRefused(
+                "a publication recovery proof raw read is not the exact "
+                "accepted argv; no substituted or extra read is accepted",
+                kind=kind, argv=core[:10])
+        if not isinstance(entry["stdout"], str) or \
+                entry["stdout_digest"] != _sha256_utf8(entry["stdout"]):
+            raise R0BValidationRefused(
+                "a publication recovery proof raw read response digest does "
+                "not reproduce", kind=kind)
+        try:
+            parsed = json.loads(entry["stdout"])
+        except json.JSONDecodeError as exc:
+            raise R0BValidationRefused(
+                f"a publication recovery proof raw read is not JSON: {exc}",
+                kind=kind)
+        reads.append({"kind": kind, "argv": argv, "stdout": entry["stdout"],
+                      "json": parsed})
+    return reads
+
+
+def _publication_derive_reads(proof: dict, *, target_id: str, parent_id: str,
+                              resolution_id: str, request_id: str) -> dict:
+    """Derive every normalized observation from the persisted raw responses."""
+    reads = _publication_parse_raw_reads(
+        proof, target_id=target_id, parent_id=parent_id,
+        resolution_id=resolution_id, request_id=request_id)
+    parent_comments = reads[0]["json"]
+    if not isinstance(parent_comments, list) or \
+            any(not isinstance(row, dict) for row in parent_comments):
+        raise R0BValidationRefused(
+            "the parent activation listing is not a complete comment array")
+    for index, name in ((3, "first target issue read"),
+                        (7, "second target issue read"),
+                        (11, "target issue recheck")):
+        if not isinstance(reads[index]["json"], dict):
+            raise R0BValidationRefused(
+                f"the {name} is not an issue object", kind=reads[index]["kind"])
+    comments_1_raw: list = reads[4]["json"]
+    comments_2_raw: list = reads[8]["json"]
+    for rows in (comments_1_raw, comments_2_raw):
+        if not isinstance(rows, list) or \
+                any(not isinstance(row, dict) for row in rows):
+            raise R0BValidationRefused(
+                "a target comment listing is not a complete comment array")
+    activities_1 = reads[5]["json"]
+    activities_2 = reads[9]["json"]
+    for rows in (activities_1, activities_2):
+        if not isinstance(rows, list):
+            raise R0BValidationRefused(
+                "a target timeline listing is not an activity array")
+
+    def runs_of(index: int) -> list:
+        raw = reads[index]["json"]
+        if not isinstance(raw, list):
+            raise R0BValidationRefused(
+                "a target run listing is not an array")
+        try:
+            return dispatch.parse_runs_json(json.dumps(raw))
+        except dispatch.DispatchError as exc:
+            raise R0BValidationRefused(
+                f"a target run listing violates the runs contract: "
+                f"{exc.message}") from exc
+
+    return {
+        "reads": reads,
+        "parent_comments": parent_comments,
+        "target_issue": reads[3]["json"],
+        "target_second": reads[7]["json"],
+        "target_recheck": reads[11]["json"],
+        "comments_1_raw": comments_1_raw,
+        "comments_2_raw": comments_2_raw,
+        "comments_1": [comment_record(doc) for doc in comments_1_raw],
+        "comments_2": [comment_record(doc) for doc in comments_2_raw],
+        "activities_1": activities_1,
+        "activities_2": activities_2,
+        "runs_1": runs_of(6),
+        "runs_2": runs_of(10),
+        "content_of": {doc.get("id"): doc.get("content")
+                       for doc in comments_1_raw},
+    }
+
+
+def validate_publication_recovery_semantics(proof: dict, *, intent: dict,
+                                            data: dict, target: dict,
+                                            blocker: dict, attempt: dict,
+                                            note_doc: dict,
+                                            observations: dict, shared: dict,
+                                            decision: dict) -> dict:
+    """One shared pure semantic verifier: writer AND reducer/restart.
+
+    Every observation is re-derived from the complete persisted raw responses,
+    the exact publication predicates are re-evaluated against those derived
+    observations, the source activation and approval authority content are
+    re-verified from the persisted inline evidence, and every shared-history
+    classification is re-derived from the record bytes. Recomputed
+    attacker-controlled hashes never make invalid evidence valid, and no live
+    read is required.
+    """
+    execution = data.get("execution_context")
+    envelope = (execution or {}).get("result")
+    request = (execution or {}).get("request")
+    if not isinstance(execution, dict) or not isinstance(request, dict) or \
+            not isinstance(envelope, dict):
+        raise R0BValidationRefused(
+            "the committed record no longer carries the bound E request/"
+            "result; the publication proof cannot be re-derived")
+    activation = decision["source_activation"]
+    derived = _publication_derive_reads(
+        proof, target_id=target["issue_id"],
+        parent_id=activation["parent_issue_id"],
+        resolution_id=activation["resolution_attachment_id"],
+        request_id=activation["request_attachment_id"])
+
+    # -- 1. raw-response -> projection correspondence -----------------------
+    if canonical_json(observations["target_issue"]) != \
+            canonical_json(derived["target_issue"]) or \
+            canonical_json(observations["target_recheck"]) != \
+            canonical_json(derived["target_recheck"]):
+        raise R0BValidationRefused(
+            "the committed target observations are not the exact projection "
+            "of the persisted raw responses; a rehashed projection is "
+            "refused", subject="raw-response-mismatch")
+    for name, derived_value in (("comments", derived["comments_1"]),
+                                ("activities", derived["activities_1"]),
+                                ("runs", derived["runs_1"])):
+        if canonical_json(observations[name]) != canonical_json(derived_value):
+            raise R0BValidationRefused(
+                f"the committed {name} observations do not correspond to the "
+                "persisted raw responses; the projection is edited or "
+                "substituted", subject="raw-response-mismatch", field=name)
+
+    # -- 2. stable full reread ---------------------------------------------
+    if issue_projection(derived["target_second"]) != \
+            issue_projection(derived["target_issue"]) or \
+            derived["target_second"].get("revision") != \
+            derived["target_issue"].get("revision"):
+        raise R0BValidationRefused(
+            "the persisted second complete issue read is not stable; a moving "
+            "platform is never recovered", subject="reread")
+    if canonical_json(derived["comments_2"]) != \
+            canonical_json(derived["comments_1"]) or \
+            canonical_json(derived["activities_2"]) != \
+            canonical_json(derived["activities_1"]) or \
+            canonical_json(derived["runs_2"]) != \
+            canonical_json(derived["runs_1"]):
+        raise R0BValidationRefused(
+            "the persisted second complete comment/timeline/run read is not "
+            "stable; recovery refuses a moving platform", subject="reread")
+
+    # -- 3. the full run inventory must be empty -----------------------------
+    if derived["runs_1"] or derived["runs_2"]:
+        raise R0BValidationRefused(
+            "the persisted full run inventory is not empty; any active or "
+            "terminal run refuses and is never rehashed away", subject="runs")
+
+    # -- 4. bound identities ------------------------------------------------
+    if derived["target_issue"].get("id") != target["issue_id"] or \
+            derived["target_recheck"].get("id") != target["issue_id"]:
+        raise R0BValidationRefused(
+            "the persisted target observations do not name the bound target",
+            subject="target")
+    if derived["target_issue"].get("parent_issue_id") != \
+            activation["parent_issue_id"]:
+        raise R0BValidationRefused(
+            "the fresh target parent is not the disposed source activation "
+            "parent", subject="source_activation")
+
+    # -- 5. the proof blocker/attempt must be the recorded intent records ----
+    transitions = intent.get("transitions") or []
+    blocking = transitions[-1] if transitions else None
+    if not isinstance(blocking, dict) or \
+            blocking.get("to") != o2.S_BLOCKED or \
+            blocking.get("seq") != blocker["transition_seq"] or \
+            digest(blocking) != blocker["transition_digest"] or \
+            blocking.get("reason") != blocker["reason"]:
+        raise R0BValidationRefused(
+            "the committed proof blocker is not the recorded blocking "
+            "transition", subject="blocker")
+    evidence_events = [
+        event for event in intent.get("events") or []
+        if event.get("name") == E_EVIDENCE_REFUSED and
+        (event.get("data") or {}).get("reason") == REASON_PUBLICATION_PROVENANCE
+        and (event.get("data") or {}).get("code") == PUB_NOTE_NOT_FOUND]
+    if len(evidence_events) != 1 or \
+            evidence_events[0].get("seq") != blocker["evidence_event_seq"] or \
+            digest(evidence_events[0]) != blocker["evidence_event_digest"]:
+        raise R0BValidationRefused(
+            "the committed proof blocker evidence event is not the recorded "
+            "intent evidence", subject="blocker")
+    attempt_events = [event for event in intent.get("events") or []
+                      if event.get("name") == E_PUBLICATION_ISSUING]
+    if len(attempt_events) != 1:
+        raise R0BValidationRefused(
+            "the intent does not carry exactly one recorded publication "
+            "attempt", subject="attempt")
+    attempt_event = attempt_events[0]
+    if attempt_event.get("seq") != attempt["event_seq"] or \
+            digest(attempt_event) != attempt["event_digest"] or \
+            (attempt_event.get("data") or {}).get("operation_id") != \
+            attempt["operation_id"]:
+        raise R0BValidationRefused(
+            "the committed proof attempt is not the recorded publication "
+            "attempt", subject="attempt")
+
+    # -- 6. re-render R from the persisted E and the durable attempt meta ---
+    if attempt["package_id"] != execution.get("package_id") or \
+            attempt["envelope_digest"] != digest(envelope):
+        raise R0BValidationRefused(
+            "the committed proof attempt does not bind the persisted E "
+            "package/envelope", subject="attempt")
+    try:
+        rendered, _record = note.render_note_record(
+            envelope, prepared_by=attempt["prepared_by"],
+            prepared_at=attempt["prepared_at"])
+    except Exception as exc:  # noqa: BLE001 - re-render failure is a refusal
+        raise R0BValidationRefused(
+            f"the persisted E cannot be re-rendered with the durable attempt "
+            f"meta: {type(exc).__name__}: {exc}", subject="attempt")
+    rendered_raw = _sha256_utf8(rendered)
+    if digest_text_lf(rendered) != attempt["rendered_body_digest_lf"] or \
+            rendered_raw != attempt["rendered_body_digest_raw"] or \
+            len(rendered) != attempt["rendered_chars"] or \
+            note_doc["rendered_raw_digest"] != rendered_raw or \
+            note_doc["rendered_lf_digest"] != digest_text_lf(rendered) or \
+            note_doc["rendered_chars"] != len(rendered) or \
+            note_doc["rendered_utf8_bytes"] != len(rendered.encode("utf-8")):
+        raise R0BValidationRefused(
+            "the re-rendered original body does not reproduce the committed "
+            "attempt/note identities", subject="note")
+
+    # -- 7. the unique observed note and the exact relation ------------------
+    candidates = [
+        item for item in derived["comments_1"]
+        if item.get("content_raw_digest") in
+        (rendered_raw, note_doc["observed_raw_digest"])]
+    if len(candidates) != 1:
+        raise R0BValidationRefused(
+            "the derived comment inventory does not carry exactly one note "
+            "matching the rendered or observed raw identity; duplicates, "
+            "R/R-minus-one pairs and missing notes all refuse",
+            subject="note", candidates=len(candidates))
+    candidate = candidates[0]
+    if candidate.get("content_raw_digest") != note_doc["observed_raw_digest"]:
+        raise R0BValidationRefused(
+            "the sole derived candidate is the rendered body, not the "
+            "observed single-terminal-LF-removed transport", subject="note")
+    content = derived["content_of"].get(candidate.get("id"))
+    if not isinstance(content, str) or \
+            _sha256_utf8(content) != note_doc["observed_raw_digest"]:
+        raise R0BValidationRefused(
+            "the derived note bytes do not reproduce the committed observed "
+            "digest", subject="note")
+    relation = single_terminal_lf_relation(rendered, content)
+    if not relation["accepted"] or not relation["removed_lf"] or \
+            note_doc["relation"] != PUBLICATION_RELATION_DIRECTIONAL:
+        raise R0BValidationRefused(
+            "the derived note is not exactly the rendered body minus one "
+            "terminal LF", subject="note",
+            detail=str(relation.get("detail"))[:160])
+    for key in ("note_comment_id", "revision", "created_at", "updated_at",
+                "author_id", "author_type", "source_task_id", "parent_id"):
+        field = candidate.get("id" if key == "note_comment_id" else key)
+        if field != note_doc[key]:
+            raise R0BValidationRefused(
+                f"the derived note {key} does not match the committed proof",
+                subject="note", field=key)
+    parsed = note._parse_record(content)
+    meta = parsed.get("meta") or {}
+    if not parsed.get("ok_record"):
+        raise R0BValidationRefused(
+            "the derived note does not parse as a complete CONTEXT_HANDOFF "
+            "record", subject="note")
+    if meta.get("prepared_by") != attempt["prepared_by"] or \
+            meta.get("prepared_at") != attempt["prepared_at"]:
+        raise R0BValidationRefused(
+            "the derived note meta does not equal the durable attempt meta; "
+            "the note never self-certifies", subject="note")
+    if meta.get("package_id") != attempt["package_id"] or \
+            meta.get("task_ref") != execution.get("task_ref") or \
+            meta.get("target_role") != execution.get("role"):
+        raise R0BValidationRefused(
+            "the derived note meta package/task/role do not match the bound E",
+            subject="note")
+    if digest(parsed["envelope"]) != attempt["envelope_digest"] or \
+            digest(parsed["envelope"]) != note_doc["envelope_digest"]:
+        raise R0BValidationRefused(
+            "the derived note envelope digest does not match the bound E",
+            subject="note")
+
+    # -- 8. before/after delta ----------------------------------------------
+    before = (attempt_event.get("data") or {}).get("before") or {}
+    before_map = {item.get("id"): item for item in before.get("comments") or []}
+    after_map = {item.get("id"): item for item in derived["comments_1"]}
+    removed = sorted(set(before_map) - set(after_map))
+    added = sorted(set(after_map) - set(before_map))
+    edited = [
+        cid for cid in before_map
+        if canonical_json({
+            key: after_map[cid].get(key) for key in before_map[cid]})
+        != canonical_json(before_map[cid])]
+    if removed or edited or added != [candidate["id"]]:
+        raise R0BValidationRefused(
+            "the derived before/after comment delta is not exactly the single "
+            "observed note", subject="delta", removed=removed[:4],
+            edited=edited[:4],
+            added=[item for item in added if item != candidate["id"]][:4])
+    changed = _issue_diff(issue_projection(before.get("issue") or {}),
+                          issue_projection(derived["target_issue"]))
+    if changed:
+        raise R0BValidationRefused(
+            "target issue fields changed around the publication: "
+            + ",".join(changed), subject="issue")
+    if canonical_json(before.get("activities") or []) != \
+            canonical_json(derived["activities_1"]):
+        raise R0BValidationRefused(
+            "the derived timeline activity delta around the publication is "
+            "not attributable", subject="activities")
+
+    # -- 9. resolved source activation and approval authority content --------
+    source = _strict_keys(
+        proof["source_activation"],
+        ("parent_issue_id", "comment", "resolution", "request", "package_id",
+         "envelope_digest", "task_fingerprint", "request_digest",
+         "reconstructed_digest", "reconstructed_fingerprint"),
+        "proof.source_activation")
+    for key in ("parent_issue_id", "package_id", "envelope_digest",
+                "task_fingerprint"):
+        if source[key] != activation[key]:
+            raise R0BValidationRefused(
+                f"the committed source activation {key} does not equal the "
+                "disposition", subject="source_activation", field=key)
+    if source["package_id"] != execution.get("package_id") or \
+            source["envelope_digest"] != digest(envelope):
+        raise R0BValidationRefused(
+            "the committed source activation does not bind the persisted E "
+            "package/envelope", subject="source_activation")
+    if source["task_fingerprint"] != \
+            (execution.get("built_from") or {}).get("task_fingerprint"):
+        raise R0BValidationRefused(
+            "the committed source activation does not bind the frozen E task "
+            "fingerprint", subject="source_activation")
+    matches = [row for row in derived["parent_comments"]
+               if row.get("id") == activation["comment_id"]]
+    if len(matches) != 1:
+        raise R0BValidationRefused(
+            "the parent activation record is missing or duplicated; the "
+            "unique Lead-authored activation is required",
+            subject="source_activation", matches=len(matches))
+    comment = matches[0]
+    if comment.get("author_id") != activation["author_id"] or \
+            comment.get("author_type") != activation["author_type"] or \
+            comment.get("author_id") != PUBLICATION_SOURCE_ACTIVATION_AUTHOR_ID:
+        raise R0BValidationRefused(
+            "the parent activation record does not carry the exact Lead "
+            "author identity", subject="source_activation")
+    if _sha256_utf8(comment.get("content") or "") != \
+            activation["comment_content_raw_digest"]:
+        raise R0BValidationRefused(
+            "the parent activation record content is edited; the committed "
+            "content digest does not reproduce", subject="source_activation")
+    if canonical_json(source["comment"]) != \
+            canonical_json(comment_record(comment)):
+        raise R0BValidationRefused(
+            "the committed source activation comment observation does not "
+            "equal the derived parent record", subject="source_activation")
+    content_text = comment.get("content") or ""
+    missing_bindings = [
+        value for value in (source["package_id"], source["envelope_digest"],
+                            source["task_fingerprint"], target["issue_id"],
+                            intent["intent_id"])
+        if isinstance(value, str) and value and value not in content_text]
+    for digest_value in (activation["resolution_raw_digest"],
+                         activation["request_raw_digest"]):
+        if not _digest_present(content_text, digest_value):
+            missing_bindings.append(digest_value)
+    if missing_bindings:
+        raise R0BValidationRefused(
+            "the parent activation record does not bind the exact E package/"
+            "envelope/fingerprint/target/intent/attachments",
+            subject="source_activation", missing=missing_bindings[:4])
+    downloads = {}
+    for read in derived["reads"]:
+        if read["kind"] in ("download_resolution", "download_request"):
+            downloads[read["kind"]] = read
+    for name, id_field, digest_field in (
+            ("resolution", "resolution_attachment_id",
+             "resolution_raw_digest"),
+            ("request", "request_attachment_id", "request_raw_digest")):
+        record = _strict_keys(
+            source[name],
+            ("attachment_id", "filename", "raw_digest", "chars",
+             "utf8_bytes", "text"),
+            f"proof.source_activation.{name}")
+        if record["attachment_id"] != activation[id_field] or \
+                record["raw_digest"] != activation[digest_field]:
+            raise R0BValidationRefused(
+                f"the committed {name} attachment identity/digest does not "
+                "equal the disposition", subject="source_activation")
+        text = record["text"]
+        if not isinstance(text, str) or \
+                _sha256_utf8(text) != record["raw_digest"] or \
+                len(text) != record["chars"] or \
+                len(text.encode("utf-8")) != record["utf8_bytes"]:
+            raise R0BValidationRefused(
+                f"the committed {name} attachment bytes do not reproduce "
+                "their raw digest", subject="source_activation")
+        download = downloads.get("download_" + name)
+        stdout = (download or {}).get("json")
+        if not isinstance(stdout, dict) or \
+                str(stdout.get("id")) != record["attachment_id"] or \
+                stdout.get("filename") != record["filename"]:
+            raise R0BValidationRefused(
+                f"the persisted {name} download response does not match the "
+                "committed attachment record", subject="source_activation")
+    try:
+        attached = json.loads(source["request"]["text"])
+    except json.JSONDecodeError as exc:
+        raise R0BValidationRefused(
+            f"the committed request attachment is not JSON: {exc}",
+            subject="source_activation")
+    if not isinstance(attached, dict):
+        raise R0BValidationRefused(
+            "the committed request attachment is not an object",
+            subject="source_activation")
+    if canonical_json(attached) != canonical_json(request):
+        raise R0BValidationRefused(
+            "the attached accepted request is not the exact persisted E "
+            "request; a substituted request is refused",
+            subject="source_activation")
+    relevant = ((attached.get("task_snapshot") or {})
+                .get("relevant_decisions"))
+    if not isinstance(relevant, list) or not relevant or \
+            relevant[0] != source["resolution"]["text"]:
+        raise R0BValidationRefused(
+            "the attached request relevant_decisions does not carry the exact "
+            "accepted resolution text", subject="source_activation")
+    resolution_hex = source["resolution"]["raw_digest"].split(":", 1)[1]
+    if not any(isinstance(item, str) and resolution_hex in item
+               for item in relevant[1:]):
+        raise R0BValidationRefused(
+            "the attached request relevant_decisions does not carry the "
+            "resolution artifact raw digest", subject="source_activation")
+    fingerprint = chandoff.fingerprint_from_request(attached)
+    if fingerprint != source["task_fingerprint"] or \
+            fingerprint != source["reconstructed_fingerprint"]:
+        raise R0BValidationRefused(
+            "the attached request fingerprint does not reproduce the frozen E "
+            "fingerprint", subject="source_activation")
+    if chandoff.compute_built_from(attached) != execution.get("built_from"):
+        raise R0BValidationRefused(
+            "the attached request built_from does not reproduce the frozen E "
+            "built_from", subject="source_activation")
+    reconstructed = reconstruct_request_from_fresh_snapshot(
+        derived["target_issue"], attached)
+    if canonical_json(reconstructed) != canonical_json(attached):
+        raise R0BValidationRefused(
+            "the freshly read target body plus the accepted explicit "
+            "decisions do not reproduce the accepted E request; a stale or "
+            "edited target is refused", subject="source_activation")
+    if source["request_digest"] != digest(attached) or \
+            source["reconstructed_digest"] != digest(reconstructed):
+        raise R0BValidationRefused(
+            "the committed request/reconstruction digests do not reproduce",
+            subject="source_activation")
+    approvals = _strict_keys(
+        proof["authority_approvals"], ("human", "lead_boundary"),
+        "proof.authority_approvals")
+    for name, fixed_id, fixed_author, fixed_type, fixed_digest in (
+            ("human", PUBLICATION_RECOVERY_HUMAN_APPROVAL_COMMENT_ID,
+             PUBLICATION_RECOVERY_HUMAN_APPROVAL_AUTHOR_ID, "member",
+             PUBLICATION_RECOVERY_HUMAN_APPROVAL_CONTENT_DIGEST),
+            ("lead_boundary", PUBLICATION_RECOVERY_LEAD_APPROVAL_COMMENT_ID,
+             PUBLICATION_RECOVERY_LEAD_APPROVAL_AUTHOR_ID, "agent",
+             PUBLICATION_RECOVERY_LEAD_APPROVAL_CONTENT_DIGEST)):
+        row = _strict_keys(
+            approvals[name],
+            ("comment_id", "author_id", "author_type", "content_raw_digest",
+             "comment"),
+            f"proof.authority_approvals.{name}")
+        if row["comment_id"] != fixed_id or \
+                row["author_id"] != fixed_author or \
+                row["author_type"] != fixed_type or \
+                row["content_raw_digest"] != fixed_digest:
+            raise R0BValidationRefused(
+                f"the committed {name} approval identity/content does not "
+                "equal the accepted authority", subject="authority")
+        found = [item for item in derived["parent_comments"]
+                 if item.get("id") == fixed_id]
+        if len(found) != 1:
+            raise R0BValidationRefused(
+                f"the {name} approval record is missing or duplicated on the "
+                "parent", subject="authority", matches=len(found))
+        actual = found[0]
+        if actual.get("author_id") != fixed_author or \
+                actual.get("author_type") != fixed_type or \
+                _sha256_utf8(actual.get("content") or "") != fixed_digest:
+            raise R0BValidationRefused(
+                f"the actual {name} approval comment does not match the "
+                "accepted author/content; a fixed reference string alone is "
+                "never authority", subject="authority")
+        if canonical_json(row["comment"]) != \
+                canonical_json(comment_record(actual)):
+            raise R0BValidationRefused(
+                f"the committed {name} approval observation does not equal "
+                "the derived parent record", subject="authority")
+    join = proof["material"]["source_join"]
+    if join.get("source_activation_comment_id") != activation["comment_id"] or \
+            join.get("source_activation_author_id") != \
+            activation["author_id"] or \
+            join.get("resolution_raw_digest") != \
+            activation["resolution_raw_digest"] or \
+            join.get("request_raw_digest") != activation["request_raw_digest"] or \
+            join.get("reconstructed_request_digest") != \
+            digest(reconstructed) or \
+            join.get("task_fingerprint") != source["task_fingerprint"]:
+        raise R0BValidationRefused(
+            "the committed source join does not bind the resolved activation",
+            subject="source_join")
+
+    # -- 10. re-derive the shared-history classification semantics -----------
+    entries: list = []
+    for item in shared["records"]:
+        record = item.get("record")
+        previous = entries[-1] if entries else None
+        try:
+            derived_entry = FactoryClass._publication_record_class(
+                record, previous, intent_id=intent["intent_id"],
+                spec=data["creation_spec"], target_id=target["issue_id"])
+        except PreflightRefusal as exc:
+            raise R0BValidationRefused(
+                "the inline shared-history record does not classify under the "
+                f"accepted rule: {exc.detail}", subject="shared_history",
+                seq=item.get("seq")) from exc
+        if derived_entry["classification"] != item.get("classification") or \
+                derived_entry["reason"] != item.get("reason"):
+            raise R0BValidationRefused(
+                "a stored shared-history classification is relabelled; the "
+                "record semantics do not reproduce the committed label",
+                subject="shared_history", seq=item.get("seq"),
+                recorded=item.get("classification"),
+                derived=derived_entry["classification"])
+        entries.append(derived_entry)
+
+    def class_entries(name):
+        return [entry for entry in entries
+                if entry["classification"] == name]
+
+    create_commands = class_entries(CLS_ORIGINAL_CREATE_COMMAND)
+    create_results = class_entries(CLS_ORIGINAL_CREATE_RESULT)
+    ownership_commands = class_entries(CLS_OWNERSHIP_COMMAND)
+    ownership_results = class_entries(CLS_OWNERSHIP_RESULT)
+    publication_commands = class_entries(CLS_PUBLICATION_COMMAND)
+    publication_results = class_entries(CLS_PUBLICATION_RESULT)
+    if len(create_commands) != 1 or len(create_results) != 1 or \
+            len(ownership_commands) != 1 or len(ownership_results) != 1 or \
+            len(publication_commands) > 1 or len(publication_results) > 1 or \
+            len(publication_commands) != len(publication_results):
+        raise R0BValidationRefused(
+            "the re-derived shared-history pair counts are not the accepted "
+            "single create/ownership and at most one publication pair",
+            subject="shared_history")
+    derived_pairs = {
+        "create_pair": {
+            "command_seq": create_commands[0]["record"].get("seq"),
+            "command_digest": create_commands[0]["digest"],
+            "result_seq": create_results[0]["record"].get("seq"),
+            "result_digest": create_results[0]["digest"]},
+        "ownership_pair": {
+            "command_seq": ownership_commands[0]["record"].get("seq"),
+            "command_digest": ownership_commands[0]["digest"],
+            "result_seq": ownership_results[0]["record"].get("seq"),
+            "result_digest": ownership_results[0]["digest"]},
+        "publication_pair": ({
+            "command_seq": publication_commands[0]["record"].get("seq"),
+            "command_digest": publication_commands[0]["digest"],
+            "result_seq": publication_results[0]["record"].get("seq"),
+            "result_digest": publication_results[0]["digest"],
+        } if publication_commands else None),
+    }
+    for pair_name, pair_value in derived_pairs.items():
+        if canonical_json(shared[pair_name]) != canonical_json(pair_value):
+            raise R0BValidationRefused(
+                f"the committed {pair_name} does not reproduce from the "
+                "inline shared-history records", subject="shared_history")
+    return derived
+
+
 def validate_publication_recovery_proof(proof: dict, *, intent: dict,
                                         data: dict,
-                                        applying: bool = False) -> dict:
+                                        applying: bool = False,
+                                        replay: bool = False) -> dict:
     """Recompute every committed publication-recovery proof predicate.
 
     The proof is fully inline and audit-reconstructable: the exact blocking
     transition and evidence event, the sole publication attempt, the observed
     note with both raw identities and the exact single-terminal-LF relation,
-    the complete platform observations, the classification of every shared
-    ledger record, the historical execution authority and the material
-    rechecks. Hash/count-only, edited, truncated or cross-intent proofs are
-    refused; successful parsing is never sufficient.
+    the complete platform observations, the resolved source activation and
+    approval authority content, the classification of every shared ledger
+    record, the historical execution authority and the material rechecks.
+    Hash/count-only, edited, truncated or cross-intent proofs are refused;
+    successful parsing is never sufficient. The same semantics run for the
+    commit writer and the reducer/restart replay and never require a live
+    read.
     """
     fields = (
         "schema", "contract_version", "intent_id", "target", "state_before",
         "intent_revision_before", "commit_revision", "blocker", "attempt",
         "note", "original_create_recovery", "execution_authority_historical",
-        "observations", "shared_history", "material", "decision",
+        "observations", "shared_history", "source_activation",
+        "authority_approvals", "material", "decision",
         "decision_digest", "proof_digest")
     proof = _strict_keys(_require_dict(proof, "publication_recovery_proof"),
                          fields, "publication recovery proof")
@@ -2274,7 +3108,14 @@ def validate_publication_recovery_proof(proof: dict, *, intent: dict,
         raise R0BValidationRefused(
             "the publication recovery proof does not bind the supported prior "
             "phase BLOCKED")
-    if proof["intent_revision_before"] != intent["revision"] and not applying:
+    if replay:
+        if intent.get("state") != o2.S_HANDOFF_PUBLISHED or \
+                intent["revision"] != proof["commit_revision"]:
+            raise R0BValidationRefused(
+                "the committed publication recovery proof is not replayed on "
+                "its exact committed revision/state",
+                state=intent.get("state"), revision=intent.get("revision"))
+    elif proof["intent_revision_before"] != intent["revision"] and not applying:
         raise R0BValidationRefused(
             "the publication recovery proof revision does not match the "
             "record", expected=proof["intent_revision_before"],
@@ -2531,7 +3372,10 @@ def validate_publication_recovery_proof(proof: dict, *, intent: dict,
     join = _strict_keys(
         material["source_join"],
         ("creation_package_id", "execution_package_id", "envelope_digest",
-         "parent_issue_id", "target_task_ref"),
+         "parent_issue_id", "target_task_ref",
+         "source_activation_comment_id", "source_activation_author_id",
+         "resolution_raw_digest", "request_raw_digest",
+         "reconstructed_request_digest", "task_fingerprint"),
         "proof.material.source_join")
     if join["execution_package_id"] != attempt["package_id"] or \
             join["envelope_digest"] != attempt["envelope_digest"]:
@@ -2607,6 +3451,11 @@ def validate_publication_recovery_proof(proof: dict, *, intent: dict,
         raise R0BValidationRefused(
             "the decision execution migration does not name these executing "
             "adapter bytes")
+    # -- the one shared pure semantic recheck (writer AND reducer/restart) ---
+    validate_publication_recovery_semantics(
+        proof=proof, intent=intent, data=data, target=target, blocker=blocker,
+        attempt=attempt, note_doc=note, observations=observations,
+        shared=shared, decision=decision)
     recomputed = digest({k: v for k, v in proof.items()
                          if k != "proof_digest"})
     if proof["proof_digest"] != recomputed:
@@ -6421,6 +7270,10 @@ class R0BForwardFactory(strict.CanaryOrchestrator):
     def _replay_publication_recovery(self, intent, data, decision,
                                      actor) -> dict:
         proof = data.get("publication_recovery_proof") or {}
+        # Restart/replay runs the one shared pure semantic verifier again;
+        # an already-committed record is never trusted by its digest alone.
+        validate_publication_recovery_proof(
+            proof, intent=intent, data=data, replay=True)
         committed = proof.get("decision") or {}
         if committed.get("decision_digest") != decision["decision_digest"]:
             raise R0BValidationRefused(
@@ -6777,6 +7630,233 @@ class R0BForwardFactory(strict.CanaryOrchestrator):
         shared["classification_digest"] = publication_history_digest(shared)
         return shared
 
+    @staticmethod
+    def _authority_content(parent_rows) -> dict:
+        """Verify the actual approval/authority comment content, not refs."""
+        out = {}
+        for name, comment_id, author_id, author_type, digest_pin in (
+                ("human", PUBLICATION_RECOVERY_HUMAN_APPROVAL_COMMENT_ID,
+                 PUBLICATION_RECOVERY_HUMAN_APPROVAL_AUTHOR_ID, "member",
+                 PUBLICATION_RECOVERY_HUMAN_APPROVAL_CONTENT_DIGEST),
+                ("lead_boundary", PUBLICATION_RECOVERY_LEAD_APPROVAL_COMMENT_ID,
+                 PUBLICATION_RECOVERY_LEAD_APPROVAL_AUTHOR_ID, "agent",
+                 PUBLICATION_RECOVERY_LEAD_APPROVAL_CONTENT_DIGEST)):
+            matches = [row for row in parent_rows
+                       if row.get("id") == comment_id]
+            if len(matches) != 1:
+                raise PreflightRefusal(
+                    o2.S_BLOCKED, REASON_PUBLICATION_PROVENANCE,
+                    f"the {name} approval record is missing or duplicated on "
+                    "the parent", subject="authority", matches=len(matches))
+            row = matches[0]
+            if row.get("author_id") != author_id or \
+                    row.get("author_type") != author_type or \
+                    _sha256_utf8(row.get("content") or "") != digest_pin:
+                raise PreflightRefusal(
+                    o2.S_BLOCKED, REASON_PUBLICATION_PROVENANCE,
+                    f"the actual {name} approval comment does not match the "
+                    "accepted author/content; a fixed reference string alone "
+                    "is never authority", subject="authority")
+            out[name] = {
+                "comment_id": comment_id,
+                "author_id": author_id,
+                "author_type": author_type,
+                "content_raw_digest": digest_pin,
+                "comment": comment_record(row),
+            }
+        return out
+
+    def _resolve_source_activation(self, intent, data, decision) -> dict:
+        """Resolve the unique Lead-authored source activation and its inputs.
+
+        Reads the parent record through the authenticated CLI only: the unique
+        Lead-authored activation comment matching the actual E package/envelope
+        identity, target and intent; the two attached artifacts by raw hash;
+        the fixed approval/authority comments by exact author and content. Any
+        missing, duplicate, edited, wrong-author or nonmatching record is a
+        typed stop; nothing is selected by recency and no field is invented.
+        """
+        activation = decision["source_activation"]
+        spec = data.get("creation_spec") or {}
+        execution = data.get("execution_context") or {}
+        envelope = execution.get("result")
+        if not isinstance(envelope, dict):
+            raise PreflightRefusal(
+                o2.S_BLOCKED, REASON_MATERIAL_UNAVAILABLE,
+                "the bound original E envelope is not available for source "
+                "activation verification", subject="source_activation")
+        if activation["parent_issue_id"] != spec.get("parent_issue_id"):
+            raise PreflightRefusal(
+                o2.S_BLOCKED, REASON_PUBLICATION_PROVENANCE,
+                "the disposed source activation parent is not the recorded "
+                "target parent", subject="source_activation")
+        try:
+            parent_rows = self.reader.comments_full(
+                activation["parent_issue_id"])
+        except Exception as exc:  # noqa: BLE001 - unreadable is a stop
+            raise PreflightRefusal(
+                o2.S_BLOCKED, REASON_MATERIAL_UNAVAILABLE,
+                f"the parent activation records are incomplete or unreadable: "
+                f"{type(exc).__name__}: {exc}", subject="source_activation")
+        matches = [row for row in parent_rows
+                   if row.get("id") == activation["comment_id"]]
+        if len(matches) != 1:
+            raise PreflightRefusal(
+                o2.S_BLOCKED, REASON_PUBLICATION_PROVENANCE,
+                "the parent activation record is missing or duplicated; the "
+                "unique Lead-authored activation is required",
+                subject="source_activation", matches=len(matches))
+        comment = matches[0]
+        if comment.get("author_id") != activation["author_id"] or \
+                comment.get("author_type") != activation["author_type"] or \
+                comment.get("author_id") != \
+                PUBLICATION_SOURCE_ACTIVATION_AUTHOR_ID:
+            raise PreflightRefusal(
+                o2.S_BLOCKED, REASON_PUBLICATION_PROVENANCE,
+                "the parent activation record does not carry the exact Lead "
+                "author identity", subject="source_activation")
+        content = comment.get("content")
+        if not isinstance(content, str) or \
+                _sha256_utf8(content) != \
+                activation["comment_content_raw_digest"]:
+            raise PreflightRefusal(
+                o2.S_BLOCKED, REASON_PUBLICATION_PROVENANCE,
+                "the parent activation record content is edited; the disposed "
+                "content digest does not reproduce",
+                subject="source_activation")
+        fingerprint = ((execution.get("built_from") or {})
+                       .get("task_fingerprint"))
+        package_id = execution.get("package_id")
+        envelope_digest = digest(envelope)
+        if package_id != activation["package_id"] or \
+                envelope_digest != activation["envelope_digest"] or \
+                fingerprint != activation["task_fingerprint"]:
+            raise PreflightRefusal(
+                o2.S_BLOCKED, REASON_PUBLICATION_PROVENANCE,
+                "the disposal E package/envelope/fingerprint does not match "
+                "the bound original E", subject="source_activation")
+        target_id = binding_issue_id(data)
+        missing = [value for value in (
+            package_id, envelope_digest, fingerprint, target_id,
+            intent["intent_id"])
+            if isinstance(value, str) and value and value not in content]
+        for digest_value in (activation["resolution_raw_digest"],
+                             activation["request_raw_digest"]):
+            if not _digest_present(content, digest_value):
+                missing.append(digest_value)
+        if missing:
+            raise PreflightRefusal(
+                o2.S_BLOCKED, REASON_PUBLICATION_PROVENANCE,
+                "the parent activation record does not bind the exact E "
+                "package/envelope/fingerprint/target/intent/attachments",
+                subject="source_activation", missing=missing[:4])
+        attachments = comment.get("attachments")
+        if not isinstance(attachments, list):
+            raise PreflightRefusal(
+                o2.S_BLOCKED, REASON_PUBLICATION_PROVENANCE,
+                "the parent activation record carries no attachment listing",
+                subject="source_activation")
+        declared = {item.get("id") for item in attachments
+                    if isinstance(item, dict)}
+        if activation["resolution_attachment_id"] not in declared or \
+                activation["request_attachment_id"] not in declared:
+            raise PreflightRefusal(
+                o2.S_BLOCKED, REASON_PUBLICATION_PROVENANCE,
+                "the parent activation record does not carry the disposed "
+                "resolution and request attachments",
+                subject="source_activation")
+        try:
+            resolution = self.reader.attachment_content(
+                activation["resolution_attachment_id"])
+            request_doc = self.reader.attachment_content(
+                activation["request_attachment_id"])
+        except PublicationProvenanceIncomplete as exc:
+            raise PreflightRefusal(
+                o2.S_BLOCKED, REASON_MATERIAL_UNAVAILABLE, exc.message,
+                subject="source_activation")
+        except Exception as exc:  # noqa: BLE001
+            raise PreflightRefusal(
+                o2.S_BLOCKED, REASON_MATERIAL_UNAVAILABLE,
+                f"the source activation attachments are unreadable: "
+                f"{type(exc).__name__}: {exc}", subject="source_activation")
+        if resolution["raw_digest"] != activation["resolution_raw_digest"]:
+            raise PreflightRefusal(
+                o2.S_BLOCKED, REASON_PUBLICATION_PROVENANCE,
+                "the resolution attachment raw digest does not reproduce the "
+                "disposition", subject="source_activation")
+        if request_doc["raw_digest"] != activation["request_raw_digest"]:
+            raise PreflightRefusal(
+                o2.S_BLOCKED, REASON_PUBLICATION_PROVENANCE,
+                "the request attachment raw digest does not reproduce the "
+                "disposition", subject="source_activation")
+        try:
+            attached = json.loads(request_doc["text"])
+        except json.JSONDecodeError as exc:
+            raise PreflightRefusal(
+                o2.S_BLOCKED, REASON_PUBLICATION_PROVENANCE,
+                f"the request attachment is not JSON: {exc}",
+                subject="source_activation")
+        if not isinstance(attached, dict):
+            raise PreflightRefusal(
+                o2.S_BLOCKED, REASON_PUBLICATION_PROVENANCE,
+                "the request attachment is not an object",
+                subject="source_activation")
+        if canonical_json(attached) != \
+                canonical_json(execution.get("request")):
+            raise PreflightRefusal(
+                o2.S_BLOCKED, REASON_PUBLICATION_PROVENANCE,
+                "the attached accepted request is not the exact bound E "
+                "request", subject="source_activation")
+        relevant = ((attached.get("task_snapshot") or {})
+                    .get("relevant_decisions"))
+        if not isinstance(relevant, list) or not relevant or \
+                relevant[0] != resolution["text"]:
+            raise PreflightRefusal(
+                o2.S_BLOCKED, REASON_PUBLICATION_PROVENANCE,
+                "the attached request relevant_decisions does not carry the "
+                "exact accepted resolution text", subject="source_activation")
+        resolution_hex = resolution["raw_digest"].split(":", 1)[1]
+        if not any(isinstance(item, str) and resolution_hex in item
+                   for item in relevant[1:]):
+            raise PreflightRefusal(
+                o2.S_BLOCKED, REASON_PUBLICATION_PROVENANCE,
+                "the attached request relevant_decisions does not carry the "
+                "resolution artifact raw digest", subject="source_activation")
+        attached_fp = chandoff.fingerprint_from_request(attached)
+        if attached_fp != fingerprint:
+            raise PreflightRefusal(
+                o2.S_BLOCKED, REASON_MATERIAL_STALE,
+                "the attached request fingerprint does not reproduce the "
+                "frozen E fingerprint", subject="source_activation")
+        if chandoff.compute_built_from(attached) != \
+                execution.get("built_from"):
+            raise PreflightRefusal(
+                o2.S_BLOCKED, REASON_MATERIAL_STALE,
+                "the attached request built_from does not reproduce the "
+                "frozen E built_from", subject="source_activation")
+        return {
+            "comment": comment_record(comment),
+            "resolution": {
+                "attachment_id": resolution["attachment_id"],
+                "filename": resolution["filename"],
+                "raw_digest": resolution["raw_digest"],
+                "chars": resolution["chars"],
+                "utf8_bytes": resolution["utf8_bytes"],
+                "text": resolution["text"],
+            },
+            "request": {
+                "attachment_id": request_doc["attachment_id"],
+                "filename": request_doc["filename"],
+                "raw_digest": request_doc["raw_digest"],
+                "chars": request_doc["chars"],
+                "utf8_bytes": request_doc["utf8_bytes"],
+                "text": request_doc["text"],
+            },
+            "attached_request": attached,
+            "request_digest": digest(attached),
+            "authority_approvals": self._authority_content(parent_rows),
+        }
+
     def _publication_recovery_prerequisites(self, intent, data, *, decision,
                                             current_findings,
                                             authority_evidence) -> dict:
@@ -6790,6 +7870,9 @@ class R0BForwardFactory(strict.CanaryOrchestrator):
         """
         intent_id = intent["intent_id"]
         expected_blocker = decision["expected_blocker"]
+        responses_start = len(self.reader.responses)
+        source_activation = self._resolve_source_activation(
+            intent, data, decision)
         transitions = intent.get("transitions") or []
         if not transitions:
             raise PreflightRefusal(
@@ -6890,7 +7973,6 @@ class R0BForwardFactory(strict.CanaryOrchestrator):
                 "the re-rendered original body digest does not match the "
                 "disposition's rendered digest", subject="attempt")
         issue_id = binding_issue_id(data)
-        responses_start = len(self.reader.responses)
         try:
             evidence = collect_evidence(self.reader, issue_id)
         except PublicationProvenanceIncomplete as exc:
@@ -7041,8 +8123,17 @@ class R0BForwardFactory(strict.CanaryOrchestrator):
                 o2.S_REFRESH_REQUIRED, REASON_MATERIAL_STALE,
                 "the frozen fingerprint/built_from recheck failed",
                 subject="request")
-        check = preflight_self_check(data, execution.get("request"),
-                                     current_findings)
+        reconstructed = reconstruct_request_from_fresh_snapshot(
+            issue, source_activation["attached_request"])
+        if canonical_json(reconstructed) != \
+                canonical_json(source_activation["attached_request"]):
+            raise PreflightRefusal(
+                o2.S_REFRESH_REQUIRED, REASON_MATERIAL_STALE,
+                "the freshly read target body plus the accepted explicit "
+                "decisions do not reproduce the accepted E request; a stale "
+                "or edited target refuses", subject="source_activation")
+        check = preflight_self_check(data, reconstructed, current_findings)
+        preflight_request_check(data, reconstructed)
         creation = data.get("creation_context") or {}
         target = data.get("target_binding") or {}
         spec = data["creation_spec"]
@@ -7052,6 +8143,16 @@ class R0BForwardFactory(strict.CanaryOrchestrator):
             "envelope_digest": execution.get("envelope_digest"),
             "parent_issue_id": spec["parent_issue_id"],
             "target_task_ref": execution.get("target_task_ref"),
+            "source_activation_comment_id":
+                source_activation["comment"]["id"],
+            "source_activation_author_id":
+                source_activation["comment"]["author_id"],
+            "resolution_raw_digest":
+                source_activation["resolution"]["raw_digest"],
+            "request_raw_digest": source_activation["request"]["raw_digest"],
+            "reconstructed_request_digest": digest(reconstructed),
+            "task_fingerprint":
+                (execution.get("built_from") or {}).get("task_fingerprint"),
         }
         if join["execution_package_id"] != attempt.get("package_id") or \
                 join["envelope_digest"] != attempt.get("envelope_digest") or \
@@ -7064,6 +8165,18 @@ class R0BForwardFactory(strict.CanaryOrchestrator):
                 o2.S_BLOCKED, REASON_PUBLICATION_PROVENANCE,
                 "the source parent/E identity join is broken",
                 subject="source_join")
+        if join["source_activation_comment_id"] != \
+                decision["source_activation"]["comment_id"] or \
+                join["resolution_raw_digest"] != \
+                decision["source_activation"]["resolution_raw_digest"] or \
+                join["request_raw_digest"] != \
+                decision["source_activation"]["request_raw_digest"] or \
+                join["task_fingerprint"] != \
+                decision["source_activation"]["task_fingerprint"]:
+            raise PreflightRefusal(
+                o2.S_BLOCKED, REASON_PUBLICATION_PROVENANCE,
+                "the source activation join does not bind the disposed "
+                "resolution/request/fingerprint", subject="source_join")
         return {
             "blocker_transition": blocker_transition,
             "blocker_evidence": evidence_event,
@@ -7082,6 +8195,9 @@ class R0BForwardFactory(strict.CanaryOrchestrator):
             "authority": authority,
             "self_check": check,
             "join": join,
+            "source_activation": source_activation,
+            "authority_approvals": source_activation["authority_approvals"],
+            "reconstructed": reconstructed,
             "responses": list(self.reader.responses[responses_start:]),
             "ledger_prefix_count": shared["audited_prefix"]["length"],
             "ledger_prefix_raw_digest":
@@ -7204,6 +8320,25 @@ class R0BForwardFactory(strict.CanaryOrchestrator):
             },
             "observations": observations,
             "shared_history": shared,
+            "source_activation": {
+                "parent_issue_id":
+                    decision["source_activation"]["parent_issue_id"],
+                "comment": dict(bundle["source_activation"]["comment"]),
+                "resolution":
+                    dict(bundle["source_activation"]["resolution"]),
+                "request": dict(bundle["source_activation"]["request"]),
+                "package_id": decision["source_activation"]["package_id"],
+                "envelope_digest":
+                    decision["source_activation"]["envelope_digest"],
+                "task_fingerprint":
+                    decision["source_activation"]["task_fingerprint"],
+                "request_digest":
+                    bundle["source_activation"]["request_digest"],
+                "reconstructed_digest": digest(bundle["reconstructed"]),
+                "reconstructed_fingerprint":
+                    chandoff.fingerprint_from_request(bundle["reconstructed"]),
+            },
+            "authority_approvals": copy.deepcopy(bundle["authority_approvals"]),
             "material": {
                 "artifact_dependency_digest": bundle["artifact_digest"],
                 "artifact_recheck_ok": True,
@@ -7429,6 +8564,11 @@ class R0BForwardFactory(strict.CanaryOrchestrator):
         if check.get("status") != "READY":
             raise R0BValidationRefused("SELF_CHECK is not READY", check=check)
         return {"result": result, "request": request, "self_check": check}
+
+
+# One shared classifier for the live collection and the pure proof recheck,
+# so a relabelled shared-history record can never survive the reducer.
+FactoryClass = R0BForwardFactory
 
 
 def binding_issue_id(data: dict) -> str:
@@ -7753,6 +8893,25 @@ def wiring_proof(source=None, module_path=None) -> dict:
                         "validate_publication_recovery_commit_record")
             and _calls_name(functions.get("fold_publication_recovery_commit"),
                             "validate_publication_recovery_commit_record")),
+        "publication_semantic_proof_recheck": (
+            functions.get("validate_publication_recovery_semantics")
+            is not None
+            and _calls_name(functions.get("validate_publication_recovery_proof"),
+                            "validate_publication_recovery_semantics")
+            and _calls_name(
+                _method(factory, "_replay_publication_recovery"),
+                "validate_publication_recovery_proof")),
+        "publication_source_activation_resolved": (
+            functions.get("reconstruct_request_from_fresh_snapshot")
+            is not None
+            and _calls_attr(
+                _method(factory, "_publication_recovery_prerequisites"),
+                "_resolve_source_activation")
+            and _calls_attr(functions.get("validate_publication_recovery_"
+                                          "semantics"),
+                            "_publication_derive_reads")
+            and _method(classes.get("EvidenceReader"),
+                        "attachment_content") is not None),
         "execution_migration_validated_on_load": (
             functions.get("validate_publication_execution_migration")
             is not None
