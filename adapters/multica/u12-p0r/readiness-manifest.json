@@ -12,6 +12,10 @@
     "all_unauthorized_or_ambiguous_shapes_rejected": true,
     "authorized_receipt_shapes_accepted": "3/3",
     "canonical_or_product_writes": 0,
+    "duplicate_key_cases_rejected": "7/7",
+    "duplicate_key_parser_calls_on_rejection": 0,
+    "duplicate_keys_including_same_value_rejected": true,
+    "f4_disposition": "RESOLVED_BY_STRICT_DUPLICATE_KEY_DECODER",
     "live_05_or_06_activation": 0,
     "live_r0_runs_created": 0,
     "o2_parser_or_history_modified": false,
@@ -25,20 +29,21 @@
     "trigger_route_derived_from_attribution_text": false
   },
   "evidence_files": {
-    "O2_REPORT_DIGEST_ERRATA.json": "sha256:c2ab035f8898bab12439b7f3cfe0868fc93ea5c86f8cbb8dfb78770d46929aed",
-    "pin-verification.json": "sha256:0a30899cdfa6c179bf43f242ed6ef44536f57993994e15e8b00f619e58015b42",
-    "production-ledger-readonly-integrity.json": "sha256:57ccb11cc6f3237a24a94c8382afff1504f13c47a7ac2de88e0c720aee252a00",
-    "proposed-r0-canary-plan.json": "sha256:0e8235b116e69ea7945c057f61b54d88f33286f322826d1b19910387c9a637b2",
-    "strict-receipt-gate-evidence.json": "sha256:2a54f45fcbad719841c7624845791a58bb633a6150b8b8778ededd12ade93916"
+    "O2_REPORT_DIGEST_ERRATA.json": "sha256:14025c80e999b6dc3448f4666454ea0c19e88942dbdb1b149f2e9ee0670d6e37",
+    "pin-verification.json": "sha256:e0e27cce1dbec52d4948a7e9ad2441b5f62cac8f649ef5705f0cfd4625f7038a",
+    "production-ledger-readonly-integrity.json": "sha256:9c3d750bed1059c656d35d4c40e3ab986572b53ceed760714ef941a4784e9e37",
+    "proposed-r0-canary-plan.json": "sha256:ce8be5fe5e0944cadd98b0c0c19f35d142a20a7930b78fcf3b8a5fa5af57870d",
+    "strict-receipt-gate-evidence.json": "sha256:fba5d1a14846259a57353915bfc6b09bef136fa9fe1179452f4ec36f0341a717"
   },
   "findings": {
     "U12-P0-F1": "ACCEPTED_FORWARD_ERRATA (recorded, non-blocking)",
     "U12-P0-F2": "RESOLVED_BY_STRICT_RECEIPT_GATE",
-    "U12-P0-F3": "BOUND_BY_ROUTE_PROVENANCE (ledger, not attribution)"
+    "U12-P0-F3": "BOUND_BY_ROUTE_PROVENANCE (ledger, not attribution)",
+    "U12-P0R-F4": "RESOLVED_BY_STRICT_DUPLICATE_KEY_DECODER (every nesting level, including same-valued)"
   },
-  "generated_at": "2026-09-11T04:48:00Z",
+  "generated_at": "2026-09-11T05:31:25Z",
   "kind": "u12_p0r_strict_receipt_readiness_manifest",
-  "manifest_digest": "sha256:8eed5a7b36130bff199aca3eb89c20cbd291e15652d2708f711e293027750791",
+  "manifest_digest": "sha256:95a2be772aa837dd7507503a84d5eaefc4e43057f216663484d4fd703f9f496e",
   "o2_report_digest_errata": {
     "correct_lf_digest": "sha256:78fb99d40ad22ffcf45a087314901e26df5c1d502b038404728c4f1672283665",
     "evidence_file": "O2_REPORT_DIGEST_ERRATA.json",
@@ -68,22 +73,34 @@
     "path": "adapters/multica/u12-p0r/proposed-r0-canary-plan.json",
     "r0_canary_authorized": false
   },
-  "schema_version": "U12-P0R/1.0",
+  "schema_version": "U12-P0R/1.1",
   "strict_receipt_gate": {
+    "duplicate_key_rejected": true,
+    "duplicate_key_scope": "every_json_object_at_every_nesting_level",
     "evidence_file": "strict-receipt-gate-evidence.json",
     "module": "tools/u12_strict_receipt.py",
     "no_bypass_no_fallback": true,
     "permissive_entrypoint": "tools.chandoff_intent.O2DispatchBoundary.rerun_issue",
     "permissive_entrypoint_reachable_in_r0_path": false,
     "receipt_entrypoint": "tools.u12_strict_receipt.StrictReceiptBoundary.rerun_issue",
-    "sha256_lf": "sha256:a8280b398125788f9e52c1dad411a26228a685d424d272bd08d53c0a4b7b076a",
+    "same_valued_duplicate_keys_rejected": true,
+    "sha256_lf": "sha256:6d6452a5a17911926503a2eece3725cd58ac22b1ef10d7bb5f292901a207eb49",
     "shape_matrix_ok": true,
-    "version": "U12-P0R/1.0",
+    "version": "U12-P0R/1.1",
     "wiring_proof_ok": true
   },
   "supersedes": {
     "digest": "sha256:78f6a4566d40963672e724824cd715a96a9f7f1ccb339d0c09025b60c795ee7b",
     "path": "adapters/multica/u12-p0/production-root-manifest.json",
+    "prior_u12_p0r_revision": {
+      "commit": "afc13fd43c1fa5b468c881f9abc5e174bd0c77bd",
+      "manifest_digest": "sha256:8eed5a7b36130bff199aca3eb89c20cbd291e15652d2708f711e293027750791",
+      "path": "adapters/multica/u12-p0r/readiness-manifest.json",
+      "strict_gate_sha256_lf": "sha256:a8280b398125788f9e52c1dad411a26228a685d424d272bd08d53c0a4b7b076a",
+      "superseded_scope": "prior U12-P0R/1.0 F2-only readiness conclusion (rejected as U12_P0R_CHANGES_REQUIRED); the F4 repair is forward-only and leaves those bytes in history",
+      "verified_gate_match": true,
+      "verified_manifest_match": true
+    },
     "retained_as_accepted_history": [
       "production ledger path and deployment",
       "ACL least-privilege evidence",

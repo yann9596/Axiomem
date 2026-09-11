@@ -13,7 +13,7 @@
   "partial_or_corrupt_records": 0,
   "path": "D:\\AI\\multica-state\\web-imagegen\\dispatch\\ledger.jsonl",
   "read_only": true,
-  "schema_version": "U12-P0R/1.0",
+  "schema_version": "U12-P0R/1.1",
   "tip_digest": "sha256:c96838987bd362b263c177ba670e193f2cdcdf02e1694f896667ab57920c3412",
   "tip_unchanged": true,
   "total_records": 1

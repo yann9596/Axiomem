@@ -47,6 +47,12 @@ class InputBoundaryTests(unittest.TestCase):
                          g.PRIOR_PLAN_DIGEST)
         self.assertEqual(result["checks"]["prior_manifest"]["expected"],
                          g.PRIOR_MANIFEST_DIGEST)
+        self.assertTrue(result["checks"]["prior_p0r_manifest"]["match"],
+                        result["checks"]["prior_p0r_manifest"])
+        self.assertTrue(result["checks"]["prior_p0r_gate"]["match"],
+                        result["checks"]["prior_p0r_gate"])
+        self.assertEqual(result["checks"]["prior_p0r_manifest"]["commit"],
+                         g.PRIOR_COMMIT)
 
     def test_accepted_pins_and_errata_row(self):
         pins = g.pin_evidence(ROOT)
@@ -116,12 +122,25 @@ class CommittedBundleTests(unittest.TestCase):
         self.assertEqual(manifest["supersedes"]["digest"],
                          g.PRIOR_MANIFEST_DIGEST)
         self.assertTrue(manifest["supersedes"]["verified_match"])
+        prior_rev = manifest["supersedes"]["prior_u12_p0r_revision"]
+        self.assertEqual(prior_rev["manifest_digest"],
+                         g.PRIOR_P0R_MANIFEST_DIGEST)
+        self.assertEqual(prior_rev["strict_gate_sha256_lf"],
+                         g.PRIOR_P0R_GATE_SHA256_LF)
+        self.assertTrue(prior_rev["verified_manifest_match"])
+        self.assertTrue(prior_rev["verified_gate_match"])
         self.assertFalse(manifest["r0_canary_authorized"])
         completion = manifest["completion_evidence"]
         self.assertEqual(completion["authorized_receipt_shapes_accepted"],
                          "3/3")
         self.assertTrue(completion["run_wrapper_shape_rejected"])
         self.assertTrue(completion["all_unauthorized_or_ambiguous_shapes_rejected"])
+        self.assertTrue(completion["duplicate_keys_including_same_value_rejected"])
+        self.assertEqual(completion["duplicate_key_parser_calls_on_rejection"], 0)
+        self.assertEqual(completion["duplicate_key_cases_rejected"], "7/7")
+        self.assertEqual(completion["f4_disposition"],
+                         "RESOLVED_BY_STRICT_DUPLICATE_KEY_DECODER")
+        self.assertIn("U12-P0R-F4", manifest["findings"])
         self.assertTrue(completion["r0_path_uses_strict_gate_only"])
         self.assertFalse(completion["o2_parser_or_history_modified"])
         self.assertFalse(completion["trigger_route_derived_from_attribution_text"])
@@ -142,6 +161,10 @@ class CommittedBundleTests(unittest.TestCase):
                          descriptor["receipt_entrypoint"])
         self.assertFalse(bound["permissive_entrypoint_reachable_in_r0_path"])
         self.assertFalse(bound["bypass_or_fallback"])
+        self.assertTrue(bound["duplicate_key_rejected"])
+        self.assertTrue(bound["same_valued_duplicate_keys_rejected"])
+        self.assertEqual(bound["duplicate_key_scope"],
+                         descriptor["duplicate_key_scope"])
         provenance = plan["sole_trigger"]["route_provenance"]
         self.assertFalse(provenance["run_attribution_text_used_for_route"])
         self.assertEqual(provenance["source"], "issuing_transaction_and_ledger")
@@ -164,8 +187,19 @@ class CommittedBundleTests(unittest.TestCase):
         self.assertEqual(matrix["authorized_receipt_shapes_accepted"], "3/3")
         self.assertTrue(matrix["run_wrapper_shape_rejected"])
         self.assertTrue(matrix["all_unauthorized_or_ambiguous_shapes_rejected"])
+        self.assertTrue(matrix["duplicate_keys_including_same_value_rejected"])
+        self.assertEqual(matrix["duplicate_key_cases_rejected"], "7/7")
+        self.assertEqual(matrix["duplicate_key_parser_calls_on_rejection"], 0)
+        self.assertEqual(len(matrix["duplicate_key_cases"]), 7)
         self.assertEqual(matrix["permissive_parser_invoked_on_refusal"], 0)
         self.assertTrue(evidence["wiring_proof"]["ok"])
+        self.assertTrue(
+            evidence["wiring_proof"]["checks"]["duplicate_key_guard_present"])
+        self.assertTrue(evidence["gate"]["duplicate_key_fails_closed"])
+        self.assertTrue(
+            evidence["gate"]["same_valued_duplicate_keys_fail_closed"])
+        self.assertTrue(evidence["f4_duplicate_key_boundary"]
+                        ["enforced_before_o2_parser"])
         self.assertFalse(
             evidence["r0_path"]["permissive_entrypoint_reachable_in_r0_path"])
         self.assertFalse(

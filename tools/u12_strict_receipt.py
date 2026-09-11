@@ -15,6 +15,17 @@ missing/blank observable fields, and any shape that is not provably one of the
 three authorized forms. Extra fields inside the run object are ignored only
 after the top-level shape has been classified as one of the three forms.
 
+F4 (YZT-82 repair): the strict decoder refuses any JSON object that repeats a
+key at ANY nesting level — observable fields, the `runs` wrapper, run rows and
+objects nested inside ignored extra fields alike — including when the repeated
+values are identical. Python's default `json` object builder silently keeps
+the last value for a repeated key, so a receipt such as
+`{"id": "first", "id": "second", ...}` or `{"runs": [], "runs": [run]}` would
+previously classify as an authorized shape; the strict `object_pairs_hook`
+now raises during decoding, before classification and before the immutable O2
+parser is reachable. Duplicate-key refusal is a typed ambiguity
+(`duplicate_json_key` -> `StrictReceiptRefused` -> `TRIGGER_AMBIGUOUS`).
+
 The accepted O2 parser (`chandoff_intent.parse_run_object`) is immutable
 history and keeps its historical behavior for accepted U06–U11 replays. It is
 reachable from R0 receipt handling only behind this strict preclassification:
@@ -39,7 +50,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 import chandoff_dispatch as dispatch  # noqa: E402
 import chandoff_intent as o2  # noqa: E402
 
-GATE_VERSION = "U12-P0R/1.0"
+GATE_VERSION = "U12-P0R/1.1"
 RECEIPT_ENTRYPOINT = "tools.u12_strict_receipt.StrictReceiptBoundary.rerun_issue"
 PERMISSIVE_ENTRYPOINT = "tools.chandoff_intent.O2DispatchBoundary.rerun_issue"
 
@@ -52,6 +63,7 @@ RUN_FIELDS = tuple(dispatch.RUN_CONTRACT_FIELDS)
 
 R_INPUT_NOT_TEXT = "input_not_text"
 R_NOT_JSON = "not_json"
+R_DUPLICATE_KEY = "duplicate_json_key"
 R_SCALAR_OR_NULL = "scalar_or_null"
 R_RUN_WRAPPER = "run_wrapper_unauthorized"
 R_RUNS_NOT_LIST = "runs_not_list"
@@ -62,6 +74,47 @@ R_MIXED_WRAPPER = "mixed_wrapper_shape"
 R_ROW_NOT_OBJECT = "run_row_not_object"
 R_MISSING_FIELD = "missing_or_blank_observable_field"
 R_UNCLASSIFIED = "unclassified_shape"
+
+
+class _DuplicateJsonKey(Exception):
+    """Strict-decoder refusal: a JSON object repeated a key.
+
+    Raised from `object_pairs_hook` while decoding, so a receipt carrying a
+    repeated key at any nesting level never reaches shape classification or
+    the immutable O2 parser. Deliberately not a `ValueError`: the `json`
+    decoder may translate hook `ValueError`s into `JSONDecodeError`, which
+    would blur this typed refusal into a generic parse error.
+    """
+
+    def __init__(self, keys):
+        self.keys = tuple(keys)
+        super().__init__("duplicate JSON key(s): " + ", ".join(self.keys))
+
+
+def _reject_duplicate_keys(pairs):
+    """`object_pairs_hook` that fails closed on any repeated object key.
+
+    Runs for every JSON object at every nesting level (including objects
+    inside arrays, run rows and ignored extra fields), so duplicates are
+    refused before last-wins overwriting can hide an ambiguous receipt. A
+    repeated key is rejected whether or not the repeated values are equal.
+    """
+    seen = set()
+    duplicates = []
+    for key, _value in pairs:
+        if key in seen:
+            if key not in duplicates:
+                duplicates.append(key)
+        else:
+            seen.add(key)
+    if duplicates:
+        raise _DuplicateJsonKey(duplicates)
+    return dict(pairs)
+
+
+def _decode_strict_json(text):
+    """Decode receipt JSON with duplicate-key refusal at every level."""
+    return json.loads(text, object_pairs_hook=_reject_duplicate_keys)
 
 
 class StrictReceiptRefused(o2.ReceiptAmbiguousError):
@@ -103,12 +156,18 @@ def classify_strict_receipt(text) -> dict:
 
     Pure and non-raising for every JSON-expressible input: returns
     `{"accepted": bool, "shape": str|None, "reason": str|None, ...}`.
+
+    Decoding rejects any repeated JSON object key at every nesting level
+    (`duplicate_json_key`) before any shape is considered.
     """
     if not isinstance(text, (str, bytes, bytearray)):
         return _refusal(R_INPUT_NOT_TEXT,
                         detail=f"receipt is {type(text).__name__}")
     try:
-        data = json.loads(text)
+        data = _decode_strict_json(text)
+    except _DuplicateJsonKey as exc:
+        return _refusal(R_DUPLICATE_KEY, detail=str(exc)[:120],
+                        duplicate_keys=list(exc.keys))
     except (json.JSONDecodeError, UnicodeDecodeError) as exc:
         return _refusal(R_NOT_JSON, detail=str(exc)[:120])
     if isinstance(data, list):
@@ -239,6 +298,9 @@ def gate_descriptor(module_path=None) -> dict:
         "observable_fields": list(RUN_FIELDS),
         "run_wrapper_authorized": False,
         "competing_wrapper_key_fails_closed": True,
+        "duplicate_key_fails_closed": True,
+        "duplicate_key_scope": "every_json_object_at_every_nesting_level",
+        "same_valued_duplicate_keys_fail_closed": True,
         "no_bypass_no_fallback": True,
     }
 
@@ -284,9 +346,22 @@ def wiring_proof(source=None, module_path=None) -> dict:
     strict_parse_calls = [] if parse_strict is None else [
         (name, line) for name, line in _call_sites(parse_strict)
         if name == "parse_run_object"]
+    classify = functions.get("classify_strict_receipt")
+    classify_sites = [] if classify is None else _call_sites(classify)
     classify_calls = [] if parse_strict is None else [
         line for name, line in _call_sites(parse_strict)
         if name == "classify_strict_receipt"]
+
+    def _uses_object_pairs_hook(node) -> bool:
+        if node is None:
+            return False
+        for sub in ast.walk(node):
+            if not isinstance(sub, ast.Call):
+                continue
+            if any(kw.arg == "object_pairs_hook" for kw in sub.keywords):
+                return True
+        return False
+
     module_parse_calls = [
         (name, line) for node in tree.body
         for name, line in _call_sites(node) if name == "parse_run_object"]
@@ -306,6 +381,11 @@ def wiring_proof(source=None, module_path=None) -> dict:
             bool(strict_parse_calls) and bool(classify_calls)
             and min(classify_calls) < min(
                 line for name, line in strict_parse_calls),
+        "duplicate_key_guard_present":
+            functions.get("_reject_duplicate_keys") is not None
+            and _uses_object_pairs_hook(functions.get("_decode_strict_json"))
+            and any(name == "_decode_strict_json"
+                    for name, _ in classify_sites),
         "refusal_precedes_o2_parser":
             bool(strict_parse_calls)
             and any(isinstance(sub, ast.Raise)

@@ -32,11 +32,12 @@ import chandoff_intent as o2  # noqa: E402
 import u12_preflight as p0  # noqa: E402
 import u12_strict_receipt as gate  # noqa: E402
 
-TOOL_VERSION = "U12-P0R/1.0"
-SCHEMA_VERSION = "U12-P0R/1.0"
+TOOL_VERSION = "U12-P0R/1.1"
+SCHEMA_VERSION = "U12-P0R/1.1"
 TASK_REF = "YZT-82"
 BRANCH = "yzt-82-u12p0r-strict-receipt-gate"
 BASE_COMMIT = "6a6c018c718795aedc677fe61fabfe30fee96217"
+PRIOR_COMMIT = "afc13fd43c1fa5b468c881f9abc5e174bd0c77bd"
 ROOT = Path(__file__).resolve().parent.parent
 
 AUTHORITY = {
@@ -52,6 +53,15 @@ PRIOR_PLAN_DIGEST = ("sha256:0b88856d9e9969d1d9357b3da7a114f34089e7b0247794c412d
 PRIOR_MANIFEST = "adapters/multica/u12-p0/production-root-manifest.json"
 PRIOR_MANIFEST_DIGEST = ("sha256:78f6a4566d40963672e724824cd715a96a9f7f1ccb339d0c"
                          "09025b60c795ee7b")
+
+# The F4 repair is forward-only from the rejected U12-P0R/1.0 readiness
+# revision at commit afc13fd. Those bytes stay in history; the new manifest
+# records the superseded revision and verifies it from that commit's blobs.
+PRIOR_P0R_MANIFEST = "adapters/multica/u12-p0r/readiness-manifest.json"
+PRIOR_P0R_MANIFEST_DIGEST = ("sha256:8eed5a7b36130bff199aca3eb89c20cbd291e15652"
+                             "d2708f711e293027750791")
+PRIOR_P0R_GATE_SHA256_LF = ("sha256:a8280b398125788f9e52c1dad411a26228a685d424"
+                            "d272bd08d53c0a4b7b076a")
 
 PRODUCTION_LEDGER_PATH = r"D:\AI\multica-state\web-imagegen\dispatch\ledger.jsonl"
 PRODUCTION_LEDGER_TIP = ("sha256:c96838987bd362b263c177ba670e193f2cdcdf02e1694f8966"
@@ -79,6 +89,28 @@ BUNDLE_FILES = (
 RUN_CASE = {"id": "run-1", "issue_id": "iss-1", "agent_id": "agent-1",
             "status": "running"}
 RUN_CASE_EXTRA = dict(RUN_CASE, extra_field="ignored", note=None)
+
+# U12-P0R-F4: repeated JSON object keys must fail closed during decoding.
+# These receipts are raw text (json.dumps cannot emit duplicate keys).
+DUP_OBSERVABLE_LAST_WINS = (
+    '{"id": "first", "id": "second", "issue_id": "iss-1", '
+    '"agent_id": "agent-1", "status": "running"}')
+DUP_OBSERVABLE_SAME_VALUE = (
+    '{"id": "run-1", "id": "run-1", "issue_id": "iss-1", '
+    '"agent_id": "agent-1", "status": "running"}')
+DUP_RUNS_EMPTY_OVERWRITTEN = (
+    '{"runs": [], "runs": [{"id": "run-1", "issue_id": "iss-1", '
+    '"agent_id": "agent-1", "status": "running"}]}')
+DUP_RUNS_SAME_VALUE = '{"runs": [], "runs": []}'
+DUP_NESTED_RUN_ROW_FIELD = (
+    '{"runs": [{"id": "run-1", "issue_id": "iss-1", "agent_id": "agent-1", '
+    '"status": "running", "status": "running"}]}')
+DUP_NESTED_EXTRA_OBJECT = (
+    '{"id": "run-1", "issue_id": "iss-1", "agent_id": "agent-1", '
+    '"status": "running", "extra": {"k": 1, "k": 2}}')
+DUP_NESTED_EXTRA_ARRAY = (
+    '{"id": "run-1", "issue_id": "iss-1", "agent_id": "agent-1", '
+    '"status": "running", "extra": [{"k": 1, "k": 2}]}')
 
 AUTHORIZED_CASES = (
     ("direct_run_object", gate.SHAPE_RUN_OBJECT, RUN_CASE),
@@ -114,6 +146,20 @@ REFUSED_CASES = (
     ("json_bool", True, gate.R_SCALAR_OR_NULL),
     ("raw_not_json", None, gate.R_NOT_JSON, "not json"),
     ("raw_empty_string", None, gate.R_NOT_JSON, ""),
+    ("duplicate_observable_field_last_wins", None, gate.R_DUPLICATE_KEY,
+     DUP_OBSERVABLE_LAST_WINS),
+    ("duplicate_observable_field_same_value", None, gate.R_DUPLICATE_KEY,
+     DUP_OBSERVABLE_SAME_VALUE),
+    ("duplicate_runs_wrapper_empty_overwritten", None, gate.R_DUPLICATE_KEY,
+     DUP_RUNS_EMPTY_OVERWRITTEN),
+    ("duplicate_runs_wrapper_same_value", None, gate.R_DUPLICATE_KEY,
+     DUP_RUNS_SAME_VALUE),
+    ("duplicate_nested_run_row_field", None, gate.R_DUPLICATE_KEY,
+     DUP_NESTED_RUN_ROW_FIELD),
+    ("duplicate_nested_extra_object_key", None, gate.R_DUPLICATE_KEY,
+     DUP_NESTED_EXTRA_OBJECT),
+    ("duplicate_nested_extra_array_object_key", None, gate.R_DUPLICATE_KEY,
+     DUP_NESTED_EXTRA_ARRAY),
 )
 
 
@@ -196,6 +242,14 @@ def strict_shape_matrix() -> dict:
         and row["typed_stop"] is not None
         and row["typed_stop"]["is_receipt_ambiguous"]
         for row in refused)
+    duplicate_rows = [row for row in refused
+                      if row["expected_reason"] == gate.R_DUPLICATE_KEY]
+    duplicates_rejected = bool(duplicate_rows) and all(
+        (not row["accepted"]) and row["reason"] == gate.R_DUPLICATE_KEY
+        and row["parse_run_object_calls"] == 0
+        and row["typed_stop"] is not None
+        and row["typed_stop"]["is_receipt_ambiguous"]
+        for row in duplicate_rows)
     return {
         "kind": "u12_p0r_strict_receipt_shape_matrix",
         "schema_version": SCHEMA_VERSION,
@@ -215,6 +269,16 @@ def strict_shape_matrix() -> dict:
             and run_wrapper["parse_run_object_calls"] == 0),
         "all_unauthorized_or_ambiguous_shapes_rejected": all_rejected,
         "refused_case_count": len(refused),
+        "duplicate_key_policy":
+            "any repeated JSON object key at any nesting level fails closed "
+            "during decoding, before classification and the O2 parser",
+        "duplicate_key_cases": [row["case"] for row in duplicate_rows],
+        "duplicate_key_cases_rejected":
+            f"{sum(1 for row in duplicate_rows if not row['accepted'])}/"
+            f"{len(duplicate_rows)}",
+        "duplicate_keys_including_same_value_rejected": duplicates_rejected,
+        "duplicate_key_parser_calls_on_rejection": sum(
+            row["parse_run_object_calls"] for row in duplicate_rows),
         "permissive_parser_invoked_on_refusal": sum(
             row["parse_run_object_calls"] for row in refused),
         "permissive_parser_invoked_only_after_classification": all(
@@ -223,7 +287,8 @@ def strict_shape_matrix() -> dict:
         "receipt_alone_counts_as_delivery": False,
         "live_triggers_issued": 0,
         "ok": all(shape_acceptance.values()) and all_rejected
-              and run_wrapper["parse_run_object_calls"] == 0,
+              and run_wrapper["parse_run_object_calls"] == 0
+              and duplicates_rejected,
     }
 
 
@@ -272,13 +337,64 @@ def strict_gate_evidence(root=ROOT) -> dict:
             "o2_report_modified": False,
             "predecessor_history_rewritten": False,
         },
+        "f4_duplicate_key_boundary": {
+            "finding": "U12-P0R-F4",
+            "decoder": "_decode_strict_json with "
+                       "object_pairs_hook=_reject_duplicate_keys",
+            "scope": "every JSON object at every nesting level (observable "
+                     "fields, runs wrapper, run rows, nested extra-field "
+                     "objects and arrays)",
+            "same_valued_duplicates_rejected": True,
+            "enforced_during_decoding": True,
+            "enforced_before_classification": True,
+            "enforced_before_o2_parser": True,
+        },
     }
     evidence["evidence_digest"] = p0.digest(
         {k: v for k, v in evidence.items() if k != "evidence_digest"})
     return evidence
 
 
-def prior_artifacts_check(root=ROOT) -> dict:
+def _git_blob(root, rev: str, path: str, run) -> bytes | None:
+    proc = run(["git", "-C", str(root), "cat-file", "blob", f"{rev}:{path}"],
+               capture_output=True)
+    if proc.returncode != 0:
+        return None
+    return bytes(proc.stdout or b"")
+
+
+def _prior_p0r_checks(root, run) -> dict:
+    manifest_raw = _git_blob(root, PRIOR_COMMIT, PRIOR_P0R_MANIFEST, run)
+    manifest_digest = None
+    if manifest_raw is not None:
+        try:
+            doc = json.loads(manifest_raw.decode("utf-8"))
+            manifest_digest = p0.digest(
+                {k: v for k, v in doc.items() if k != "manifest_digest"})
+        except (ValueError, UnicodeDecodeError):
+            manifest_digest = None
+    gate_raw = _git_blob(root, PRIOR_COMMIT, STRICT_GATE_MODULE, run)
+    gate_digest = None if gate_raw is None else "sha256:" + hashlib.sha256(
+        gate_raw.replace(b"\r\n", b"\n")).hexdigest()
+    return {
+        "prior_p0r_manifest": {
+            "path": PRIOR_P0R_MANIFEST,
+            "commit": PRIOR_COMMIT,
+            "actual": manifest_digest,
+            "expected": PRIOR_P0R_MANIFEST_DIGEST,
+            "match": manifest_digest == PRIOR_P0R_MANIFEST_DIGEST,
+        },
+        "prior_p0r_gate": {
+            "module": STRICT_GATE_MODULE,
+            "commit": PRIOR_COMMIT,
+            "actual": gate_digest,
+            "expected": PRIOR_P0R_GATE_SHA256_LF,
+            "match": gate_digest == PRIOR_P0R_GATE_SHA256_LF,
+        },
+    }
+
+
+def prior_artifacts_check(root=ROOT, *, run=subprocess.run) -> dict:
     root = Path(root)
     prior_plan_path = root / PRIOR_PLAN
     prior_manifest_path = root / PRIOR_MANIFEST
@@ -307,6 +423,7 @@ def prior_artifacts_check(root=ROOT) -> dict:
                 "proposed-r0-canary-plan.json") == PRIOR_PLAN_DIGEST,
         },
     }
+    checks.update(_prior_p0r_checks(root, run))
     return {
         "kind": "u12_p0r_prior_artifact_check",
         "schema_version": SCHEMA_VERSION,
@@ -461,6 +578,9 @@ def canary_plan(descriptor: dict, prior_check: dict) -> dict:
             "permissive_entrypoint": descriptor["permissive_entrypoint"],
             "permissive_entrypoint_reachable_in_r0_path": False,
             "bypass_or_fallback": False,
+            "duplicate_key_rejected": True,
+            "duplicate_key_scope": descriptor["duplicate_key_scope"],
+            "same_valued_duplicate_keys_rejected": True,
             "evidence": "strict-receipt-gate-evidence.json",
         },
         "target_issue_shape": {
@@ -532,8 +652,9 @@ def canary_plan(descriptor: dict, prior_check: dict) -> dict:
                 "strict gate only: direct run object, one-item run list, or "
                 "{runs:[one]} with observable contract fields (id, issue_id, "
                 "agent_id, status); `{run:{...}}`, competing wrapper keys, "
-                "empty/multi lists, missing/blank fields and every other "
-                "shape fail closed before the O2 parser"),
+                "empty/multi lists, missing/blank fields, any repeated JSON "
+                "object key at any nesting level (same-valued or not) and "
+                "every other shape fail closed before the O2 parser"),
             "receipt_entrypoint": descriptor["receipt_entrypoint"],
             "listing": (
                 "trusted untruncated full `issue runs <target> --output json` "
@@ -595,6 +716,12 @@ def completion_evidence(matrix: dict, ledger: dict, pins: dict,
         "accepted_inputs_all_match": pins["accepted_inputs_all_match"],
         "prior_artifacts_all_match": prior_check["all_match"],
         "o2_report_digest_errata_verified": errata["ok"],
+        "duplicate_key_cases_rejected": matrix["duplicate_key_cases_rejected"],
+        "duplicate_keys_including_same_value_rejected":
+            matrix["duplicate_keys_including_same_value_rejected"],
+        "duplicate_key_parser_calls_on_rejection":
+            matrix["duplicate_key_parser_calls_on_rejection"],
+        "f4_disposition": "RESOLVED_BY_STRICT_DUPLICATE_KEY_DECODER",
         "r0_canary_authorized": False,
     }
 
@@ -604,6 +731,8 @@ def assemble_manifest(*, generated_at: str, gate_evidence: dict,
                       prior_check: dict, evidence_dir: Path) -> dict:
     evidence_files = {}
     for path in sorted(Path(evidence_dir).glob("*.json")):
+        if path.name == "readiness-manifest.json":
+            continue
         evidence_files[path.name] = p0.digest_file(path)
     manifest = {
         "kind": "u12_p0r_strict_receipt_readiness_manifest",
@@ -629,6 +758,20 @@ def assemble_manifest(*, generated_at: str, gate_evidence: dict,
                 "path validation",
                 "U11/O2 pins",
             ],
+            "prior_u12_p0r_revision": {
+                "path": PRIOR_P0R_MANIFEST,
+                "commit": PRIOR_COMMIT,
+                "manifest_digest": PRIOR_P0R_MANIFEST_DIGEST,
+                "strict_gate_sha256_lf": PRIOR_P0R_GATE_SHA256_LF,
+                "verified_manifest_match":
+                    prior_check["checks"]["prior_p0r_manifest"]["match"],
+                "verified_gate_match":
+                    prior_check["checks"]["prior_p0r_gate"]["match"],
+                "superseded_scope":
+                    "prior U12-P0R/1.0 F2-only readiness conclusion "
+                    "(rejected as U12_P0R_CHANGES_REQUIRED); the F4 repair "
+                    "is forward-only and leaves those bytes in history",
+            },
         },
         "strict_receipt_gate": {
             "module": STRICT_GATE_MODULE,
@@ -639,6 +782,10 @@ def assemble_manifest(*, generated_at: str, gate_evidence: dict,
                 gate_evidence["gate"]["permissive_entrypoint"],
             "permissive_entrypoint_reachable_in_r0_path": False,
             "no_bypass_no_fallback": True,
+            "duplicate_key_rejected": True,
+            "duplicate_key_scope":
+                gate_evidence["gate"]["duplicate_key_scope"],
+            "same_valued_duplicate_keys_rejected": True,
             "shape_matrix_ok": gate_evidence["shape_matrix"]["ok"],
             "wiring_proof_ok": gate_evidence["wiring_proof"]["ok"],
             "evidence_file": "strict-receipt-gate-evidence.json",
@@ -676,6 +823,8 @@ def assemble_manifest(*, generated_at: str, gate_evidence: dict,
             "U12-P0-F1": "ACCEPTED_FORWARD_ERRATA (recorded, non-blocking)",
             "U12-P0-F2": "RESOLVED_BY_STRICT_RECEIPT_GATE",
             "U12-P0-F3": "BOUND_BY_ROUTE_PROVENANCE (ledger, not attribution)",
+            "U12-P0R-F4": "RESOLVED_BY_STRICT_DUPLICATE_KEY_DECODER "
+                          "(every nesting level, including same-valued)",
         },
         "r0_canary_plan": {
             "path": "adapters/multica/u12-p0r/proposed-r0-canary-plan.json",
@@ -698,7 +847,7 @@ def generate(evidence_dir: Path, *, generated_at: str | None = None,
     evidence_dir = Path(evidence_dir)
     root = Path(root)
     generated_at = generated_at or p0.utc_now()
-    prior_check = prior_artifacts_check(root)
+    prior_check = prior_artifacts_check(root, run=run)
     if not prior_check["all_match"]:
         raise RuntimeError(
             "prior U12-P0 plan/manifest digests drifted; fail closed")

@@ -5,7 +5,16 @@
     "lead_u12_decision": "01a08e89-22ec-7db7-a581-0c62f30db538",
     "parent": "YZT-66"
   },
-  "evidence_digest": "sha256:e744f7e8d0b1969ae9462b6f7b5a10e55f0ab4b4197559e4d73c34dade7e6ff0",
+  "evidence_digest": "sha256:837865b7f965e09a28a9f049283d913af8aa1b30bf3ca343dbcf070bd2e1ce21",
+  "f4_duplicate_key_boundary": {
+    "decoder": "_decode_strict_json with object_pairs_hook=_reject_duplicate_keys",
+    "enforced_before_classification": true,
+    "enforced_before_o2_parser": true,
+    "enforced_during_decoding": true,
+    "finding": "U12-P0R-F4",
+    "same_valued_duplicates_rejected": true,
+    "scope": "every JSON object at every nesting level (observable fields, runs wrapper, run rows, nested extra-field objects and arrays)"
+  },
   "gate": {
     "authorized_shapes": [
       "run_object",
@@ -13,6 +22,8 @@
       "runs_wrapper"
     ],
     "competing_wrapper_key_fails_closed": true,
+    "duplicate_key_fails_closed": true,
+    "duplicate_key_scope": "every_json_object_at_every_nesting_level",
     "module": "tools/u12_strict_receipt.py",
     "no_bypass_no_fallback": true,
     "observable_fields": [
@@ -25,8 +36,9 @@
     "permissive_entrypoint": "tools.chandoff_intent.O2DispatchBoundary.rerun_issue",
     "receipt_entrypoint": "tools.u12_strict_receipt.StrictReceiptBoundary.rerun_issue",
     "run_wrapper_authorized": false,
-    "sha256_lf": "sha256:a8280b398125788f9e52c1dad411a26228a685d424d272bd08d53c0a4b7b076a",
-    "version": "U12-P0R/1.0"
+    "same_valued_duplicate_keys_fail_closed": true,
+    "sha256_lf": "sha256:6d6452a5a17911926503a2eece3725cd58ac22b1ef10d7bb5f292901a207eb49",
+    "version": "U12-P0R/1.1"
   },
   "history_boundary": {
     "o2_parser_modified": false,
@@ -44,7 +56,7 @@
     "permissive_entrypoint_reachable_in_r0_path": false,
     "receipt_entrypoint": "tools.u12_strict_receipt.StrictReceiptBoundary.rerun_issue"
   },
-  "schema_version": "U12-P0R/1.0",
+  "schema_version": "U12-P0R/1.1",
   "shape_matrix": {
     "all_unauthorized_or_ambiguous_shapes_rejected": true,
     "authorized_cases": [
@@ -89,14 +101,27 @@
       "runs_wrapper"
     ],
     "correlation_requires_trusted_listing": true,
-    "gate_version": "U12-P0R/1.0",
+    "duplicate_key_cases": [
+      "duplicate_observable_field_last_wins",
+      "duplicate_observable_field_same_value",
+      "duplicate_runs_wrapper_empty_overwritten",
+      "duplicate_runs_wrapper_same_value",
+      "duplicate_nested_run_row_field",
+      "duplicate_nested_extra_object_key",
+      "duplicate_nested_extra_array_object_key"
+    ],
+    "duplicate_key_cases_rejected": "7/7",
+    "duplicate_key_parser_calls_on_rejection": 0,
+    "duplicate_key_policy": "any repeated JSON object key at any nesting level fails closed during decoding, before classification and the O2 parser",
+    "duplicate_keys_including_same_value_rejected": true,
+    "gate_version": "U12-P0R/1.1",
     "kind": "u12_p0r_strict_receipt_shape_matrix",
     "live_triggers_issued": 0,
     "ok": true,
     "permissive_parser_invoked_on_refusal": 0,
     "permissive_parser_invoked_only_after_classification": true,
     "receipt_alone_counts_as_delivery": false,
-    "refused_case_count": 21,
+    "refused_case_count": 28,
     "refused_cases": [
       {
         "accepted": false,
@@ -391,10 +416,108 @@
           "reason": "not_json",
           "type": "StrictReceiptRefused"
         }
+      },
+      {
+        "accepted": false,
+        "case": "duplicate_observable_field_last_wins",
+        "classified_shape": null,
+        "expected_reason": "duplicate_json_key",
+        "parse_run_object_calls": 0,
+        "reason": "duplicate_json_key",
+        "typed_stop": {
+          "code": "trigger_receipt_ambiguous",
+          "is_receipt_ambiguous": true,
+          "reason": "duplicate_json_key",
+          "type": "StrictReceiptRefused"
+        }
+      },
+      {
+        "accepted": false,
+        "case": "duplicate_observable_field_same_value",
+        "classified_shape": null,
+        "expected_reason": "duplicate_json_key",
+        "parse_run_object_calls": 0,
+        "reason": "duplicate_json_key",
+        "typed_stop": {
+          "code": "trigger_receipt_ambiguous",
+          "is_receipt_ambiguous": true,
+          "reason": "duplicate_json_key",
+          "type": "StrictReceiptRefused"
+        }
+      },
+      {
+        "accepted": false,
+        "case": "duplicate_runs_wrapper_empty_overwritten",
+        "classified_shape": null,
+        "expected_reason": "duplicate_json_key",
+        "parse_run_object_calls": 0,
+        "reason": "duplicate_json_key",
+        "typed_stop": {
+          "code": "trigger_receipt_ambiguous",
+          "is_receipt_ambiguous": true,
+          "reason": "duplicate_json_key",
+          "type": "StrictReceiptRefused"
+        }
+      },
+      {
+        "accepted": false,
+        "case": "duplicate_runs_wrapper_same_value",
+        "classified_shape": null,
+        "expected_reason": "duplicate_json_key",
+        "parse_run_object_calls": 0,
+        "reason": "duplicate_json_key",
+        "typed_stop": {
+          "code": "trigger_receipt_ambiguous",
+          "is_receipt_ambiguous": true,
+          "reason": "duplicate_json_key",
+          "type": "StrictReceiptRefused"
+        }
+      },
+      {
+        "accepted": false,
+        "case": "duplicate_nested_run_row_field",
+        "classified_shape": null,
+        "expected_reason": "duplicate_json_key",
+        "parse_run_object_calls": 0,
+        "reason": "duplicate_json_key",
+        "typed_stop": {
+          "code": "trigger_receipt_ambiguous",
+          "is_receipt_ambiguous": true,
+          "reason": "duplicate_json_key",
+          "type": "StrictReceiptRefused"
+        }
+      },
+      {
+        "accepted": false,
+        "case": "duplicate_nested_extra_object_key",
+        "classified_shape": null,
+        "expected_reason": "duplicate_json_key",
+        "parse_run_object_calls": 0,
+        "reason": "duplicate_json_key",
+        "typed_stop": {
+          "code": "trigger_receipt_ambiguous",
+          "is_receipt_ambiguous": true,
+          "reason": "duplicate_json_key",
+          "type": "StrictReceiptRefused"
+        }
+      },
+      {
+        "accepted": false,
+        "case": "duplicate_nested_extra_array_object_key",
+        "classified_shape": null,
+        "expected_reason": "duplicate_json_key",
+        "parse_run_object_calls": 0,
+        "reason": "duplicate_json_key",
+        "typed_stop": {
+          "code": "trigger_receipt_ambiguous",
+          "is_receipt_ambiguous": true,
+          "reason": "duplicate_json_key",
+          "type": "StrictReceiptRefused"
+        }
       }
     ],
     "run_wrapper_shape_rejected": true,
-    "schema_version": "U12-P0R/1.0",
+    "schema_version": "U12-P0R/1.1",
     "shape_acceptance": {
       "run_list": true,
       "run_object": true,
@@ -418,6 +541,7 @@
       "assign_trigger_is_refused_without_parse": true,
       "canary_orchestrator_replaces_boundary": true,
       "classify_precedes_o2_parser": true,
+      "duplicate_key_guard_present": true,
       "ok": true,
       "parse_run_object_call_sites": 1,
       "parse_run_object_only_in_parse_strict_receipt": true,

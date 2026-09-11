@@ -76,5 +76,5 @@
     "recorded_in_o2_report": "sha256:649580b22055202280a670889e0a8d5ec5b93a51d2a90ce8dc094d268502923d",
     "state": "accepted_forward_errata"
   },
-  "schema_version": "U12-P0R/1.0"
+  "schema_version": "U12-P0R/1.1"
 }

@@ -34,6 +34,47 @@ BASE_TIME = "2026-09-11T00:00:00Z"
 RUN = {"id": RUN_ID, "issue_id": ISSUE_ID, "agent_id": TARGET_AGENT,
        "status": "queued"}
 
+# U12-P0R-F4: raw receipts with repeated JSON object keys (json.dumps cannot
+# emit them). The first two are the exact Lead reproductions.
+DUP_OBSERVABLE_LAST_WINS = (
+    '{"id":"first","id":"second","issue_id":"i","agent_id":"a",'
+    '"status":"queued"}')
+DUP_RUNS_EMPTY_OVERWRITTEN = (
+    '{"runs":[],"runs":[{"id":"r","issue_id":"i","agent_id":"a",'
+    '"status":"queued"}]}')
+DUP_RUNS_EMPTY_OVERWRITTEN_VALID = (
+    '{"runs":[],"runs":[{"id":"%s","issue_id":"%s","agent_id":"%s",'
+    '"status":"queued"}]}' % (RUN_ID, ISSUE_ID, TARGET_AGENT))
+DUP_OBSERVABLE_SAME_VALUE = (
+    '{"id":"%s","id":"%s","issue_id":"%s","agent_id":"%s",'
+    '"status":"queued"}' % (RUN_ID, RUN_ID, ISSUE_ID, TARGET_AGENT))
+DUP_RUNS_SAME_VALUE = '{"runs":[],"runs":[]}'
+DUP_NESTED_RUN_ROW_FIELD = (
+    '{"runs":[{"id":"%s","issue_id":"%s","agent_id":"%s",'
+    '"status":"queued","status":"queued"}]}'
+    % (RUN_ID, ISSUE_ID, TARGET_AGENT))
+DUP_NESTED_EXTRA_OBJECT = (
+    '{"id":"%s","issue_id":"%s","agent_id":"%s","status":"queued",'
+    '"extra":{"k":1,"k":2}}' % (RUN_ID, ISSUE_ID, TARGET_AGENT))
+DUP_NESTED_EXTRA_ARRAY = (
+    '{"id":"%s","issue_id":"%s","agent_id":"%s","status":"queued",'
+    '"extra":[{"k":1,"k":2}]}' % (RUN_ID, ISSUE_ID, TARGET_AGENT))
+DUP_LIST_ROW_FIELD = (
+    '[{"id":"%s","issue_id":"%s","agent_id":"%s","status":"queued",'
+    '"status":"queued"}]' % (RUN_ID, ISSUE_ID, TARGET_AGENT))
+
+DUPLICATE_RECEIPTS = (
+    DUP_OBSERVABLE_LAST_WINS,
+    DUP_RUNS_EMPTY_OVERWRITTEN,
+    DUP_RUNS_EMPTY_OVERWRITTEN_VALID,
+    DUP_OBSERVABLE_SAME_VALUE,
+    DUP_RUNS_SAME_VALUE,
+    DUP_NESTED_RUN_ROW_FIELD,
+    DUP_NESTED_EXTRA_OBJECT,
+    DUP_NESTED_EXTRA_ARRAY,
+    DUP_LIST_ROW_FIELD,
+)
+
 
 def run_json(**over) -> dict:
     payload = dict(RUN)
@@ -149,6 +190,85 @@ class StrictShapeTests(unittest.TestCase):
         self.assertFalse(result["accepted"])
         self.assertEqual(result["reason"], gate.R_RUN_WRAPPER)
         self.assertEqual(result["shape"], "run_wrapper")
+
+
+class DuplicateKeyTests(unittest.TestCase):
+    """U12-P0R-F4: repeated JSON object keys fail closed during decoding."""
+
+    def test_lead_reproductions_are_refused(self):
+        for payload in (DUP_OBSERVABLE_LAST_WINS, DUP_RUNS_EMPTY_OVERWRITTEN):
+            with self.subTest(payload=payload):
+                result = gate.classify_strict_receipt(payload)
+                self.assertFalse(result["accepted"])
+                self.assertEqual(result["reason"], gate.R_DUPLICATE_KEY)
+                self.assertIsNone(result["shape"])
+
+    def test_duplicate_observable_field_refused(self):
+        with self.assertRaises(gate.StrictReceiptRefused) as caught:
+            gate.parse_strict_receipt(DUP_OBSERVABLE_LAST_WINS)
+        self.assertEqual(caught.exception.code, "trigger_receipt_ambiguous")
+        self.assertIsInstance(caught.exception, o2.ReceiptAmbiguousError)
+        self.assertEqual(caught.exception.details.get("reason"),
+                         gate.R_DUPLICATE_KEY)
+
+    def test_duplicate_runs_wrapper_refused(self):
+        with self.assertRaises(gate.StrictReceiptRefused) as caught:
+            gate.parse_strict_receipt(DUP_RUNS_EMPTY_OVERWRITTEN)
+        self.assertEqual(caught.exception.details.get("reason"),
+                         gate.R_DUPLICATE_KEY)
+        with self.assertRaises(gate.StrictReceiptRefused) as caught:
+            gate.parse_strict_receipt(DUP_RUNS_EMPTY_OVERWRITTEN_VALID)
+        self.assertEqual(caught.exception.details.get("reason"),
+                         gate.R_DUPLICATE_KEY)
+
+    def test_same_valued_duplicates_refused(self):
+        for payload in (DUP_OBSERVABLE_SAME_VALUE, DUP_RUNS_SAME_VALUE,
+                        DUP_NESTED_RUN_ROW_FIELD,
+                        DUP_NESTED_EXTRA_OBJECT, DUP_NESTED_EXTRA_ARRAY,
+                        DUP_LIST_ROW_FIELD):
+            with self.subTest(payload=payload):
+                with self.assertRaises(gate.StrictReceiptRefused) as caught:
+                    gate.parse_strict_receipt(payload)
+                self.assertEqual(caught.exception.details.get("reason"),
+                                 gate.R_DUPLICATE_KEY)
+
+    def test_nested_duplicates_refused_at_every_level(self):
+        for payload, duplicate in (
+                (DUP_NESTED_RUN_ROW_FIELD, "status"),
+                (DUP_LIST_ROW_FIELD, "status"),
+                (DUP_NESTED_EXTRA_OBJECT, "k"),
+                (DUP_NESTED_EXTRA_ARRAY, "k"),
+                (DUP_OBSERVABLE_SAME_VALUE, "id"),
+                (DUP_RUNS_SAME_VALUE, "runs")):
+            with self.subTest(payload=payload):
+                result = gate.classify_strict_receipt(payload)
+                self.assertEqual(result["reason"], gate.R_DUPLICATE_KEY)
+                self.assertIn(duplicate, result["duplicate_keys"])
+
+    def test_duplicate_rejection_calls_no_o2_parser(self):
+        with ParserSpy() as spy:
+            for payload in DUPLICATE_RECEIPTS:
+                with self.subTest(payload=payload):
+                    with self.assertRaises(gate.StrictReceiptRefused):
+                        gate.parse_strict_receipt(payload)
+            self.assertEqual(spy.calls, [])
+
+    def test_bytes_receipt_duplicates_refused(self):
+        with self.assertRaises(gate.StrictReceiptRefused) as caught:
+            gate.parse_strict_receipt(DUP_OBSERVABLE_LAST_WINS.encode("utf-8"))
+        self.assertEqual(caught.exception.details.get("reason"),
+                         gate.R_DUPLICATE_KEY)
+
+    def test_authorized_shapes_without_duplicates_still_accepted(self):
+        with ParserSpy() as spy:
+            for shape, value in (
+                    (gate.SHAPE_RUN_OBJECT, RUN),
+                    (gate.SHAPE_RUN_LIST, [RUN]),
+                    (gate.SHAPE_RUNS_WRAPPER, {"runs": [RUN]})):
+                parsed = gate.parse_strict_receipt(text(value))
+                self.assertEqual(parsed["shape"], shape)
+                self.assertEqual(parsed["run"]["id"], RUN_ID)
+        self.assertEqual(len(spy.calls), 3)
 
 
 class ParserReachabilityTests(unittest.TestCase):
@@ -334,6 +454,34 @@ class CanaryOrchestratorE2ETests(unittest.TestCase):
         replay = orch.issue_trigger(INTENT_ID, snap, actor="r1")
         self.assertTrue(replay.get("replayed"))
         self.assertEqual(len(runner.issued), 1)
+
+    def test_duplicate_key_receipt_stops_typed_and_never_retries(self):
+        orch, runner, snap = self._armed(
+            rerun_stdout=DUP_OBSERVABLE_LAST_WINS, runs_post=[RUN])
+        result = orch.issue_trigger(INTENT_ID, snap, actor="r1")
+        self.assertEqual(result["status"], o2.S_TRIGGER_AMBIGUOUS)
+        self.assertEqual(result["reason"], o2.R_TRIGGER_AMBIGUOUS)
+        self.assertEqual(result["side_effects"], 0)
+        triggers = [argv for argv in runner.issued
+                    if o2.classify_o2_command(argv)
+                    in o2.TRIGGER_COMMAND_CLASSES]
+        self.assertEqual(len(triggers), 1)
+        self.assertEqual(o2.classify_o2_command(triggers[0]),
+                         o2.C_RERUN_TRIGGER)
+        self.assertEqual(self.store.get(INTENT_ID)["state"],
+                         o2.S_TRIGGER_AMBIGUOUS)
+        replay = orch.issue_trigger(INTENT_ID, snap, actor="r1")
+        self.assertTrue(replay.get("replayed"))
+        self.assertEqual(len(runner.issued), 1)
+
+    def test_duplicate_key_receipt_never_reaches_o2_parser(self):
+        orch, runner, snap = self._armed(
+            rerun_stdout=DUP_RUNS_EMPTY_OVERWRITTEN_VALID,
+            runs_post=[RUN])
+        with ParserSpy() as spy:
+            result = orch.issue_trigger(INTENT_ID, snap, actor="r1")
+        self.assertEqual(result["status"], o2.S_TRIGGER_AMBIGUOUS)
+        self.assertEqual(spy.calls, [])
 
     def test_authorized_receipt_correlates_exactly_one_run(self):
         orch, runner, snap = self._armed(
