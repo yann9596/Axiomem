@@ -46,3 +46,7 @@ adapters/multica/joint-replay/** -text
 # YZT-81: byte-stability for U12-P0 production ledger deployment evidence
 # (host-local root manifest, ACL/backup/capability/receipt evidence digests).
 adapters/multica/u12-p0/** -text
+
+# YZT-82: byte-stability for U12-P0R strict receipt gate evidence (deterministic
+# bundle regeneration is asserted byte-for-byte in the focused tests).
+adapters/multica/u12-p0r/** -text

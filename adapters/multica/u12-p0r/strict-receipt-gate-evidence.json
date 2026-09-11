@@ -1,0 +1,434 @@
+{
+  "authorization": {
+    "human_approval": "01a08e93-0a1a-7074-9dda-912d1237bf56",
+    "lead_f2_escalation": "01a08ebc-a0e5-7c7f-a150-f917e2cd447d",
+    "lead_u12_decision": "01a08e89-22ec-7db7-a581-0c62f30db538",
+    "parent": "YZT-66"
+  },
+  "evidence_digest": "sha256:e744f7e8d0b1969ae9462b6f7b5a10e55f0ab4b4197559e4d73c34dade7e6ff0",
+  "gate": {
+    "authorized_shapes": [
+      "run_object",
+      "run_list",
+      "runs_wrapper"
+    ],
+    "competing_wrapper_key_fails_closed": true,
+    "module": "tools/u12_strict_receipt.py",
+    "no_bypass_no_fallback": true,
+    "observable_fields": [
+      "id",
+      "issue_id",
+      "agent_id",
+      "status"
+    ],
+    "orchestrator": "tools.u12_strict_receipt.CanaryOrchestrator",
+    "permissive_entrypoint": "tools.chandoff_intent.O2DispatchBoundary.rerun_issue",
+    "receipt_entrypoint": "tools.u12_strict_receipt.StrictReceiptBoundary.rerun_issue",
+    "run_wrapper_authorized": false,
+    "sha256_lf": "sha256:a8280b398125788f9e52c1dad411a26228a685d424d272bd08d53c0a4b7b076a",
+    "version": "U12-P0R/1.0"
+  },
+  "history_boundary": {
+    "o2_parser_modified": false,
+    "o2_parser_pin": "sha256:0544046fa2ca97c12e6c48de574074df9de5715a950ad75a783cf31853037032",
+    "o2_report_modified": false,
+    "predecessor_history_rewritten": false
+  },
+  "kind": "u12_p0r_strict_receipt_gate_evidence",
+  "r0_path": {
+    "assignment_trigger_refused": true,
+    "bypass_or_fallback": false,
+    "o2_parser_calls_on_refused_shape": 0,
+    "orchestrator": "tools.u12_strict_receipt.CanaryOrchestrator",
+    "permissive_entrypoint": "tools.chandoff_intent.O2DispatchBoundary.rerun_issue",
+    "permissive_entrypoint_reachable_in_r0_path": false,
+    "receipt_entrypoint": "tools.u12_strict_receipt.StrictReceiptBoundary.rerun_issue"
+  },
+  "schema_version": "U12-P0R/1.0",
+  "shape_matrix": {
+    "all_unauthorized_or_ambiguous_shapes_rejected": true,
+    "authorized_cases": [
+      {
+        "accepted": true,
+        "case": "direct_run_object",
+        "classified_shape": "run_object",
+        "expected_shape": "run_object",
+        "parse_run_object_calls": 1,
+        "run_id": "run-1"
+      },
+      {
+        "accepted": true,
+        "case": "direct_run_object_with_extra_fields",
+        "classified_shape": "run_object",
+        "expected_shape": "run_object",
+        "parse_run_object_calls": 1,
+        "run_id": "run-1"
+      },
+      {
+        "accepted": true,
+        "case": "one_item_run_list",
+        "classified_shape": "run_list",
+        "expected_shape": "run_list",
+        "parse_run_object_calls": 1,
+        "run_id": "run-1"
+      },
+      {
+        "accepted": true,
+        "case": "runs_one_item_wrapper",
+        "classified_shape": "runs_wrapper",
+        "expected_shape": "runs_wrapper",
+        "parse_run_object_calls": 1,
+        "run_id": "run-1"
+      }
+    ],
+    "authorized_cases_accepted": "4/4",
+    "authorized_receipt_shapes_accepted": "3/3",
+    "authorized_shapes": [
+      "run_object",
+      "run_list",
+      "runs_wrapper"
+    ],
+    "correlation_requires_trusted_listing": true,
+    "gate_version": "U12-P0R/1.0",
+    "kind": "u12_p0r_strict_receipt_shape_matrix",
+    "live_triggers_issued": 0,
+    "ok": true,
+    "permissive_parser_invoked_on_refusal": 0,
+    "permissive_parser_invoked_only_after_classification": true,
+    "receipt_alone_counts_as_delivery": false,
+    "refused_case_count": 21,
+    "refused_cases": [
+      {
+        "accepted": false,
+        "case": "run_wrapper",
+        "classified_shape": "run_wrapper",
+        "expected_reason": "run_wrapper_unauthorized",
+        "parse_run_object_calls": 0,
+        "reason": "run_wrapper_unauthorized",
+        "typed_stop": {
+          "code": "trigger_receipt_ambiguous",
+          "is_receipt_ambiguous": true,
+          "reason": "run_wrapper_unauthorized",
+          "type": "StrictReceiptRefused"
+        }
+      },
+      {
+        "accepted": false,
+        "case": "run_wrapper_plus_observable_field",
+        "classified_shape": "run_wrapper",
+        "expected_reason": "run_wrapper_unauthorized",
+        "parse_run_object_calls": 0,
+        "reason": "run_wrapper_unauthorized",
+        "typed_stop": {
+          "code": "trigger_receipt_ambiguous",
+          "is_receipt_ambiguous": true,
+          "reason": "run_wrapper_unauthorized",
+          "type": "StrictReceiptRefused"
+        }
+      },
+      {
+        "accepted": false,
+        "case": "mixed_run_plus_runs",
+        "classified_shape": "runs_wrapper",
+        "expected_reason": "mixed_wrapper_shape",
+        "parse_run_object_calls": 0,
+        "reason": "mixed_wrapper_shape",
+        "typed_stop": {
+          "code": "trigger_receipt_ambiguous",
+          "is_receipt_ambiguous": true,
+          "reason": "mixed_wrapper_shape",
+          "type": "StrictReceiptRefused"
+        }
+      },
+      {
+        "accepted": false,
+        "case": "runs_extra_competing_key",
+        "classified_shape": "runs_wrapper",
+        "expected_reason": "competing_wrapper_key",
+        "parse_run_object_calls": 0,
+        "reason": "competing_wrapper_key",
+        "typed_stop": {
+          "code": "trigger_receipt_ambiguous",
+          "is_receipt_ambiguous": true,
+          "reason": "competing_wrapper_key",
+          "type": "StrictReceiptRefused"
+        }
+      },
+      {
+        "accepted": false,
+        "case": "runs_extra_run_key",
+        "classified_shape": "runs_wrapper",
+        "expected_reason": "mixed_wrapper_shape",
+        "parse_run_object_calls": 0,
+        "reason": "mixed_wrapper_shape",
+        "typed_stop": {
+          "code": "trigger_receipt_ambiguous",
+          "is_receipt_ambiguous": true,
+          "reason": "mixed_wrapper_shape",
+          "type": "StrictReceiptRefused"
+        }
+      },
+      {
+        "accepted": false,
+        "case": "empty_list",
+        "classified_shape": "run_list",
+        "expected_reason": "run_list_arity_not_one",
+        "parse_run_object_calls": 0,
+        "reason": "run_list_arity_not_one",
+        "typed_stop": {
+          "code": "trigger_receipt_ambiguous",
+          "is_receipt_ambiguous": true,
+          "reason": "run_list_arity_not_one",
+          "type": "StrictReceiptRefused"
+        }
+      },
+      {
+        "accepted": false,
+        "case": "two_runs",
+        "classified_shape": "run_list",
+        "expected_reason": "run_list_arity_not_one",
+        "parse_run_object_calls": 0,
+        "reason": "run_list_arity_not_one",
+        "typed_stop": {
+          "code": "trigger_receipt_ambiguous",
+          "is_receipt_ambiguous": true,
+          "reason": "run_list_arity_not_one",
+          "type": "StrictReceiptRefused"
+        }
+      },
+      {
+        "accepted": false,
+        "case": "runs_empty",
+        "classified_shape": "runs_wrapper",
+        "expected_reason": "runs_arity_not_one",
+        "parse_run_object_calls": 0,
+        "reason": "runs_arity_not_one",
+        "typed_stop": {
+          "code": "trigger_receipt_ambiguous",
+          "is_receipt_ambiguous": true,
+          "reason": "runs_arity_not_one",
+          "type": "StrictReceiptRefused"
+        }
+      },
+      {
+        "accepted": false,
+        "case": "runs_two",
+        "classified_shape": "runs_wrapper",
+        "expected_reason": "runs_arity_not_one",
+        "parse_run_object_calls": 0,
+        "reason": "runs_arity_not_one",
+        "typed_stop": {
+          "code": "trigger_receipt_ambiguous",
+          "is_receipt_ambiguous": true,
+          "reason": "runs_arity_not_one",
+          "type": "StrictReceiptRefused"
+        }
+      },
+      {
+        "accepted": false,
+        "case": "runs_not_list",
+        "classified_shape": "runs_wrapper",
+        "expected_reason": "runs_not_list",
+        "parse_run_object_calls": 0,
+        "reason": "runs_not_list",
+        "typed_stop": {
+          "code": "trigger_receipt_ambiguous",
+          "is_receipt_ambiguous": true,
+          "reason": "runs_not_list",
+          "type": "StrictReceiptRefused"
+        }
+      },
+      {
+        "accepted": false,
+        "case": "empty_object",
+        "classified_shape": "run_object",
+        "expected_reason": "missing_or_blank_observable_field",
+        "parse_run_object_calls": 0,
+        "reason": "missing_or_blank_observable_field",
+        "typed_stop": {
+          "code": "trigger_receipt_ambiguous",
+          "is_receipt_ambiguous": true,
+          "reason": "missing_or_blank_observable_field",
+          "type": "StrictReceiptRefused"
+        }
+      },
+      {
+        "accepted": false,
+        "case": "missing_field",
+        "classified_shape": "run_object",
+        "expected_reason": "missing_or_blank_observable_field",
+        "parse_run_object_calls": 0,
+        "reason": "missing_or_blank_observable_field",
+        "typed_stop": {
+          "code": "trigger_receipt_ambiguous",
+          "is_receipt_ambiguous": true,
+          "reason": "missing_or_blank_observable_field",
+          "type": "StrictReceiptRefused"
+        }
+      },
+      {
+        "accepted": false,
+        "case": "blank_field",
+        "classified_shape": "run_object",
+        "expected_reason": "missing_or_blank_observable_field",
+        "parse_run_object_calls": 0,
+        "reason": "missing_or_blank_observable_field",
+        "typed_stop": {
+          "code": "trigger_receipt_ambiguous",
+          "is_receipt_ambiguous": true,
+          "reason": "missing_or_blank_observable_field",
+          "type": "StrictReceiptRefused"
+        }
+      },
+      {
+        "accepted": false,
+        "case": "non_string_field",
+        "classified_shape": "run_object",
+        "expected_reason": "missing_or_blank_observable_field",
+        "parse_run_object_calls": 0,
+        "reason": "missing_or_blank_observable_field",
+        "typed_stop": {
+          "code": "trigger_receipt_ambiguous",
+          "is_receipt_ambiguous": true,
+          "reason": "missing_or_blank_observable_field",
+          "type": "StrictReceiptRefused"
+        }
+      },
+      {
+        "accepted": false,
+        "case": "list_row_not_object",
+        "classified_shape": "run_list",
+        "expected_reason": "run_row_not_object",
+        "parse_run_object_calls": 0,
+        "reason": "run_row_not_object",
+        "typed_stop": {
+          "code": "trigger_receipt_ambiguous",
+          "is_receipt_ambiguous": true,
+          "reason": "run_row_not_object",
+          "type": "StrictReceiptRefused"
+        }
+      },
+      {
+        "accepted": false,
+        "case": "json_null",
+        "classified_shape": null,
+        "expected_reason": "scalar_or_null",
+        "parse_run_object_calls": 0,
+        "reason": "scalar_or_null",
+        "typed_stop": {
+          "code": "trigger_receipt_ambiguous",
+          "is_receipt_ambiguous": true,
+          "reason": "scalar_or_null",
+          "type": "StrictReceiptRefused"
+        }
+      },
+      {
+        "accepted": false,
+        "case": "json_scalar_number",
+        "classified_shape": null,
+        "expected_reason": "scalar_or_null",
+        "parse_run_object_calls": 0,
+        "reason": "scalar_or_null",
+        "typed_stop": {
+          "code": "trigger_receipt_ambiguous",
+          "is_receipt_ambiguous": true,
+          "reason": "scalar_or_null",
+          "type": "StrictReceiptRefused"
+        }
+      },
+      {
+        "accepted": false,
+        "case": "json_scalar_string",
+        "classified_shape": null,
+        "expected_reason": "scalar_or_null",
+        "parse_run_object_calls": 0,
+        "reason": "scalar_or_null",
+        "typed_stop": {
+          "code": "trigger_receipt_ambiguous",
+          "is_receipt_ambiguous": true,
+          "reason": "scalar_or_null",
+          "type": "StrictReceiptRefused"
+        }
+      },
+      {
+        "accepted": false,
+        "case": "json_bool",
+        "classified_shape": null,
+        "expected_reason": "scalar_or_null",
+        "parse_run_object_calls": 0,
+        "reason": "scalar_or_null",
+        "typed_stop": {
+          "code": "trigger_receipt_ambiguous",
+          "is_receipt_ambiguous": true,
+          "reason": "scalar_or_null",
+          "type": "StrictReceiptRefused"
+        }
+      },
+      {
+        "accepted": false,
+        "case": "raw_not_json",
+        "classified_shape": null,
+        "expected_reason": "not_json",
+        "parse_run_object_calls": 0,
+        "reason": "not_json",
+        "typed_stop": {
+          "code": "trigger_receipt_ambiguous",
+          "is_receipt_ambiguous": true,
+          "reason": "not_json",
+          "type": "StrictReceiptRefused"
+        }
+      },
+      {
+        "accepted": false,
+        "case": "raw_empty_string",
+        "classified_shape": null,
+        "expected_reason": "not_json",
+        "parse_run_object_calls": 0,
+        "reason": "not_json",
+        "typed_stop": {
+          "code": "trigger_receipt_ambiguous",
+          "is_receipt_ambiguous": true,
+          "reason": "not_json",
+          "type": "StrictReceiptRefused"
+        }
+      }
+    ],
+    "run_wrapper_shape_rejected": true,
+    "schema_version": "U12-P0R/1.0",
+    "shape_acceptance": {
+      "run_list": true,
+      "run_object": true,
+      "runs_wrapper": true
+    }
+  },
+  "task": "YZT-82",
+  "trigger_route_provenance": {
+    "attribution_observation": "U12-P0 run-correlation-capture.json records the single authorized execution run reported by the platform as issue_assignment/delegation while the route was issue rerun; run attribution is therefore not route proof",
+    "correlation_uses": "identity diff against the trusted untruncated `issue runs <target> --output json` listing",
+    "finding": "U12-P0-F3",
+    "ledger_fields": [
+      "dispatch_intent TRIGGER_ISSUING transition fields.selected_trigger",
+      "trigger_receipt event data.selected_trigger"
+    ],
+    "route_source": "issuing_transaction_and_ledger",
+    "run_attribution_used_for_route": false
+  },
+  "wiring_proof": {
+    "checks": {
+      "assign_trigger_is_refused_without_parse": true,
+      "canary_orchestrator_replaces_boundary": true,
+      "classify_precedes_o2_parser": true,
+      "ok": true,
+      "parse_run_object_call_sites": 1,
+      "parse_run_object_only_in_parse_strict_receipt": true,
+      "permissive_boundary_method_overridden": true,
+      "permissive_entrypoint_reachable_in_r0_path": false,
+      "refusal_precedes_o2_parser": true,
+      "rerun_issue_never_calls_permissive_parser": true,
+      "rerun_issue_uses_strict_gate": true,
+      "strict_parse_function_present": true
+    },
+    "module": "tools/u12_strict_receipt.py",
+    "ok": true
+  }
+}

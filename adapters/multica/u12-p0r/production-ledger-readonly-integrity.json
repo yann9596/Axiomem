@@ -1,0 +1,20 @@
+{
+  "accepted_bytes": 622,
+  "accepted_tip_digest": "sha256:c96838987bd362b263c177ba670e193f2cdcdf02e1694f896667ab57920c3412",
+  "audit_ok": true,
+  "bytes": 622,
+  "dispatch_intents_written": 0,
+  "exists": true,
+  "ignored_records": 1,
+  "intent_records": 0,
+  "kind": "u12_p0r_production_ledger_readonly_integrity",
+  "legacy_reader_ok": true,
+  "live_triggers_issued": 0,
+  "partial_or_corrupt_records": 0,
+  "path": "D:\\AI\\multica-state\\web-imagegen\\dispatch\\ledger.jsonl",
+  "read_only": true,
+  "schema_version": "U12-P0R/1.0",
+  "tip_digest": "sha256:c96838987bd362b263c177ba670e193f2cdcdf02e1694f896667ab57920c3412",
+  "tip_unchanged": true,
+  "total_records": 1
+}
