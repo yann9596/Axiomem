@@ -1,0 +1,812 @@
+{
+  "adapter_digest_lf": "sha256:ccf2bad8c9ba4e45e3c2ac35c2a3a3754798e45737dbf3c9cf2dd17500281d29",
+  "contract": "U12_R0_CREATE_RECOVERY_DECISION.md raw sha256 1fedade6694d6d15f076a1ecb84aedfa680c93767cd3ec27ac94b594220b101e",
+  "failures": [],
+  "frozen_pins_lf": {
+    "tools/chandoff_intent.py": "sha256:0544046fa2ca97c12e6c48de574074df9de5715a950ad75a783cf31853037032",
+    "tools/u12_strict_receipt.py": "sha256:f37ed0912ecbdc3944529cffc6d7a28bc9a41d1faba8cd1e284eab6b0ccf4bed"
+  },
+  "generated_at": "2026-09-11T08:51:28Z",
+  "group_totals": {
+    "1_exact_single_terminal_lf_recovery": "2/2",
+    "2_transport_preparation": "5/5",
+    "3_target_evidence_material_refusals": "26/26",
+    "4_pin_proof_and_old_executor_fences": "4/4",
+    "5_crash_replay_concurrency": "6/6",
+    "6_post_recovery_lifecycle": "3/3"
+  },
+  "groups": [
+    {
+      "group": "1_exact_single_terminal_lf_recovery",
+      "passed": 2,
+      "rows": [
+        {
+          "case_function": "case_exact_lf_recovery",
+          "commands": {
+            "assign": 0,
+            "comment_add": 0,
+            "create": 1,
+            "reads": 7,
+            "rerun": 0,
+            "status": 0,
+            "total": 8,
+            "update": 0
+          },
+          "contract_version": "U12-R0B/1.1",
+          "effective_transport_digest": "sha256:42395b4aa31a9e992344b1531a8e4c961448affbe174f0add95a9dfa95651e77",
+          "execution_binding": true,
+          "issue_id": "01a0aaaa-bbbb-7ccc-8ddd-eeeeffff0000",
+          "ledger_bytes_after": 55322,
+          "ledger_bytes_before": 21454,
+          "next_action": "RESUME_OWNERSHIP_NO_START",
+          "observed_relation": "single-terminal-lf-removed",
+          "original_pin": "sha256:8a9b75628f1263004ab214c96733d1b775399cdd6ffe5208fdaf4c0ea5abbc05",
+          "original_spec_unchanged": true,
+          "outcome": null,
+          "pass": true,
+          "prefix_preserved": true,
+          "preserved_spec_digest": "sha256:60c18f84a7240b50845944e37c22a4152e7f4db2a2429e8397aabb921167f155",
+          "proof_digest": "sha256:bd241b9df5c9f2a227557345ee85147df8877c55e85eaebc9d3beae827fb4eb0",
+          "recovery_bound_events": 1,
+          "recovery_evidence_events": 1,
+          "recovery_window_commands": [
+            [
+              "issue",
+              "children"
+            ],
+            [
+              "issue",
+              "get"
+            ],
+            [
+              "issue",
+              "comment"
+            ],
+            [
+              "issue",
+              "timeline"
+            ],
+            [
+              "issue",
+              "runs"
+            ],
+            [
+              "issue",
+              "get"
+            ]
+          ],
+          "revision": 2,
+          "state": "TARGET_BOUND",
+          "status": "TARGET_BOUND",
+          "transitions": 2,
+          "transport_transformation": "remove-single-terminal-lf"
+        },
+        {
+          "case_function": "case_replay_read_only",
+          "commands_after_replay": 0,
+          "contract_version": "U12-R0B/1.1",
+          "execution_binding": true,
+          "ledger_unchanged": true,
+          "original_pin": "sha256:8a9b75628f1263004ab214c96733d1b775399cdd6ffe5208fdaf4c0ea5abbc05",
+          "pass": true,
+          "recovery_bound_events": 1,
+          "recovery_evidence_events": 1,
+          "replayed": true,
+          "revision": 2,
+          "state": "TARGET_BOUND",
+          "status": "TARGET_BOUND",
+          "transitions": 2
+        }
+      ],
+      "total": 2
+    },
+    {
+      "group": "2_transport_preparation",
+      "passed": 5,
+      "rows": [
+        {
+          "all_pass": true,
+          "case_function": "case_transport_relation_matrix",
+          "pass": true,
+          "rows": [
+            {
+              "accepted": true,
+              "case": "exact",
+              "expected": true,
+              "pass": true,
+              "relation": "exact"
+            },
+            {
+              "accepted": true,
+              "case": "one_final_lf_removed",
+              "expected": true,
+              "pass": true,
+              "relation": "single-terminal-lf-removed"
+            },
+            {
+              "accepted": false,
+              "case": "repeated_terminal_lf",
+              "expected": false,
+              "pass": true,
+              "relation": null
+            },
+            {
+              "accepted": false,
+              "case": "trailing_space",
+              "expected": false,
+              "pass": true,
+              "relation": null
+            },
+            {
+              "accepted": false,
+              "case": "trailing_tab",
+              "expected": false,
+              "pass": true,
+              "relation": null
+            },
+            {
+              "accepted": false,
+              "case": "crlf_plus_trim",
+              "expected": false,
+              "pass": true,
+              "relation": null
+            },
+            {
+              "accepted": false,
+              "case": "leading_whitespace",
+              "expected": false,
+              "pass": true,
+              "relation": null
+            },
+            {
+              "accepted": false,
+              "case": "interior_change",
+              "expected": false,
+              "pass": true,
+              "relation": null
+            },
+            {
+              "accepted": false,
+              "case": "marker_line_change",
+              "expected": false,
+              "pass": true,
+              "relation": null
+            },
+            {
+              "accepted": false,
+              "case": "space_retained_before_removed_lf",
+              "expected": false,
+              "pass": true,
+              "relation": null
+            }
+          ]
+        },
+        {
+          "all_refused": true,
+          "case_function": "case_transport_preparation_refusals",
+          "historical_lf_digest": "sha256:9e2ec912af5dff2a72300863864fc4da04e81999339d9fac5c7590ba8a3f4e11",
+          "pass": true,
+          "prepared_transformation": "remove-single-terminal-lf",
+          "prepared_transport": true,
+          "raw_source_digest": "sha256:9e2ec912af5dff2a72300863864fc4da04e81999339d9fac5c7590ba8a3f4e11",
+          "refusals": [
+            {
+              "refused": true,
+              "source": "'body\\n\\n'"
+            },
+            {
+              "refused": true,
+              "source": "'body\\r\\n'"
+            },
+            {
+              "refused": true,
+              "source": "'body \\n'"
+            },
+            {
+              "refused": true,
+              "source": "'body\\t\\n'"
+            },
+            {
+              "refused": true,
+              "source": "'body \\r'"
+            },
+            {
+              "refused": true,
+              "source": "'body\\x0b'"
+            }
+          ],
+          "unknown_profile_refused": true
+        },
+        {
+          "body_digest": "sha256:05c275cf75eddfc3a30b209f84db55da7fd05bbeb5767b12b8dba30edc762da5",
+          "body_digest_method": "digest_text_lf",
+          "case_function": "case_prospective_create",
+          "create_calls": 1,
+          "pass": true,
+          "persisted_body_is_transport": true,
+          "persisted_has_final_lf": false,
+          "sent_body_is_transport": true,
+          "source_lf_digest": "sha256:4cec87caef56834a8467b26c25f10c871214d79606a202dc0b9f3f369790120f",
+          "source_raw_digest": "sha256:4cec87caef56834a8467b26c25f10c871214d79606a202dc0b9f3f369790120f",
+          "status": "TARGET_BOUND",
+          "transformation": "remove-single-terminal-lf",
+          "transport_profile": "single-terminal-lf/1"
+        },
+        {
+          "case_function": "case_legacy_exact_create",
+          "create_calls": 1,
+          "exact_body_sent": true,
+          "pass": true,
+          "status": "TARGET_BOUND",
+          "transport_preparation_absent": true
+        },
+        {
+          "case_function": "case_platform_mutation",
+          "create_calls": 1,
+          "detail": "created target does not carry the exact persisted transport body bytes",
+          "pass": true,
+          "rerun_calls": 0,
+          "status": "CREATE_AMBIGUOUS"
+        }
+      ],
+      "total": 5
+    },
+    {
+      "group": "3_target_evidence_material_refusals",
+      "passed": 26,
+      "rows": [
+        {
+          "case": "wrong_expected_target",
+          "case_function": "case_wrong_target",
+          "create_calls": 1,
+          "observed_reason": "R0B_CREATE_RECOVERY_IDENTITY_UNPROVEN",
+          "outcome": "RECOVERY_REFUSED",
+          "pass": true,
+          "state_after": "CREATE_AMBIGUOUS"
+        },
+        {
+          "case": "duplicate_identity_candidates",
+          "case_function": "case_duplicate_candidates",
+          "create_calls": 1,
+          "observed_reason": "R0B_CREATE_RECOVERY_IDENTITY_UNPROVEN",
+          "outcome": "RECOVERY_REFUSED",
+          "pass": true
+        },
+        {
+          "case": "missing_identity_candidate",
+          "case_function": "case_missing_candidate",
+          "create_calls": 1,
+          "observed_reason": "R0B_CREATE_RECOVERY_IDENTITY_UNPROVEN",
+          "outcome": "RECOVERY_REFUSED",
+          "pass": true
+        },
+        {
+          "case": "marker_substring_only",
+          "case_function": "case_marker_substring",
+          "observed_reason": "R0B_CREATE_RECOVERY_IDENTITY_UNPROVEN",
+          "outcome": "RECOVERY_REFUSED",
+          "pass": true
+        },
+        {
+          "case": "moves_during_collection",
+          "case_function": "case_moving_collection",
+          "create_calls": 1,
+          "observed_reason": "EVIDENCE_REVISION_MOVING",
+          "outcome": "RECOVERY_REFUSED",
+          "pass": true
+        },
+        {
+          "assign_calls": 0,
+          "case": "title_mismatch",
+          "case_function": "run",
+          "create_calls": 1,
+          "expected_reason": "R0B_CREATE_RECOVERY_TARGET_MISMATCH",
+          "external_writes": 0,
+          "observed_reason": "R0B_CREATE_RECOVERY_TARGET_MISMATCH",
+          "outcome": "RECOVERY_REFUSED",
+          "pass": true,
+          "rerun_calls": 0,
+          "state_after": "CREATE_AMBIGUOUS",
+          "status": "CREATE_AMBIGUOUS"
+        },
+        {
+          "assign_calls": 0,
+          "case": "parent_mismatch",
+          "case_function": "run",
+          "create_calls": 1,
+          "expected_reason": "R0B_CREATE_RECOVERY_TARGET_MISMATCH",
+          "external_writes": 0,
+          "observed_reason": "R0B_CREATE_RECOVERY_TARGET_MISMATCH",
+          "outcome": "RECOVERY_REFUSED",
+          "pass": true,
+          "rerun_calls": 0,
+          "state_after": "CREATE_AMBIGUOUS",
+          "status": "CREATE_AMBIGUOUS"
+        },
+        {
+          "assign_calls": 0,
+          "case": "project_mismatch",
+          "case_function": "run",
+          "create_calls": 1,
+          "expected_reason": "R0B_CREATE_RECOVERY_TARGET_MISMATCH",
+          "external_writes": 0,
+          "observed_reason": "R0B_CREATE_RECOVERY_TARGET_MISMATCH",
+          "outcome": "RECOVERY_REFUSED",
+          "pass": true,
+          "rerun_calls": 0,
+          "state_after": "CREATE_AMBIGUOUS",
+          "status": "CREATE_AMBIGUOUS"
+        },
+        {
+          "assign_calls": 0,
+          "case": "priority_mismatch",
+          "case_function": "run",
+          "create_calls": 1,
+          "expected_reason": "R0B_CREATE_RECOVERY_TARGET_MISMATCH",
+          "external_writes": 0,
+          "observed_reason": "R0B_CREATE_RECOVERY_TARGET_MISMATCH",
+          "outcome": "RECOVERY_REFUSED",
+          "pass": true,
+          "rerun_calls": 0,
+          "state_after": "CREATE_AMBIGUOUS",
+          "status": "CREATE_AMBIGUOUS"
+        },
+        {
+          "assign_calls": 0,
+          "case": "creator_mismatch",
+          "case_function": "run",
+          "create_calls": 1,
+          "expected_reason": "R0B_CREATE_RECOVERY_TARGET_MISMATCH",
+          "external_writes": 0,
+          "observed_reason": "R0B_CREATE_RECOVERY_TARGET_MISMATCH",
+          "outcome": "RECOVERY_REFUSED",
+          "pass": true,
+          "rerun_calls": 0,
+          "state_after": "CREATE_AMBIGUOUS",
+          "status": "CREATE_AMBIGUOUS"
+        },
+        {
+          "assign_calls": 0,
+          "case": "moving_target_revision",
+          "case_function": "run",
+          "create_calls": 1,
+          "expected_reason": "R0B_CREATE_RECOVERY_TARGET_MISMATCH",
+          "external_writes": 0,
+          "observed_reason": "R0B_CREATE_RECOVERY_TARGET_MISMATCH",
+          "outcome": "RECOVERY_REFUSED",
+          "pass": true,
+          "rerun_calls": 0,
+          "state_after": "CREATE_AMBIGUOUS",
+          "status": "CREATE_AMBIGUOUS"
+        },
+        {
+          "assign_calls": 0,
+          "case": "assignee_present",
+          "case_function": "run",
+          "create_calls": 1,
+          "expected_reason": "R0B_CREATE_RECOVERY_TARGET_MISMATCH",
+          "external_writes": 0,
+          "observed_reason": "R0B_CREATE_RECOVERY_TARGET_MISMATCH",
+          "outcome": "RECOVERY_REFUSED",
+          "pass": true,
+          "rerun_calls": 0,
+          "state_after": "CREATE_AMBIGUOUS",
+          "status": "CREATE_AMBIGUOUS"
+        },
+        {
+          "assign_calls": 0,
+          "case": "non_backlog_status",
+          "case_function": "run",
+          "create_calls": 1,
+          "expected_reason": "R0B_CREATE_RECOVERY_TARGET_MISMATCH",
+          "external_writes": 0,
+          "observed_reason": "R0B_CREATE_RECOVERY_TARGET_MISMATCH",
+          "outcome": "RECOVERY_REFUSED",
+          "pass": true,
+          "rerun_calls": 0,
+          "state_after": "CREATE_AMBIGUOUS",
+          "status": "CREATE_AMBIGUOUS"
+        },
+        {
+          "assign_calls": 0,
+          "case": "nonempty_runs",
+          "case_function": "run",
+          "create_calls": 1,
+          "expected_reason": "R0B_CREATE_RECOVERY_UNKNOWN_EFFECT",
+          "external_writes": 0,
+          "observed_reason": "R0B_CREATE_RECOVERY_UNKNOWN_EFFECT",
+          "outcome": "RECOVERY_REFUSED",
+          "pass": true,
+          "rerun_calls": 0,
+          "state_after": "CREATE_AMBIGUOUS",
+          "status": "CREATE_AMBIGUOUS"
+        },
+        {
+          "assign_calls": 0,
+          "case": "prior_ownership_attempt",
+          "case_function": "run",
+          "create_calls": 1,
+          "expected_reason": "R0B_CREATE_RECOVERY_UNKNOWN_EFFECT",
+          "external_writes": 0,
+          "observed_reason": "R0B_CREATE_RECOVERY_UNKNOWN_EFFECT",
+          "outcome": "RECOVERY_REFUSED",
+          "pass": true,
+          "rerun_calls": 0,
+          "state_after": "CREATE_AMBIGUOUS",
+          "status": "CREATE_AMBIGUOUS"
+        },
+        {
+          "assign_calls": 0,
+          "case": "prior_publication_attempt",
+          "case_function": "run",
+          "create_calls": 1,
+          "expected_reason": "R0B_CREATE_RECOVERY_UNKNOWN_EFFECT",
+          "external_writes": 0,
+          "observed_reason": "R0B_CREATE_RECOVERY_UNKNOWN_EFFECT",
+          "outcome": "RECOVERY_REFUSED",
+          "pass": true,
+          "rerun_calls": 0,
+          "state_after": "CREATE_AMBIGUOUS",
+          "status": "CREATE_AMBIGUOUS"
+        },
+        {
+          "assign_calls": 0,
+          "case": "unknown_effect",
+          "case_function": "run",
+          "create_calls": 1,
+          "expected_reason": "R0B_CREATE_RECOVERY_UNKNOWN_EFFECT",
+          "external_writes": 0,
+          "observed_reason": "R0B_CREATE_RECOVERY_UNKNOWN_EFFECT",
+          "outcome": "RECOVERY_REFUSED",
+          "pass": true,
+          "rerun_calls": 0,
+          "state_after": "CREATE_AMBIGUOUS",
+          "status": "CREATE_AMBIGUOUS"
+        },
+        {
+          "assign_calls": 0,
+          "case": "second_create_attempt",
+          "case_function": "run",
+          "create_calls": 1,
+          "expected_reason": "R0B_CREATE_RECOVERY_UNSUPPORTED_RECORD",
+          "external_writes": 0,
+          "observed_reason": "R0B_CREATE_RECOVERY_UNSUPPORTED_RECORD",
+          "outcome": "RECOVERY_REFUSED",
+          "pass": true,
+          "rerun_calls": 0,
+          "state_after": "CREATE_AMBIGUOUS",
+          "status": "CREATE_AMBIGUOUS"
+        },
+        {
+          "assign_calls": 0,
+          "case": "truncated_comment_read",
+          "case_function": "run",
+          "create_calls": 1,
+          "expected_reason": "R0B_MATERIAL_UNAVAILABLE",
+          "external_writes": 0,
+          "observed_reason": "R0B_MATERIAL_UNAVAILABLE",
+          "outcome": "RECOVERY_REFUSED",
+          "pass": true,
+          "rerun_calls": 0,
+          "state_after": "CREATE_AMBIGUOUS",
+          "status": "CREATE_AMBIGUOUS"
+        },
+        {
+          "assign_calls": 0,
+          "case": "truncated_timeline_read",
+          "case_function": "run",
+          "create_calls": 1,
+          "expected_reason": "R0B_MATERIAL_UNAVAILABLE",
+          "external_writes": 0,
+          "observed_reason": "R0B_MATERIAL_UNAVAILABLE",
+          "outcome": "RECOVERY_REFUSED",
+          "pass": true,
+          "rerun_calls": 0,
+          "state_after": "CREATE_AMBIGUOUS",
+          "status": "CREATE_AMBIGUOUS"
+        },
+        {
+          "assign_calls": 0,
+          "case": "truncated_run_read",
+          "case_function": "run",
+          "create_calls": 1,
+          "expected_reason": "R0B_MATERIAL_UNAVAILABLE",
+          "external_writes": 0,
+          "observed_reason": "R0B_MATERIAL_UNAVAILABLE",
+          "outcome": "RECOVERY_REFUSED",
+          "pass": true,
+          "rerun_calls": 0,
+          "state_after": "CREATE_AMBIGUOUS",
+          "status": "CREATE_AMBIGUOUS"
+        },
+        {
+          "assign_calls": 0,
+          "case": "truncated_children_read",
+          "case_function": "run",
+          "create_calls": 1,
+          "expected_reason": "R0B_MATERIAL_UNAVAILABLE",
+          "external_writes": 0,
+          "observed_reason": "R0B_MATERIAL_UNAVAILABLE",
+          "outcome": "RECOVERY_REFUSED",
+          "pass": true,
+          "rerun_calls": 0,
+          "state_after": "CREATE_AMBIGUOUS",
+          "status": "CREATE_AMBIGUOUS"
+        },
+        {
+          "assign_calls": 0,
+          "case": "stale_artifact",
+          "case_function": "run",
+          "create_calls": 1,
+          "expected_reason": "R0B_MATERIAL_STALE",
+          "external_writes": 0,
+          "observed_reason": "R0B_MATERIAL_STALE",
+          "outcome": "RECOVERY_REFUSED",
+          "pass": true,
+          "rerun_calls": 0,
+          "state_after": "CREATE_AMBIGUOUS",
+          "status": "CREATE_AMBIGUOUS"
+        },
+        {
+          "assign_calls": 0,
+          "case": "missing_artifact_reader",
+          "case_function": "run",
+          "create_calls": 1,
+          "expected_reason": "R0B_MATERIAL_UNAVAILABLE",
+          "external_writes": 0,
+          "observed_reason": "R0B_MATERIAL_UNAVAILABLE",
+          "outcome": "RECOVERY_REFUSED",
+          "pass": true,
+          "rerun_calls": 0,
+          "state_after": "CREATE_AMBIGUOUS",
+          "status": "CREATE_AMBIGUOUS"
+        },
+        {
+          "assign_calls": 0,
+          "case": "superseded_authority",
+          "case_function": "run",
+          "create_calls": 1,
+          "expected_reason": "R0B_MATERIAL_STALE",
+          "external_writes": 0,
+          "observed_reason": "R0B_MATERIAL_STALE",
+          "outcome": "RECOVERY_REFUSED",
+          "pass": true,
+          "rerun_calls": 0,
+          "state_after": "CREATE_AMBIGUOUS",
+          "status": "CREATE_AMBIGUOUS"
+        },
+        {
+          "assign_calls": 0,
+          "case": "missing_authority_source",
+          "case_function": "run",
+          "create_calls": 1,
+          "expected_reason": "R0B_PREFLIGHT_INPUT_MISSING",
+          "external_writes": 0,
+          "observed_reason": "R0B_PREFLIGHT_INPUT_MISSING",
+          "outcome": "RECOVERY_REFUSED",
+          "pass": true,
+          "rerun_calls": 0,
+          "state_after": "CREATE_AMBIGUOUS",
+          "status": "CREATE_AMBIGUOUS"
+        }
+      ],
+      "total": 26
+    },
+    {
+      "group": "4_pin_proof_and_old_executor_fences",
+      "passed": 4,
+      "rows": [
+        {
+          "case": "bare_changed_pin",
+          "case_function": "case_bare_changed_pin",
+          "external_calls": 0,
+          "outcome": "r0b_downgrade_refused",
+          "pass": true
+        },
+        {
+          "case": "execution_fences",
+          "case_function": "case_execution_fences",
+          "cross_intent_proof_outcome": "R0BValidationRefused",
+          "old_history_audit_contract_version": "U12-R0B/1.0",
+          "pass": true,
+          "pre_recovery_execution_refusals": [
+            {
+              "entrypoint": "assign_ownership_once",
+              "refused": true
+            },
+            {
+              "entrypoint": "create_target_once",
+              "refused": true
+            }
+          ],
+          "recovered_audit_contract_version": "U12-R0B/1.1"
+        },
+        {
+          "all_refused": true,
+          "case": "actual_old_executor_fence",
+          "case_function": "case_old_executor_refusal",
+          "external_calls_after_recovery": 0,
+          "outcomes": [
+            {
+              "entrypoint": "validate",
+              "refused": true
+            },
+            {
+              "entrypoint": "assign_ownership_once",
+              "refused": true
+            },
+            {
+              "entrypoint": "recover",
+              "refused": true
+            }
+          ],
+          "pass": true,
+          "predecessor_adapter_digest": "sha256:8a9b75628f1263004ab214c96733d1b775399cdd6ffe5208fdaf4c0ea5abbc05",
+          "state": "TARGET_BOUND"
+        },
+        {
+          "artifact_dependency_digest": "sha256:937521a64efecdc762090fbf8d914eabba89fe7a703b7cda896886807af5402f",
+          "case": "frozen_pins",
+          "case_function": "case_frozen_pins",
+          "chandoff_intent_lf": "sha256:0544046fa2ca97c12e6c48de574074df9de5715a950ad75a783cf31853037032",
+          "pass": true,
+          "readiness_manifest_entry": "sha256:ee6cb9a24580e651edc4c7af2d3b4df723622fa6a8bc3f368c07916b0cea5da0",
+          "readiness_manifest_self_digest": "sha256:64a5c449a9639979cb6a87627c583683cb99fb0f237ceff6634fc4b5c7e3bc93",
+          "strict_gate_lf": "sha256:f37ed0912ecbdc3944529cffc6d7a28bc9a41d1faba8cd1e284eab6b0ccf4bed"
+        }
+      ],
+      "total": 4
+    },
+    {
+      "group": "5_crash_replay_concurrency",
+      "passed": 6,
+      "rows": [
+        {
+          "case": "crash_before_evidence",
+          "case_function": "case_crash_before_evidence",
+          "crashed": true,
+          "create_calls": 1,
+          "evidence_events": 1,
+          "pass": true,
+          "state_after_crash": "CREATE_AMBIGUOUS",
+          "state_after_retry": "TARGET_BOUND"
+        },
+        {
+          "bound_events_final": 1,
+          "case": "crash_after_evidence_before_transition",
+          "case_function": "case_crash_after_evidence",
+          "crashed": true,
+          "create_calls": 1,
+          "evidence_events_after_crash": 1,
+          "evidence_events_final": 2,
+          "pass": true,
+          "state_after_crash": "CREATE_AMBIGUOUS",
+          "state_after_retry": "TARGET_BOUND"
+        },
+        {
+          "bound_events": 0,
+          "case": "crash_after_transition_before_ack",
+          "case_function": "case_crash_after_transition",
+          "commands_on_replay": 0,
+          "crashed": true,
+          "create_calls": 1,
+          "evidence_events": 1,
+          "pass": true,
+          "replayed": true,
+          "state_after_crash": "TARGET_BOUND"
+        },
+        {
+          "case": "competing_lease",
+          "case_function": "case_competing_lease",
+          "commands_before_refusal": 0,
+          "evidence_events": 0,
+          "pass": true,
+          "refused": true,
+          "state": "CREATE_AMBIGUOUS"
+        },
+        {
+          "bound_events": 1,
+          "case": "concurrent_callers",
+          "case_function": "case_concurrent_callers",
+          "create_calls": 1,
+          "evidence_events": 1,
+          "pass": true,
+          "results": {
+            "w1": {
+              "error": "LeaseHeldError"
+            },
+            "w2": {
+              "identifier": "YTST-84",
+              "intent_id": "DI-8773d751fbbca84b",
+              "issue_id": "01a0aaaa-bbbb-7ccc-8ddd-eeeeffff0000",
+              "issue_revision": 1,
+              "next_action": "RESUME_OWNERSHIP_NO_START",
+              "proof_digest": "sha256:a6608f438986323898ce4e34b05ad252c835d906ce7df7734c7f1004724a29cd",
+              "replayed": false,
+              "revision": 2,
+              "side_effects": 0,
+              "status": "TARGET_BOUND"
+            }
+          },
+          "state": "TARGET_BOUND"
+        },
+        {
+          "case": "attempt_flags_not_reset",
+          "case_function": "case_attempt_flags",
+          "classification": "POST_BIND_PRE_OWNERSHIP",
+          "create_calls_after": 1,
+          "create_replay": true,
+          "pass": true,
+          "performed": false
+        }
+      ],
+      "total": 6
+    },
+    {
+      "group": "6_post_recovery_lifecycle",
+      "passed": 3,
+      "rows": [
+        {
+          "armed": "TRIGGER_READY",
+          "assign_calls": 1,
+          "case": "post_recovery_lifecycle",
+          "case_function": "case_post_recovery_lifecycle",
+          "comment_add_calls": 1,
+          "create_calls": 1,
+          "pass": true,
+          "preflight_checkpoints": [
+            "ARM",
+            "TRIGGER"
+          ],
+          "rerun_calls": 1,
+          "selected_trigger": "issue_rerun",
+          "triggered": "RUN_CORRELATED"
+        },
+        {
+          "armed": "TRIGGER_READY",
+          "case": "drift_after_arm",
+          "case_function": "case_drift_after_arm",
+          "pass": true,
+          "reason": "R0B_MATERIAL_STALE",
+          "rerun_calls": 0,
+          "triggered": "REFRESH_REQUIRED"
+        },
+        {
+          "case": "ambiguous_trigger_reconcile",
+          "case_function": "case_ambiguous_trigger",
+          "first": "TRIGGER_AMBIGUOUS",
+          "pass": true,
+          "replayed": true,
+          "rerun_calls": 1,
+          "second": "TRIGGER_AMBIGUOUS"
+        }
+      ],
+      "total": 3
+    }
+  ],
+  "isolation": "fixture CLI + temporary JSONL ledgers inside the workdir; predecessor record produced by the actual b49630b module bytes; no live Multica call, no production-ledger write, no Canonical write",
+  "kind": "u12_r0b_create_recovery_acceptance_matrix",
+  "module_digests_lf": {
+    "adapters/multica/u12-r0b-recovery/reproduce_create_recovery.py": "sha256:90d5a5bd826353f9007af79d07ff4dd7cff710290db4a2f29ccb530d6d9843eb",
+    "tools/tests/test_u12_r0_binding.py": "sha256:80e1a02e2dd0e0b701540dfd7971f85880dd905f330c01d92366ebb046aad069",
+    "tools/tests/test_u12_r0_create_recovery.py": "sha256:1d44a56c41834c2409df0a06128c9a6013255c488277c11e121668364af8a056",
+    "tools/u12_r0_binding.py": "sha256:ccf2bad8c9ba4e45e3c2ac35c2a3a3754798e45737dbf3c9cf2dd17500281d29"
+  },
+  "production_ledger_observation": {
+    "bytes": 37860,
+    "live_create_attempts": 1,
+    "live_intent_revision": 1,
+    "live_intent_state": "CREATE_AMBIGUOUS",
+    "live_ownership_events": 0,
+    "live_publication_events": 0,
+    "readable": true,
+    "sha256": "sha256:5a7e3369fb7544668f1ba45d8db4e01707228977ac45e4d60318677432b09d76"
+  },
+  "row_totals": {
+    "passed": 46,
+    "total": 46
+  },
+  "schema_version": "U12-R0B/1.1",
+  "task": "YZT-84",
+  "verdict": "ALL_SIX_VALIDATION_GROUPS_PASS"
+}

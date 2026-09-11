@@ -1,0 +1,19 @@
+{
+  "schema": "u12-r0b-create-recovery-decision/1.0",
+  "decision_id": "<lead-issued decision id>",
+  "disposition": "RECOVER_CREATED_TARGET",
+  "scope": "CREATE_AMBIGUOUS",
+  "intent_id": "DI-e5e2b856f6b7cd36",
+  "expected_target_id": "01a08f80-6afa-7d95-838a-6d510ec8f803",
+  "expected_intent_revision": 1,
+  "expected_target_revision": 1,
+  "expected_creator_id": "24f04aba-7da9-4371-bf89-685d7505a411",
+  "predecessor_commit": "b49630b881170f7e6f40ffe61a82687492b99792",
+  "predecessor_adapter_digest": "sha256:8a9b75628f1263004ab214c96733d1b775399cdd6ffe5208fdaf4c0ea5abbc05",
+  "design_ref": "attachment/01a08f89-53bc-7bb0-bda2-1bf86c40be7f",
+  "design_digest": "sha256:1fedade6694d6d15f076a1ecb84aedfa680c93767cd3ec27ac94b594220b101e",
+  "approval_ref": "<exact Lead/Human approval reference>",
+  "approved_by": "<approving identity>",
+  "approved_at": "<RFC3339 timestamp>",
+  "decision_digest": "sha256:94388a5d482fe41f459083a7f524addf7817b8cc322791a3a9174e4cecc8d267"
+}

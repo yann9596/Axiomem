@@ -1,0 +1,78 @@
+{
+  "acceptance_matrix": {
+    "file": "adapters/multica/u12-r0b-recovery/recovery-acceptance-matrix.json",
+    "group_totals": {
+      "1_exact_single_terminal_lf_recovery": "2/2",
+      "2_transport_preparation": "5/5",
+      "3_target_evidence_material_refusals": "26/26",
+      "4_pin_proof_and_old_executor_fences": "4/4",
+      "5_crash_replay_concurrency": "6/6",
+      "6_post_recovery_lifecycle": "3/3"
+    },
+    "old_executor_refusal_row_digest": "sha256:b23907e569e4808b788502c8432f8ad92d50db5bb9fb0aa8656ed28810e2f6dc",
+    "rows_passed": 46,
+    "rows_total": 46,
+    "verdict": "ALL_SIX_VALIDATION_GROUPS_PASS"
+  },
+  "accepted_design": {
+    "raw_sha256": "sha256:1fedade6694d6d15f076a1ecb84aedfa680c93767cd3ec27ac94b594220b101e",
+    "ref": "attachment/01a08f89-53bc-7bb0-bda2-1bf86c40be7f"
+  },
+  "base_commit": "b49630b881170f7e6f40ffe61a82687492b99792",
+  "branch": "yzt-84-u12-r0b-forward-adapter",
+  "code_commit": "2f13e69",
+  "contract_version": "U12-R0B/1.1",
+  "files": {
+    "adapters/multica/u12-r0b-recovery/OPERATOR_INSTRUCTIONS.md": "sha256:7c28d67007d786c1129f91d134c6d331bdec3e5a3bed3edb524276b1f5b97798",
+    "adapters/multica/u12-r0b-recovery/U12_R0B_CREATE_RECOVERY_REPORT.md": "sha256:3c227359232d4689282257c6ce48200f007787731baa960db0ac671c132e59cf",
+    "adapters/multica/u12-r0b-recovery/recovery-acceptance-matrix.json": "sha256:8cd2dc982981837254b096f81692f17f26b721e07f5a6ea7100ccd11bc0e42e0",
+    "adapters/multica/u12-r0b-recovery/recovery-decision-example.json": "sha256:44598ab881ca0805e4da70eb34232a778a8b7abf87cfdba5f4af870a3792fd33",
+    "adapters/multica/u12-r0b-recovery/reproduce_create_recovery.py": "sha256:90d5a5bd826353f9007af79d07ff4dd7cff710290db4a2f29ccb530d6d9843eb",
+    "tools/tests/test_u12_r0_binding.py": "sha256:80e1a02e2dd0e0b701540dfd7971f85880dd905f330c01d92366ebb046aad069",
+    "tools/tests/test_u12_r0_create_recovery.py": "sha256:1d44a56c41834c2409df0a06128c9a6013255c488277c11e121668364af8a056",
+    "tools/u12_r0_binding.py": "sha256:ccf2bad8c9ba4e45e3c2ac35c2a3a3754798e45737dbf3c9cf2dd17500281d29"
+  },
+  "frozen_pins": {
+    "artifact_dependency_digest": "sha256:937521a64efecdc762090fbf8d914eabba89fe7a703b7cda896886807af5402f",
+    "readiness_manifest_entry": "sha256:ee6cb9a24580e651edc4c7af2d3b4df723622fa6a8bc3f368c07916b0cea5da0",
+    "readiness_manifest_self_digest": "sha256:64a5c449a9639979cb6a87627c583683cb99fb0f237ceff6634fc4b5c7e3bc93",
+    "tools/chandoff_intent.py": "sha256:0544046fa2ca97c12e6c48de574074df9de5715a950ad75a783cf31853037032",
+    "tools/u12_strict_receipt.py": "sha256:f37ed0912ecbdc3944529cffc6d7a28bc9a41d1faba8cd1e284eab6b0ccf4bed"
+  },
+  "generated_at": "2026-09-11T08:51:48Z",
+  "isolation": "fixture CLI + temporary JSONL ledgers inside the workdir; predecessor record produced by the actual b49630b module bytes; no live Multica call, no production-ledger write, no Canonical write",
+  "kind": "u12_r0b_create_recovery_implementation_manifest",
+  "next_action": "Lead accepts these exact bytes and issues the live recovery disposition; live R0 remains stopped until then",
+  "predecessor_adapter_digest": "sha256:8a9b75628f1263004ab214c96733d1b775399cdd6ffe5208fdaf4c0ea5abbc05",
+  "predecessor_evidence_preserved": [
+    "adapters/multica/u12-r0bi/**",
+    "adapters/multica/u12-r0b-forward/**"
+  ],
+  "production_ledger_observation": {
+    "bytes": 37860,
+    "live_create_attempts": 1,
+    "live_intent_revision": 1,
+    "live_intent_state": "CREATE_AMBIGUOUS",
+    "live_ownership_events": 0,
+    "live_publication_events": 0,
+    "readable": true,
+    "sha256": "sha256:5a7e3369fb7544668f1ba45d8db4e01707228977ac45e4d60318677432b09d76"
+  },
+  "recovery_decision_schema": "u12-r0b-create-recovery-decision/1.0",
+  "recovery_native_capability": "none (read commands and namespaced ledger appends only)",
+  "recovery_operation": "recover_created_target",
+  "recovery_transition": "CREATE_AMBIGUOUS -> TARGET_BOUND",
+  "schema_version": "U12-R0B/1.1",
+  "task": "YZT-84",
+  "tests": {
+    "focused_recovery_module": "63/63 OK",
+    "frozen_lifecycle_suite": "78/78 OK",
+    "full_tools_tests": "1173/1176 (3 pre-existing production-ledger drift failures in test_u12_p0r_evidence.py; files outside this diff, frozen P0R evidence pins)",
+    "preflight_suite": "21/21 OK",
+    "strict_receipt_suite": "40/40 OK"
+  },
+  "transport_profiles": [
+    "single-terminal-lf/1"
+  ],
+  "worktree": "D:/AI/worktrees/multica-memory-yzt-84-u12r0bi"
+}
