@@ -1375,9 +1375,22 @@ class SourceActivationCorrectionTests(unittest.TestCase):
         intent = fx.store.get(fx.intent_id)
         self.assertEqual(intent["state"], o2.S_BLOCKED)
         self.assertEqual(intent["revision"], 4)
-        self.assertEqual(fx.cli.commands_of(["issue", "comment", "add"]), [])
+        self.assertEqual(
+            len(fx.cli.commands_of(["issue", "comment", "add"])),
+            self.comment_adds_before)
 
-    def test_false_attachment_digest_refuses_after_real_download(self):
+    def test_tampered_attachment_bytes_refuse_after_real_download(self):
+        fx = self.fx
+        stored = fx.cli.attachment_files[fx.resolution_attachment_id]
+        stored["data"] = stored["data"] + b"tampered\n"
+        result = fx.recover()
+        self._assert_recovery_refused(
+            result, u12.REASON_PUBLICATION_PROVENANCE)
+        # the actual attachment bytes were retrieved and hashed
+        self.assertEqual(
+            len(fx.cli.commands_of(["attachment", "download"])), 2)
+
+    def test_forged_attachment_digest_refuses(self):
         fx = self.fx
         decision = fx.decision()
         decision["source_activation"]["resolution_raw_digest"] = \
@@ -1385,11 +1398,7 @@ class SourceActivationCorrectionTests(unittest.TestCase):
         decision["decision_digest"] = u12.digest(
             {k: v for k, v in decision.items() if k != "decision_digest"})
         result = fx.recover(decision=decision)
-        self._assert_recovery_refused(
-            result, u12.REASON_PUBLICATION_PROVENANCE)
-        # the actual attachment bytes were retrieved and hashed
-        self.assertEqual(
-            len(fx.cli.commands_of(["attachment", "download"])), 2)
+        self._assert_recovery_refused(result)
 
     def test_missing_duplicate_or_edited_activation_refuses(self):
         def remove(cli):
@@ -1506,7 +1515,20 @@ class SourceActivationCorrectionTests(unittest.TestCase):
             records = proof["shared_history"]["records"]
             target = next(
                 item for item in records
-                if item["classification"] == u12.CLS_PUBLICATION_COMMAND)
+                if item["classification"] == u12.CLS_OWNERSHIP_COMMAND)
+            target["classification"] = u12.CLS_READ_COMMAND
+            target["reason"] = "recognized read command"
+            proof["shared_history"]["classification_digest"] = \
+                u12.publication_history_digest(proof["shared_history"])
+
+        self._assert_every_path_refuses(mutate)
+
+    def test_shared_create_command_relabelled_as_read_refused(self):
+        def mutate(proof):
+            records = proof["shared_history"]["records"]
+            target = next(
+                item for item in records
+                if item["classification"] == u12.CLS_ORIGINAL_CREATE_COMMAND)
             target["classification"] = u12.CLS_READ_COMMAND
             target["reason"] = "recognized read command"
             proof["shared_history"]["classification_digest"] = \
@@ -1534,8 +1556,8 @@ class SourceActivationCorrectionTests(unittest.TestCase):
 
         self._assert_every_path_refuses(mutate)
 
-    def test_rehashed_issue_and_timeline_observations_refused(self):
-        def mutate_issue(proof):
+    def test_rehashed_issue_observations_refused(self):
+        def mutate(proof):
             entry = proof["observations"]["raw_responses"][3]
             issue = json.loads(entry["stdout"])
             issue["title"] = "changed title"
@@ -1546,9 +1568,10 @@ class SourceActivationCorrectionTests(unittest.TestCase):
             proof["observations"]["digests"]["raw_responses"] = u12.digest(
                 proof["observations"]["raw_responses"])
 
-        self._assert_every_path_refuses(mutate_issue)
+        self._assert_every_path_refuses(mutate)
 
-        def mutate_timeline(proof):
+    def test_rehashed_timeline_observations_refused(self):
+        def mutate(proof):
             for index in (5, 9):
                 entry = proof["observations"]["raw_responses"][index]
                 rows = json.loads(entry["stdout"])
@@ -1563,7 +1586,7 @@ class SourceActivationCorrectionTests(unittest.TestCase):
             proof["observations"]["digests"]["raw_responses"] = u12.digest(
                 proof["observations"]["raw_responses"])
 
-        self._assert_every_path_refuses(mutate_timeline)
+        self._assert_every_path_refuses(mutate)
 
     def test_proof_content_absence_edits_and_cross_intent_refuse(self):
         fx = self.fx
