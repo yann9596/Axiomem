@@ -12,6 +12,18 @@ gate. It implements the design contract of `U12_R0_BINDING_DECISION.md`
     attempt -> publication confirmation bound to the actual observed issue
     revision -> one strict-gated rerun -> run correlation.
 
+The YZT-83 accepted preflight decision (`U12_R0_PREFLIGHT_DECISION.md`, raw
+SHA256 3acb66e3be54e9c00bf7c8f819b8970175d3a14984e3422f500220ae2106a2a9)
+is implemented here as a forward repair: every consequential arm and every
+not-yet-issued trigger recollects fresh material before entering the
+unchanged O2 single-attempt issuance path. That preflight re-reads the pinned
+artifact blobs, the current authority record, a fresh target-derived request
+and current Findings, the exact bound note, the issue projection and the
+complete run listing, and it fails closed as `REFRESH_REQUIRED` (confirmed
+drift/supersession/non-READY) or `BLOCKED` (missing/unreadable/ambiguous
+input) with zero native reruns. The separate exact Issue-revision equality
+stop and the Human-approved publication attribution boundary are retained.
+
 Hard boundaries kept by this module:
 
 * no second ledger/service/scheduler; the same `DurableIntentStore` and the
@@ -90,6 +102,24 @@ REASON_PUBLICATION_AMBIGUOUS = "PUBLICATION_AMBIGUOUS"
 REASON_PUBLICATION_PROVENANCE = "PUBLICATION_PROVENANCE_INCOMPLETE"
 REASON_PUBLICATION_CONFLICT = "PUBLICATION_DELTA_NOT_ATTRIBUTABLE"
 REASON_MOVING_EVIDENCE = "EVIDENCE_REVISION_MOVING"
+
+# --- preflight (YZT-83 accepted forward repair) ------------------------------
+AUTHORITY_EVIDENCE_SCHEMA = "u12-r0b-authority-evidence/1.0"
+AUTHORITY_ARTIFACT_PATH = "adapters/multica/u12-p0r/readiness-manifest.json"
+AUTHORITY_REF = "repo://" + AUTHORITY_ARTIFACT_PATH
+AUTHORITY_DIGEST_METHOD = "canonical_json"
+
+REASON_MATERIAL_STALE = "R0B_MATERIAL_STALE"
+REASON_MATERIAL_UNAVAILABLE = "R0B_MATERIAL_UNAVAILABLE"
+REASON_PREFLIGHT_INPUT_MISSING = "R0B_PREFLIGHT_INPUT_MISSING"
+REASON_TRIGGER_ALREADY_ISSUED = "R0B_TRIGGER_ALREADY_ISSUED"
+
+E_PREFLIGHT = "r0b_preflight"
+R0B_STOP_STATES = (o2.S_BLOCKED, o2.S_CANCELLED, o2.S_REFRESH_REQUIRED)
+CLOSED_TRIGGER_STATES = (o2.S_TRIGGER_ISSUING, o2.S_TRIGGER_AMBIGUOUS,
+                         o2.S_RUN_CORRELATED, o2.S_SELF_CHECKED)
+TRIGGER_REPLAY_STATES = (CLOSED_TRIGGER_STATES + R0B_STOP_STATES
+                         + tuple(o2.TERMINAL_STATES))
 
 # --- publication predicate codes --------------------------------------------
 PUB_OK = "PUBLICATION_ATTRIBUTED"
@@ -194,6 +224,24 @@ class R0BTypedStop(R0BError):
 
 class PublicationProvenanceIncomplete(R0BError):
     code = PUB_INCOMPLETE
+
+
+class PreflightRefusal(Exception):
+    """A typed pre-issuance stop raised by the fresh material preflight.
+
+    `state` is the exact O2 stop state (`REFRESH_REQUIRED` for confirmed
+    changed/superseded/non-READY material, `BLOCKED` for missing, unreadable
+    or provenance-ambiguous input). `subjects` carries bounded diagnostics;
+    it is recorded in the namespaced ledger event and never reused as
+    authorization.
+    """
+
+    def __init__(self, state, reason, detail, **subjects):
+        super().__init__(str(detail))
+        self.state = state
+        self.reason = reason
+        self.detail = str(detail)
+        self.subjects = subjects
 
 
 # ---------------------------------------------------------------------------
@@ -413,6 +461,171 @@ class EvidenceReader:
                 f"issue runs contract violated: {exc.message}") from exc
 
 
+class ReadinessManifestAuthorityReader:
+    """Read-only reader for the existing accepted R0 readiness authority.
+
+    This is the concrete binding of the required current-authority input to
+    the existing authoritative source: the readiness manifest already bound
+    in the intent artifact dependency. It reads the file from an explicit
+    root at call time (never cached, never a Git HEAD lookup, never a newer
+    artifact adopted implicitly) and returns the authority-evidence shape the
+    preflight validates. No new authority source or registry is introduced.
+    """
+
+    def __init__(self, root=None):
+        self.root = Path(root) if root else ROOT
+
+    def read(self, *, path: str = AUTHORITY_ARTIFACT_PATH) -> dict:
+        if path != AUTHORITY_ARTIFACT_PATH:
+            raise PreflightRefusal(
+                o2.S_BLOCKED, REASON_MATERIAL_UNAVAILABLE,
+                "the configured authority reader only serves "
+                f"{AUTHORITY_ARTIFACT_PATH}; requested {path!r}",
+                subject="authority")
+        target = self.root / AUTHORITY_ARTIFACT_PATH
+        try:
+            raw = target.read_bytes()
+        except OSError as exc:
+            raise PreflightRefusal(
+                o2.S_BLOCKED, REASON_MATERIAL_UNAVAILABLE,
+                f"authoritative readiness record is unreadable: {exc}",
+                subject="authority", path=str(target))
+        try:
+            record = json.loads(raw.decode("utf-8"))
+        except (UnicodeDecodeError, json.JSONDecodeError) as exc:
+            raise PreflightRefusal(
+                o2.S_BLOCKED, REASON_MATERIAL_UNAVAILABLE,
+                f"authoritative readiness record is not UTF-8 JSON: {exc}",
+                subject="authority", path=str(target))
+        if not isinstance(record, dict):
+            raise PreflightRefusal(
+                o2.S_BLOCKED, REASON_MATERIAL_UNAVAILABLE,
+                "authoritative readiness record is not an object",
+                subject="authority", path=str(target))
+        return {
+            "schema": AUTHORITY_EVIDENCE_SCHEMA,
+            "ref": AUTHORITY_REF,
+            "path": AUTHORITY_ARTIFACT_PATH,
+            "digest_method": AUTHORITY_DIGEST_METHOD,
+            "sha256": digest(record),
+            "disposition": "READY",
+            "record": record,
+        }
+
+
+def validate_authority_evidence(evidence, *, data) -> dict:
+    """Validate current authority evidence against the saved binding.
+
+    Confirmed different version, REVOKED or SUPERSEDED disposition stops as
+    REFRESH_REQUIRED; missing/unreadable/ambiguous/non-matching evidence
+    stops as BLOCKED. A bool or cached digest can never satisfy this check.
+    """
+    entries = data["artifact_dependency"]["entries"]
+    bound = entries.get(AUTHORITY_ARTIFACT_PATH)
+    if not isinstance(bound, dict) or \
+            bound.get("digest_method") != AUTHORITY_DIGEST_METHOD:
+        raise PreflightRefusal(
+            o2.S_BLOCKED, REASON_MATERIAL_UNAVAILABLE,
+            "intent artifact dependency does not bind the authoritative "
+            "readiness manifest with the accepted canonical method",
+            subject="authority", path=AUTHORITY_ARTIFACT_PATH)
+    if evidence is None:
+        raise PreflightRefusal(
+            o2.S_BLOCKED, REASON_PREFLIGHT_INPUT_MISSING,
+            "current authority evidence is missing; inject the read-only "
+            "authority reader or supply one authority evidence input "
+            "refreshed for this entrypoint",
+            subject="authority", path=AUTHORITY_ARTIFACT_PATH)
+    if not isinstance(evidence, dict):
+        raise PreflightRefusal(
+            o2.S_BLOCKED, REASON_MATERIAL_UNAVAILABLE,
+            "authority evidence is not an object", subject="authority")
+    path = evidence.get("path") or AUTHORITY_ARTIFACT_PATH
+    ref = evidence.get("ref") or ("repo://" + str(path))
+    method = evidence.get("digest_method") or AUTHORITY_DIGEST_METHOD
+    if evidence.get("schema") not in (None, AUTHORITY_EVIDENCE_SCHEMA):
+        raise PreflightRefusal(
+            o2.S_BLOCKED, REASON_MATERIAL_UNAVAILABLE,
+            f"authority evidence schema is unsupported: "
+            f"{evidence.get('schema')!r}", subject="authority")
+    if path != AUTHORITY_ARTIFACT_PATH or ref != AUTHORITY_REF:
+        raise PreflightRefusal(
+            o2.S_BLOCKED, REASON_MATERIAL_UNAVAILABLE,
+            f"authority evidence names {ref!r} instead of the bound "
+            f"{AUTHORITY_REF!r}; no substitute authority source is accepted",
+            subject="authority")
+    if method != bound.get("digest_method"):
+        raise PreflightRefusal(
+            o2.S_BLOCKED, REASON_MATERIAL_UNAVAILABLE,
+            "authority evidence digest method is not the bound method",
+            subject="authority", digest_method=method)
+    disposition = evidence.get("disposition")
+    if disposition not in ("READY", "REVOKED", "SUPERSEDED"):
+        raise PreflightRefusal(
+            o2.S_BLOCKED, REASON_MATERIAL_UNAVAILABLE,
+            f"authority disposition is missing or unknown: {disposition!r}",
+            subject="authority")
+    if disposition != "READY":
+        raise PreflightRefusal(
+            o2.S_REFRESH_REQUIRED, REASON_MATERIAL_STALE,
+            f"authority disposition is {disposition}; the bound subject is no "
+            "longer the current READY authority", subject="authority",
+            disposition=disposition)
+    version = evidence.get("sha256")
+    if not isinstance(version, str) or not _DIGEST_RE.match(version):
+        raise PreflightRefusal(
+            o2.S_BLOCKED, REASON_MATERIAL_UNAVAILABLE,
+            "authority evidence carries no exact version digest",
+            subject="authority")
+    if version != bound.get("sha256"):
+        raise PreflightRefusal(
+            o2.S_REFRESH_REQUIRED, REASON_MATERIAL_STALE,
+            "the current authoritative record differs from the bound version "
+            f"(bound {bound.get('sha256')}, current {version}); a newer or "
+            "replaced authority is never adopted implicitly",
+            subject="authority", digest=version)
+    record = evidence.get("record")
+    if record is not None:
+        if not isinstance(record, dict):
+            raise PreflightRefusal(
+                o2.S_BLOCKED, REASON_MATERIAL_UNAVAILABLE,
+                "authority record is not an object", subject="authority")
+        if digest(record) != version:
+            raise PreflightRefusal(
+                o2.S_BLOCKED, REASON_MATERIAL_UNAVAILABLE,
+                "authority evidence version does not match its own record",
+                subject="authority")
+        declared = record.get("manifest_digest")
+        if declared is not None:
+            recomputed = digest({k: v for k, v in record.items()
+                                 if k != "manifest_digest"})
+            if declared != recomputed:
+                raise PreflightRefusal(
+                    o2.S_BLOCKED, REASON_MATERIAL_UNAVAILABLE,
+                    "authority record self-digest does not reproduce",
+                    subject="authority")
+        cross_links = {
+            "tools/u12_strict_receipt.py":
+                (record.get("strict_receipt_gate") or {}).get("sha256_lf"),
+            "adapters/multica/u12-p0r/proposed-r0-canary-plan.json":
+                (record.get("evidence_files") or {}).get(
+                    "proposed-r0-canary-plan.json"),
+        }
+        for cross_path, referenced in cross_links.items():
+            entry = entries.get(cross_path)
+            if isinstance(referenced, str) and isinstance(entry, dict) and \
+                    referenced != entry.get("sha256"):
+                raise PreflightRefusal(
+                    o2.S_REFRESH_REQUIRED, REASON_MATERIAL_STALE,
+                    "the authoritative record references a different "
+                    f"{cross_path} (authority {referenced}, bound "
+                    f"{entry.get('sha256')}); the bound set is not the "
+                    "current approved subject", subject="authority",
+                    path=cross_path)
+    return {"ref": ref, "path": path, "digest_method": method,
+            "version": version, "disposition": disposition}
+
+
 class R0BBoundary(strict.StrictReceiptBoundary):
     """Strict receipt boundary + the one new create command class.
 
@@ -576,6 +789,15 @@ def validate_creation_spec(spec: dict) -> dict:
     if artifact_digest != digest(artifact.get("entries") or {}):
         raise R0BValidationRefused(
             "artifact_dependency.digest does not match its entry map")
+    authority_entry = out["artifact_dependency"]["entries"].get(
+        AUTHORITY_ARTIFACT_PATH)
+    if not isinstance(authority_entry, dict) or \
+            authority_entry.get("digest_method") != AUTHORITY_DIGEST_METHOD:
+        raise R0BValidationRefused(
+            "creation_spec.artifact_dependency must bind the authoritative "
+            "readiness manifest with the accepted canonical method; the "
+            "arm/trigger preflight requires it",
+            path=AUTHORITY_ARTIFACT_PATH)
     return out
 
 
@@ -713,7 +935,8 @@ def comment_record(doc: dict) -> dict:
 
 def collect_evidence(reader: EvidenceReader, issue_id: str) -> dict:
     issue = reader.issue_get(issue_id)
-    comments = [comment_record(doc) for doc in reader.comments_full(issue_id)]
+    raw_comments = reader.comments_full(issue_id)
+    comments = [comment_record(doc) for doc in raw_comments]
     activities = reader.timeline_activities(issue_id)
     runs = reader.runs_full(issue_id)
     return {
@@ -723,7 +946,7 @@ def collect_evidence(reader: EvidenceReader, issue_id: str) -> dict:
         "runs": runs,
         "commands": list(reader.commands),
         "_raw_comments": [{"id": doc.get("id"), "content": doc.get("content")}
-                          for doc in reader.comments_full(issue_id)],
+                          for doc in raw_comments],
     }
 
 
@@ -940,6 +1163,312 @@ def evaluate_publication_predicate(
 
 
 # ---------------------------------------------------------------------------
+# fresh material preflight (YZT-83 accepted decision, forward repair)
+# ---------------------------------------------------------------------------
+def rebuild_artifact_dependency(entries, *, root, blob_reader) -> dict:
+    """Rebuild the exact bound dependency map from the pinned blobs.
+
+    A usable root/reader is mandatory on these consequential paths. A reader
+    failure or missing blob is unavailable (BLOCKED); readable bytes that no
+    longer satisfy the declared digest method are confirmed drift
+    (REFRESH_REQUIRED). Returns `{"digest", "entries"}`.
+    """
+    if blob_reader is None and root is None:
+        raise PreflightRefusal(
+            o2.S_BLOCKED, REASON_MATERIAL_UNAVAILABLE,
+            "no usable artifact root/reader is configured; pinned-blob "
+            "revalidation is mandatory before issuance", subject="artifact")
+    reader = blob_reader or _git_blob_reader(root or ROOT)
+    normalized = _normalize_artifact_entries(
+        [dict(v, path=k) for k, v in entries.items()])
+    mapping = {}
+    for entry in normalized:
+        path = entry["path"]
+        try:
+            data = reader(entry["commit"], path)
+        except PreflightRefusal:
+            raise
+        except Exception as exc:  # noqa: BLE001 - reader failure is a stop
+            raise PreflightRefusal(
+                o2.S_BLOCKED, REASON_MATERIAL_UNAVAILABLE,
+                f"pinned artifact blob is unavailable at {path}: "
+                f"{type(exc).__name__}: {exc}", subject="artifact", path=path)
+        try:
+            actual = _digest_blob(data, entry["digest_method"])
+        except R0BError as exc:
+            raise PreflightRefusal(
+                o2.S_REFRESH_REQUIRED, REASON_MATERIAL_STALE,
+                f"pinned bytes for {path} changed and no longer satisfy the "
+                f"declared {entry['digest_method']} method: {exc}",
+                subject="artifact", path=path)
+        mapping[path] = {
+            "commit": entry["commit"],
+            "digest_method": entry["digest_method"],
+            "sha256": actual,
+        }
+    return {"digest": digest(mapping), "entries": mapping}
+
+
+def compare_artifact_dependency(bound_digest, bound_entries, rebuilt) -> dict:
+    """Compare every rebuilt digest and the aggregate to the bound values."""
+    if rebuilt["digest"] == bound_digest:
+        return rebuilt
+    mismatched = []
+    for path in sorted(bound_entries):
+        expected = (bound_entries.get(path) or {}).get("sha256")
+        actual = (rebuilt["entries"].get(path) or {}).get("sha256")
+        if actual != expected:
+            mismatched.append({"path": path, "expected": expected,
+                               "actual": actual})
+    raise PreflightRefusal(
+        o2.S_REFRESH_REQUIRED, REASON_MATERIAL_STALE,
+        "pinned artifact bytes changed or disappeared: "
+        + ",".join(row["path"] for row in mismatched[:4]),
+        subject="artifact", mismatched=mismatched[:4])
+
+
+def preflight_request_check(data, current_request) -> dict:
+    """Validate the fresh target-derived request against bound E.
+
+    The caller builds the request through the same project mapping and
+    decision-ref selection used for E; here its frozen fingerprint and every
+    `built_from` revision are compared to the bound values.
+    """
+    execution = data.get("execution_context") or {}
+    bound_request = execution.get("request")
+    if not isinstance(bound_request, dict):
+        raise PreflightRefusal(
+            o2.S_BLOCKED, REASON_MATERIAL_UNAVAILABLE,
+            "the bound E request is not available in the intent record",
+            subject="request")
+    if current_request is None:
+        raise PreflightRefusal(
+            o2.S_BLOCKED, REASON_PREFLIGHT_INPUT_MISSING,
+            "a fresh target-derived current_request is required for this "
+            "entrypoint", subject="request")
+    if not isinstance(current_request, dict) or \
+            current_request.get("kind") != "prepare_handoff_request":
+        raise PreflightRefusal(
+            o2.S_BLOCKED, REASON_MATERIAL_UNAVAILABLE,
+            "current_request is not a prepare_handoff_request",
+            subject="request")
+    mismatched = []
+    if current_request.get("task_ref") != bound_request.get("task_ref"):
+        mismatched.append("task_ref")
+    if ((current_request.get("target") or {}).get("role")
+            != (bound_request.get("target") or {}).get("role")):
+        mismatched.append("target.role")
+    if current_request.get("project") != bound_request.get("project"):
+        mismatched.append("project mapping")
+    fresh_snapshot = current_request.get("task_snapshot") or {}
+    bound_snapshot = bound_request.get("task_snapshot") or {}
+    if (fresh_snapshot.get("relevant_decisions") or []) != \
+            (bound_snapshot.get("relevant_decisions") or []):
+        mismatched.append("selected decision refs")
+    if mismatched:
+        raise PreflightRefusal(
+            o2.S_REFRESH_REQUIRED, REASON_MATERIAL_STALE,
+            "the current request no longer uses the bound E mapping: "
+            + ", ".join(mismatched), subject="request",
+            fields=mismatched)
+    fingerprint = chandoff.fingerprint_from_request(current_request)
+    bound_built = execution.get("built_from") or {}
+    if fingerprint != bound_built.get("task_fingerprint"):
+        raise PreflightRefusal(
+            o2.S_REFRESH_REQUIRED, REASON_MATERIAL_STALE,
+            "the frozen task fingerprint changed: the current target snapshot "
+            "no longer matches bound E", subject="request",
+            fingerprint=fingerprint)
+    fresh_built = chandoff.compute_built_from(current_request)
+    drift = [key for key in ("task_fingerprint", "memory_revision",
+                             "registry_revision", "role_profile_revision")
+             if fresh_built.get(key) != bound_built.get(key)]
+    if drift:
+        raise PreflightRefusal(
+            o2.S_REFRESH_REQUIRED, REASON_MATERIAL_STALE,
+            "current context/profile/memory/registry revision drifted: "
+            + ", ".join(drift), subject="request", fields=drift)
+    return {"fingerprint": fingerprint, "built_from": fresh_built,
+            "request_digest": digest(current_request)}
+
+
+def preflight_self_check(data, current_request, current_findings) -> dict:
+    """Run the frozen SELF_CHECK on bound E with the current Finding source.
+
+    The adapter never substitutes an empty findings list for a missing live
+    source; absent or malformed findings are a typed stop.
+    """
+    if current_findings is None:
+        raise PreflightRefusal(
+            o2.S_BLOCKED, REASON_PREFLIGHT_INPUT_MISSING,
+            "the current Finding source is required; the adapter never forces "
+            "an empty findings list", subject="findings")
+    if not isinstance(current_findings, list) or \
+            any(not isinstance(item, dict) for item in current_findings):
+        raise PreflightRefusal(
+            o2.S_BLOCKED, REASON_MATERIAL_UNAVAILABLE,
+            "current_findings is not a list of Finding objects",
+            subject="findings")
+    execution = data.get("execution_context") or {}
+    envelope = execution.get("result")
+    if not isinstance(envelope, dict):
+        raise PreflightRefusal(
+            o2.S_BLOCKED, REASON_MATERIAL_UNAVAILABLE,
+            "the bound E envelope is not available for SELF_CHECK",
+            subject="context")
+    sc_request = self_check_request_from_prepare(current_request)
+    try:
+        check = selfcheck.self_check(sc_request, packages=[envelope],
+                                     findings=current_findings)
+    except (o2.IntentError, ValueError) as exc:
+        raise PreflightRefusal(
+            o2.S_BLOCKED, REASON_MATERIAL_UNAVAILABLE,
+            f"SELF_CHECK could not run on bound E: {type(exc).__name__}: {exc}",
+            subject="context")
+    status = check.get("status")
+    action = check.get("action")
+    if status != "READY" or action != "USE_EXISTING":
+        raise PreflightRefusal(
+            o2.S_REFRESH_REQUIRED, REASON_MATERIAL_STALE,
+            "SELF_CHECK on bound E is not READY/USE_EXISTING: "
+            f"status={status} action={action} "
+            f"reasons={check.get('reasons')}", subject="context",
+            self_check_status=status)
+    if check.get("package_id") not in (None, execution.get("package_id")):
+        raise PreflightRefusal(
+            o2.S_REFRESH_REQUIRED, REASON_MATERIAL_STALE,
+            "SELF_CHECK resolved a different package than bound E",
+            subject="context")
+    return {"status": status, "action": action,
+            "reasons": list(check.get("reasons") or []),
+            "package_id": check.get("package_id")}
+
+
+def preflight_note_check(data, evidence) -> dict:
+    """Re-read the exact bound note from the fresh comment inventory."""
+    publication = data.get("publication_binding") or {}
+    note_id = publication.get("note_comment_id")
+    if not note_id:
+        raise PreflightRefusal(
+            o2.S_BLOCKED, REASON_MATERIAL_UNAVAILABLE,
+            "the intent has no bound publication note", subject="note")
+    body_digest = publication.get("body_digest")
+    candidates = [c for c in evidence.get("comments") or []
+                  if c.get("id") == note_id]
+    if not candidates:
+        raise PreflightRefusal(
+            o2.S_BLOCKED, REASON_MATERIAL_UNAVAILABLE,
+            "the bound publication note is not visible in the complete "
+            "comment inventory", subject="note", note_comment_id=note_id)
+    if len(candidates) > 1:
+        raise PreflightRefusal(
+            o2.S_BLOCKED, REASON_MATERIAL_UNAVAILABLE,
+            "the bound publication note id appears more than once",
+            subject="note", note_comment_id=note_id)
+    candidate = candidates[0]
+    problems = []
+    if candidate.get("content_digest") != body_digest:
+        problems.append("body digest")
+    if candidate.get("revision") != publication.get("note_revision"):
+        problems.append("original comment revision")
+    if candidate.get("updated_at") != candidate.get("created_at"):
+        problems.append("edited timestamp")
+    if candidate.get("author_id") != publication.get("author_id") or \
+            candidate.get("author_type") != publication.get("author_type"):
+        problems.append("author")
+    if candidate.get("source_task_id") != publication.get("source_task_id"):
+        problems.append("source run")
+    if candidate.get("parent_id") != publication.get("parent_id"):
+        problems.append("thread/parent")
+    if problems:
+        raise PreflightRefusal(
+            o2.S_REFRESH_REQUIRED, REASON_MATERIAL_STALE,
+            "the bound publication note drifted: " + ", ".join(problems),
+            subject="note", note_comment_id=note_id,
+            fields=problems)
+    matching = [c for c in evidence.get("comments") or []
+                if c.get("content_digest") == body_digest]
+    if len(matching) != 1:
+        raise PreflightRefusal(
+            o2.S_BLOCKED, REASON_MATERIAL_UNAVAILABLE,
+            f"{len(matching)} comments match the bound note body; duplicate "
+            "or ambiguous publication evidence", subject="note",
+            note_comment_id=note_id)
+    content = _content_of(evidence, note_id)
+    parsed = note._parse_record(content)
+    if not parsed.get("ok_record"):
+        raise PreflightRefusal(
+            o2.S_REFRESH_REQUIRED, REASON_MATERIAL_STALE,
+            "the visible note does not parse as a complete CONTEXT_HANDOFF "
+            "record: " + "; ".join(parsed.get("errors") or [])[:200],
+            subject="note", note_comment_id=note_id)
+    envelope_digest = digest(parsed["envelope"])
+    if envelope_digest != publication.get("envelope_digest"):
+        raise PreflightRefusal(
+            o2.S_REFRESH_REQUIRED, REASON_MATERIAL_STALE,
+            "the visible note envelope differs from the bound E envelope",
+            subject="note", note_comment_id=note_id,
+            envelope_digest=envelope_digest)
+    return {"note_comment_id": note_id,
+            "note_revision": candidate.get("revision"),
+            "body_digest": body_digest,
+            "envelope_digest": envelope_digest,
+            "source_task_id": candidate.get("source_task_id"),
+            "comment_inventory": len(evidence.get("comments") or [])}
+
+
+def preflight_issue_check(data, issue) -> dict:
+    """Bind the fresh issue to the target role/agent and published baseline."""
+    spec = data.get("creation_spec") or {}
+    target = data.get("target_binding") or {}
+    if issue.get("id") != target.get("issue_id"):
+        raise PreflightRefusal(
+            o2.S_REFRESH_REQUIRED, REASON_MATERIAL_STALE,
+            "the target issue identity changed", subject="issue")
+    problems = []
+    if issue.get("parent_issue_id") != spec.get("parent_issue_id"):
+        problems.append("parent")
+    if spec.get("project_id") is not None and \
+            issue.get("project_id") != spec.get("project_id"):
+        problems.append("project")
+    if issue.get("assignee_id") != spec.get("target_agent_id") or \
+            issue.get("assignee_type") != "agent":
+        problems.append("logical-role to exact-agent binding")
+    status = issue.get("status_category") or issue.get("status")
+    if status != BACKLOG_STATUS:
+        problems.append(f"backlog status ({status})")
+    if problems:
+        raise PreflightRefusal(
+            o2.S_REFRESH_REQUIRED, REASON_MATERIAL_STALE,
+            "fresh target issue no longer matches the bound role/agent/status "
+            "binding: " + ", ".join(problems), subject="issue",
+            fields=problems)
+    baseline = target.get("post_publication_projection")
+    if not isinstance(baseline, dict):
+        base_digest = target.get("post_publication_snapshot_digest")
+        if not isinstance(base_digest, str):
+            raise PreflightRefusal(
+                o2.S_BLOCKED, REASON_MATERIAL_UNAVAILABLE,
+                "the published issue baseline is absent from the intent "
+                "record; the current projection cannot be compared",
+                subject="issue")
+        if digest(issue_projection(issue)) != base_digest:
+            raise PreflightRefusal(
+                o2.S_REFRESH_REQUIRED, REASON_MATERIAL_STALE,
+                "the current issue projection differs from the published "
+                "baseline digest", subject="issue")
+        return {"projection_digest": base_digest, "changed_fields": []}
+    changed = _issue_diff(baseline, issue_projection(issue))
+    if changed:
+        raise PreflightRefusal(
+            o2.S_REFRESH_REQUIRED, REASON_MATERIAL_STALE,
+            "issue fields changed since the authorized publication: "
+            + ", ".join(changed), subject="issue", fields=changed)
+    return {"projection_digest": digest(issue_projection(issue)),
+            "changed_fields": []}
+
+
+# ---------------------------------------------------------------------------
 # forward lifecycle factory
 # ---------------------------------------------------------------------------
 class R0BForwardFactory(strict.CanaryOrchestrator):
@@ -955,7 +1484,7 @@ class R0BForwardFactory(strict.CanaryOrchestrator):
     def __init__(self, store, *, runner, note_runner=None,
                  executable: str = "multica", clock=None, workdir=None,
                  ttl_seconds: int = 300, artifact_blob_reader=None,
-                 artifact_root=None):
+                 artifact_root=None, authority_reader=None):
         super().__init__(store, runner=runner, executable=executable,
                          clock=clock, workdir=workdir,
                          ttl_seconds=ttl_seconds)
@@ -966,6 +1495,7 @@ class R0BForwardFactory(strict.CanaryOrchestrator):
                                      runner=note_runner or runner)
         self.artifact_blob_reader = artifact_blob_reader
         self.artifact_root = artifact_root
+        self.authority_reader = authority_reader
 
     # -- contract gates ------------------------------------------------------
     def _load(self, intent_id: str, *, require=()) -> dict:
@@ -1015,6 +1545,148 @@ class R0BForwardFactory(strict.CanaryOrchestrator):
                                if isinstance(v, dict)),
         }
 
+    # -- fresh material preflight (mandatory at arm and unissued trigger) ----
+    def _resolve_authority(self, authority_evidence) -> dict | None:
+        """Obtain current authority evidence for this entrypoint.
+
+        An injected read-only reader wins and is invoked fresh on every
+        entrypoint; otherwise the caller must supply one explicit evidence
+        input. Nothing is cached in the ledger and no substitute source is
+        guessed.
+        """
+        if self.authority_reader is not None:
+            try:
+                return self.authority_reader.read(path=AUTHORITY_ARTIFACT_PATH)
+            except PreflightRefusal:
+                raise
+            except Exception as exc:  # noqa: BLE001 - reader failure is a stop
+                raise PreflightRefusal(
+                    o2.S_BLOCKED, REASON_MATERIAL_UNAVAILABLE,
+                    f"the authority reader failed: {type(exc).__name__}: {exc}",
+                    subject="authority")
+        return authority_evidence
+
+    def _preflight_materials(self, intent_id: str, data: dict, *,
+                             checkpoint: str, current_request=None,
+                             current_findings=None,
+                             authority_evidence=None) -> dict:
+        """Collect and validate every fresh material source once, in order.
+
+        Reads only: current issue/comments/timeline/runs, pinned artifact
+        blobs, the current authority record, a fresh target-derived request
+        and the current Finding source, the exact bound note and the issue
+        projection. Raises `PreflightRefusal`; it never mutates external
+        state and never issues a native call.
+        """
+        if checkpoint not in ("ARM", "TRIGGER"):
+            raise R0BValidationRefused("unknown preflight checkpoint",
+                                       checkpoint=checkpoint)
+        issue_id = binding_issue_id(data)
+        try:
+            evidence = collect_evidence(self.reader, issue_id)
+        except PreflightRefusal:
+            raise
+        except Exception as exc:  # noqa: BLE001 - incomplete evidence is a stop
+            raise PreflightRefusal(
+                o2.S_BLOCKED, REASON_MATERIAL_UNAVAILABLE,
+                f"fresh evidence collection is incomplete or unreadable: "
+                f"{type(exc).__name__}: {exc}", subject="evidence")
+        issue = evidence["issue"]
+        try:
+            recheck = self.reader.issue_get(issue_id)
+        except Exception as exc:  # noqa: BLE001
+            raise PreflightRefusal(
+                o2.S_BLOCKED, REASON_MATERIAL_UNAVAILABLE,
+                f"post-collection issue re-read failed: "
+                f"{type(exc).__name__}: {exc}", subject="evidence")
+        if recheck.get("revision") != issue.get("revision") or \
+                issue_projection(recheck) != issue_projection(issue):
+            raise PreflightRefusal(
+                o2.S_BLOCKED, REASON_MATERIAL_UNAVAILABLE,
+                "the issue moved while fresh evidence was collected "
+                f"(revision {issue.get('revision')} -> "
+                f"{recheck.get('revision')}); the collection is not a stable "
+                "basis", subject="evidence",
+                revision_before=issue.get("revision"),
+                revision_after=recheck.get("revision"))
+        artifact = compare_artifact_dependency(
+            data["artifact_dependency"]["digest"],
+            data["artifact_dependency"]["entries"],
+            rebuild_artifact_dependency(
+                data["artifact_dependency"]["entries"],
+                root=self.artifact_root,
+                blob_reader=self.artifact_blob_reader))
+        authority = validate_authority_evidence(
+            self._resolve_authority(authority_evidence), data=data)
+        request = preflight_request_check(data, current_request)
+        check = preflight_self_check(data, current_request, current_findings)
+        note_proof = preflight_note_check(data, evidence)
+        issue_proof = preflight_issue_check(data, issue)
+        if evidence["runs"]:
+            raise PreflightRefusal(
+                o2.S_REFRESH_REQUIRED, REASON_MATERIAL_STALE,
+                "the target already carries run(s): "
+                + ",".join(str(r.get("id"))
+                           for r in evidence["runs"][:4]), subject="runs")
+        return {
+            "checkpoint": checkpoint,
+            "evidence": evidence,
+            "evidence_digest": evidence_digest(evidence),
+            "issue": issue,
+            "runs": [],
+            "artifact_digest": artifact["digest"],
+            "authority": authority,
+            "request": request,
+            "self_check": check,
+            "note": note_proof,
+            "issue_proof": issue_proof,
+        }
+
+    def _record_preflight(self, intent_id: str, actor: str,
+                          bundle: dict) -> None:
+        """Append the bounded diagnostic record; never reusable authority."""
+        self.store.append_event(
+            intent_id, E_PREFLIGHT, actor=actor, now=self.now(),
+            data={
+                "checkpoint": bundle["checkpoint"],
+                "evidence_digest": bundle["evidence_digest"],
+                "issue_revision": bundle["issue"].get("revision"),
+                "artifact_dependency_digest": bundle["artifact_digest"],
+                "authority": bundle["authority"],
+                "request_digest": bundle["request"]["request_digest"],
+                "fingerprint": bundle["request"]["fingerprint"],
+                "self_check": dict(bundle["self_check"],
+                                   reasons=bundle["self_check"]["reasons"][:8]),
+                "note": bundle["note"],
+                "issue_projection_digest":
+                    bundle["issue_proof"]["projection_digest"],
+                "run_ids": [r.get("id") for r in bundle["runs"]],
+            })
+
+    def _refuse_preflight(self, intent_id: str, refusal: PreflightRefusal,
+                          actor: str) -> dict:
+        subjects = {}
+        for key, value in refusal.subjects.items():
+            if isinstance(value, str):
+                subjects[key] = value[:200]
+            else:
+                subjects[key] = canonical_json(value)[:200]
+        self.store.append_event(
+            intent_id, E_EVIDENCE_REFUSED, actor=actor, now=self.now(),
+            data={"reason": refusal.reason, "state": refusal.state,
+                  "detail": refusal.detail[:200], "subjects": subjects})
+        return self._stop(intent_id, refusal.state, refusal.reason, actor,
+                          detail=refusal.detail)
+
+    def _require_intent_unchanged(self, intent_id: str, intent: dict) -> None:
+        current = self.store.get(intent_id)
+        if current["revision"] != intent["revision"]:
+            raise PreflightRefusal(
+                o2.S_BLOCKED, REASON_MATERIAL_UNAVAILABLE,
+                "the intent changed while fresh materials were validated "
+                f"(revision {intent['revision']} -> {current['revision']})",
+                subject="intent")
+
     # -- plain O2 transitions are not an accepted R0B path -------------------
     def mark_prepared(self, intent_id: str, *, package_id: str,
                       artifact_dependency_digest: str, actor: str) -> dict:
@@ -1034,41 +1706,22 @@ class R0BForwardFactory(strict.CanaryOrchestrator):
             "confirm_publication_and_bind; the plain mark_published "
             "transition is not an accepted R0B path", intent_id=intent_id)
 
+    # -- caller-supplied snapshots cannot bypass the preflight ---------------
     def plan_and_arm(self, intent_id: str, snapshot: dict, *,
                      actor: str) -> dict:
-        data = self._load(intent_id, require=("publication_binding",
-                                              "execution_context"))
-        self._require_snapshot_binding(intent_id, data, snapshot)
-        return super().plan_and_arm(intent_id, snapshot, actor=actor)
+        self._load(intent_id)
+        raise R0BDowngradeRefused(
+            "external snapshot-taking is not an accepted R0B arming path; "
+            "call arm() so the fresh material preflight runs immediately "
+            "before issuance", intent_id=intent_id)
 
     def issue_trigger(self, intent_id: str, snapshot: dict, *,
                       actor: str) -> dict:
-        data = self._load(intent_id, require=("publication_binding",
-                                              "execution_context"))
-        self._require_snapshot_binding(intent_id, data, snapshot)
-        return super().issue_trigger(intent_id, snapshot, actor=actor)
-
-    def _require_snapshot_binding(self, intent_id: str, data: dict,
-                                  snapshot: dict) -> None:
-        execution = data.get("execution_context") or {}
-        publication = data.get("publication_binding") or {}
-        if snapshot.get("package_id") != execution.get("package_id"):
-            raise R0BValidationRefused(
-                "snapshot package is not the bound E package",
-                intent_id=intent_id)
-        if snapshot.get("artifact_dependency_digest") != \
-                (data.get("creation_spec") or {}).get(
-                    "artifact_dependency", {}).get("digest"):
-            raise R0BValidationRefused(
-                "snapshot artifact dependency digest is not the shared R0B "
-                "digest", intent_id=intent_id)
-        if snapshot.get("ready_note_id") != publication.get("note_comment_id"):
-            raise R0BValidationRefused(
-                "snapshot READY note is not the bound publication note",
-                intent_id=intent_id)
-        if snapshot.get("target_role") != EXECUTION_ROLE:
-            raise R0BValidationRefused("snapshot target role is not the "
-                                       "execution role", intent_id=intent_id)
+        self._load(intent_id)
+        raise R0BDowngradeRefused(
+            "external snapshot-taking is not an accepted R0B trigger path; "
+            "call trigger() so the fresh material preflight runs immediately "
+            "before issuance", intent_id=intent_id)
 
     # -- step 1: creation intent --------------------------------------------
     def record_creation_intent(self, *, creation_context: dict,
@@ -1909,6 +2562,7 @@ class R0BForwardFactory(strict.CanaryOrchestrator):
             "post_publication_revision": proof["after_issue_revision"],
             "post_publication_snapshot_digest":
                 digest(issue_projection(after["issue"])),
+            "post_publication_projection": issue_projection(after["issue"]),
         })
         binding["target_binding"] = target
         fields = {
@@ -1941,8 +2595,11 @@ class R0BForwardFactory(strict.CanaryOrchestrator):
         }
 
     def _artifact_recheck(self, data: dict) -> bool:
+        """Publication-predicate only. A usable reader is mandatory: the
+        source-less default success is refused here; the arm/trigger
+        preflight revalidates the full bound dependency independently."""
         if self.artifact_blob_reader is None and self.artifact_root is None:
-            return True
+            return False
         entries = data["artifact_dependency"]["entries"]
         try:
             rebuilt = build_artifact_dependency_digest(
@@ -1965,7 +2622,13 @@ class R0BForwardFactory(strict.CanaryOrchestrator):
             return False
 
     def _self_check_ok(self, data: dict) -> bool:
-        """Re-run the frozen SELF_CHECK over the bound E, no writes."""
+        """Publication-predicate SELF_CHECK over the bound E, no writes.
+
+        This is the YZT-83 publication acceptance predicate, which runs
+        before any arming; the mandatory arm/trigger preflight runs the
+        frozen SELF_CHECK separately against the fresh request and the
+        current Finding source instead of substituting an empty list.
+        """
         execution = data.get("execution_context") or {}
         request = execution.get("request")
         envelope = execution.get("result")
@@ -1981,24 +2644,33 @@ class R0BForwardFactory(strict.CanaryOrchestrator):
             check.get("action") == "USE_EXISTING"
 
     # -- step 7: arm (strict-only rerun factory) ----------------------------
-    def arm(self, intent_id: str, *, actor: str) -> dict:
+    def arm(self, intent_id: str, *, actor: str,
+            current_request: dict | None = None,
+            current_findings: list | None = None,
+            authority_evidence: dict | None = None) -> dict:
         intent = self._load(intent_id, require=("execution_context",
                                                 "publication_binding"))
         data = intent["fields"][R0B_FIELD]
+        if intent["state"] in R0B_STOP_STATES:
+            return {"status": intent["state"], "intent_id": intent_id,
+                    "replayed": True, "side_effects": 0}
         if intent["state"] != o2.S_HANDOFF_PUBLISHED:
             raise o2.IllegalTransitionError(
                 "arm requires HANDOFF_PUBLISHED", intent_id=intent_id,
                 state=intent["state"])
-        publication = data["publication_binding"]
         try:
-            issue = self.boundary.issue_get(binding_issue_id(data))
-            runs = self.boundary.list_runs(binding_issue_id(data))
-        except o2.IntentError as exc:
-            return self._stop(intent_id, o2.S_BLOCKED,
-                              REASON_PUBLICATION_PROVENANCE, actor,
-                              detail=f"pre-arm read failed: {exc.message}")
-        snapshot = self._build_snapshot(data, issue=issue,
-                                        runs=runs.get("runs") or [])
+            bundle = self._preflight_materials(
+                intent_id, data, checkpoint="ARM",
+                current_request=current_request,
+                current_findings=current_findings,
+                authority_evidence=authority_evidence)
+        except PreflightRefusal as refusal:
+            return self._refuse_preflight(intent_id, refusal, actor)
+        self._require_intent_unchanged(intent_id, intent)
+        self._record_preflight(intent_id, actor, bundle)
+        publication = data["publication_binding"]
+        snapshot = self._build_snapshot(data, issue=bundle["issue"],
+                                        runs=bundle["runs"])
         result = super().plan_and_arm(intent_id, snapshot, actor=actor)
         plan_result = result.get("plan") or {}
         if result.get("status") == o2.S_TRIGGER_READY:
@@ -2042,28 +2714,41 @@ class R0BForwardFactory(strict.CanaryOrchestrator):
             target_agent_id=spec["target_agent_id"])
 
     # -- step 8: strict trigger ---------------------------------------------
-    def trigger(self, intent_id: str, *, actor: str) -> dict:
+    def trigger(self, intent_id: str, *, actor: str,
+                current_request: dict | None = None,
+                current_findings: list | None = None,
+                authority_evidence: dict | None = None) -> dict:
         intent = self._load(intent_id, require=("execution_context",
                                                 "publication_binding"))
         data = intent["fields"][R0B_FIELD]
-        if intent["state"] == o2.S_TRIGGER_AMBIGUOUS or \
-                intent["state"] in o2.TERMINAL_STATES:
-            return {"status": intent["state"], "intent_id": intent_id,
-                    "replayed": True, "side_effects": 0}
-        if intent["state"] not in (o2.S_TRIGGER_READY, o2.S_TRIGGER_ISSUING,
-                                   o2.S_RUN_CORRELATED):
+        state = intent["state"]
+        if state in (o2.S_TRIGGER_ISSUING, o2.S_TRIGGER_AMBIGUOUS):
+            return {"status": state, "intent_id": intent_id, "replayed": True,
+                    "outcome": "READ_ONLY_RECONCILE_REQUIRED",
+                    "reason": REASON_TRIGGER_ALREADY_ISSUED,
+                    "detail": "a trigger has already been issued; only the "
+                              "existing read-only reconciliation is "
+                              "available and no fresh re-eligibility check "
+                              "may run", "side_effects": 0}
+        if state in TRIGGER_REPLAY_STATES:
+            return {"status": state, "intent_id": intent_id, "replayed": True,
+                    "side_effects": 0}
+        if state != o2.S_TRIGGER_READY:
             raise o2.IllegalTransitionError(
                 "trigger requires an armed intent", intent_id=intent_id,
-                state=intent["state"])
+                state=state)
         try:
-            issue = self.boundary.issue_get(binding_issue_id(data))
-            runs = self.boundary.list_runs(binding_issue_id(data))
-        except o2.IntentError as exc:
-            return self._stop(intent_id, o2.S_BLOCKED,
-                              REASON_PUBLICATION_PROVENANCE, actor,
-                              detail=f"pre-trigger read failed: {exc.message}")
-        snapshot = self._build_snapshot(data, issue=issue,
-                                        runs=runs.get("runs") or [])
+            bundle = self._preflight_materials(
+                intent_id, data, checkpoint="TRIGGER",
+                current_request=current_request,
+                current_findings=current_findings,
+                authority_evidence=authority_evidence)
+        except PreflightRefusal as refusal:
+            return self._refuse_preflight(intent_id, refusal, actor)
+        self._require_intent_unchanged(intent_id, intent)
+        self._record_preflight(intent_id, actor, bundle)
+        snapshot = self._build_snapshot(data, issue=bundle["issue"],
+                                        runs=bundle["runs"])
         return super().issue_trigger(intent_id, snapshot, actor=actor)
 
     # -- recovery ------------------------------------------------------------
@@ -2126,13 +2811,17 @@ class R0BForwardFactory(strict.CanaryOrchestrator):
         if state == o2.S_HANDOFF_PUBLISHED:
             return {"classification": "POST_PUBLISH_PRE_TRIGGER",
                     "action": "RESUME_ARM_AND_TRIGGER", "performed": False,
-                    "reason": "arm and trigger through the factory after a "
-                              "fresh re-read", "side_effects": 0}
+                    "reason": "instruction only, never reusable authorization: "
+                              "the resumed arm/trigger entrypoints recollect "
+                              "fresh material, current authority and Finding "
+                              "evidence and fail closed on any drift",
+                    "side_effects": 0}
         if state == o2.S_TRIGGER_READY:
             return {"classification": "TRIGGER_READY_FRESH_VALIDATION",
                     "action": "RESUME_TRIGGER", "performed": False,
-                    "reason": "fresh validation then the single strict "
-                              "trigger", "side_effects": 0}
+                    "reason": "instruction only: the resumed trigger reruns "
+                              "the full fresh material preflight before the "
+                              "single strict trigger", "side_effects": 0}
         if state in (o2.S_TRIGGER_ISSUING, o2.S_TRIGGER_AMBIGUOUS):
             return {"classification": "POST_TRIGGER_READ_ONLY",
                     "action": "READ_ONLY_RECONCILE", "performed": False,
@@ -2374,6 +3063,14 @@ def wiring_proof(source=None, module_path=None) -> dict:
     module_parse_calls = [(n, line) for node in tree.body
                           for n, line in _call_sites(node)
                           if n == "parse_run_object"]
+    preflight_fn = functions.get("preflight_self_check")
+    findings_kwarg_is_live = bool(preflight_fn) and any(
+        isinstance(sub, ast.Call)
+        and getattr(sub.func, "attr", None) == "self_check"
+        and any(kw.arg == "findings"
+                and not isinstance(kw.value, ast.List)
+                for kw in sub.keywords)
+        for sub in ast.walk(preflight_fn))
     checks = {
         "factory_present": factory is not None,
         "boundary_present": boundary is not None,
@@ -2389,14 +3086,43 @@ def wiring_proof(source=None, module_path=None) -> dict:
             _method(factory, "mark_prepared"), "R0BDowngradeRefused"),
         "plain_publish_refused": _refuses_transition(
             _method(factory, "mark_published"), "R0BDowngradeRefused"),
-        "arm_validates_contract": _calls_name(
-            _method(factory, "plan_and_arm"), "_require_snapshot_binding"),
-        "trigger_validates_contract": _calls_name(
-            _method(factory, "issue_trigger"), "_require_snapshot_binding"),
+        "snapshot_arming_refused": _refuses_transition(
+            _method(factory, "plan_and_arm"), "R0BDowngradeRefused"),
+        "snapshot_trigger_refused": _refuses_transition(
+            _method(factory, "issue_trigger"), "R0BDowngradeRefused"),
+        "preflight_present": classes.get("PreflightRefusal") is not None and (
+            functions.get("preflight_request_check") is not None
+            and functions.get("preflight_self_check") is not None
+            and functions.get("preflight_note_check") is not None
+            and functions.get("preflight_issue_check") is not None
+            and functions.get("validate_authority_evidence") is not None),
+        "arm_runs_preflight": _calls_attr(
+            _method(factory, "arm"), "_preflight_materials"),
+        "trigger_runs_preflight": _calls_attr(
+            _method(factory, "trigger"), "_preflight_materials"),
+        "preflight_observes_artifact": _calls_name(
+            _method(factory, "_preflight_materials"),
+            "compare_artifact_dependency"),
+        "preflight_observes_authority": _calls_name(
+            _method(factory, "_preflight_materials"),
+            "validate_authority_evidence"),
+        "preflight_observes_note": _calls_name(
+            _method(factory, "_preflight_materials"),
+            "preflight_note_check"),
+        "preflight_findings_not_forced_empty": findings_kwarg_is_live,
+        "preflight_diagnostic_event": (
+            "E_PREFLIGHT" in text and "r0b_preflight" in text),
+        "authority_reader_binding_present": (
+            "ReadinessManifestAuthorityReader" in text
+            and "AUTHORITY_ARTIFACT_PATH" in text),
+        "material_stale_is_refresh": (
+            'REASON_MATERIAL_STALE = "R0B_MATERIAL_STALE"' in text
+            and 'REASON_MATERIAL_UNAVAILABLE = "R0B_MATERIAL_UNAVAILABLE"'
+            in text),
         "arm_delegates_to_super": _calls_attr(
-            _method(factory, "plan_and_arm"), "plan_and_arm"),
+            _method(factory, "arm"), "plan_and_arm"),
         "trigger_delegates_to_super": _calls_attr(
-            _method(factory, "issue_trigger"), "issue_trigger"),
+            _method(factory, "trigger"), "issue_trigger"),
         "rerun_is_strict_gate": (
             boundary is not None
             and _method(boundary, "rerun_issue") is None),
@@ -2433,6 +3159,11 @@ def contract_proof() -> dict:
         "assignment_trigger_available": False,
         "mention_trigger_available": False,
         "status_trigger_available": False,
+        "preflight_entrypoints": ["arm", "trigger"],
+        "authority_evidence_schema": AUTHORITY_EVIDENCE_SCHEMA,
+        "authority_artifact_path": AUTHORITY_ARTIFACT_PATH,
+        "authority_ref": AUTHORITY_REF,
+        "snapshot_taking_entrypoints_refused": True,
     }
 
 
@@ -2486,6 +3217,19 @@ def cmd_self_check(args) -> int:
     return 0 if result["ok"] else 1
 
 
+def cmd_authority_evidence(args) -> int:
+    reader = ReadinessManifestAuthorityReader(args.root)
+    try:
+        evidence = reader.read()
+    except PreflightRefusal as exc:
+        print(json.dumps({"ok": False, "state": exc.state,
+                          "reason": exc.reason, "detail": exc.detail},
+                         ensure_ascii=False, indent=2, sort_keys=True))
+        return 2
+    print(json.dumps(evidence, ensure_ascii=False, indent=2, sort_keys=True))
+    return 0
+
+
 def _probe_runner(argv: list) -> tuple:
     try:
         proc = subprocess.run(argv, capture_output=True, text=True,
@@ -2526,6 +3270,13 @@ def build_parser() -> argparse.ArgumentParser:
     chk = sub.add_parser("self-check",
                          help="static wiring/contract proof for this adapter")
     chk.set_defaults(func=cmd_self_check)
+
+    auth = sub.add_parser("authority-evidence",
+                          help="read the existing accepted readiness manifest "
+                               "and print one current authority evidence input")
+    auth.add_argument("--root", default=str(ROOT),
+                      help="repository root holding the bound authority path")
+    auth.set_defaults(func=cmd_authority_evidence)
     return parser
 
 

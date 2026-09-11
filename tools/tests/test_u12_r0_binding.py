@@ -316,24 +316,52 @@ def creation_package():
         "Create one unassigned backlog target under YZT-66."))
 
 
-def execution_package():
-    return cached_context("E", _request(
-        f"multica://issue/{TARGET_IDENTIFIER}", u12.EXECUTION_ROLE,
-        "Execute the R0 canary task",
-        "Run the bounded isolated canary work described by the issue."))
+def target_execution_request(title, description):
+    """The E request derived from the actual target snapshot (YZT-83)."""
+    return _request(f"multica://issue/{TARGET_IDENTIFIER}", u12.EXECUTION_ROLE,
+                    title, description)
 
 
-def fixture_bundle():
-    entries = {
-        "tools/u12_r0_binding.py": {
-            "commit": "fcf63534e74b70220421c7b83c5447242d9a124b",
-            "digest_method": "LF",
-            "sha256": "sha256:" + "0" * 64,
-        },
+def execution_context_for(cli):
+    issue = cli.issues[TARGET_ID]
+    key = "E:" + hashlib.sha256(
+        (issue["title"] + "\x00" + (issue["description"] or ""))
+        .encode("utf-8")).hexdigest()
+    e = cached_context(key, target_execution_request(
+        issue["title"], issue["description"] or ""))
+    return {"result": e["result"], "request": e["request"],
+            "self_check": e["self_check"],
+            "target_task_ref": f"multica://issue/{TARGET_IDENTIFIER}"}
+
+
+def make_execution_context(harness, *, task_ref=None):
+    context = harness.execution_context()
+    if task_ref is not None:
+        context["target_task_ref"] = task_ref
+    return context
+
+
+def default_artifact_dependency():
+    if "artifact" not in _CACHE:
+        _CACHE["artifact"] = u12.build_artifact_dependency_digest()
+    return copy.deepcopy(_CACHE["artifact"])
+
+
+def blocking_finding():
+    """One task-associated material Finding the gate must escalate on."""
+    return {
+        "finding_id": "FIND-TEST-0001",
+        "kind": "finding",
+        "schema_version": "1.1",
+        "status": "open",
+        "task_id": TARGET_IDENTIFIER,
+        "project_id": "web-imagegen",
+        "intent": "context_challenge",
+        "verification": "conflicted",
+        "summary": "blocking conflict on the canary subject",
+        "detail": "the accepted artifact set conflicts with a newer decision",
+        "discovered_by": u12.EXECUTION_ROLE,
     }
-    return u12.build_artifact_dependency_digest(
-        [dict(v, path=k) for k, v in entries.items()],
-        blob_reader=lambda commit, path: b"fixture")
 
 
 def make_spec(*, artifact=None, intent_id=None):
@@ -344,7 +372,7 @@ def make_spec(*, artifact=None, intent_id=None):
         target_agent_id=TARGET_AGENT, package_id=c["result"]["package_id"])
     body = (f"Canary task body.\n\nIntent marker: {marker}\n"
             f"Intent: {intent_id}\n")
-    artifact = artifact or fixture_bundle()
+    artifact = artifact or default_artifact_dependency()
     return {
         "title": "R0 canary target under YZT-66",
         "body": body,
@@ -369,20 +397,75 @@ def make_spec(*, artifact=None, intent_id=None):
     }, intent_id
 
 
-def make_execution_context(*, task_ref=None):
-    e = execution_package()
-    context = dict(e)
-    context["target_task_ref"] = task_ref or f"multica://issue/{TARGET_IDENTIFIER}"
-    return context
+class CountingAuthorityReader:
+    """Wraps the concrete authority reader and logs each fresh invocation."""
+
+    def __init__(self, inner, log):
+        self.inner = inner
+        self.log = log
+
+    def read(self, *, path=u12.AUTHORITY_ARTIFACT_PATH):
+        self.log.append(path)
+        return self.inner.read(path=path)
+
+
+class FixedAuthorityReader:
+    """Test double serving one explicit authority record (never a live source)."""
+
+    def __init__(self, record=None, *, disposition="READY", sha256=None,
+                 ref=None, path=None):
+        self.record = record
+        self.disposition = disposition
+        self.sha256 = sha256
+        self.ref = ref or u12.AUTHORITY_REF
+        self.path = path or u12.AUTHORITY_ARTIFACT_PATH
+
+    def read(self, *, path=u12.AUTHORITY_ARTIFACT_PATH):
+        evidence = {
+            "schema": u12.AUTHORITY_EVIDENCE_SCHEMA,
+            "ref": self.ref,
+            "path": self.path,
+            "digest_method": u12.AUTHORITY_DIGEST_METHOD,
+            "disposition": self.disposition,
+        }
+        if self.sha256 is not None:
+            evidence["sha256"] = self.sha256
+        if self.record is not None:
+            evidence["record"] = self.record
+            evidence.setdefault("sha256", u12.digest(self.record))
+        return evidence
+
+
+def real_readiness_manifest():
+    path = TOOLS.parent / u12.AUTHORITY_ARTIFACT_PATH
+    return json.loads(path.read_text(encoding="utf-8"))
 
 
 class LifecycleHarness:
-    def __init__(self, tmp: Path, *, bump=True, blob_reader=None):
+    def __init__(self, tmp: Path, *, bump=True, blob_reader=None,
+                 authority_reader="default"):
         self.cli = FakeCli(bump_revision_on_comment=bump)
         self.store = o2.DurableIntentStore(tmp / "ledger.jsonl")
+        self.artifact_reads: list = []
+        base_reader = (blob_reader if blob_reader is not None
+                       else u12._git_blob_reader(u12.ROOT))
+
+        def counting_reader(commit, path):
+            self.artifact_reads.append((commit, path))
+            return base_reader(commit, path)
+
+        self.artifact_reader = base_reader
+        self.authority_reads: list = []
+        if authority_reader == "default":
+            authority = u12.ReadinessManifestAuthorityReader()
+        else:
+            authority = authority_reader
+        if authority is not None:
+            authority = CountingAuthorityReader(authority,
+                                                self.authority_reads)
         self.factory = u12.build_r0b_factory(
-            self.store, runner=self.cli,
-            artifact_blob_reader=blob_reader or (lambda c, p: b"fixture"))
+            self.store, runner=self.cli, artifact_blob_reader=counting_reader,
+            authority_reader=authority)
         self.spec, self.intent_id = make_spec()
 
     def record(self):
@@ -396,12 +479,15 @@ class LifecycleHarness:
             actor=DISPATCHER, source_run=SOURCE_RUN,
             intent_id=self.intent_id)
 
+    def execution_context(self):
+        return execution_context_for(self.cli)
+
     def to_prepared(self):
         self.record()
         self.factory.create_target_once(self.intent_id, actor=DISPATCHER)
         self.factory.assign_ownership_once(self.intent_id, actor=DISPATCHER)
-        self.factory.bind_execution_package(
-            self.intent_id, execution_context=make_execution_context(),
+        return self.factory.bind_execution_package(
+            self.intent_id, execution_context=self.execution_context(),
             actor=DISPATCHER)
 
     def publish(self, **overrides):
@@ -410,6 +496,23 @@ class LifecycleHarness:
                   "prepared_at": CLOCK}
         kwargs.update(overrides)
         return self.factory.publish_handoff_once(self.intent_id, **kwargs)
+
+    def current_request(self):
+        issue = self.cli.issues[TARGET_ID]
+        return target_execution_request(issue["title"],
+                                        issue["description"] or "")
+
+    def arm(self, **overrides):
+        kwargs = {"actor": DISPATCHER, "current_request": self.current_request(),
+                  "current_findings": []}
+        kwargs.update(overrides)
+        return self.factory.arm(self.intent_id, **kwargs)
+
+    def trigger(self, **overrides):
+        kwargs = {"actor": DISPATCHER, "current_request": self.current_request(),
+                  "current_findings": []}
+        kwargs.update(overrides)
+        return self.factory.trigger(self.intent_id, **kwargs)
 
 
 # ---------------------------------------------------------------------------
@@ -429,20 +532,33 @@ class HappyPathTests(unittest.TestCase):
         self.h.factory.assign_ownership_once(self.h.intent_id,
                                              actor=DISPATCHER)
         bound = self.h.factory.bind_execution_package(
-            self.h.intent_id, execution_context=make_execution_context(),
+            self.h.intent_id, execution_context=make_execution_context(self.h),
             actor=DISPATCHER)
         self.assertEqual(bound["package_id"],
-                         execution_package()["result"]["package_id"])
+                         self.h.execution_context()["result"]["package_id"])
         published = self.h.publish()
         self.assertEqual(published["status"], o2.S_HANDOFF_PUBLISHED)
         self.assertEqual(published["post_publication_revision"],
                          self.h.cli.issue_of(TARGET_ID)["revision"])
-        armed = self.h.factory.arm(self.h.intent_id, actor=DISPATCHER)
+        artifact_before = len(self.h.artifact_reads)
+        authority_before = len(self.h.authority_reads)
+        comments_before = len(
+            self.h.cli.commands_of(["issue", "comment", "list"]))
+        armed = self.h.arm()
         self.assertEqual(armed["status"], o2.S_TRIGGER_READY)
         self.assertEqual(armed["plan"]["selected_trigger"], o2.TRIGGER_RERUN)
         self.assertIsNone(armed["plan"]["ownership_binding"])
-        triggered = self.h.factory.trigger(self.h.intent_id, actor=DISPATCHER)
+        self.assertGreater(len(self.h.artifact_reads), artifact_before)
+        self.assertGreater(len(self.h.authority_reads), authority_before)
+        self.assertGreater(
+            len(self.h.cli.commands_of(["issue", "comment", "list"])),
+            comments_before)
+        artifact_mid = len(self.h.artifact_reads)
+        authority_mid = len(self.h.authority_reads)
+        triggered = self.h.trigger()
         self.assertEqual(triggered["status"], o2.S_RUN_CORRELATED)
+        self.assertGreater(len(self.h.artifact_reads), artifact_mid)
+        self.assertGreater(len(self.h.authority_reads), authority_mid)
         self.h.factory.record_self_check(self.h.intent_id, status="CLEAR",
                                          actor=DISPATCHER)
         done = self.h.factory.complete(self.h.intent_id, actor=DISPATCHER)
@@ -469,6 +585,9 @@ class HappyPathTests(unittest.TestCase):
         self.assertEqual(
             intent["fields"][u12.R0B_FIELD]["creation_context"]["package_id"],
             creation_package()["result"]["package_id"])
+        checkpoints = [e["data"]["checkpoint"] for e in intent["events"]
+                       if e.get("name") == u12.E_PREFLIGHT]
+        self.assertEqual(checkpoints, ["ARM", "TRIGGER"])
 
     def test_unchanged_revision_publication_is_accepted(self):
         self.h = LifecycleHarness(Path(self.tmp.name), bump=False)
@@ -478,14 +597,8 @@ class HappyPathTests(unittest.TestCase):
         self.assertEqual(published["status"], o2.S_HANDOFF_PUBLISHED)
         self.assertEqual(published["revision_attribution"], "unchanged")
         self.assertEqual(published["post_publication_revision"], before)
-        self.assertEqual(
-            self.h.factory.arm(self.h.intent_id,
-                               actor=DISPATCHER)["status"],
-            o2.S_TRIGGER_READY)
-        self.assertEqual(
-            self.h.factory.trigger(self.h.intent_id,
-                                   actor=DISPATCHER)["status"],
-            o2.S_RUN_CORRELATED)
+        self.assertEqual(self.h.arm()["status"], o2.S_TRIGGER_READY)
+        self.assertEqual(self.h.trigger()["status"], o2.S_RUN_CORRELATED)
 
     def test_assignment_trigger_is_unreachable_from_the_factory(self):
         self.h.to_prepared()
@@ -615,7 +728,7 @@ class RejectionMatrixTests(unittest.TestCase):
             self.h.factory.bind_execution_package(
                 self.h.intent_id,
                 execution_context=make_execution_context(
-                    task_ref="multica://issue/YTST-99"),
+                    self.h, task_ref="multica://issue/YTST-99"),
                 actor=DISPATCHER)
         self.assertEqual(
             len(self.h.cli.commands_of(["issue", "comment", "add"])), 0)
@@ -628,7 +741,7 @@ class RejectionMatrixTests(unittest.TestCase):
         # Target revision moves after ownership: E binding must refresh.
         self.h.cli.issues[TARGET_ID]["revision"] += 1
         result = self.h.factory.bind_execution_package(
-            self.h.intent_id, execution_context=make_execution_context(),
+            self.h.intent_id, execution_context=make_execution_context(self.h),
             actor=DISPATCHER)
         self.assertEqual(result["status"], o2.S_REFRESH_REQUIRED)
         self.assertEqual(self.h.store.get(self.h.intent_id)["state"],
@@ -994,17 +1107,19 @@ class RecoveryMatrixTests(unittest.TestCase):
         step = self.h.factory.recover(self.h.intent_id, actor=DISPATCHER)
         self.assertEqual(step["action"], "RESUME_PREPARE")
         self.h.factory.bind_execution_package(
-            self.h.intent_id, execution_context=make_execution_context(),
+            self.h.intent_id, execution_context=make_execution_context(self.h),
             actor=DISPATCHER)
         step = self.h.factory.recover(self.h.intent_id, actor=DISPATCHER)
         self.assertEqual(step["action"], "RESUME_PUBLISH")
         self.h.publish()
         step = self.h.factory.recover(self.h.intent_id, actor=DISPATCHER)
         self.assertEqual(step["action"], "RESUME_ARM_AND_TRIGGER")
-        self.h.factory.arm(self.h.intent_id, actor=DISPATCHER)
+        self.assertFalse(step["performed"])
+        self.h.arm()
         step = self.h.factory.recover(self.h.intent_id, actor=DISPATCHER)
         self.assertEqual(step["action"], "RESUME_TRIGGER")
-        self.h.factory.trigger(self.h.intent_id, actor=DISPATCHER)
+        self.assertFalse(step["performed"])
+        self.h.trigger()
         step = self.h.factory.recover(self.h.intent_id, actor=DISPATCHER)
         self.assertEqual(step["action"], "NONE")
 
@@ -1014,14 +1129,14 @@ class RecoveryMatrixTests(unittest.TestCase):
         self.h.factory.assign_ownership_once(self.h.intent_id,
                                              actor=DISPATCHER)
         self.h.factory.bind_execution_package(
-            self.h.intent_id, execution_context=make_execution_context(),
+            self.h.intent_id, execution_context=make_execution_context(self.h),
             actor=DISPATCHER)
         self.h.publish()
-        self.h.factory.arm(self.h.intent_id, actor=DISPATCHER)
+        self.h.arm()
         self.h.cli._rerun = lambda core: (
             0, json.dumps({"id": "RUN-HIDDEN", "issue_id": core[2],
                            "agent_id": TARGET_AGENT, "status": "queued"}), "")
-        issued = self.h.factory.trigger(self.h.intent_id, actor=DISPATCHER)
+        issued = self.h.trigger()
         self.assertEqual(issued["status"], o2.S_TRIGGER_ISSUING)
         step = self.h.factory.recover(self.h.intent_id, actor=DISPATCHER)
         self.assertEqual(step["action"], "READ_ONLY_RECONCILE")
@@ -1034,7 +1149,7 @@ class RecoveryMatrixTests(unittest.TestCase):
                                              actor=DISPATCHER)
         self.h.cli.issues[TARGET_ID]["revision"] += 1
         self.h.factory.bind_execution_package(
-            self.h.intent_id, execution_context=make_execution_context(),
+            self.h.intent_id, execution_context=make_execution_context(self.h),
             actor=DISPATCHER)
         step = self.h.factory.recover(self.h.intent_id, actor=DISPATCHER)
         self.assertEqual(step["classification"], "REFRESH_REQUIRED_STOP")
@@ -1046,7 +1161,7 @@ class RecoveryMatrixTests(unittest.TestCase):
         other = u12.build_r0b_factory(
             o2.DurableIntentStore(Path(self.tmp.name) / "ledger.jsonl"),
             runner=self.h.cli,
-            artifact_blob_reader=lambda c, p: b"fixture")
+            artifact_blob_reader=u12._git_blob_reader(u12.ROOT))
         replay = other.create_target_once(self.h.intent_id, actor="worker-b")
         self.assertTrue(replay["replayed"])
         self.assertEqual(replay["issue_id"], TARGET_ID)
@@ -1055,33 +1170,387 @@ class RecoveryMatrixTests(unittest.TestCase):
     def test_malformed_rerun_receipt_is_trigger_ambiguous_and_never_retried(self):
         self.h.to_prepared()
         self.h.publish()
-        self.h.factory.arm(self.h.intent_id, actor=DISPATCHER)
+        self.h.arm()
         # Unauthorized {"run": {...}} wrapper: the strict gate must refuse it.
         original = self.h.cli._rerun
         self.h.cli._rerun = lambda core: (
             0, json.dumps({"run": {"id": "RUN-1", "issue_id": core[2],
                                    "agent_id": TARGET_AGENT,
                                    "status": "queued"}}), "")
-        result = self.h.factory.trigger(self.h.intent_id, actor=DISPATCHER)
+        result = self.h.trigger()
         self.assertEqual(result["status"], o2.S_TRIGGER_AMBIGUOUS)
-        retry = self.h.factory.trigger(self.h.intent_id, actor=DISPATCHER)
-        self.assertIn(retry["status"],
-                      (o2.S_TRIGGER_AMBIGUOUS, o2.S_BLOCKED))
+        retry = self.h.trigger()
+        self.assertEqual(retry["status"], o2.S_TRIGGER_AMBIGUOUS)
+        self.assertTrue(retry["replayed"])
         self.assertEqual(len(self.h.cli.commands_of(["issue", "rerun"])), 1)
         self.h.cli._rerun = original
 
-    def test_factory_trigger_rejects_snapshot_note_binding(self):
+    def test_caller_supplied_snapshots_cannot_bypass_preflight(self):
         self.h.to_prepared()
         self.h.publish()
         data = self.h.store.get(self.h.intent_id)["fields"][u12.R0B_FIELD]
         issue = self.h.cli.issue_of(TARGET_ID)
-        runs = {"runs": []}
-        snapshot = self.h.factory._build_snapshot(data, issue=issue,
-                                                  runs=runs["runs"])
-        snapshot["ready_note_id"] = "CMT-OTHER"
-        with self.assertRaises(u12.R0BValidationRefused):
+        snapshot = self.h.factory._build_snapshot(data, issue=issue, runs=[])
+        snapshot["artifact_ready"] = True
+        snapshot["ready_note_id"] = "CMT-FABRICATED"
+        with self.assertRaises(u12.R0BDowngradeRefused):
             self.h.factory.plan_and_arm(self.h.intent_id, snapshot,
                                         actor=DISPATCHER)
+        with self.assertRaises(u12.R0BDowngradeRefused):
+            self.h.factory.issue_trigger(self.h.intent_id, snapshot,
+                                         actor=DISPATCHER)
+        with self.assertRaises(u12.R0BDowngradeRefused):
+            self.h.factory.resume(self.h.intent_id, {"snapshot": snapshot},
+                                  actor=DISPATCHER)
+        self.assertEqual(len(self.h.cli.commands_of(["issue", "rerun"])), 0)
+        self.assertEqual(self.h.store.get(self.h.intent_id)["state"],
+                         o2.S_HANDOFF_PUBLISHED)
+
+
+# ---------------------------------------------------------------------------
+# 6b. fresh material preflight (YZT-83 forward repair acceptance matrix)
+# ---------------------------------------------------------------------------
+class PreflightRepairTests(unittest.TestCase):
+    def setUp(self):
+        self.tmp = tempfile.TemporaryDirectory()
+        self.addCleanup(self.tmp.cleanup)
+        self.h = LifecycleHarness(Path(self.tmp.name))
+
+    def reruns(self):
+        return len(self.h.cli.commands_of(["issue", "rerun"]))
+
+    def test_authority_path_must_be_bound_in_creation_spec(self):
+        entries = [dict(e) for e in u12.DEFAULT_ARTIFACT_ENTRIES
+                   if e["path"] != u12.AUTHORITY_ARTIFACT_PATH]
+        artifact = u12.build_artifact_dependency_digest(entries)
+        spec, intent_id = make_spec(artifact=artifact)
+        with self.assertRaises(u12.R0BValidationRefused):
+            self.h.factory.record_creation_intent(
+                creation_context={"result": creation_package()["result"],
+                                  "request": creation_package()["request"],
+                                  "self_check": creation_package()["self_check"]},
+                creation_spec=spec, authority="authority", actor=DISPATCHER,
+                intent_id=intent_id)
+
+    def test_changed_artifact_bytes_after_arm_zero_reruns(self):
+        self.h.to_prepared()
+        self.h.publish()
+        self.h.arm()
+        reads = []
+        self.h.factory.artifact_blob_reader = (
+            lambda commit, path: reads.append((commit, path)) or b"changed")
+        result = self.h.trigger()
+        self.assertEqual(result["status"], o2.S_REFRESH_REQUIRED)
+        self.assertEqual(result["reason"], u12.REASON_MATERIAL_STALE)
+        self.assertTrue(reads)
+        self.assertEqual(self.reruns(), 0)
+
+    def test_changed_artifact_bytes_before_arm_zero_reruns(self):
+        self.h.to_prepared()
+        self.h.publish()
+        self.h.factory.artifact_blob_reader = lambda c, p: b"changed"
+        result = self.h.arm()
+        self.assertEqual(result["status"], o2.S_REFRESH_REQUIRED)
+        self.assertEqual(result["reason"], u12.REASON_MATERIAL_STALE)
+        self.assertEqual(self.reruns(), 0)
+
+    def test_artifact_reader_error_is_blocked(self):
+        self.h.to_prepared()
+        self.h.publish()
+
+        def broken(commit, path):
+            raise OSError("blob store unavailable")
+
+        self.h.factory.artifact_blob_reader = broken
+        result = self.h.arm()
+        self.assertEqual(result["status"], o2.S_BLOCKED)
+        self.assertEqual(result["reason"], u12.REASON_MATERIAL_UNAVAILABLE)
+        self.assertEqual(self.reruns(), 0)
+
+    def test_missing_artifact_root_and_reader_is_blocked(self):
+        self.h.to_prepared()
+        self.h.publish()
+        self.h.factory.artifact_blob_reader = None
+        self.h.factory.artifact_root = None
+        result = self.h.arm()
+        self.assertEqual(result["status"], o2.S_BLOCKED)
+        self.assertEqual(result["reason"], u12.REASON_MATERIAL_UNAVAILABLE)
+        self.assertEqual(self.reruns(), 0)
+
+    def test_reconstructed_factory_resume_recollects_and_fails_closed(self):
+        self.h.to_prepared()
+        self.h.publish()
+        self.h.arm()
+        other = u12.build_r0b_factory(
+            o2.DurableIntentStore(Path(self.tmp.name) / "ledger.jsonl"),
+            runner=self.h.cli,
+            artifact_blob_reader=u12._git_blob_reader(u12.ROOT),
+            authority_reader=u12.ReadinessManifestAuthorityReader())
+        before = self.reruns()
+        recovered = other.recover(self.h.intent_id, actor=DISPATCHER)
+        self.assertEqual(recovered["action"], "RESUME_TRIGGER")
+        self.assertFalse(recovered["performed"])
+        other.artifact_blob_reader = lambda c, p: b"changed after restart"
+        result = other.trigger(self.h.intent_id, actor=DISPATCHER,
+                               current_request=self.h.current_request(),
+                               current_findings=[])
+        self.assertEqual(result["status"], o2.S_REFRESH_REQUIRED)
+        self.assertEqual(self.reruns(), before)
+        self.assertEqual(
+            len(self.h.cli.commands_of(["issue", "comment", "add"])), 1)
+
+    def test_note_body_edit_with_held_revision_is_refused(self):
+        self.h.to_prepared()
+        self.h.publish()
+        self.h.cli.comments[TARGET_ID][0]["content"] = "tampered note body"
+        result = self.h.arm()
+        self.assertEqual(result["status"], o2.S_REFRESH_REQUIRED)
+        self.assertEqual(result["reason"], u12.REASON_MATERIAL_STALE)
+        self.assertEqual(self.reruns(), 0)
+
+    def test_missing_note_is_blocked(self):
+        self.h.to_prepared()
+        self.h.publish()
+        self.h.cli.comments[TARGET_ID] = []
+        result = self.h.arm()
+        self.assertEqual(result["status"], o2.S_BLOCKED)
+        self.assertEqual(result["reason"], u12.REASON_MATERIAL_UNAVAILABLE)
+        self.assertEqual(self.reruns(), 0)
+
+    def test_duplicate_note_is_blocked(self):
+        self.h.to_prepared()
+        self.h.publish()
+        duplicate = copy.deepcopy(self.h.cli.comments[TARGET_ID][0])
+        duplicate["id"] = "CMT-DUPLICATE"
+        self.h.cli.comments[TARGET_ID].append(duplicate)
+        result = self.h.arm()
+        self.assertEqual(result["status"], o2.S_BLOCKED)
+        self.assertEqual(result["reason"], u12.REASON_MATERIAL_UNAVAILABLE)
+        self.assertEqual(self.reruns(), 0)
+
+    def test_issue_description_change_with_held_revision_is_refused(self):
+        self.h.to_prepared()
+        self.h.publish()
+        self.h.cli.issues[TARGET_ID]["description"] = "drifted, revision held"
+        result = self.h.arm()
+        self.assertEqual(result["status"], o2.S_REFRESH_REQUIRED)
+        self.assertEqual(result["reason"], u12.REASON_MATERIAL_STALE)
+        self.assertEqual(self.reruns(), 0)
+
+    def test_issue_projection_change_against_bound_request_is_refused(self):
+        self.h.to_prepared()
+        self.h.publish()
+        bound = copy.deepcopy(
+            self.h.store.get(self.h.intent_id)["fields"][u12.R0B_FIELD]
+            ["execution_context"]["request"])
+        self.h.cli.issues[TARGET_ID]["description"] = "drifted, revision held"
+        result = self.h.arm(current_request=bound)
+        self.assertEqual(result["status"], o2.S_REFRESH_REQUIRED)
+        self.assertEqual(result["reason"], u12.REASON_MATERIAL_STALE)
+        self.assertEqual(self.reruns(), 0)
+
+    def test_project_and_decision_selection_drift_are_refused(self):
+        self.h.to_prepared()
+        self.h.publish()
+        moved_project = self.h.current_request()
+        moved_project["project"] = {"project_id": "other-project"}
+        result = self.h.arm(current_request=moved_project)
+        self.assertEqual(result["status"], o2.S_REFRESH_REQUIRED)
+        moved_decisions = self.h.current_request()
+        moved_decisions["task_snapshot"]["relevant_decisions"] = ["new decision"]
+        result = self.h.arm(current_request=moved_decisions)
+        self.assertEqual(result["status"], o2.S_REFRESH_REQUIRED)
+        self.assertEqual(self.reruns(), 0)
+
+    def test_incidental_revision_only_keeps_issue_revision_drift(self):
+        self.h.to_prepared()
+        self.h.publish()
+        self.h.cli.issues[TARGET_ID]["revision"] += 1
+        result = self.h.arm()
+        self.assertEqual(result["status"], o2.S_REFRESH_REQUIRED)
+        self.assertEqual(result["reason"], o2.R_REVISION_DRIFT)
+        self.assertEqual(self.reruns(), 0)
+
+    def test_role_profile_revision_drift_is_refused(self):
+        self.h.to_prepared()
+        self.h.publish()
+        with mock.patch.object(u12.chandoff, "role_profile_revision",
+                               return_value="sha256:" + "8" * 64):
+            result = self.h.arm()
+        self.assertEqual(result["status"], o2.S_REFRESH_REQUIRED)
+        self.assertEqual(result["reason"], u12.REASON_MATERIAL_STALE)
+        self.assertEqual(self.reruns(), 0)
+
+    def test_memory_and_registry_revision_drift_are_refused(self):
+        self.h.to_prepared()
+        self.h.publish()
+        with mock.patch.object(u12.chandoff, "memory_revision",
+                               return_value="sha256:" + "6" * 64), \
+                mock.patch.object(u12.chandoff, "registry_revision",
+                                  return_value="sha256:" + "7" * 64):
+            result = self.h.arm()
+        self.assertEqual(result["status"], o2.S_REFRESH_REQUIRED)
+        self.assertEqual(result["reason"], u12.REASON_MATERIAL_STALE)
+        self.assertEqual(self.reruns(), 0)
+
+    def test_blocking_finding_is_refused_without_empty_findings_bypass(self):
+        self.h.to_prepared()
+        self.h.publish()
+        result = self.h.arm(current_findings=[blocking_finding()])
+        self.assertEqual(result["status"], o2.S_REFRESH_REQUIRED)
+        self.assertEqual(result["reason"], u12.REASON_MATERIAL_STALE)
+        self.assertIn("BLOCKED", result["detail"])
+        self.assertEqual(self.reruns(), 0)
+
+    def test_missing_finding_source_is_blocked(self):
+        self.h.to_prepared()
+        self.h.publish()
+        result = self.h.arm(current_findings=None)
+        self.assertEqual(result["status"], o2.S_BLOCKED)
+        self.assertEqual(result["reason"], u12.REASON_PREFLIGHT_INPUT_MISSING)
+        self.assertEqual(self.reruns(), 0)
+
+    def test_missing_current_request_is_blocked(self):
+        self.h.to_prepared()
+        self.h.publish()
+        result = self.h.arm(current_request=None)
+        self.assertEqual(result["status"], o2.S_BLOCKED)
+        self.assertEqual(result["reason"], u12.REASON_PREFLIGHT_INPUT_MISSING)
+        self.assertEqual(self.reruns(), 0)
+
+    def test_issue_moves_during_collection_is_blocked(self):
+        self.h.to_prepared()
+        self.h.publish()
+        original = self.h.factory.reader.comments_full
+
+        def moving(issue_id):
+            rows = original(issue_id)
+            self.h.cli.issues[TARGET_ID]["revision"] += 1
+            return rows
+
+        self.h.factory.reader.comments_full = moving
+        result = self.h.arm()
+        self.assertEqual(result["status"], o2.S_BLOCKED)
+        self.assertEqual(result["reason"], u12.REASON_MATERIAL_UNAVAILABLE)
+        self.assertEqual(self.reruns(), 0)
+
+    def test_superseded_authority_record_is_refused(self):
+        altered = real_readiness_manifest()
+        altered["generated_at"] = "2026-09-12T00:00:00Z"
+        self.h = LifecycleHarness(
+            Path(self.tmp.name),
+            authority_reader=FixedAuthorityReader(altered))
+        self.h.to_prepared()
+        self.h.publish()
+        result = self.h.arm()
+        self.assertEqual(result["status"], o2.S_REFRESH_REQUIRED)
+        self.assertEqual(result["reason"], u12.REASON_MATERIAL_STALE)
+        self.assertEqual(self.reruns(), 0)
+
+    def test_revoked_authority_disposition_is_refused(self):
+        self.h = LifecycleHarness(
+            Path(self.tmp.name),
+            authority_reader=FixedAuthorityReader(
+                disposition="SUPERSEDED"))
+        self.h.to_prepared()
+        self.h.publish()
+        result = self.h.arm()
+        self.assertEqual(result["status"], o2.S_REFRESH_REQUIRED)
+        self.assertEqual(result["reason"], u12.REASON_MATERIAL_STALE)
+        self.assertEqual(self.reruns(), 0)
+
+    def test_authority_reader_failure_is_blocked(self):
+        class BrokenAuthority:
+            def read(self, *, path=u12.AUTHORITY_ARTIFACT_PATH):
+                raise OSError("authority store unavailable")
+
+        self.h = LifecycleHarness(Path(self.tmp.name),
+                                  authority_reader=BrokenAuthority())
+        self.h.to_prepared()
+        self.h.publish()
+        result = self.h.arm()
+        self.assertEqual(result["status"], o2.S_BLOCKED)
+        self.assertEqual(result["reason"], u12.REASON_MATERIAL_UNAVAILABLE)
+        self.assertEqual(self.reruns(), 0)
+
+    def test_no_authority_source_is_blocked(self):
+        self.h = LifecycleHarness(Path(self.tmp.name), authority_reader=None)
+        self.h.to_prepared()
+        self.h.publish()
+        result = self.h.arm()
+        self.assertEqual(result["status"], o2.S_BLOCKED)
+        self.assertEqual(result["reason"], u12.REASON_PREFLIGHT_INPUT_MISSING)
+        self.assertEqual(self.reruns(), 0)
+
+    def test_fabricated_authority_evidence_cannot_bypass(self):
+        self.h = LifecycleHarness(Path(self.tmp.name), authority_reader=None)
+        self.h.to_prepared()
+        self.h.publish()
+        fabricated = {
+            "schema": u12.AUTHORITY_EVIDENCE_SCHEMA,
+            "ref": u12.AUTHORITY_REF,
+            "path": u12.AUTHORITY_ARTIFACT_PATH,
+            "digest_method": u12.AUTHORITY_DIGEST_METHOD,
+            "sha256": "sha256:" + "0" * 64,
+            "disposition": "READY",
+        }
+        result = self.h.arm(authority_evidence=fabricated)
+        self.assertEqual(result["status"], o2.S_REFRESH_REQUIRED)
+        self.assertEqual(result["reason"], u12.REASON_MATERIAL_STALE)
+        self.assertEqual(self.reruns(), 0)
+
+    def test_unexpected_run_is_refused(self):
+        self.h.to_prepared()
+        self.h.publish()
+        self.h.arm()
+        self.h.cli.runs[TARGET_ID].append(
+            {"id": "RUN-UNEXPECTED", "issue_id": TARGET_ID,
+             "agent_id": TARGET_AGENT, "status": "running"})
+        result = self.h.trigger()
+        self.assertEqual(result["status"], o2.S_REFRESH_REQUIRED)
+        self.assertEqual(result["reason"], u12.REASON_MATERIAL_STALE)
+        self.assertEqual(self.reruns(), 0)
+
+    def test_issued_states_never_recheck_or_retrigger(self):
+        self.h.to_prepared()
+        self.h.publish()
+        self.h.arm()
+        self.assertEqual(self.h.trigger()["status"], o2.S_RUN_CORRELATED)
+        commands_before = len(self.h.cli.commands)
+        self.h.factory.artifact_blob_reader = lambda c, p: b"changed"
+        replay = self.h.trigger()
+        self.assertEqual(replay["status"], o2.S_RUN_CORRELATED)
+        self.assertTrue(replay["replayed"])
+        self.assertEqual(len(self.h.cli.commands), commands_before)
+        self.assertEqual(self.reruns(), 1)
+
+    def test_trigger_issuing_reentry_is_read_only(self):
+        self.h.to_prepared()
+        self.h.publish()
+        self.h.arm()
+        self.h.cli._rerun = lambda core: (
+            0, json.dumps({"id": "RUN-HIDDEN", "issue_id": core[2],
+                           "agent_id": TARGET_AGENT, "status": "queued"}), "")
+        self.assertEqual(self.h.trigger()["status"], o2.S_TRIGGER_ISSUING)
+        commands_before = len(self.h.cli.commands)
+        replay = self.h.trigger()
+        self.assertEqual(replay["reason"], u12.REASON_TRIGGER_ALREADY_ISSUED)
+        self.assertEqual(replay["outcome"], "READ_ONLY_RECONCILE_REQUIRED")
+        self.assertEqual(len(self.h.cli.commands), commands_before)
+        self.assertEqual(self.reruns(), 1)
+
+    def test_repeated_stop_calls_stay_zero_call(self):
+        self.h.to_prepared()
+        self.h.publish()
+        self.h.factory.artifact_blob_reader = lambda c, p: b"changed"
+        first = self.h.arm()
+        self.assertEqual(first["status"], o2.S_REFRESH_REQUIRED)
+        commands_before = len(self.h.cli.commands)
+        again = self.h.arm()
+        self.assertEqual(again["status"], o2.S_REFRESH_REQUIRED)
+        self.assertTrue(again["replayed"])
+        self.assertEqual(len(self.h.cli.commands), commands_before)
+        self.assertEqual(self.reruns(), 0)
 
 
 # ---------------------------------------------------------------------------
