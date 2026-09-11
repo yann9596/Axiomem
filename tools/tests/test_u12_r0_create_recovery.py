@@ -160,7 +160,25 @@ class MangledTransportCli(LiveShapeCli):
 # ---------------------------------------------------------------------------
 # recovery fixtures
 # ---------------------------------------------------------------------------
-def make_decision(intent_id, **overrides):
+PROPOSED_EXECUTION_COMMIT = "29e0bde95e66de94527b680511289c81329ce04c"
+
+
+def proposed_execution_resolver(commit, path):
+    """Fixture-only proposed identity resolution: no live acceptance claimed.
+
+    The proposed commit is explicitly a fixture proposal, never a Lead
+    acceptance. The resolver returns exactly these executing adapter bytes so
+    the operation exercises every digest/commit consistency predicate while
+    the proof records `resolver = injected-fixture-proposal`.
+    """
+    if commit != PROPOSED_EXECUTION_COMMIT:
+        raise LookupError("only the fixture-proposed commit is resolvable here")
+    return Path(u12.__file__).resolve().read_bytes()
+
+
+def make_decision(intent_id, *, ledger_prefix, original_create_pair,
+                  receipt_status=u12.RECEIPT_STATUS_NOT_PERSISTED,
+                  **overrides):
     decision = {
         "schema": u12.RECOVERY_DECISION_SCHEMA,
         "decision_id": "lead-accept-u12-r0-create-recovery-1",
@@ -175,6 +193,18 @@ def make_decision(intent_id, **overrides):
         "predecessor_adapter_digest": u12.PREDECESSOR_ADAPTER_DIGEST,
         "design_ref": u12.RECOVERY_DESIGN_REF,
         "design_digest": u12.RECOVERY_DESIGN_DIGEST,
+        "evidence_decision_ref": u12.EVIDENCE_DECISION_REF,
+        "evidence_decision_digest": u12.EVIDENCE_DECISION_DIGEST,
+        "original_receipt_body_status": receipt_status,
+        "receipt_limit_scope": (
+            u12.RECEIPT_LIMIT_SCOPE
+            if receipt_status == u12.RECEIPT_STATUS_NOT_PERSISTED else None),
+        "ledger_prefix": dict(ledger_prefix),
+        "original_create_pair": dict(original_create_pair),
+        "accepted_execution": {
+            "commit": PROPOSED_EXECUTION_COMMIT,
+            "adapter_digest": u12.adapter_digest(),
+        },
         "approval_ref": "multica://comment/01a08f58-0168-75ca-9bd7-9528b143094c",
         "approved_by": "01 Engineering Lead",
         "approved_at": CLOCK,
@@ -218,6 +248,7 @@ class RecoveryFixture:
             intent_id=self.intent_id)
         self.create_result = self.old_factory.create_target_once(
             self.intent_id, actor=DISPATCHER)
+        self.ledger_prefix, self.original_create_pair = self._audit_pins()
         self.authority_reads: list = []
         if authority_reader == "default":
             authority = u12.ReadinessManifestAuthorityReader()
@@ -227,15 +258,42 @@ class RecoveryFixture:
             authority = _CountingAuthority(authority, self.authority_reads)
         self.factory = u12.build_r0b_factory(
             self.store, runner=self.cli, artifact_blob_reader=counting,
-            authority_reader=authority)
+            authority_reader=authority,
+            execution_blob_resolver=proposed_execution_resolver)
+        self.base_decision = self.decision()
+
+    def _audit_pins(self) -> tuple:
+        """The audited prefix and original pair the Lead disposition pins."""
+        raw = (self.tmp / "ledger.jsonl").read_bytes()
+        lines = raw.split(b"\n")
+        if lines and lines[-1] == b"":
+            lines.pop()
+        prefix = {"length": len(lines),
+                  "digest": u12._raw_prefix_digest(lines)}
+        records = self.store.read_records()
+        for index, record in enumerate(records):
+            if record.get("kind") != "command" or \
+                    record.get("command_class") != "issue_create":
+                continue
+            result = records[index + 1]
+            return prefix, {
+                "command_seq": record["seq"],
+                "command_digest": u12.digest(record),
+                "result_seq": result["seq"],
+                "result_digest": u12.digest(result),
+            }
+        raise AssertionError("fixture ledger carries no create command")
 
     # -- helpers -------------------------------------------------------------
     def decision(self, **overrides):
+        overrides.setdefault("ledger_prefix", self.ledger_prefix)
+        overrides.setdefault("original_create_pair", self.original_create_pair)
         return make_decision(self.intent_id, **overrides)
 
     def recover(self, **overrides):
         kwargs = {"expected_target_id": TARGET_ID,
-                  "recovery_decision": self.decision(), "actor": DISPATCHER}
+                  "recovery_decision": self.decision(), "actor": DISPATCHER,
+                  "execution_commit": PROPOSED_EXECUTION_COMMIT}
         kwargs.update(overrides)
         return self.factory.recover_created_target(self.intent_id, **kwargs)
 
@@ -1058,11 +1116,13 @@ class CrashReplayConcurrencyTests(unittest.TestCase):
             factory = u12.build_r0b_factory(
                 store, runner=fx.cli,
                 artifact_blob_reader=u12._git_blob_reader(u12.ROOT),
-                authority_reader=u12.ReadinessManifestAuthorityReader())
+                authority_reader=u12.ReadinessManifestAuthorityReader(),
+                execution_blob_resolver=proposed_execution_resolver)
             try:
                 results[name] = factory.recover_created_target(
                     fx.intent_id, expected_target_id=TARGET_ID,
-                    recovery_decision=fx.decision(), actor=name)
+                    recovery_decision=fx.decision(), actor=name,
+                    execution_commit=PROPOSED_EXECUTION_COMMIT)
             except o2.IntentError as exc:
                 results[name] = {"error": type(exc).__name__}
 

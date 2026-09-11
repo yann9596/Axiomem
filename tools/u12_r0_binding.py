@@ -92,21 +92,46 @@ CONTRACT_VERSION = "U12-R0B/1.1"
 R0B_FIELD = "r0_binding"
 
 # --- forward create recovery (YZT-83 accepted decision) ----------------------
+# The YZT-84 evidence correction (`U12_R0_RECOVERY_EVIDENCE_DECISION.md`, raw
+# SHA256 60f265a8...) versions only the namespaced recovery decision, proof and
+# execution-binding payloads. The lifecycle contract version, the frozen
+# transport profile, the predecessor bridge and the O2 transition stay
+# unchanged; an old v1.0 proof is preserved for inspection but is never
+# accepted recovery authority (no silent upgrade).
 PREDECESSOR_CONTRACT_VERSION = "U12-R0B/1.0"
 PREDECESSOR_ADAPTER_COMMIT = "b49630b881170f7e6f40ffe61a82687492b99792"
 PREDECESSOR_ADAPTER_DIGEST = (
     "sha256:8a9b75628f1263004ab214c96733d1b775399cdd6ffe5208fdaf4c0ea5abbc05")
 TRANSPORT_PROFILE = "single-terminal-lf/1"
 TRANSPORT_PROFILES = (TRANSPORT_PROFILE,)
-RECOVERY_DECISION_SCHEMA = "u12-r0b-create-recovery-decision/1.0"
-RECOVERY_PROOF_SCHEMA = "u12-r0b-recovery-proof/1.0"
-EXECUTION_BINDING_SCHEMA = "u12-r0b-execution-binding/1.0"
+RECOVERY_DECISION_SCHEMA = "u12-r0b-create-recovery-decision/1.1"
+RECOVERY_PROOF_SCHEMA = "u12-r0b-recovery-proof/1.1"
+EXECUTION_BINDING_SCHEMA = "u12-r0b-execution-binding/1.1"
 RECOVERY_DESIGN_REF = "attachment/01a08f89-53bc-7bb0-bda2-1bf86c40be7f"
 RECOVERY_DESIGN_DIGEST = (
     "sha256:1fedade6694d6d15f076a1ecb84aedfa680c93767cd3ec27ac94b594220b101e")
+EVIDENCE_DECISION_REF = "attachment/01a08fbb-51cd-7aeb-907f-a547e4e066e9"
+EVIDENCE_DECISION_DIGEST = (
+    "sha256:60f265a8a446b5329b534bbb183de12d306fc0ea38f1da767ff9bf998ebd4334")
 RECOVERY_DISPOSITION = "RECOVER_CREATED_TARGET"
 RECOVERY_SCOPE = "CREATE_AMBIGUOUS"
 RECOVERY_OWNERSHIP_NEXT = "RESUME_OWNERSHIP_NO_START"
+
+# --- recovery evidence correction (YZT-84 accepted decision) -----------------
+RECEIPT_STATUS_PERSISTED = "persisted"
+RECEIPT_STATUS_NOT_PERSISTED = "not_persisted"
+RECEIPT_LIMIT_SCOPE = (
+    "READ_ONLY_TARGET_IDENTIFICATION_FOR_UNPERSISTED_RECEIPT_BODY")
+EXECUTION_RESOLVER_GIT = "git-blob@repo-root"
+EXECUTION_RESOLVER_INJECTED = "injected-fixture-proposal"
+EXECUTION_RESOLVERS = (EXECUTION_RESOLVER_GIT, EXECUTION_RESOLVER_INJECTED)
+LEDGER_PAIRING_ADJACENT = "adjacent-class-compatible-result"
+
+CLS_INTENT_HISTORY = "expected-intent-history"
+CLS_ORIGINAL_CREATE_COMMAND = "uniquely-correlated-original-create-command"
+CLS_ORIGINAL_CREATE_RESULT = "uniquely-correlated-original-create-result"
+CLS_READ_COMMAND = "recognized-read-command"
+CLS_READ_RESULT = "recognized-read-result"
 
 CREATION_ROLE = "engineering-lead"
 EXECUTION_ROLE = "software-engineer"
@@ -151,6 +176,13 @@ REASON_RECOVERY_EFFECT = "R0B_CREATE_RECOVERY_UNKNOWN_EFFECT"
 REASON_RECOVERY_TARGET = "R0B_CREATE_RECOVERY_TARGET_MISMATCH"
 REASON_RECOVERY_BODY = "R0B_CREATE_RECOVERY_BODY_RELATION_REFUSED"
 REASON_TRANSPORT_UNSUPPORTED = "R0B_TRANSPORT_SOURCE_UNSUPPORTED"
+REASON_RECOVERY_HISTORY = "R0B_CREATE_RECOVERY_SHARED_HISTORY_UNRESOLVED"
+REASON_RECOVERY_ORIGINAL_EVIDENCE = (
+    "R0B_CREATE_RECOVERY_ORIGINAL_EVIDENCE_GAP")
+REASON_RECOVERY_PREFIX = "R0B_CREATE_RECOVERY_PREFIX_MISMATCH"
+REASON_RECOVERY_RECEIPT = "R0B_CREATE_RECOVERY_RECEIPT_DISPOSITION_REFUSED"
+REASON_RECOVERY_EXECUTION = "R0B_CREATE_RECOVERY_EXECUTION_IDENTITY_REFUSED"
+REASON_RECOVERY_PROOF = "R0B_CREATE_RECOVERY_PROOF_INVALID"
 
 # The only prior effects a first bounded recovery may observe besides the sole
 # create attempt. A crashed-before-commit recovery may have appended its own
@@ -326,6 +358,92 @@ def prepare_transport_body(source_body, *,
         "transport_utf8_bytes": len(transport.encode("utf-8")),
         "body_digest_method": "digest_text_lf",
     }
+
+
+def _raw_prefix_digest(lines: list) -> str:
+    """Exact digest of the audited ledger prefix.
+
+    The convention is sha256 over the exact bytes of the first N ledger
+    records, each serialized line including its terminating LF. It is the
+    same value an operator computes with `ledger-audit`, and the disposition
+    pins it as `ledger_prefix.digest`.
+    """
+    return "sha256:" + hashlib.sha256(
+        b"".join(bytes(line) + b"\n" for line in lines)).hexdigest()
+
+
+def shared_history_digest(shared: dict) -> str:
+    """Recomputable digest of the serialized shared-history classification."""
+    body = {key: shared.get(key) for key in (
+        "interval", "audited_prefix", "records", "original_create")}
+    return digest(body)
+
+
+def _original_create_argv_problems(argv: list, spec: dict) -> list:
+    """Full-argv semantic comparison of the original create command.
+
+    The recorded `command_class` is never trusted on its own: the structured
+    argv must reproduce the retained creation spec, including the exact
+    parent/title/project/priority/backlog/unassigned behavior, and the
+    description-file argument must encode the preserved source body digest so
+    a later re-used temp path can never stand in for the historical input.
+    """
+    core = o2._core_argv([str(a) for a in (argv or [])], "multica")
+    if tuple(core[:2]) != ("issue", "create"):
+        return ["command is not `issue create`"]
+    flags: dict = {}
+    positionals: list = []
+    index = 2
+    while index < len(core):
+        token = core[index]
+        if token.startswith("--"):
+            if index + 1 >= len(core):
+                return [f"{token} has no value"]
+            flags.setdefault(token, []).append(core[index + 1])
+            index += 2
+        else:
+            positionals.append(token)
+            index += 1
+    problems = []
+    if positionals:
+        problems.append("unexpected positional arguments")
+    unexpected = sorted(set(flags) - set(CREATE_FLAGS))
+    if unexpected:
+        problems.append("flags outside the create allowlist: "
+                        + ",".join(unexpected))
+    if flags.get("--title") != [spec["title"]]:
+        problems.append("title")
+    if flags.get("--status") != [BACKLOG_STATUS]:
+        problems.append("literal --status backlog")
+    if flags.get("--output") != ["json"]:
+        problems.append("--output json")
+    described = flags.get("--description-file")
+    if not described or len(described) != 1:
+        problems.append("--description-file")
+    else:
+        name = re.split(r"[\\/]", str(described[0]))[-1]
+        expected = ".u12r0b-create-" + hashlib.sha1(
+            spec["body"].encode("utf-8")).hexdigest()[:12] + ".md"
+        if name != expected:
+            problems.append(
+                "description-file argument does not encode the preserved "
+                "source body digest")
+    if spec.get("parent_issue_id") is not None:
+        if flags.get("--parent") != [spec["parent_issue_id"]]:
+            problems.append("--parent")
+    elif "--parent" in flags:
+        problems.append("unexpected --parent")
+    if spec.get("project_id") is not None:
+        if flags.get("--project") != [spec["project_id"]]:
+            problems.append("--project")
+    elif "--project" in flags:
+        problems.append("unexpected --project")
+    if spec.get("priority") is not None:
+        if flags.get("--priority") != [spec["priority"]]:
+            problems.append("--priority")
+    elif "--priority" in flags:
+        problems.append("unexpected --priority")
+    return problems
 
 
 def new_operation_id(kind: str, payload: dict, *, nonce: str | None = None) -> str:
@@ -535,6 +653,11 @@ class EvidenceReader:
         self.runner = runner
         self.executable = executable
         self.commands: list = []
+        # Raw successful read responses (argv + exact stdout text + digest).
+        # They are retained so a recovery proof can persist the actual bytes
+        # that were used to decide identity instead of reconstructing an
+        # asserted complete response from counts.
+        self.responses: list = []
 
     def _run(self, argv: list) -> tuple:
         argv = [str(a) for a in argv]
@@ -557,10 +680,17 @@ class EvidenceReader:
                 f"{what} reports a pagination cursor; completeness cannot be "
                 "proven", stderr=str(err)[:160])
         try:
-            return json.loads(out)
+            parsed = json.loads(out)
         except json.JSONDecodeError as exc:
             raise PublicationProvenanceIncomplete(
                 f"{what} is not JSON: {exc}") from exc
+        self.responses.append({
+            "what": what,
+            "argv": [self.executable] + [str(a) for a in argv],
+            "raw": out,
+            "raw_digest": _sha256_utf8(out),
+        })
+        return parsed
 
     def issue_get(self, issue_id: str) -> dict:
         data = self._json(["issue", "get", str(issue_id), "--output", "json"],
@@ -1133,13 +1263,15 @@ def r0b_execution_context(execution_context: dict, spec: dict, *,
 
 
 def _validate_execution_binding(intent: dict, data: dict) -> dict:
-    """Validate a committed forward-recovery execution binding.
+    """Validate a committed v1.1 forward-recovery binding end to end.
 
     This is the narrow compatibility receipt: only a record whose original
-    adapter pin is the exact known predecessor, whose recovery proof is
-    present and self-consistent, and whose execution adapter digest is the
-    current module may execute under these bytes. A missing, edited, copied or
-    cross-intent proof refuses; nothing is inferred from a bare pin.
+    adapter pin is the exact known predecessor, whose v1.1 proof is complete,
+    recomputable and bound to its v1.1 disposition, and whose accepted
+    execution identity matches these executing bytes may execute under these
+    bytes. Missing, edited, copied, cross-intent or hash-only proof refuses;
+    an old v1.0 proof is preserved for inspection but is never silently
+    upgraded into recovery authority.
     """
     execution = data.get("execution_binding")
     if not isinstance(execution, dict):
@@ -1148,13 +1280,15 @@ def _validate_execution_binding(intent: dict, data: dict) -> dict:
             intent_id=intent["intent_id"])
     if execution.get("schema") != EXECUTION_BINDING_SCHEMA:
         raise R0BContractError(
-            "execution binding schema is unsupported",
+            "execution binding schema is unsupported; an old or hash-only "
+            "binding is not accepted (no silent upgrade)",
             schema=execution.get("schema"))
     if execution.get("contract_version") != CONTRACT_VERSION:
         raise R0BContractError(
             "execution binding contract version is unsupported",
             contract_version=execution.get("contract_version"))
-    if execution.get("adapter_digest") != adapter_digest():
+    running = adapter_digest()
+    if execution.get("adapter_digest") != running:
         raise R0BDowngradeRefused(
             "execution binding names different execution adapter bytes; "
             "refusing to execute under a changed adapter (fail closed)",
@@ -1176,6 +1310,11 @@ def _validate_execution_binding(intent: dict, data: dict) -> dict:
         raise R0BContractError(
             "execution binding carries no committed recovery proof",
             intent_id=intent["intent_id"])
+    if proof.get("schema") != RECOVERY_PROOF_SCHEMA:
+        raise R0BContractError(
+            "recovery proof schema is unsupported; an old or hash-only proof "
+            "is not accepted recovery authority (no silent upgrade)",
+            schema=proof.get("schema"))
     recorded = proof.get("proof_digest")
     recomputed = digest({k: v for k, v in proof.items()
                          if k != "proof_digest"})
@@ -1187,10 +1326,9 @@ def _validate_execution_binding(intent: dict, data: dict) -> dict:
         raise R0BValidationRefused(
             "the execution binding does not reference the committed recovery "
             "proof", intent_id=intent["intent_id"])
-    if proof.get("schema") != RECOVERY_PROOF_SCHEMA or \
-            proof.get("contract_version") != CONTRACT_VERSION:
+    if proof.get("contract_version") != CONTRACT_VERSION:
         raise R0BContractError(
-            "recovery proof schema/version is unsupported",
+            "recovery proof contract version is unsupported",
             intent_id=intent["intent_id"])
     if proof.get("intent_id") != intent["intent_id"]:
         raise R0BValidationRefused(
@@ -1234,13 +1372,143 @@ def _validate_execution_binding(intent: dict, data: dict) -> dict:
         raise R0BValidationRefused(
             "the recovery proof does not bind its recovery decision",
             intent_id=intent["intent_id"])
-    original = proof.get("original") or {}
-    if original.get("create_attempt_digest") != digest(
-            original.get("create_attempt") or {}):
+    try:
+        decision = validate_recovery_decision(proof.get("decision"))
+    except R0BError as exc:
+        raise R0BValidationRefused(
+            "the committed recovery disposition no longer validates: "
+            f"{exc.message}", intent_id=intent["intent_id"])
+    # -- receipt decision --------------------------------------------------
+    receipt = proof.get("receipt")
+    if not isinstance(receipt, dict) or \
+            receipt.get("status") != decision["original_receipt_body_status"]:
+        raise R0BValidationRefused(
+            "the committed proof receipt status does not match the "
+            "disposition", intent_id=intent["intent_id"])
+    if receipt["status"] == RECEIPT_STATUS_PERSISTED:
+        if not isinstance(receipt.get("body"), dict) or \
+                receipt.get("body", {}).get("id") != target_id:
+            raise R0BValidationRefused(
+                "the committed persisted receipt body is missing or names a "
+                "different target", intent_id=intent["intent_id"])
+        if receipt.get("body_digest") != digest(receipt["body"]):
+            raise R0BValidationRefused(
+                "the committed receipt body digest does not reproduce",
+                intent_id=intent["intent_id"])
+    elif receipt["status"] == RECEIPT_STATUS_NOT_PERSISTED:
+        if decision.get("receipt_limit_scope") != RECEIPT_LIMIT_SCOPE:
+            raise R0BValidationRefused(
+                "an unpersisted receipt body is only admissible under the "
+                "exact bounded receipt-limit disposition",
+                intent_id=intent["intent_id"])
+    # -- execution identity -------------------------------------------------
+    accepted = decision["accepted_execution"]
+    authority = proof.get("execution_authority") or {}
+    resolution = authority.get("blob_resolution") or {}
+    if execution.get("accepted_execution_commit") != accepted["commit"] or \
+            authority.get("adapter_commit") != accepted["commit"]:
+        raise R0BValidationRefused(
+            "the committed execution commit is not the disposition's "
+            "accepted execution commit", intent_id=intent["intent_id"])
+    if execution.get("accepted_execution_adapter_digest") != \
+            accepted["adapter_digest"]:
+        raise R0BValidationRefused(
+            "the committed accepted adapter digest does not match the "
+            "disposition", intent_id=intent["intent_id"])
+    if authority.get("adapter_digest") != running:
+        raise R0BValidationRefused(
+            "the committed proof execution adapter digest does not match "
+            "these executing bytes", intent_id=intent["intent_id"])
+    if resolution.get("ok") is not True or \
+            resolution.get("commit") != accepted["commit"] or \
+            resolution.get("adapter_digest") != running or \
+            resolution.get("resolver") not in EXECUTION_RESOLVERS:
+        raise R0BValidationRefused(
+            "the committed execution blob resolution is missing, mismatched "
+            "or fabricated; the exact accepted identity is required",
+            intent_id=intent["intent_id"])
+    # -- shared-history reconstructability ---------------------------------
+    shared = proof.get("shared_history")
+    if not isinstance(shared, dict) or not shared.get("records") or \
+            not isinstance(shared.get("original_create"), dict):
+        raise R0BValidationRefused(
+            "the committed proof carries no inline shared-history "
+            "classification; a hash/count-only proof is not accepted",
+            intent_id=intent["intent_id"])
+    if shared.get("classification_digest") != shared_history_digest(shared):
+        raise R0BValidationRefused(
+            "the committed shared-history classification does not recompute; "
+            "the proof is edited or incomplete", intent_id=intent["intent_id"])
+    for entry in shared["records"]:
+        if not isinstance(entry, dict) or \
+                entry.get("digest") != digest(entry.get("record")):
+            raise R0BValidationRefused(
+                "a committed shared-history record digest does not reproduce",
+                intent_id=intent["intent_id"])
+    original = shared["original_create"]
+    if original.get("command_digest") != digest(original.get("command")) or \
+            original.get("result_digest") != digest(original.get("result")):
+        raise R0BValidationRefused(
+            "the committed original create command/result record digest does "
+            "not reproduce", intent_id=intent["intent_id"])
+    if original.get("result_seq") != original.get("command_seq", 0) + 1:
+        raise R0BValidationRefused(
+            "the committed original create command/result pair is not the "
+            "uniquely correlated adjacent pair", intent_id=intent["intent_id"])
+    if not isinstance(original.get("command"), dict) or \
+            not isinstance(original.get("result"), dict) or \
+            original["result"].get("exit_code") != 0:
+        raise R0BValidationRefused(
+            "the committed original create result is missing or not the "
+            "successful result", intent_id=intent["intent_id"])
+    pair = decision["original_create_pair"]
+    if original.get("command_seq") != pair["command_seq"] or \
+            original.get("command_digest") != pair["command_digest"] or \
+            original.get("result_seq") != pair["result_seq"] or \
+            original.get("result_digest") != pair["result_digest"]:
+        raise R0BValidationRefused(
+            "the committed shared-history pair does not match the audited "
+            "disposition pair", intent_id=intent["intent_id"])
+    # -- inline observation reconstructability ------------------------------
+    observations = proof.get("observations")
+    if not isinstance(observations, dict) or \
+            not isinstance(observations.get("digests"), dict):
+        raise R0BValidationRefused(
+            "the committed proof carries no inline observations; hash/count "
+            "summaries are not substitutes", intent_id=intent["intent_id"])
+    obs_digests = observations["digests"]
+    sections = {
+        "target_issue": (observations.get("target_issue"), dict),
+        "target_recheck": (observations.get("target_recheck"), dict),
+        "comments": (observations.get("comments"), list),
+        "activities": (observations.get("activities"), list),
+        "runs": (observations.get("runs"), list),
+        "discovery": (observations.get("discovery"), dict),
+        "raw_responses": (observations.get("raw_responses"), list),
+    }
+    for name, (body, kind) in sections.items():
+        if not isinstance(body, kind) or obs_digests.get(name) != digest(body):
+            raise R0BValidationRefused(
+                f"the committed {name} observations are missing, edited, "
+                "truncated or do not recompute", intent_id=intent["intent_id"])
+    if observations["target_issue"].get("id") != target_id or \
+            observations["target_recheck"].get("id") != target_id:
+        raise R0BValidationRefused(
+            "the committed target observations do not name the bound target",
+            intent_id=intent["intent_id"])
+    if proof.get("observed", {}).get("observations_digest") != \
+            digest(observations):
+        raise R0BValidationRefused(
+            "the committed observations digest does not reproduce",
+            intent_id=intent["intent_id"])
+    # -- original create attempt cross-checks --------------------------------
+    original_attempt = proof.get("original") or {}
+    if original_attempt.get("create_attempt_digest") != digest(
+            original_attempt.get("create_attempt") or {}):
         raise R0BValidationRefused(
             "the recovery proof's sole create attempt digest does not "
             "reproduce", intent_id=intent["intent_id"])
-    if original.get("create_attempt", {}).get("body_digest") != \
+    if original_attempt.get("create_attempt", {}).get("body_digest") != \
             (data.get("creation_spec") or {}).get("body_digest"):
         raise R0BValidationRefused(
             "the recovery proof's sole create attempt does not match the "
@@ -1249,12 +1517,15 @@ def _validate_execution_binding(intent: dict, data: dict) -> dict:
 
 
 def validate_recovery_decision(decision: dict) -> dict:
-    """Validate one immutable create-recovery disposition.
+    """Validate one immutable create-recovery disposition (v1.1).
 
-    The disposition references the accepted design and the Lead acceptance,
-    names the exact predecessor pins and the exact intent/target/revisions,
-    and carries a self-digest that makes every field tamper-evident. Unknown
-    fields are refused for the same reason.
+    The disposition references the accepted create-recovery design and the
+    accepted evidence-correction decision, names the exact predecessor pins,
+    the exact intent/target/revisions, the audited ledger prefix and the
+    uniquely correlated original create command/result pair, declares the
+    original receipt-body status and the accepted execution identity. Every
+    field is revalidated by the operation: the disposition is a commitment,
+    never an unchecked boolean.
     """
     decision = _require_dict(decision, "recovery_decision")
     out = {
@@ -1279,6 +1550,18 @@ def validate_recovery_decision(decision: dict) -> dict:
                                     "recovery_decision.design_ref"),
         "design_digest": _require_digest(decision.get("design_digest"),
                                          "recovery_decision.design_digest"),
+        "evidence_decision_ref": _require_text(
+            decision.get("evidence_decision_ref"),
+            "recovery_decision.evidence_decision_ref"),
+        "evidence_decision_digest": _require_digest(
+            decision.get("evidence_decision_digest"),
+            "recovery_decision.evidence_decision_digest"),
+        "original_receipt_body_status": decision.get(
+            "original_receipt_body_status"),
+        "receipt_limit_scope": decision.get("receipt_limit_scope"),
+        "ledger_prefix": decision.get("ledger_prefix"),
+        "original_create_pair": decision.get("original_create_pair"),
+        "accepted_execution": decision.get("accepted_execution"),
         "approval_ref": _require_text(decision.get("approval_ref"),
                                       "recovery_decision.approval_ref"),
         "approved_by": _require_text(decision.get("approved_by"),
@@ -1286,7 +1569,7 @@ def validate_recovery_decision(decision: dict) -> dict:
         "approved_at": _require_text(decision.get("approved_at"),
                                      "recovery_decision.approved_at"),
         "decision_digest": _require_digest(decision.get("decision_digest"),
-                                          "recovery_decision.decision_digest"),
+                                           "recovery_decision.decision_digest"),
     }
     extras = sorted(set(decision) - set(out))
     if extras:
@@ -1295,7 +1578,9 @@ def validate_recovery_decision(decision: dict) -> dict:
             "must stay within the exact schema", fields=extras)
     if out["schema"] != RECOVERY_DECISION_SCHEMA:
         raise R0BValidationRefused(
-            "recovery decision schema is unsupported", schema=out["schema"])
+            "recovery decision schema is unsupported; an old or hash-only "
+            "disposition is not accepted (no silent upgrade)",
+            schema=out["schema"])
     if out["disposition"] != RECOVERY_DISPOSITION:
         raise R0BValidationRefused(
             "recovery decision disposition is unsupported",
@@ -1326,6 +1611,66 @@ def validate_recovery_decision(decision: dict) -> dict:
             "recovery decision does not reference the accepted design and its "
             "exact digest", design_ref=out["design_ref"],
             design_digest=out["design_digest"])
+    if out["evidence_decision_ref"] != EVIDENCE_DECISION_REF or \
+            out["evidence_decision_digest"] != EVIDENCE_DECISION_DIGEST:
+        raise R0BValidationRefused(
+            "recovery decision does not reference the accepted evidence "
+            "correction decision and its exact digest",
+            evidence_decision_ref=out["evidence_decision_ref"],
+            evidence_decision_digest=out["evidence_decision_digest"])
+    if out["original_receipt_body_status"] not in (
+            RECEIPT_STATUS_PERSISTED, RECEIPT_STATUS_NOT_PERSISTED):
+        raise R0BValidationRefused(
+            "recovery decision original_receipt_body_status is unsupported",
+            original_receipt_body_status=out["original_receipt_body_status"])
+    if out["original_receipt_body_status"] == RECEIPT_STATUS_NOT_PERSISTED:
+        if out["receipt_limit_scope"] != RECEIPT_LIMIT_SCOPE:
+            raise R0BValidationRefused(
+                "an unpersisted receipt body requires the exact bounded "
+                "receipt-limit scope; it is never a general waiver",
+                receipt_limit_scope=out["receipt_limit_scope"])
+    elif out["receipt_limit_scope"] is not None:
+        raise R0BValidationRefused(
+            "a persisted receipt body must not carry a receipt-limit waiver "
+            "scope", receipt_limit_scope=out["receipt_limit_scope"])
+    prefix = out["ledger_prefix"]
+    if not isinstance(prefix, dict) or set(prefix) != {"length", "digest"}:
+        raise R0BValidationRefused(
+            "recovery decision ledger_prefix must be exactly "
+            "{length, digest}")
+    if not isinstance(prefix.get("length"), int) or prefix["length"] < 1:
+        raise R0BValidationRefused(
+            "recovery decision ledger_prefix.length must be a positive "
+            "integer")
+    _require_digest(prefix.get("digest"),
+                    "recovery_decision.ledger_prefix.digest")
+    pair = out["original_create_pair"]
+    if not isinstance(pair, dict) or set(pair) != {
+            "command_seq", "command_digest", "result_seq", "result_digest"}:
+        raise R0BValidationRefused(
+            "recovery decision original_create_pair must be exactly "
+            "{command_seq, command_digest, result_seq, result_digest}")
+    for seq_field in ("command_seq", "result_seq"):
+        if not isinstance(pair.get(seq_field), int) or pair[seq_field] < 1:
+            raise R0BValidationRefused(
+                f"recovery decision original_create_pair.{seq_field} must be "
+                "a positive integer")
+    for digest_field in ("command_digest", "result_digest"):
+        _require_digest(pair.get(digest_field),
+                        f"recovery_decision.original_create_pair.{digest_field}")
+    accepted = out["accepted_execution"]
+    if not isinstance(accepted, dict) or set(accepted) != {
+            "commit", "adapter_digest"}:
+        raise R0BValidationRefused(
+            "recovery decision accepted_execution must be exactly "
+            "{commit, adapter_digest}")
+    if not isinstance(accepted.get("commit"), str) or \
+            not re.match(r"^[0-9a-f]{40}$", accepted["commit"]):
+        raise R0BValidationRefused(
+            "recovery decision accepted_execution.commit must be a full "
+            "40-hex git commit")
+    _require_digest(accepted.get("adapter_digest"),
+                    "recovery_decision.accepted_execution.adapter_digest")
     try:
         o2.parse_ts(out["approved_at"])
     except (ValueError, TypeError) as exc:
@@ -1958,7 +2303,8 @@ class R0BForwardFactory(strict.CanaryOrchestrator):
     def __init__(self, store, *, runner, note_runner=None,
                  executable: str = "multica", clock=None, workdir=None,
                  ttl_seconds: int = 300, artifact_blob_reader=None,
-                 artifact_root=None, authority_reader=None):
+                 artifact_root=None, authority_reader=None,
+                 execution_blob_resolver=None):
         super().__init__(store, runner=runner, executable=executable,
                          clock=clock, workdir=workdir,
                          ttl_seconds=ttl_seconds)
@@ -1970,6 +2316,12 @@ class R0BForwardFactory(strict.CanaryOrchestrator):
         self.artifact_blob_reader = artifact_blob_reader
         self.artifact_root = artifact_root
         self.authority_reader = authority_reader
+        if execution_blob_resolver is None:
+            self.execution_blob_resolver = _git_blob_reader(ROOT)
+            self.execution_resolver_kind = EXECUTION_RESOLVER_GIT
+        else:
+            self.execution_blob_resolver = execution_blob_resolver
+            self.execution_resolver_kind = EXECUTION_RESOLVER_INJECTED
 
     # -- contract gates ------------------------------------------------------
     def _load(self, intent_id: str, *, require=(),
@@ -2512,7 +2864,8 @@ class R0BForwardFactory(strict.CanaryOrchestrator):
                                expected_target_id: str,
                                recovery_decision: dict, actor: str,
                                authority_evidence: dict | None = None,
-                               execution_commit: str | None = None) -> dict:
+                               execution_commit: str,
+                               original_receipt: dict | None = None) -> dict:
         """Bind the sole already-created target after the LF-loss ambiguity.
 
         This is the only operation that may execute a known-predecessor
@@ -2521,6 +2874,12 @@ class R0BForwardFactory(strict.CanaryOrchestrator):
         the namespaced recovery evidence plus the existing
         CREATE_AMBIGUOUS -> TARGET_BOUND edge. Replay of a committed recovery
         is read-only.
+
+        The full exact accepted execution commit is mandatory: it must be the
+        disposition's accepted execution commit, resolve to an adapter blob
+        whose LF digest equals these executing bytes, and stay recorded as the
+        exact identity. A missing, unaccepted, unresolvable or mismatched
+        identity refuses live eligibility.
         """
         expected_target_id = _require_uuid(expected_target_id,
                                            "expected_target_id")
@@ -2534,11 +2893,14 @@ class R0BForwardFactory(strict.CanaryOrchestrator):
             raise R0BValidationRefused(
                 "the recovery disposition names a different intent",
                 disposition=decision["intent_id"], operation=intent_id)
-        if execution_commit is not None and \
-                not re.match(r"^[0-9a-f]{7,40}$", str(execution_commit)):
+        if not isinstance(execution_commit, str) or \
+                not re.match(r"^[0-9a-f]{40}$", execution_commit):
             raise R0BValidationRefused(
-                "execution_commit is not a git revision",
+                "a full exact accepted execution commit is required for live "
+                "eligibility; a short or placeholder revision is refused",
                 execution_commit=str(execution_commit)[:40])
+        execution_resolution = self._resolve_execution_identity(
+            execution_commit, decision)
         intent = self.store.get(intent_id)
         data = validate_intent_record(intent, executable=False)
         if intent["state"] == o2.S_TARGET_BOUND and \
@@ -2556,7 +2918,9 @@ class R0BForwardFactory(strict.CanaryOrchestrator):
             intent_id, expected_target_id=expected_target_id,
             decision=decision, actor=actor,
             authority_evidence=authority_evidence,
-            execution_commit=execution_commit)
+            execution_commit=execution_commit,
+            execution_resolution=execution_resolution,
+            original_receipt=original_receipt)
 
     def _replay_committed_recovery(self, intent, data, expected_target_id,
                                    decision, actor) -> dict:
@@ -2654,6 +3018,7 @@ class R0BForwardFactory(strict.CanaryOrchestrator):
                 subject="discovery")
         marker_line = "Intent marker: " + spec["marker"]
         intent_line = "Intent: " + intent_id
+        candidates = []
         matches = []
         for row in listing["rows"]:
             row_id = row.get("id")
@@ -2672,20 +3037,31 @@ class R0BForwardFactory(strict.CanaryOrchestrator):
             if not likely:
                 continue
             body = row.get("description")
+            full = row
+            source = "children-listing-row"
             if not isinstance(body, str):
                 try:
-                    body = self.reader.issue_get(row_id).get(
-                        "description") or ""
+                    full = self.reader.issue_get(row_id)
                 except o2.IntentError as exc:
                     raise PreflightRefusal(
                         o2.S_BLOCKED, REASON_MATERIAL_UNAVAILABLE,
                         f"candidate {row_id} body is not readable or "
                         f"complete: {exc}", subject="discovery")
+                body = full.get("description") or ""
+                source = "issue-get"
             lines = body.split("\n")
+            candidate = {
+                "id": row_id,
+                "title": row.get("title"),
+                "parent_issue_id": row.get("parent_issue_id"),
+                "body": body,
+                "body_digest": digest_text_lf(body),
+                "body_source": source,
+                "full_response": full,
+            }
+            candidates.append(candidate)
             if lines.count(marker_line) == 1 and lines.count(intent_line) == 1:
-                matches.append({"id": row_id, "title": row.get("title"),
-                                "parent_issue_id": row.get("parent_issue_id"),
-                                "body_digest": digest_text_lf(body)})
+                matches.append(candidate)
         if len(matches) != 1:
             raise PreflightRefusal(
                 o2.S_BLOCKED, REASON_RECOVERY_IDENTITY,
@@ -2702,10 +3078,459 @@ class R0BForwardFactory(strict.CanaryOrchestrator):
                 expected=expected_target_id)
         return {"total": listing["total"],
                 "declared_total": listing["declared_total"],
+                "rows": listing["rows"],
+                "candidates": candidates,
                 "matches": matches}
 
+    # -- shared-history classification (YZT-84 evidence correction) ----------
+    def _read_ledger_lines(self) -> tuple:
+        """Raw shared-ledger lines plus parsed records; fail closed on tears.
+
+        Parsing the exact bytes (never a summary) is what lets the proof retain
+        each record and its raw-prefix digest. A torn or malformed line is
+        unattributed history and stops.
+        """
+        path = Path(self.store.path)
+        if not path.exists():
+            return [], []
+        data = path.read_bytes()
+        lines = data.split(b"\n")
+        if lines and lines[-1] == b"":
+            lines.pop()
+        records = []
+        for index, line in enumerate(lines):
+            try:
+                record = json.loads(line.decode("utf-8"))
+            except (UnicodeDecodeError, json.JSONDecodeError) as exc:
+                raise PreflightRefusal(
+                    o2.S_BLOCKED, REASON_RECOVERY_HISTORY,
+                    f"shared ledger line {index + 1} is torn or malformed; "
+                    "unattributed history is unresolved evidence and fails "
+                    f"closed: {exc}", subject="ledger")
+            if not isinstance(record, dict):
+                raise PreflightRefusal(
+                    o2.S_BLOCKED, REASON_RECOVERY_HISTORY,
+                    f"shared ledger line {index + 1} is not a JSON object",
+                    subject="ledger")
+            records.append(record)
+        return lines, records
+
+    @staticmethod
+    def _mentions_intent(record: dict, intent_id: str, marker) -> bool:
+        if record.get("intent_id") == intent_id:
+            return True
+        return bool(isinstance(marker, str) and marker
+                    and marker in canonical_json(record))
+
+    @staticmethod
+    def _classify_record(record: dict, previous, *, intent_id: str,
+                         spec: dict) -> dict:
+        """Classify one shared record; refusal is always the safe default.
+
+        `previous` is the classification entry of the immediately preceding
+        record inside the relevant interval (or None). Result records inherit
+        only a proven unique adjacent class/transaction-compatible command
+        correlation; everything else is unresolved evidence.
+        """
+        entry = {"seq": record.get("seq"), "digest": digest(record),
+                 "record": record}
+        if record.get("record_type") == o2.INTENT_RECORD_TYPE:
+            if record.get("intent_id") != intent_id:
+                raise PreflightRefusal(
+                    o2.S_BLOCKED, REASON_RECOVERY_HISTORY,
+                    "a foreign dispatch-intent record lies in the relevant "
+                    "interval; its complete scope and effects cannot be proven "
+                    "disjoint", subject="shared_history",
+                    record_seq=record.get("seq"))
+            entry.update(classification=CLS_INTENT_HISTORY,
+                         reason="expected intent record (recorded/transition/"
+                                "event/lease)")
+            return entry
+        kind = record.get("kind")
+        if kind == "command":
+            argv = record.get("argv")
+            recorded = record.get("command_class")
+            if not isinstance(argv, list) or not argv or \
+                    not all(isinstance(a, str) for a in argv):
+                raise PreflightRefusal(
+                    o2.S_BLOCKED, REASON_RECOVERY_HISTORY,
+                    "a shared command record carries a malformed argv; it is "
+                    "never treated as a read", subject="shared_history",
+                    record_seq=record.get("seq"))
+            if not isinstance(recorded, str):
+                raise PreflightRefusal(
+                    o2.S_BLOCKED, REASON_RECOVERY_HISTORY,
+                    "a shared command record carries no recorded command "
+                    "class", subject="shared_history",
+                    record_seq=record.get("seq"))
+            derived = o2.classify_o2_command(argv, "multica")
+            if recorded != derived:
+                raise PreflightRefusal(
+                    o2.S_BLOCKED, REASON_RECOVERY_HISTORY,
+                    "recorded command class and structured argv disagree; a "
+                    "mislabelled command never becomes a read by trusting one "
+                    "field", subject="shared_history",
+                    record_seq=record.get("seq"), recorded=recorded,
+                    derived=derived)
+            if derived == o2.C_ISSUE_CREATE:
+                problems = _original_create_argv_problems(argv, spec)
+                if problems:
+                    raise PreflightRefusal(
+                        o2.S_BLOCKED, REASON_RECOVERY_ORIGINAL_EVIDENCE,
+                        "the shared create command does not reproduce the "
+                        "preserved creation spec: " + "; ".join(problems),
+                        subject="original_create",
+                        record_seq=record.get("seq"))
+                entry.update(
+                    classification=CLS_ORIGINAL_CREATE_COMMAND,
+                    reason="structured argv fully matches the retained "
+                           "creation spec (title/parent/project/priority/"
+                           "literal backlog/unassigned, description-file "
+                           "argument encoding the preserved body digest)")
+                return entry
+            if derived in o2.WRITE_COMMAND_CLASSES:
+                raise PreflightRefusal(
+                    o2.S_BLOCKED, REASON_RECOVERY_EFFECT,
+                    "a relevant prior native write attempt is persisted in "
+                    "the shared ledger; a persisted attempt dominates any "
+                    "current emptiness or exit code", subject="shared_history",
+                    record_seq=record.get("seq"), command_class=derived,
+                    argv=[str(a) for a in argv[:8]])
+            if derived == o2.C_READ:
+                entry.update(
+                    classification=CLS_READ_COMMAND,
+                    reason="narrow known-read verb with matching recorded "
+                           "class")
+                return entry
+            raise PreflightRefusal(
+                o2.S_BLOCKED, REASON_RECOVERY_HISTORY,
+                "an unrecognized shared command verb is unresolved evidence; "
+                "an unknown effect stops", subject="shared_history",
+                record_seq=record.get("seq"),
+                argv=[str(a) for a in argv[:8]])
+        if kind == "command_result":
+            if previous is None or previous["classification"] not in (
+                    CLS_ORIGINAL_CREATE_COMMAND, CLS_READ_COMMAND):
+                raise PreflightRefusal(
+                    o2.S_BLOCKED, REASON_RECOVERY_HISTORY,
+                    "an orphan, duplicate or interleaved command result is "
+                    "unresolved evidence; results are never paired by guess",
+                    subject="shared_history", record_seq=record.get("seq"))
+            command = previous["record"]
+            if record.get("command_class") != command.get("command_class") or \
+                    record.get("transaction_id") != \
+                    command.get("transaction_id"):
+                raise PreflightRefusal(
+                    o2.S_BLOCKED, REASON_RECOVERY_HISTORY,
+                    "a command result does not correlate with its immediately "
+                    "preceding command (class/transaction mismatch)",
+                    subject="shared_history", record_seq=record.get("seq"))
+            exit_code = record.get("exit_code")
+            if previous["classification"] == CLS_ORIGINAL_CREATE_COMMAND:
+                if exit_code != 0:
+                    raise PreflightRefusal(
+                        o2.S_BLOCKED, REASON_RECOVERY_ORIGINAL_EVIDENCE,
+                        "the sole original create result is not the uniquely "
+                        "paired successful result (nonzero or missing exit "
+                        "code); native failure never proves absence of an "
+                        "effect", subject="original_create",
+                        record_seq=record.get("seq"), exit_code=exit_code)
+                entry.update(
+                    classification=CLS_ORIGINAL_CREATE_RESULT,
+                    reason="uniquely paired adjacent class-compatible "
+                           "successful result")
+                return entry
+            entry.update(
+                classification=CLS_READ_RESULT,
+                reason="uniquely paired adjacent read result",
+                supplies_observation=(exit_code == 0))
+            return entry
+        raise PreflightRefusal(
+            o2.S_BLOCKED, REASON_RECOVERY_HISTORY,
+            "an unrecognized shared ledger record kind is unresolved "
+            "evidence; it stops", subject="shared_history",
+            record_seq=record.get("seq"))
+
+    def _classify_shared_history(self, intent, spec, decision=None) -> dict:
+        """Conservative full-interval classification with retained evidence.
+
+        Audits the complete ledger interval from this intent's original
+        recorded record through the fresh ledger tip, including shared records
+        without `intent_id`. Every record gets a retained classification and
+        reason; the unique original create command/result pair is correlated
+        from full argv semantics and adjacency, and the audited prefix pinned
+        by the disposition (when supplied) is revalidated exactly.
+        """
+        intent_id = intent["intent_id"]
+        lines, records = self._read_ledger_lines()
+        if not records:
+            raise PreflightRefusal(
+                o2.S_BLOCKED, REASON_RECOVERY_UNSUPPORTED,
+                "the shared ledger is empty; the original intent record is "
+                "missing", subject="ledger")
+        start = None
+        for index, record in enumerate(records):
+            if record.get("record_type") == o2.INTENT_RECORD_TYPE and \
+                    record.get("intent_id") == intent_id:
+                if start is None:
+                    start = index
+                continue
+            if start is None and self._mentions_intent(
+                    record, intent_id, spec.get("marker")):
+                start = index
+        if start is None:
+            raise PreflightRefusal(
+                o2.S_BLOCKED, REASON_RECOVERY_UNSUPPORTED,
+                "no original intent record for this intent exists in the "
+                "shared ledger", subject="ledger")
+        if start > 0 and records[start - 1].get("kind") == "command":
+            # A command begun before the interval whose result falls inside it
+            # is correlated, never discarded.
+            start -= 1
+        entries = []
+        for index in range(start, len(records)):
+            previous = entries[-1] if entries else None
+            entry = self._classify_record(records[index], previous,
+                                          intent_id=intent_id, spec=spec)
+            entry["index"] = index
+            entries.append(entry)
+        create_commands = [
+            entry for entry in entries
+            if entry["classification"] == CLS_ORIGINAL_CREATE_COMMAND]
+        create_results = [
+            entry for entry in entries
+            if entry["classification"] == CLS_ORIGINAL_CREATE_RESULT]
+        if len(create_commands) > 1:
+            raise PreflightRefusal(
+                o2.S_BLOCKED, REASON_RECOVERY_ORIGINAL_EVIDENCE,
+                "more than one shared create command exists for this intent; "
+                "a second create is never accepted by recovery",
+                subject="original_create",
+                command_seqs=[e["seq"] for e in create_commands[:4]])
+        if not create_commands:
+            raise PreflightRefusal(
+                o2.S_BLOCKED, REASON_RECOVERY_ORIGINAL_EVIDENCE,
+                "the durable create-issuing event carries no matching create "
+                "command in the shared ledger; the original create command "
+                "evidence is missing", subject="original_create")
+        if len(create_results) != 1:
+            raise PreflightRefusal(
+                o2.S_BLOCKED, REASON_RECOVERY_ORIGINAL_EVIDENCE,
+                "the sole original create command has no unique adjacent "
+                "class-compatible successful result; a missing, failed, "
+                "orphan or multiply matchable result is never paired by "
+                "guess", subject="original_create")
+        command_entry = create_commands[0]
+        result_entry = create_results[0]
+        command = command_entry["record"]
+        result = result_entry["record"]
+        audited_length = len(records)
+        audited_digest = _raw_prefix_digest(lines)
+        if decision is not None:
+            pinned = decision.get("ledger_prefix") or {}
+            audited_length = pinned.get("length")
+            audited_digest = pinned.get("digest")
+            if not isinstance(audited_length, int) or audited_length < 1 or \
+                    not isinstance(audited_digest, str):
+                raise PreflightRefusal(
+                    o2.S_BLOCKED, REASON_RECOVERY_PREFIX,
+                    "the disposition carries no valid audited ledger prefix",
+                    subject="ledger_prefix")
+            if len(records) < audited_length:
+                raise PreflightRefusal(
+                    o2.S_BLOCKED, REASON_RECOVERY_PREFIX,
+                    "the shared ledger is shorter than the audited "
+                    "disposition prefix; audited history was removed or "
+                    "replaced", subject="ledger_prefix",
+                    pinned=audited_length, present=len(records))
+            recomputed = _raw_prefix_digest(lines[:audited_length])
+            if recomputed != audited_digest:
+                raise PreflightRefusal(
+                    o2.S_BLOCKED, REASON_RECOVERY_PREFIX,
+                    "the audited ledger prefix no longer reproduces; the "
+                    "shared history changed after the disposition",
+                    subject="ledger_prefix", pinned=audited_digest,
+                    recomputed=recomputed)
+            if command_entry["index"] >= audited_length or \
+                    result_entry["index"] >= audited_length:
+                raise PreflightRefusal(
+                    o2.S_BLOCKED, REASON_RECOVERY_ORIGINAL_EVIDENCE,
+                    "the original create command/result pair lies outside the "
+                    "audited disposition prefix", subject="original_create")
+        raw_prefix = _raw_prefix_digest(lines[:audited_length])
+        shared = {
+            "interval": {
+                "start_index": start,
+                "start_seq": records[start].get("seq"),
+                "tip_index": len(records) - 1,
+                "tip_seq": records[-1].get("seq"),
+                "ledger_record_count": len(records),
+                "relevant_record_count": len(entries),
+            },
+            "audited_prefix": {
+                "length": audited_length,
+                "digest": audited_digest,
+                "raw_prefix_digest": raw_prefix,
+            },
+            "records": [
+                {key: entry[key] for key in (
+                    "seq", "digest", "classification", "reason", "record")}
+                for entry in entries],
+            "original_create": {
+                "command_seq": command.get("seq"),
+                "command_digest": command_entry["digest"],
+                "command": command,
+                "result_seq": result.get("seq"),
+                "result_digest": result_entry["digest"],
+                "result": result,
+                "pairing": LEDGER_PAIRING_ADJACENT,
+                "transaction_id": command.get("transaction_id"),
+            },
+        }
+        shared["classification_digest"] = shared_history_digest(shared)
+        return shared
+
+    def _resolve_execution_identity(self, execution_commit, decision) -> dict:
+        """Resolve the accepted commit's adapter blob against executing bytes.
+
+        A syntactically valid revision is not provenance: the commit must be
+        the disposition's accepted execution commit, the blob must resolve in
+        this checkout (or through the explicitly injected fixture resolver),
+        and the resolved LF digest must equal these executing adapter bytes.
+        """
+        accepted = decision.get("accepted_execution") or {}
+        if execution_commit != accepted.get("commit"):
+            raise R0BValidationRefused(
+                "the operation execution commit is not the disposition's "
+                "accepted execution commit", operation=execution_commit,
+                accepted=accepted.get("commit"))
+        running = adapter_digest()
+        if accepted.get("adapter_digest") != running:
+            raise R0BValidationRefused(
+                "the disposition's accepted adapter digest does not match "
+                "these executing adapter bytes; the artifact is not accepted "
+                "for this checkout", accepted=accepted.get("adapter_digest"),
+                executing=running)
+        try:
+            blob = self.execution_blob_resolver(execution_commit,
+                                                ADAPTER_MODULE)
+        except Exception as exc:  # noqa: BLE001 - unresolvable is a refusal
+            raise R0BValidationRefused(
+                "the accepted execution commit adapter blob is not resolvable "
+                "in this checkout; live eligibility refuses",
+                commit=execution_commit,
+                error=f"{type(exc).__name__}: {exc}")
+        if not isinstance(blob, (bytes, bytearray)):
+            raise R0BValidationRefused(
+                "the execution blob resolver returned a non-bytes object",
+                commit=execution_commit)
+        resolved = "sha256:" + hashlib.sha256(
+            bytes(blob).replace(b"\r\n", b"\n")).hexdigest()
+        if resolved != running:
+            raise R0BValidationRefused(
+                "the resolved execution blob does not match these executing "
+                "adapter bytes; a same-content substitute is not accepted",
+                commit=execution_commit, resolved=resolved, executing=running)
+        return {"resolver": self.execution_resolver_kind,
+                "commit": execution_commit, "path": ADAPTER_MODULE,
+                "adapter_digest": resolved, "ok": True}
+
+    def _resolve_receipt_evidence(self, decision, spec, expected_target_id,
+                                  original_receipt) -> dict:
+        """The bounded receipt decision: actual receipt or explicit absence.
+
+        Only a truly missing raw receipt body qualifies for the exact bounded
+        receipt-limit disposition. A supplied receipt must be consistent and
+        name the expected target; a receipt that names another target refuses
+        even when the readback looks valid.
+        """
+        status = decision["original_receipt_body_status"]
+        if original_receipt is not None:
+            if not isinstance(original_receipt, dict):
+                raise PreflightRefusal(
+                    o2.S_BLOCKED, REASON_RECOVERY_RECEIPT,
+                    "the supplied original receipt is not an object",
+                    subject="receipt")
+            if status != RECEIPT_STATUS_PERSISTED:
+                raise PreflightRefusal(
+                    o2.S_BLOCKED, REASON_RECOVERY_RECEIPT,
+                    "a receipt body was supplied but the disposition declares "
+                    "the raw receipt body never persisted; the bounded "
+                    "receipt-limit waiver does not apply", subject="receipt")
+            problems = []
+            if original_receipt.get("id") != expected_target_id:
+                problems.append("receipt does not name the expected target")
+            if "title" in original_receipt and \
+                    original_receipt.get("title") != spec["title"]:
+                problems.append("receipt title")
+            if "parent_issue_id" in original_receipt and \
+                    original_receipt.get("parent_issue_id") != \
+                    spec["parent_issue_id"]:
+                problems.append("receipt parent")
+            if problems:
+                raise PreflightRefusal(
+                    o2.S_BLOCKED, REASON_RECOVERY_RECEIPT,
+                    "the supplied original create receipt conflicts: "
+                    + "; ".join(problems), subject="receipt")
+            return {"status": RECEIPT_STATUS_PERSISTED,
+                    "body": original_receipt,
+                    "body_digest": digest(original_receipt),
+                    "note": "original create receipt body provided and "
+                            "consistent with the exact target"}
+        if status != RECEIPT_STATUS_NOT_PERSISTED:
+            raise PreflightRefusal(
+                o2.S_BLOCKED, REASON_RECOVERY_RECEIPT,
+                "the disposition requires a persisted original receipt body "
+                "but none was supplied; missing data stays missing",
+                subject="receipt")
+        if decision.get("receipt_limit_scope") != RECEIPT_LIMIT_SCOPE:
+            raise PreflightRefusal(
+                o2.S_BLOCKED, REASON_RECOVERY_RECEIPT,
+                "the unpersisted-receipt path requires the exact bounded "
+                "receipt-limit scope, not a general waiver of original "
+                "evidence", subject="receipt")
+        return {"status": RECEIPT_STATUS_NOT_PERSISTED, "body": None,
+                "body_digest": None,
+                "note": "no raw create receipt body was persisted; read-only "
+                        "target identification is accepted only under the "
+                        "exact bounded receipt-limit disposition"}
+
+    def audit_recovery_ledger(self, intent_id: str) -> dict:
+        """Read-only public audit for the Lead's disposition pins.
+
+        Runs the same conservative classification the operation will run and
+        returns the exact prefix/record pins a disposition must bind, plus the
+        per-record classifications. It never writes and never issues a CLI
+        command.
+        """
+        intent = self.store.get(intent_id)
+        data = validate_intent_record(intent, executable=False)
+        spec = validate_creation_spec(data.get("creation_spec") or {})
+        shared = self._classify_shared_history(intent, spec, None)
+        original = shared["original_create"]
+        return {
+            "ok": True,
+            "intent_id": intent_id,
+            "state": intent["state"],
+            "revision": intent["revision"],
+            "shared_history": shared,
+            "suggested_disposition": {
+                "ledger_prefix": {
+                    "length": shared["audited_prefix"]["length"],
+                    "digest": shared["audited_prefix"]["digest"],
+                },
+                "original_create_pair": {
+                    "command_seq": original["command_seq"],
+                    "command_digest": original["command_digest"],
+                    "result_seq": original["result_seq"],
+                    "result_digest": original["result_digest"],
+                },
+            },
+        }
+
     def _recovery_prerequisites(self, intent, data, *, expected_target_id,
-                                decision, authority_evidence) -> dict:
+                                decision, authority_evidence,
+                                original_receipt=None) -> dict:
         """All recovery prerequisites, read-only, under the intent lease."""
         fields = intent["fields"]
         spec = validate_creation_spec(data.get("creation_spec") or {})
@@ -2798,6 +3623,23 @@ class R0BForwardFactory(strict.CanaryOrchestrator):
                 subject="transition")
         create_event = creates[0]
         create_data = create_event.get("data") or {}
+        shared = self._classify_shared_history(intent, spec, decision)
+        receipt = self._resolve_receipt_evidence(
+            decision, spec, expected_target_id, original_receipt)
+        original = shared["original_create"]
+        command = original["command"]
+        result = original["result"]
+        pair = decision["original_create_pair"]
+        if original["command_seq"] != pair["command_seq"] or \
+                original["command_digest"] != pair["command_digest"] or \
+                original["result_seq"] != pair["result_seq"] or \
+                original["result_digest"] != pair["result_digest"]:
+            raise PreflightRefusal(
+                o2.S_BLOCKED, REASON_RECOVERY_ORIGINAL_EVIDENCE,
+                "the disposition's pinned original create pair does not match "
+                "the revalidated shared-ledger pair; the classification is "
+                "recomputed, never trusted from the disposition",
+                subject="original_create")
         attempt = {
             "event_seq": create_event.get("seq"),
             "at": create_event.get("at"),
@@ -2809,9 +3651,17 @@ class R0BForwardFactory(strict.CanaryOrchestrator):
             "project_id": create_data.get("project_id"),
             "status": create_data.get("status"),
             "marker": create_data.get("marker"),
-            "receipt": None,
-            "receipt_note": "no receipt was persisted: the readback refusal "
-                            "path records the durable attempt event only",
+            "command": command,
+            "command_digest": original["command_digest"],
+            "command_seq": original["command_seq"],
+            "result": result,
+            "result_digest": original["result_digest"],
+            "result_seq": original["result_seq"],
+            "pairing": original["pairing"],
+            "transaction_id": original["transaction_id"],
+            "receipt": receipt["body"],
+            "receipt_status": receipt["status"],
+            "receipt_note": receipt["note"],
         }
         if not attempt["operation_id"] or \
                 attempt["body_digest"] != spec["body_digest"] or \
@@ -2824,20 +3674,13 @@ class R0BForwardFactory(strict.CanaryOrchestrator):
                 o2.S_BLOCKED, REASON_RECOVERY_UNSUPPORTED,
                 "the durable create attempt does not revalidate against the "
                 "preserved creation spec", subject="create")
-        records = self.store.read_records()
-        intent_records = [r for r in records
-                          if r.get("intent_id") == intent["intent_id"]]
-        foreign = [r for r in intent_records
-                   if r.get("record_type") != o2.INTENT_RECORD_TYPE]
-        if foreign:
-            raise PreflightRefusal(
-                o2.S_BLOCKED, REASON_RECOVERY_EFFECT,
-                "the shared ledger carries non-intent records linked to this "
-                "intent", count=len(foreign))
+        intent_records = [
+            entry["record"] for entry in shared["records"]
+            if entry["classification"] == CLS_INTENT_HISTORY]
         chain = {
-            "ledger_records": len(records),
-            "ledger_tip_seq": records[-1].get("seq") if records else 0,
-            "ledger_tip_digest": (digest(records[-1]) if records else None),
+            "ledger_records": shared["interval"]["ledger_record_count"],
+            "ledger_tip_seq": shared["interval"]["tip_seq"],
+            "ledger_tip_digest": shared["records"][-1]["digest"],
             "intent_records": len(intent_records),
             "intent_tip_seq": (intent_records[-1].get("seq")
                                if intent_records else 0),
@@ -2845,6 +3688,9 @@ class R0BForwardFactory(strict.CanaryOrchestrator):
                                   if intent_records else None),
             "intent_revision_before": intent["revision"],
             "transition_reason": transition.get("reason"),
+            "audited_prefix_length": shared["audited_prefix"]["length"],
+            "audited_prefix_digest": shared["audited_prefix"]["digest"],
+            "classification_digest": shared["classification_digest"],
         }
         rebuilt = compare_artifact_dependency(
             artifact["digest"], artifact["entries"],
@@ -2945,6 +3791,8 @@ class R0BForwardFactory(strict.CanaryOrchestrator):
             "authority": authority,
             "chain": chain,
             "attempt": attempt,
+            "shared_history": shared,
+            "receipt": receipt,
             "discovery": discovery,
             "evidence": evidence,
             "evidence_digest": evidence_digest(evidence),
@@ -2959,13 +3807,56 @@ class R0BForwardFactory(strict.CanaryOrchestrator):
         }
 
     def _build_recovery_proof(self, *, intent, bundle, decision, actor,
-                              execution_commit) -> dict:
+                              execution_commit, execution_resolution) -> dict:
         fields = intent["fields"]
         data = fields[R0B_FIELD]
         spec = bundle["spec"]
         issue = bundle["issue"]
         entries = (data.get("artifact_dependency") or {}).get("entries") or {}
         observed = bundle["observed"]
+        discovery = bundle["discovery"]
+        receipt = bundle["receipt"]
+        discovery_observations = {
+            "total": discovery["total"],
+            "declared_total": discovery["declared_total"],
+            "rows": discovery["rows"],
+            "candidates": discovery["candidates"],
+            "matches": discovery["matches"],
+            "completeness": {
+                "declared_total_matches_collected": (
+                    discovery["declared_total"] == discovery["total"]),
+                "listing_shape": "stages+unstaged",
+                "candidate_bodies_retained": True,
+            },
+        }
+        observations = {
+            "target_issue": issue,
+            "target_recheck": bundle["recheck"],
+            "comments": bundle["evidence"]["comments"],
+            "activities": bundle["evidence"]["activities"],
+            "runs": bundle["evidence"]["runs"],
+            "discovery": discovery_observations,
+            "raw_responses": bundle["raw_responses"],
+            "declared_completeness": {
+                "comments_count": len(bundle["evidence"]["comments"]),
+                "activities_count": len(bundle["evidence"]["activities"]),
+                "runs_count": len(bundle["evidence"]["runs"]),
+                "children_total": discovery["total"],
+                "children_declared_total": discovery["declared_total"],
+                "raw_responses_count": len(bundle["raw_responses"]),
+                "initial_and_recheck_match": (
+                    bundle["recheck"].get("revision") == issue.get("revision")),
+            },
+            "digests": {
+                "target_issue": digest(issue),
+                "target_recheck": digest(bundle["recheck"]),
+                "comments": digest(bundle["evidence"]["comments"]),
+                "activities": digest(bundle["evidence"]["activities"]),
+                "runs": digest(bundle["evidence"]["runs"]),
+                "discovery": digest(discovery_observations),
+                "raw_responses": digest(bundle["raw_responses"]),
+            },
+        }
         proof = {
             "schema": RECOVERY_PROOF_SCHEMA,
             "contract_version": CONTRACT_VERSION,
@@ -3021,6 +3912,16 @@ class R0BForwardFactory(strict.CanaryOrchestrator):
                 "create_attempt": bundle["attempt"],
                 "create_attempt_digest": digest(bundle["attempt"]),
             },
+            "shared_history": bundle["shared_history"],
+            "receipt": {
+                "status": receipt["status"],
+                "body": receipt["body"],
+                "body_digest": receipt["body_digest"],
+                "note": receipt["note"],
+                "disposition_status": decision["original_receipt_body_status"],
+                "disposition_scope": decision.get("receipt_limit_scope"),
+            },
+            "observations": observations,
             "observed": {
                 "issue_id": issue["id"],
                 "issue_revision": issue["revision"],
@@ -3037,6 +3938,7 @@ class R0BForwardFactory(strict.CanaryOrchestrator):
                 "profile": TRANSPORT_PROFILE,
                 "exact_comparison": True,
                 "evidence_digest": bundle["evidence_digest"],
+                "observations_digest": digest(observations),
                 "issue_projection_digest": digest(issue_projection(issue)),
                 "recheck_revision": bundle["recheck"].get("revision"),
                 "recheck_snapshot_digest":
@@ -3044,11 +3946,10 @@ class R0BForwardFactory(strict.CanaryOrchestrator):
                 "comment_count": len(bundle["evidence"]["comments"]),
                 "activity_count": len(bundle["evidence"]["activities"]),
                 "run_count": len(bundle["evidence"]["runs"]),
-                "discovery_total": bundle["discovery"]["total"],
-                "discovery_declared_total":
-                    bundle["discovery"]["declared_total"],
+                "discovery_total": discovery["total"],
+                "discovery_declared_total": discovery["declared_total"],
                 "discovery_matches": [
-                    m["id"] for m in bundle["discovery"]["matches"]],
+                    m["id"] for m in discovery["matches"]],
             },
             "transport": {
                 "profile": TRANSPORT_PROFILE,
@@ -3066,7 +3967,20 @@ class R0BForwardFactory(strict.CanaryOrchestrator):
                 "adapter_module": ADAPTER_MODULE,
                 "adapter_digest": adapter_digest(),
                 "adapter_commit": execution_commit,
+                "accepted_execution_commit":
+                    decision["accepted_execution"]["commit"],
+                "accepted_execution_adapter_digest":
+                    decision["accepted_execution"]["adapter_digest"],
+                "blob_resolution": execution_resolution,
                 "strategy": "exact-known-predecessor-forward-recovery",
+            },
+            "coverage": {
+                "timeline_is_complete_revision_journal": False,
+                "note": "the documented CLI timeline carries actor/action/"
+                        "timestamp with no issue-revision chain; revision "
+                        "attribution stays delta-exclusion based (accepted "
+                        "limitation). The inline observations reconstruct "
+                        "every read actually used for this decision.",
             },
             "decision": decision,
             "decision_digest": decision["decision_digest"],
@@ -3079,23 +3993,29 @@ class R0BForwardFactory(strict.CanaryOrchestrator):
     def _execute_create_recovery(self, intent_id: str, *,
                                  expected_target_id: str, decision: dict,
                                  actor: str, authority_evidence,
-                                 execution_commit) -> dict:
+                                 execution_commit, execution_resolution,
+                                 original_receipt=None) -> dict:
         self._claim(intent_id, actor)
         try:
             fresh = self.store.get(intent_id)
             fresh_data = validate_intent_record(fresh, executable=False)
             self._require_predecessor_recovery_state(fresh, decision)
+            response_start = len(self.reader.responses)
             try:
                 bundle = self._recovery_prerequisites(
                     fresh, fresh_data, expected_target_id=expected_target_id,
                     decision=decision,
-                    authority_evidence=authority_evidence)
+                    authority_evidence=authority_evidence,
+                    original_receipt=original_receipt)
             except PreflightRefusal as refusal:
                 return self._recovery_refusal(intent_id, refusal, actor)
+            bundle["raw_responses"] = list(
+                self.reader.responses[response_start:])
             proof = self._build_recovery_proof(
                 intent=fresh, bundle=bundle, decision=decision, actor=actor,
-                execution_commit=execution_commit)
-            self.store.append_event(
+                execution_commit=execution_commit,
+                execution_resolution=execution_resolution)
+            evidence_event = self.store.append_event(
                 intent_id, E_RECOVERY_EVIDENCE, actor=actor, now=self.now(),
                 data=proof)
             current = self.store.get(intent_id)
@@ -3105,6 +4025,27 @@ class R0BForwardFactory(strict.CanaryOrchestrator):
                     "the intent moved during recovery; the compare-and-set "
                     "refuses without any binding", intent_id=intent_id,
                     state=current["state"], revision=current["revision"])
+            # Revalidate the shared prefix and classify the fresh tail
+            # immediately before binding, in addition to the intent CAS: a
+            # shared command can be appended without changing the revision.
+            try:
+                tail = self._classify_shared_history(
+                    fresh, bundle["spec"], decision)
+            except PreflightRefusal as refusal:
+                return self._recovery_refusal(intent_id, refusal, actor)
+            audited = bundle["shared_history"]["records"]
+            if len(tail["records"]) != len(audited) + 1 or \
+                    tail["records"][:-1] != audited or \
+                    tail["records"][-1]["record"] != evidence_event:
+                return self._recovery_refusal(
+                    intent_id,
+                    PreflightRefusal(
+                        o2.S_BLOCKED, REASON_RECOVERY_HISTORY,
+                        "the shared ledger prefix/tail changed while recovery "
+                        "evidence was being written; revalidation refuses "
+                        "before binding (revision CAS alone is insufficient)",
+                        subject="tail_revalidation"),
+                    actor)
             spec = bundle["spec"]
             issue = bundle["issue"]
             transport = proof["transport"]
@@ -3135,6 +4076,10 @@ class R0BForwardFactory(strict.CanaryOrchestrator):
                 "adapter_module": ADAPTER_MODULE,
                 "adapter_digest": adapter_digest(),
                 "adapter_commit": execution_commit,
+                "accepted_execution_commit":
+                    decision["accepted_execution"]["commit"],
+                "accepted_execution_adapter_digest":
+                    decision["accepted_execution"]["adapter_digest"],
                 "original_contract_version": PREDECESSOR_CONTRACT_VERSION,
                 "original_adapter_digest": PREDECESSOR_ADAPTER_DIGEST,
                 "predecessor_commit": PREDECESSOR_ADAPTER_COMMIT,
@@ -3145,6 +4090,8 @@ class R0BForwardFactory(strict.CanaryOrchestrator):
                     transport["effective_transport_body_lf_digest"],
                 "recovery_proof_digest": proof["proof_digest"],
                 "recovery_decision_digest": decision["decision_digest"],
+                "evidence_event_seq": evidence_event.get("seq"),
+                "evidence_event_digest": digest(evidence_event),
                 "transition_revision": current["revision"] + 1,
                 "bound_at": self.now(),
             }
@@ -4226,7 +5173,10 @@ def _recovery_is_read_only(factory) -> bool:
         "recover_created_target", "_execute_create_recovery",
         "_replay_committed_recovery", "_recovery_prerequisites",
         "_discover_recovery_candidates", "_build_recovery_proof",
-        "_recovery_refusal", "_require_predecessor_recovery_state")]
+        "_recovery_refusal", "_require_predecessor_recovery_state",
+        "_classify_shared_history", "_classify_record", "_read_ledger_lines",
+        "_resolve_receipt_evidence", "_resolve_execution_identity",
+        "audit_recovery_ledger")]
     if any(node is None for node in nodes):
         return False
     for node in nodes:
@@ -4368,6 +5318,39 @@ def wiring_proof(source=None, module_path=None) -> dict:
         "old_listing_kept_unstaged_discovery": (
             _method(classes.get("EvidenceReader"), "issue_children") is not None
             and "issue_children" in text),
+        "shared_history_classification_present": (
+            functions.get("shared_history_digest") is not None
+            and _method(factory, "_classify_shared_history") is not None
+            and _calls_attr(_method(factory, "_recovery_prerequisites"),
+                            "_classify_shared_history")
+            and _calls_attr(_method(factory, "audit_recovery_ledger"),
+                            "_classify_shared_history")),
+        "tail_revalidated_before_binding": (
+            _calls_attr(_method(factory, "_execute_create_recovery"),
+                        "_classify_shared_history")
+            and "tail_revalidation" in text),
+        "receipt_limit_path_present": (
+            f'RECEIPT_STATUS_NOT_PERSISTED = "{RECEIPT_STATUS_NOT_PERSISTED}"'
+            in text
+            and RECEIPT_LIMIT_SCOPE in text
+            and _method(factory, "_resolve_receipt_evidence") is not None),
+        "execution_identity_resolved": (
+            _method(factory, "_resolve_execution_identity") is not None
+            and "blob_resolution" in text),
+        "evidence_versions_pinned": (
+            f'RECOVERY_PROOF_SCHEMA = "{RECOVERY_PROOF_SCHEMA}"' in text
+            and f'RECOVERY_DECISION_SCHEMA = "{RECOVERY_DECISION_SCHEMA}"'
+            in text
+            and f'EXECUTION_BINDING_SCHEMA = "{EXECUTION_BINDING_SCHEMA}"'
+            in text),
+        "inline_observations_present": (
+            "observations" in _unparse(_method(factory,
+                                               "_build_recovery_proof"))
+            and "raw_responses" in text),
+        "evidence_correction_ref_pinned": (
+            "01a08fbb-51cd-7aeb-907f-a547e4e066e9" in text
+            and "sha256:60f265a8a446b5329b534bbb183de12d306fc0ea38f1da767ff9"
+                "bf998ebd4334" in text),
     }
     checks["ok"] = all(bool(v) for v in checks.values())
     return {"module": ADAPTER_MODULE, "checks": checks, "ok": checks["ok"]}
@@ -4400,6 +5383,17 @@ def contract_proof() -> dict:
         "predecessor_adapter_commit": PREDECESSOR_ADAPTER_COMMIT,
         "transport_profiles": list(TRANSPORT_PROFILES),
         "recovery_decision_schema": RECOVERY_DECISION_SCHEMA,
+        "recovery_proof_schema": RECOVERY_PROOF_SCHEMA,
+        "execution_binding_schema": EXECUTION_BINDING_SCHEMA,
+        "evidence_decision_ref": EVIDENCE_DECISION_REF,
+        "evidence_decision_digest": EVIDENCE_DECISION_DIGEST,
+        "receipt_statuses": [RECEIPT_STATUS_PERSISTED,
+                             RECEIPT_STATUS_NOT_PERSISTED],
+        "receipt_limit_scope": RECEIPT_LIMIT_SCOPE,
+        "execution_resolvers": list(EXECUTION_RESOLVERS),
+        "shared_history_classifications": [
+            CLS_INTENT_HISTORY, CLS_ORIGINAL_CREATE_COMMAND,
+            CLS_ORIGINAL_CREATE_RESULT, CLS_READ_COMMAND, CLS_READ_RESULT],
         "recovery_operation": "recover_created_target",
         "recovery_native_capability": "none (reads and ledger writes only)",
         "recovery_transition": "CREATE_AMBIGUOUS -> TARGET_BOUND",
@@ -4475,7 +5469,9 @@ def cmd_recover_created_target(args) -> int:
     """Operator entrypoint: read-only runner + the one forward recovery edge.
 
     The runner executes documentation-defined read commands only; the adapter
-    contains no create/assign/comment/rerun call on the recovery path.
+    contains no create/assign/comment/rerun call on the recovery path. The
+    full exact accepted execution commit and the Lead disposition are
+    mandatory.
     """
     store = o2.DurableIntentStore(args.ledger)
     factory = build_r0b_factory(
@@ -4484,11 +5480,13 @@ def cmd_recover_created_target(args) -> int:
         authority_reader=ReadinessManifestAuthorityReader(
             args.authority_root or args.artifact_root or str(ROOT)))
     decision = _load_json(args.decision_file)
+    receipt = _load_json(args.receipt_file) if args.receipt_file else None
     try:
         result = factory.recover_created_target(
             args.intent_id, expected_target_id=args.target,
             recovery_decision=decision, actor=args.actor,
-            execution_commit=args.execution_commit)
+            execution_commit=args.execution_commit,
+            original_receipt=receipt)
     except o2.IntentError as exc:
         print(json.dumps({"ok": False, "code": getattr(exc, "code", None),
                           "message": exc.message,
@@ -4500,6 +5498,29 @@ def cmd_recover_created_target(args) -> int:
         result.get("outcome") != "RECOVERY_REFUSED"
     print(json.dumps(result, ensure_ascii=False, indent=2, sort_keys=True))
     return 0 if result["ok"] else 1
+
+
+def cmd_ledger_audit(args) -> int:
+    """Read-only ledger audit for the disposition prefix/record pins."""
+    store = o2.DurableIntentStore(args.ledger)
+    factory = build_r0b_factory(store, runner=_probe_runner,
+                                executable=args.executable)
+    try:
+        result = factory.audit_recovery_ledger(args.intent_id)
+    except PreflightRefusal as exc:
+        print(json.dumps({"ok": False, "state": exc.state,
+                          "reason": exc.reason, "detail": exc.detail,
+                          "subjects": exc.subjects},
+                         ensure_ascii=False, indent=2, sort_keys=True))
+        return 1
+    except o2.IntentError as exc:
+        print(json.dumps({"ok": False, "code": getattr(exc, "code", None),
+                          "message": exc.message,
+                          "details": getattr(exc, "details", {})},
+                         ensure_ascii=False, indent=2, sort_keys=True))
+        return 2
+    print(json.dumps(result, ensure_ascii=False, indent=2, sort_keys=True))
+    return 0
 
 
 def cmd_prepare_transport(args) -> int:
@@ -4606,12 +5627,27 @@ def build_parser() -> argparse.ArgumentParser:
     rec.add_argument("--intent-id", required=True)
     rec.add_argument("--target", required=True)
     rec.add_argument("--decision-file", required=True)
+    rec.add_argument("--receipt-file", default=None,
+                     help="optional persisted original create receipt body; "
+                          "omit only under the exact bounded receipt-limit "
+                          "disposition")
     rec.add_argument("--actor", required=True)
     rec.add_argument("--artifact-root", default=None)
     rec.add_argument("--authority-root", default=None)
-    rec.add_argument("--execution-commit", default=None)
+    rec.add_argument("--execution-commit", required=True,
+                     help="full exact accepted execution commit (40 hex) "
+                          "named by the disposition")
     rec.add_argument("--executable", default="multica")
     rec.set_defaults(func=cmd_recover_created_target)
+
+    audit = sub.add_parser("ledger-audit",
+                           help="read-only full-interval classification of "
+                                "the shared ledger plus the exact disposition "
+                                "prefix/pair pins the Lead must bind")
+    audit.add_argument("--ledger", required=True)
+    audit.add_argument("--intent-id", required=True)
+    audit.add_argument("--executable", default="multica")
+    audit.set_defaults(func=cmd_ledger_audit)
 
     prep = sub.add_parser("prepare-transport",
                           help="prepare a source body for prospective "
