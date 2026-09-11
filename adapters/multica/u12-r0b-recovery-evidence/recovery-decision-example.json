@@ -1,0 +1,37 @@
+{
+  "accepted_execution": {
+    "adapter_digest": "sha256:40ccf07dd088d6a4077213714deef45c83f46116478ccc462c203ef7f07641fa",
+    "commit": "0000000000000000000000000000000000000000"
+  },
+  "approval_ref": "<Lead acceptance reference>",
+  "approved_at": "<RFC3339 timestamp>",
+  "approved_by": "<approving identity>",
+  "decision_digest": "sha256:bac130de747cd03513dc6a29884692d2a200529f89455b922466a28f389b5db5",
+  "decision_id": "lead-accept-u12-r0-recovery-evidence-1",
+  "design_digest": "sha256:1fedade6694d6d15f076a1ecb84aedfa680c93767cd3ec27ac94b594220b101e",
+  "design_ref": "attachment/01a08f89-53bc-7bb0-bda2-1bf86c40be7f",
+  "disposition": "RECOVER_CREATED_TARGET",
+  "evidence_decision_digest": "sha256:60f265a8a446b5329b534bbb183de12d306fc0ea38f1da767ff9bf998ebd4334",
+  "evidence_decision_ref": "attachment/01a08fbb-51cd-7aeb-907f-a547e4e066e9",
+  "expected_creator_id": "00000000-0000-0000-0000-000000000000",
+  "expected_intent_revision": 1,
+  "expected_target_id": "01a08f80-6afa-7d95-838a-6d510ec8f803",
+  "expected_target_revision": 1,
+  "intent_id": "DI-e5e2b856f6b7cd36",
+  "ledger_prefix": {
+    "digest": "sha256:5a7e3369fb7544668f1ba45d8db4e01707228977ac45e4d60318677432b09d76",
+    "length": 12
+  },
+  "original_create_pair": {
+    "command_digest": "sha256:0000000000000000000000000000000000000000000000000000000000000000",
+    "command_seq": 6,
+    "result_digest": "sha256:0000000000000000000000000000000000000000000000000000000000000000",
+    "result_seq": 7
+  },
+  "original_receipt_body_status": "not_persisted",
+  "predecessor_adapter_digest": "sha256:8a9b75628f1263004ab214c96733d1b775399cdd6ffe5208fdaf4c0ea5abbc05",
+  "predecessor_commit": "b49630b881170f7e6f40ffe61a82687492b99792",
+  "receipt_limit_scope": "READ_ONLY_TARGET_IDENTIFICATION_FOR_UNPERSISTED_RECEIPT_BODY",
+  "schema": "u12-r0b-create-recovery-decision/1.1",
+  "scope": "CREATE_AMBIGUOUS"
+}

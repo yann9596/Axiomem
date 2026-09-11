@@ -1,0 +1,99 @@
+{
+  "kind": "u12_r0b_recovery_evidence_correction_manifest",
+  "task": "YZT-84",
+  "branch": "yzt-84-u12-r0b-forward-adapter",
+  "base_commit": "29e0bde95e66de94527b680511289c81329ce04c",
+  "code_commit": "65a017e",
+  "contract_version": "U12-R0B/1.1",
+  "recovery_decision_schema": "u12-r0b-create-recovery-decision/1.1",
+  "recovery_proof_schema": "u12-r0b-recovery-proof/1.1",
+  "execution_binding_schema": "u12-r0b-execution-binding/1.1",
+  "accepted_evidence_decision": {
+    "ref": "attachment/01a08fbb-51cd-7aeb-907f-a547e4e066e9",
+    "raw_sha256": "sha256:60f265a8a446b5329b534bbb183de12d306fc0ea38f1da767ff9bf998ebd4334"
+  },
+  "accepted_create_recovery_decision": {
+    "ref": "attachment/01a08f89-53bc-7bb0-bda2-1bf86c40be7f",
+    "raw_sha256": "sha256:1fedade6694d6d15f076a1ecb84aedfa680c93767cd3ec27ac94b594220b101e"
+  },
+  "predecessor": {
+    "commit": "b49630b881170f7e6f40ffe61a82687492b99792",
+    "adapter_digest": "sha256:8a9b75628f1263004ab214c96733d1b775399cdd6ffe5208fdaf4c0ea5abbc05"
+  },
+  "execution_identity": {
+    "resolver_default": "git-blob@repo-root",
+    "resolver_fixture": "injected-fixture-proposal",
+    "accepted_execution_commit_required": "full 40-hex; must be the disposition's accepted commit and resolve to the executing adapter digest",
+    "fixture_proposed_commit": "29e0bde95e66de94527b680511289c81329ce04c (explicitly a fixture proposal, not a live acceptance)"
+  },
+  "receipt_path": {
+    "statuses": [
+      "persisted",
+      "not_persisted"
+    ],
+    "bounded_scope": "READ_ONLY_TARGET_IDENTIFICATION_FOR_UNPERSISTED_RECEIPT_BODY",
+    "rule": "only a truly missing raw receipt body qualifies; missing/ambiguous/nonzero results and unknown effects are never waived"
+  },
+  "files": {
+    "tools/u12_r0_binding.py": "sha256:40ccf07dd088d6a4077213714deef45c83f46116478ccc462c203ef7f07641fa",
+    "tools/tests/test_u12_r0_create_recovery.py": "sha256:a1710c2f59873fc071ba7af98f1ee8f41f69eaa103b6eaec4928435db8c27c7d",
+    "tools/tests/test_u12_r0_recovery_evidence.py": "sha256:bbca242004eb4dc36a4d5091bd01fadac8d7ff09448e35565e045060a774bb11",
+    "adapters/multica/u12-r0b-recovery-evidence/U12_R0B_RECOVERY_EVIDENCE_CORRECTION_REPORT.md": "sha256:5996cd34b54aea418a89943276f4dc06ab2a56d179b2726ff62d326248eb25e8",
+    "adapters/multica/u12-r0b-recovery-evidence/OPERATOR_INSTRUCTIONS.md": "sha256:1893fc32f25f9bbbd057372c3a10d3b90420fd79268018311bc3c1225e078a94",
+    "adapters/multica/u12-r0b-recovery-evidence/recovery-decision-example.json": "sha256:bfeba627edd2dd414475d926ce815634283e9615c37dfdb945c6c53a4dcf5a17",
+    "adapters/multica/u12-r0b-recovery-evidence/recovery-evidence-acceptance-matrix.json": "sha256:2db88ee4d2e907ad8b62d8d5595e89a31d40de1d8059ebfdabaf0746979a4c3c",
+    "adapters/multica/u12-r0b-recovery-evidence/reproduce_recovery_evidence.py": "sha256:a617c2d7117c30581f9eaa02ff763050a0bfdb10d27868d2bf1c90d0bd0a7345"
+  },
+  "adapters_digest_note": "all listed digests are raw-file SHA256; the operation computes LF-normalized digests for the adapter and pinned blobs (adapter LF digest is identical to the raw digest here)",
+  "acceptance_matrix": {
+    "file": "adapters/multica/u12-r0b-recovery-evidence/recovery-evidence-acceptance-matrix.json",
+    "rows_total": 33,
+    "rows_passed": 33,
+    "verdict": "ALL_RECOVERY_EVIDENCE_VALIDATION_ROWS_PASS",
+    "note": "snapshot generated through public operations with the isolated fixture CLI; intent ids/markers are per-run uuid nonces, so a rerun reproduces the row shape and verdict, not the identical bytes"
+  },
+  "tests": {
+    "focused_recovery_module": "63/63 OK",
+    "new_recovery_evidence_module": "35/35 OK",
+    "frozen_lifecycle_suite": "78/78 OK",
+    "strict_receipt_suite": "40/40 OK",
+    "preflight_suite": "21/21 OK",
+    "combined_focused_run": "237 tests OK",
+    "adapter_wiring_self_check": "45/45 checks true",
+    "full_tools_tests": "1211 run; 1 failure + 2 errors, all in test_u12_p0r_evidence.py pre-incident genesis pins (accepted 622-byte ledger vs live 37860-byte tip sha256:5a7e3369...); files outside this diff, frozen bundle not rewritten"
+  },
+  "frozen_pins": {
+    "artifact_dependency_digest": "sha256:937521a64efecdc762090fbf8d914eabba89fe7a703b7cda896886807af5402f",
+    "tools/u12_strict_receipt.py": "sha256:f37ed0912ecbdc3944529cffc6d7a28bc9a41d1faba8cd1e284eab6b0ccf4bed",
+    "tools/chandoff_intent.py": "sha256:0544046fa2ca97c12e6c48de574074df9de5715a950ad75a783cf31853037032",
+    "readiness_manifest_entry": "sha256:ee6cb9a24580e651edc4c7af2d3b4df723622fa6a8bc3f368c07916b0cea5da0",
+    "readiness_manifest_self_digest": "sha256:64a5c449a9639979cb6a87627c583683cb99fb0f237ceff6634fc4b5c7e3bc93"
+  },
+  "production_subjects": {
+    "intent_id": "DI-e5e2b856f6b7cd36",
+    "target_issue": "01a08f80-6afa-7d95-838a-6d510ec8f803",
+    "state": "CREATE_AMBIGUOUS",
+    "intent_revision": 1,
+    "lead_attributed_ledger": {
+      "bytes": 37860,
+      "sha256": "sha256:5a7e3369fb7544668f1ba45d8db4e01707228977ac45e4d60318677432b09d76",
+      "records": 12,
+      "create_attempts": 1,
+      "triggers": 0,
+      "ownership_events": 0,
+      "raw_create_receipt_body_persisted": false,
+      "note": "Lead-attributed figures carried as recorded; no production ledger read or write was performed in this turn"
+    }
+  },
+  "isolation": "fixture CLI + temporary JSONL ledgers; predecessor record produced by the actual b49630b module bytes; no live Multica call, no production-ledger write, no Canonical write",
+  "preserved_predecessor_evidence": [
+    "adapters/multica/u12-r0bi/**",
+    "adapters/multica/u12-r0b-forward/**",
+    "adapters/multica/u12-r0b-recovery/**"
+  ],
+  "recovery_operation": "recover_created_target",
+  "recovery_native_capability": "none (read commands and namespaced ledger appends only)",
+  "recovery_transition": "CREATE_AMBIGUOUS -> TARGET_BOUND",
+  "next_action": "Lead accepts these exact bytes and the adapter digest, re-audits the production ledger via ledger-audit, issues the v1.1 disposition with the bounded receipt-limit scope and accepted execution commit, then decides live recovery separately; 04 does not issue the disposition and did not attempt recovery",
+  "generated_at": "2026-09-11T09:55:00Z"
+}

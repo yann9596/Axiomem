@@ -1,0 +1,690 @@
+{
+  "accepted_decision": {
+    "raw_sha256": "sha256:60f265a8a446b5329b534bbb183de12d306fc0ea38f1da767ff9bf998ebd4334",
+    "ref": "attachment/01a08fbb-51cd-7aeb-907f-a547e4e066e9"
+  },
+  "adapter_digest": "sha256:40ccf07dd088d6a4077213714deef45c83f46116478ccc462c203ef7f07641fa",
+  "branch": "yzt-84-u12-r0b-forward-adapter",
+  "execution_binding_schema": "u12-r0b-execution-binding/1.1",
+  "kind": "u12_r0b_recovery_evidence_acceptance_matrix",
+  "recovery_decision_schema": "u12-r0b-create-recovery-decision/1.1",
+  "recovery_proof_schema": "u12-r0b-recovery-proof/1.1",
+  "resolver": "injected-fixture-proposal",
+  "rows": [
+    {
+      "case": "exact counterexample: empty-tx/no-intent rerun + exit 0, empty runs",
+      "group": "1_shared_history",
+      "observed": {
+        "live_runs": 0,
+        "result": {
+          "detail": "a relevant prior native write attempt is persisted in the shared ledger; a persisted attempt dominates any current emptiness or exit code",
+          "external_writes": 0,
+          "intent_id": "DI-167d25e99a31fa90",
+          "outcome": "RECOVERY_REFUSED",
+          "reason": "R0B_CREATE_RECOVERY_UNKNOWN_EFFECT",
+          "side_effects": 0,
+          "status": "CREATE_AMBIGUOUS"
+        },
+        "state": "CREATE_AMBIGUOUS",
+        "writes": {
+          "assign": 0,
+          "comment_add": 0,
+          "create": 1,
+          "rerun": 0,
+          "status": 0,
+          "total": 2,
+          "update": 0
+        }
+      },
+      "pass": true,
+      "required_outcome": "refuse before binding; persisted attempt dominates empty live runs",
+      "row": "1.1"
+    },
+    {
+      "case": "rerun variants: no/nonzero/mislabelled/legacy-label",
+      "group": "1_shared_history",
+      "observed": [
+        {
+          "pass": true,
+          "reason": "R0B_CREATE_RECOVERY_UNKNOWN_EFFECT",
+          "variant": "no_result"
+        },
+        {
+          "pass": true,
+          "reason": "R0B_CREATE_RECOVERY_UNKNOWN_EFFECT",
+          "variant": "nonzero_result"
+        },
+        {
+          "pass": true,
+          "reason": "R0B_CREATE_RECOVERY_SHARED_HISTORY_UNRESOLVED",
+          "variant": "mislabelled_class"
+        },
+        {
+          "pass": true,
+          "reason": "R0B_CREATE_RECOVERY_SHARED_HISTORY_UNRESOLVED",
+          "variant": "lead_script_label"
+        }
+      ],
+      "pass": true,
+      "required_outcome": "absence/failure/mislabel of the result never erases the persisted attempt",
+      "row": "1.2"
+    },
+    {
+      "case": "rerun with explicit intent id",
+      "group": "1_shared_history",
+      "observed": {
+        "result": {
+          "detail": "a relevant prior native write attempt is persisted in the shared ledger; a persisted attempt dominates any current emptiness or exit code",
+          "external_writes": 0,
+          "intent_id": "DI-075cfe49fe7e0c35",
+          "outcome": "RECOVERY_REFUSED",
+          "reason": "R0B_CREATE_RECOVERY_UNKNOWN_EFFECT",
+          "side_effects": 0,
+          "status": "CREATE_AMBIGUOUS"
+        }
+      },
+      "pass": true,
+      "required_outcome": "an explicit intent id never makes a rerun attempt acceptable",
+      "row": "1.3"
+    },
+    {
+      "case": "ownership --no-start and assignment trigger, with/without result",
+      "group": "1_shared_history",
+      "observed": [
+        {
+          "pass": true,
+          "reason": "R0B_CREATE_RECOVERY_UNKNOWN_EFFECT",
+          "variant": "ownership_no_start"
+        },
+        {
+          "pass": true,
+          "reason": "R0B_CREATE_RECOVERY_UNKNOWN_EFFECT",
+          "variant": "ownership_no_start-result"
+        },
+        {
+          "pass": true,
+          "reason": "R0B_CREATE_RECOVERY_UNKNOWN_EFFECT",
+          "variant": "assignment_trigger"
+        },
+        {
+          "pass": true,
+          "reason": "R0B_CREATE_RECOVERY_UNKNOWN_EFFECT",
+          "variant": "assignment_trigger-result"
+        }
+      ],
+      "pass": true,
+      "required_outcome": "ownership (including --no-start) and assignment triggers refuse with/without a result",
+      "row": "1.4"
+    },
+    {
+      "case": "publication/update/status/unknown/malformed effects",
+      "group": "1_shared_history",
+      "observed": [
+        {
+          "pass": true,
+          "reason": "R0B_CREATE_RECOVERY_UNKNOWN_EFFECT",
+          "variant": "publication_comment"
+        },
+        {
+          "pass": true,
+          "reason": "R0B_CREATE_RECOVERY_UNKNOWN_EFFECT",
+          "variant": "issue_update"
+        },
+        {
+          "pass": true,
+          "reason": "R0B_CREATE_RECOVERY_UNKNOWN_EFFECT",
+          "variant": "status_trigger"
+        },
+        {
+          "pass": true,
+          "reason": "R0B_CREATE_RECOVERY_SHARED_HISTORY_UNRESOLVED",
+          "variant": "unknown_verb"
+        },
+        {
+          "pass": true,
+          "reason": "R0B_CREATE_RECOVERY_SHARED_HISTORY_UNRESOLVED",
+          "variant": "malformed_command"
+        }
+      ],
+      "pass": true,
+      "required_outcome": "publication/update/status/unknown effects and malformed commands all refuse",
+      "row": "1.5"
+    },
+    {
+      "case": "second shared create command",
+      "group": "1_shared_history",
+      "observed": {
+        "native_creates": 1,
+        "result": {
+          "detail": "more than one shared create command exists for this intent; a second create is never accepted by recovery",
+          "external_writes": 0,
+          "intent_id": "DI-3e7f4c47120f97c2",
+          "outcome": "RECOVERY_REFUSED",
+          "reason": "R0B_CREATE_RECOVERY_ORIGINAL_EVIDENCE_GAP",
+          "side_effects": 0,
+          "status": "CREATE_AMBIGUOUS"
+        }
+      },
+      "pass": true,
+      "required_outcome": "a second shared create command (no second intent event) refuses",
+      "row": "1.6"
+    },
+    {
+      "case": "missing create command/result, nonzero create result",
+      "group": "1_shared_history",
+      "observed": [
+        {
+          "pass": true,
+          "reason": "R0B_CREATE_RECOVERY_ORIGINAL_EVIDENCE_GAP",
+          "variant": "missing_create_command"
+        },
+        {
+          "pass": true,
+          "reason": "R0B_CREATE_RECOVERY_ORIGINAL_EVIDENCE_GAP",
+          "variant": "missing_create_result"
+        },
+        {
+          "pass": true,
+          "reason": "R0B_CREATE_RECOVERY_ORIGINAL_EVIDENCE_GAP",
+          "variant": "nonzero_create_result"
+        }
+      ],
+      "pass": true,
+      "required_outcome": "missing create command/result and nonzero results report the exact original-evidence gap and are never waived",
+      "row": "1.7"
+    },
+    {
+      "case": "orphan/duplicate/interleaved results",
+      "group": "1_shared_history",
+      "observed": [
+        {
+          "pass": true,
+          "reason": "R0B_CREATE_RECOVERY_SHARED_HISTORY_UNRESOLVED",
+          "variant": "orphan_result"
+        },
+        {
+          "pass": true,
+          "reason": "R0B_CREATE_RECOVERY_SHARED_HISTORY_UNRESOLVED",
+          "variant": "duplicate_create_result"
+        },
+        {
+          "pass": true,
+          "reason": "R0B_CREATE_RECOVERY_SHARED_HISTORY_UNRESOLVED",
+          "variant": "interleaved_class_conflict"
+        }
+      ],
+      "pass": true,
+      "required_outcome": "orphan, duplicate and class-conflicting results are never paired by guess",
+      "row": "1.8"
+    },
+    {
+      "case": "recognized reads and own diagnostics allowed",
+      "group": "1_shared_history",
+      "observed": {
+        "classes": [
+          "expected-intent-history",
+          "recognized-read-command",
+          "recognized-read-result",
+          "uniquely-correlated-original-create-command",
+          "uniquely-correlated-original-create-result"
+        ],
+        "status": "TARGET_BOUND",
+        "writes": {
+          "assign": 0,
+          "comment_add": 0,
+          "create": 1,
+          "rerun": 0,
+          "status": 0,
+          "total": 8,
+          "update": 0
+        }
+      },
+      "pass": true,
+      "required_outcome": "recognized reads and own lease/refusal/diagnostic records stay allowed and are never misclassified as native effects",
+      "row": "1.9"
+    },
+    {
+      "case": "unresolved foreign command",
+      "group": "1_shared_history",
+      "observed": {
+        "result": {
+          "detail": "an unrecognized shared command verb is unresolved evidence; an unknown effect stops",
+          "external_writes": 0,
+          "intent_id": "DI-3f9e6983888a432b",
+          "outcome": "RECOVERY_REFUSED",
+          "reason": "R0B_CREATE_RECOVERY_SHARED_HISTORY_UNRESOLVED",
+          "side_effects": 0,
+          "status": "CREATE_AMBIGUOUS"
+        }
+      },
+      "pass": true,
+      "required_outcome": "an unresolved foreign command refuses",
+      "row": "1.10"
+    },
+    {
+      "case": "failed/partial required read",
+      "group": "1_shared_history",
+      "observed": {
+        "reason": "R0B_MATERIAL_UNAVAILABLE",
+        "state": "CREATE_AMBIGUOUS"
+      },
+      "pass": true,
+      "required_outcome": "a failed/partial required read blocks completeness and can never supply observations",
+      "row": "1.11"
+    },
+    {
+      "case": "consistent persisted receipt",
+      "group": "2_receipt",
+      "observed": {
+        "receipt_status": "persisted",
+        "status": "TARGET_BOUND"
+      },
+      "pass": true,
+      "required_outcome": "a consistent persisted receipt is eligible under all unchanged gates",
+      "row": "2.1"
+    },
+    {
+      "case": "conflicting target receipt",
+      "group": "2_receipt",
+      "observed": {
+        "result": {
+          "detail": "the supplied original create receipt conflicts: receipt does not name the expected target",
+          "external_writes": 0,
+          "intent_id": "DI-0f67098d69c5a78e",
+          "outcome": "RECOVERY_REFUSED",
+          "reason": "R0B_CREATE_RECOVERY_RECEIPT_DISPOSITION_REFUSED",
+          "side_effects": 0,
+          "status": "CREATE_AMBIGUOUS"
+        }
+      },
+      "pass": true,
+      "required_outcome": "a receipt naming another target refuses even when the readback looks valid",
+      "row": "2.2"
+    },
+    {
+      "case": "disposition/receipt mismatches and exact bounded scope",
+      "group": "2_receipt",
+      "observed": [
+        {
+          "pass": true,
+          "reason": "R0B_CREATE_RECOVERY_RECEIPT_DISPOSITION_REFUSED",
+          "variant": "receipt_supplied_against_unpersisted_disposition"
+        },
+        {
+          "pass": true,
+          "reason": "R0B_CREATE_RECOVERY_RECEIPT_DISPOSITION_REFUSED",
+          "variant": "persisted_disposition_without_receipt"
+        },
+        {
+          "pass": true,
+          "variant": "unpersisted_without_exact_bounded_scope"
+        }
+      ],
+      "pass": true,
+      "required_outcome": "only a truly missing raw receipt body qualifies for the exact bounded receipt-limit disposition; the disposition path is revalidated, never trusted",
+      "row": "2.3"
+    },
+    {
+      "case": "exact legacy receipt-limit path",
+      "group": "2_receipt",
+      "observed": {
+        "body": null,
+        "receipt_status": "not_persisted",
+        "scope": "READ_ONLY_TARGET_IDENTIFICATION_FOR_UNPERSISTED_RECEIPT_BODY",
+        "status": "TARGET_BOUND"
+      },
+      "pass": true,
+      "required_outcome": "the exact legacy incident is recoverable only under the explicit bound receipt-limit disposition and operation revalidation",
+      "row": "2.4"
+    },
+    {
+      "case": "audited prefix and pair revalidated",
+      "group": "3_prefix_tail",
+      "observed": [
+        {
+          "pass": true,
+          "reason": "R0B_CREATE_RECOVERY_PREFIX_MISMATCH",
+          "variant": "prefix_digest_mismatch"
+        },
+        {
+          "pass": true,
+          "reason": "R0B_CREATE_RECOVERY_ORIGINAL_EVIDENCE_GAP",
+          "variant": "pair_digest_mismatch"
+        }
+      ],
+      "pass": true,
+      "required_outcome": "the audited prefix and original pair are recomputed and must match the disposition",
+      "row": "3.1"
+    },
+    {
+      "case": "shared write racing the evidence write",
+      "group": "3_prefix_tail",
+      "observed": {
+        "bound": false,
+        "reason": "R0B_CREATE_RECOVERY_UNKNOWN_EFFECT",
+        "state": "CREATE_AMBIGUOUS"
+      },
+      "pass": true,
+      "required_outcome": "a shared write racing the evidence write refuses before binding; the intent CAS alone must not pass it",
+      "row": "3.2"
+    },
+    {
+      "case": "unexpected own tail record",
+      "group": "3_prefix_tail",
+      "observed": {
+        "reason": "R0B_CREATE_RECOVERY_SHARED_HISTORY_UNRESOLVED",
+        "state": "CREATE_AMBIGUOUS"
+      },
+      "pass": true,
+      "required_outcome": "an unexpected own tail record refuses before binding",
+      "row": "3.3"
+    },
+    {
+      "case": "inline reconstructable proof",
+      "group": "4_proof_identity",
+      "observed": {
+        "candidates": 1,
+        "raw_responses": 6,
+        "sections": [
+          "activities",
+          "comments",
+          "declared_completeness",
+          "digests",
+          "discovery",
+          "raw_responses",
+          "runs",
+          "target_issue",
+          "target_recheck"
+        ],
+        "shared_records": 12,
+        "status": "TARGET_BOUND"
+      },
+      "pass": true,
+      "required_outcome": "the committed inline proof reconstructs every observation and the classification with recomputable hashes",
+      "row": "4.1"
+    },
+    {
+      "case": "candidate body retained",
+      "group": "4_proof_identity",
+      "observed": {
+        "sources": {
+          "01a0aaaa-bbbb-7ccc-8ddd-eeeeffff0000": "issue-get"
+        },
+        "status": "TARGET_BOUND"
+      },
+      "pass": true,
+      "required_outcome": "a candidate body fetched separately is retained with its full response",
+      "row": "4.2"
+    },
+    {
+      "case": "restart/load revalidation and replay",
+      "group": "4_proof_identity",
+      "observed": {
+        "replayed": true,
+        "revision": 2,
+        "state": "TARGET_BOUND"
+      },
+      "pass": true,
+      "required_outcome": "a restarted reader revalidates the full committed proof and replays the same binding",
+      "row": "4.3"
+    },
+    {
+      "case": "old/hash-only/edited/missing proof refusals",
+      "group": "4_proof_identity",
+      "observed": [
+        {
+          "refused": true,
+          "variant": "old_v10_schema"
+        },
+        {
+          "refused": true,
+          "variant": "missing_observations"
+        },
+        {
+          "refused": true,
+          "variant": "edited_comment_observation"
+        },
+        {
+          "refused": true,
+          "variant": "missing_ledger_records"
+        },
+        {
+          "refused": true,
+          "variant": "fabricated_blob_resolution"
+        },
+        {
+          "refused": true,
+          "variant": "cross_intent_proof"
+        },
+        {
+          "refused": true,
+          "variant": "count_body_mismatch"
+        }
+      ],
+      "pass": true,
+      "required_outcome": "old/hash-only/edited/missing/cross-intent/count-mismatched evidence is refused on execution load; no fresh-data substitution",
+      "row": "4.4"
+    },
+    {
+      "case": "execution identity refusals",
+      "group": "4_proof_identity",
+      "observed": [
+        {
+          "refused": true,
+          "variant": "short_revision"
+        },
+        {
+          "refused": true,
+          "variant": "unaccepted_commit"
+        },
+        {
+          "refused": true,
+          "variant": "unresolvable_commit"
+        },
+        {
+          "refused": true,
+          "variant": "mismatched_resolved_blob"
+        }
+      ],
+      "pass": true,
+      "required_outcome": "missing/unaccepted/unresolvable/mismatched execution identity refuses live eligibility",
+      "row": "4.5"
+    },
+    {
+      "case": "public audit pins",
+      "group": "5_audit_fences",
+      "observed": {
+        "commands_after": 2,
+        "commands_before": 2,
+        "ledger_unchanged": true,
+        "pins": {
+          "ledger_prefix": {
+            "digest": "sha256:ab8b0b5e2065502fd0b32e59e14f96e488c7c7756b5c3c1204539e493e8969bc",
+            "length": 11
+          },
+          "original_create_pair": {
+            "command_digest": "sha256:9ae1ba401eb67ea0d98e266d0e343ee4329bd74c10475051970113ba3fa1594c",
+            "command_seq": 5,
+            "result_digest": "sha256:211a74455a11883b7b52755e88611a23e59846af5d50210308c0213d31e057aa",
+            "result_seq": 6
+          }
+        }
+      },
+      "pass": true,
+      "required_outcome": "the public audit reproduces the exact disposition pins with zero commands and zero writes",
+      "row": "5.1"
+    },
+    {
+      "case": "actual old executor fence",
+      "group": "5_audit_fences",
+      "observed": {
+        "commands": 8,
+        "old_pin": "sha256:8a9b75628f1263004ab214c96733d1b775399cdd6ffe5208fdaf4c0ea5abbc05",
+        "refusals": [
+          {
+            "validate": true
+          },
+          {
+            "assign": true
+          }
+        ]
+      },
+      "pass": true,
+      "required_outcome": "the actual old executor refuses the corrected record with zero external calls; predecessor pin preserved",
+      "row": "5.2"
+    },
+    {
+      "case": "post-recovery lifecycle single rerun",
+      "group": "5_audit_fences",
+      "observed": {
+        "armed": "TRIGGER_READY",
+        "creates": 1,
+        "reruns": 1,
+        "triggered": "RUN_CORRELATED"
+      },
+      "pass": true,
+      "required_outcome": "the preserved post-recovery lifecycle reaches one strict rerun with no second create",
+      "row": "5.3"
+    },
+    {
+      "case": "crash after evidence recollects",
+      "group": "5_audit_fences",
+      "observed": {
+        "creates": 1,
+        "evidence_events": 2,
+        "second_status": "TARGET_BOUND",
+        "state_after_crash": "CREATE_AMBIGUOUS"
+      },
+      "pass": true,
+      "required_outcome": "a crash after evidence before the CAS stays ambiguous and fully recollects without a second create",
+      "row": "5.4"
+    },
+    {
+      "case": "crash before evidence recollects",
+      "group": "5_audit_fences",
+      "observed": {
+        "creates": 1,
+        "evidence_events": 1,
+        "second_status": "TARGET_BOUND",
+        "state_after_crash": "CREATE_AMBIGUOUS"
+      },
+      "pass": true,
+      "required_outcome": "a crash before evidence stays ambiguous and the recollected attempt binds once",
+      "row": "5.5"
+    },
+    {
+      "case": "bare changed pin refuses before any read",
+      "group": "5_audit_fences",
+      "observed": {
+        "commands": 2,
+        "refused": true
+      },
+      "pass": true,
+      "required_outcome": "a bare changed pin refuses before any read; the predecessor pin is preserved",
+      "row": "5.6"
+    },
+    {
+      "case": "repeated recovery is one binding",
+      "group": "5_audit_fences",
+      "observed": {
+        "bound_events": 1,
+        "evidence_events": 1,
+        "first_replayed": false,
+        "second_replayed": true
+      },
+      "pass": true,
+      "required_outcome": "repeated recovery returns the same committed binding with no second create/bind/native effect",
+      "row": "5.7"
+    },
+    {
+      "case": "drift after ARM prevents trigger",
+      "group": "5_audit_fences",
+      "observed": {
+        "armed": "TRIGGER_READY",
+        "reruns": 0,
+        "trigger": "REFRESH_REQUIRED"
+      },
+      "pass": true,
+      "required_outcome": "drift after ARM prevents the trigger with zero native reruns",
+      "row": "5.8"
+    },
+    {
+      "case": "zero/multiple candidates, partial listing, moving readback",
+      "group": "6_target_evidence",
+      "observed": [
+        {
+          "pass": true,
+          "variant": "zero_identity_candidates"
+        },
+        {
+          "pass": true,
+          "variant": "multiple_identity_candidates"
+        },
+        {
+          "pass": true,
+          "variant": "partial_listing"
+        },
+        {
+          "pass": true,
+          "variant": "moving_readback"
+        }
+      ],
+      "pass": true,
+      "required_outcome": "zero/multiple candidates, partial listing and moving readback keep the existing typed refusals",
+      "row": "6.1"
+    },
+    {
+      "case": "directional transport relation matrix",
+      "group": "6_target_evidence",
+      "observed": [
+        {
+          "accepted": true,
+          "pass": true,
+          "variant": "exact"
+        },
+        {
+          "accepted": true,
+          "pass": true,
+          "variant": "one_terminal_lf_removed"
+        },
+        {
+          "accepted": false,
+          "pass": true,
+          "variant": "repeated_terminal_lf"
+        },
+        {
+          "accepted": false,
+          "pass": true,
+          "variant": "trailing_space"
+        },
+        {
+          "accepted": false,
+          "pass": true,
+          "variant": "crlf_plus_trim"
+        },
+        {
+          "accepted": false,
+          "pass": true,
+          "variant": "leading_whitespace"
+        },
+        {
+          "accepted": false,
+          "pass": true,
+          "variant": "interior_change"
+        },
+        {
+          "accepted": false,
+          "pass": true,
+          "variant": "identity_line_change"
+        }
+      ],
+      "pass": true,
+      "required_outcome": "only the existing directional single-terminal-LF rule is admitted; every other change refuses",
+      "row": "6.2"
+    }
+  ],
+  "rows_passed": 33,
+  "rows_total": 33,
+  "task": "YZT-84",
+  "verdict": "ALL_RECOVERY_EVIDENCE_VALIDATION_ROWS_PASS"
+}
