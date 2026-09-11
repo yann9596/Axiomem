@@ -2695,8 +2695,8 @@ def validate_publication_recovery_commit_record(record: dict,
     migration, single consumption and old-field immutability.
     """
     fields = (
-        "kind", "record_type", "schema_version", "op", "intent_id", "from",
-        "to", "revision", "actor", "at", "publication_recovery_proof",
+        "seq", "kind", "record_type", "schema_version", "op", "intent_id",
+        "from", "to", "revision", "actor", "at", "publication_recovery_proof",
         "publication_execution_migration", "fields",
     )
     record = _strict_keys(_require_dict(record, "publication recovery commit"),

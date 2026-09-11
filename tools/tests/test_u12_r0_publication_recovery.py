@@ -472,6 +472,35 @@ class PublicationRecoveryFixture:
         return self.store.get(
             self.intent_id)["fields"][u12.R0B_FIELD]
 
+    def commands_of(self, prefix):
+        return self.cli.commands_of(prefix)
+
+    def prepare_commit(self, decision=None):
+        """White-box: build the exact commit record without committing."""
+        decision = decision or self.decision()
+        intent, data = self.factory._publication_recovery_inspection(
+            self.intent_id)
+        bundle = self.factory._publication_recovery_prerequisites(
+            intent, data, decision=decision, current_findings=[],
+            authority_evidence=None)
+        proof = self.factory._build_publication_recovery_proof(
+            intent, data, decision, bundle)
+        migration = self.factory._build_publication_execution_migration(
+            intent, data, decision, proof)
+        record = {
+            "kind": "intent", "record_type": o2.INTENT_RECORD_TYPE,
+            "schema_version": o2.O2_SCHEMA, "op": u12.PUBLICATION_RECOVERY_OP,
+            "intent_id": self.intent_id, "from": o2.S_BLOCKED,
+            "to": o2.S_HANDOFF_PUBLISHED, "revision": 5,
+            "actor": DISPATCHER, "at": CLOCK,
+            "publication_recovery_proof": proof,
+            "publication_execution_migration": migration,
+        }
+        fields, _ = u12._publication_commit_fields(
+            intent, data, proof, migration, actor=DISPATCHER, now=CLOCK)
+        record["fields"] = fields
+        return record, bundle, decision
+
     def events_named(self, name):
         return [e for e in self.store.get(self.intent_id)["events"]
                 if e.get("name") == name]
@@ -845,8 +874,11 @@ class RecoveryRefusalTests(unittest.TestCase):
             tmp = tempfile.TemporaryDirectory()
             self.addCleanup(tmp.cleanup)
             fx = PublicationRecoveryFixture(Path(tmp.name))
+            decision = fx.decision()
             fx.note_comment[field] = value
-            result = fx.recover()
+            result = fx.recover(
+                decision=decision,
+                accepted_execution=dict(decision["execution_migration"]))
             assert_recovery_refused(
                 self, fx, result, u12.REASON_PUBLICATION_PROVENANCE)
 
@@ -888,15 +920,9 @@ class RecoveryRefusalTests(unittest.TestCase):
 
         def mutate(cli):
             if cli.comment_list_count == 2:
-                cli.comments[TARGET_ID].append({
-                    "id": "CMT-RACE", "content": "race", "created_at": CLOCK,
-                    "updated_at": CLOCK, "parent_id": None,
-                    "author_id": PUBLISHER_AGENT, "author_type": "agent",
-                    "source_task_id": PUBLISHER_RUN, "issue_id": TARGET_ID,
-                    "resolved_at": None, "resolved_by_id": None,
-                    "resolved_by_type": None, "revision": 1,
-                    "type": "comment", "attachments": [], "reactions": []})
+                append_comment(cli, "race", comment_id="CMT-RACE")
 
+        fx.cli.comment_list_count = 0
         fx.cli.on_comment_list = mutate
         result = fx.recover()
         assert_recovery_refused(
@@ -1156,28 +1182,7 @@ class CrashReplayTests(unittest.TestCase):
 
     def test_shared_tail_insertion_at_same_revision_refuses(self):
         fx = self.fx
-        decision = fx.decision()
-        intent, data = fx.factory._publication_recovery_inspection(
-            fx.intent_id)
-        bundle = fx.factory._publication_recovery_prerequisites(
-            intent, data, decision=decision, current_findings=[],
-            authority_evidence=None)
-        proof = fx.factory._build_publication_recovery_proof(
-            intent, data, decision, bundle)
-        migration = fx.factory._build_publication_execution_migration(
-            intent, data, decision, proof)
-        record = {
-            "kind": "intent", "record_type": o2.INTENT_RECORD_TYPE,
-            "schema_version": o2.O2_SCHEMA, "op": u12.PUBLICATION_RECOVERY_OP,
-            "intent_id": fx.intent_id, "from": o2.S_BLOCKED,
-            "to": o2.S_HANDOFF_PUBLISHED, "revision": 5,
-            "actor": DISPATCHER, "at": CLOCK,
-            "publication_recovery_proof": proof,
-            "publication_execution_migration": migration,
-        }
-        fields, _ = u12._publication_commit_fields(
-            intent, data, proof, migration, actor=DISPATCHER, now=CLOCK)
-        record["fields"] = fields
+        record, bundle, _decision = fx.prepare_commit()
         # a foreign shared command appears after the audited prefix at the
         # same intent revision
         fx.store.append({
@@ -1193,6 +1198,7 @@ class CrashReplayTests(unittest.TestCase):
 
     def test_conflicting_open_intent_on_the_same_logical_key_refuses(self):
         fx = self.fx
+        record, bundle, decision = fx.prepare_commit()
         original = fx.store.get(fx.intent_id)["fields"]
         twin_id = "DI-" + "f" * 16
         twin = {
@@ -1214,10 +1220,13 @@ class CrashReplayTests(unittest.TestCase):
             "kind": "intent", "record_type": o2.INTENT_RECORD_TYPE,
             "schema_version": o2.O2_SCHEMA, "op": "recorded",
             "intent_id": twin_id, "at": CLOCK, "intent": twin})
-        result = fx.recover()
-        assert_recovery_refused(
-            self, fx, result, u12.REASON_PUBLICATION_PROVENANCE)
-        self.assertIn("conflicting", result["detail"].lower())
+        with self.assertRaises(u12.PreflightRefusal) as caught:
+            fx.factory._commit_publication_recovery(
+                fx.intent_id, record=record, expected_revision=4,
+                expected_tail_digests=[], prefix_count=0,
+                prefix_raw_digest=bundle["ledger_prefix_raw_digest"])
+        self.assertIn("conflicting", str(caught.exception).lower())
+        self.assertEqual(fx.store.get(fx.intent_id)["state"], o2.S_BLOCKED)
 
 
 # ---------------------------------------------------------------------------
