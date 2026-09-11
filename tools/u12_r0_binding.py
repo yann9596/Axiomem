@@ -39,6 +39,26 @@ Hard boundaries kept by this module:
   `mark_prepared`/`mark_published` are refused here, and missing/unsupported
   R0B data is a stop, never a downgrade.
 
+The YZT-83 accepted create-recovery decision (`U12_R0_CREATE_RECOVERY_DECISION.md`,
+raw SHA256 1fedade6694d6d15f076a1ecb84aedfa680c93767cd3ec27ac94b594220b101e)
+is implemented here as a forward repair with two related capabilities:
+
+* a prospective `single-terminal-lf/1` source-to-transport preparation that
+  builds the final transport body before the creation spec is approved,
+  persisted and digested (the persisted bytes are the sent bytes), while the
+  raw source and the named transformation stay recorded as provenance;
+* one narrow public `recover_created_target` operation that binds an intent
+  already stopped at CREATE_AMBIGUOUS after exactly one create whose readback
+  lost exactly one terminal LF. It acquires the same intent lease, revalidates
+  the full original record and the complete live evidence, appends a
+  namespaced recovery-evidence event and commits the existing
+  CREATE_AMBIGUOUS -> TARGET_BOUND edge together with an effective-transport
+  digest and a fenced execution binding. It has no create/assign/comment/rerun
+  capability and never resets historical fields. A bare changed pin is still
+  refused; only a committed, untampered, intent-bound proof permits the exact
+  old-to-new execution transition, and the predecessor factory refuses the
+  fenced record.
+
 Nothing in this module performs a live create/assign/publication/rerun call by
 itself; the runner is always injected explicitly by the caller.
 """
@@ -67,9 +87,26 @@ import u12_strict_receipt as strict  # noqa: E402
 
 ROOT = Path(__file__).resolve().parents[1]
 ADAPTER_MODULE = "tools/u12_r0_binding.py"
-ADAPTER_VERSION = "U12-R0B/1.0"
-CONTRACT_VERSION = "U12-R0B/1.0"
+ADAPTER_VERSION = "U12-R0B/1.1"
+CONTRACT_VERSION = "U12-R0B/1.1"
 R0B_FIELD = "r0_binding"
+
+# --- forward create recovery (YZT-83 accepted decision) ----------------------
+PREDECESSOR_CONTRACT_VERSION = "U12-R0B/1.0"
+PREDECESSOR_ADAPTER_COMMIT = "b49630b881170f7e6f40ffe61a82687492b99792"
+PREDECESSOR_ADAPTER_DIGEST = (
+    "sha256:8a9b75628f1263004ab214c96733d1b775399cdd6ffe5208fdaf4c0ea5abbc05")
+TRANSPORT_PROFILE = "single-terminal-lf/1"
+TRANSPORT_PROFILES = (TRANSPORT_PROFILE,)
+RECOVERY_DECISION_SCHEMA = "u12-r0b-create-recovery-decision/1.0"
+RECOVERY_PROOF_SCHEMA = "u12-r0b-recovery-proof/1.0"
+EXECUTION_BINDING_SCHEMA = "u12-r0b-execution-binding/1.0"
+RECOVERY_DESIGN_REF = "attachment/01a08f89-53bc-7bb0-bda2-1bf86c40be7f"
+RECOVERY_DESIGN_DIGEST = (
+    "sha256:1fedade6694d6d15f076a1ecb84aedfa680c93767cd3ec27ac94b594220b101e")
+RECOVERY_DISPOSITION = "RECOVER_CREATED_TARGET"
+RECOVERY_SCOPE = "CREATE_AMBIGUOUS"
+RECOVERY_OWNERSHIP_NEXT = "RESUME_OWNERSHIP_NO_START"
 
 CREATION_ROLE = "engineering-lead"
 EXECUTION_ROLE = "software-engineer"
@@ -90,6 +127,8 @@ E_PUBLICATION_UNCERTAIN = "r0b_publication_uncertain"
 E_PUBLICATION_BOUND = "r0b_publication_bound"
 E_RECOVERY = "r0b_recovery"
 E_EVIDENCE_REFUSED = "r0b_evidence_refused"
+E_RECOVERY_EVIDENCE = "r0b_recovery_evidence"
+E_RECOVERY_BOUND = "r0b_recovery_bound"
 
 # --- typed reasons -----------------------------------------------------------
 REASON_CONTRACT = "R0B_CONTRACT_MISSING_OR_UNSUPPORTED"
@@ -102,6 +141,26 @@ REASON_PUBLICATION_AMBIGUOUS = "PUBLICATION_AMBIGUOUS"
 REASON_PUBLICATION_PROVENANCE = "PUBLICATION_PROVENANCE_INCOMPLETE"
 REASON_PUBLICATION_CONFLICT = "PUBLICATION_DELTA_NOT_ATTRIBUTABLE"
 REASON_MOVING_EVIDENCE = "EVIDENCE_REVISION_MOVING"
+
+# --- create-recovery typed reasons -------------------------------------------
+REASON_RECOVERY_REFUSED = "R0B_CREATE_RECOVERY_REFUSED"
+REASON_RECOVERY_UNSUPPORTED = "R0B_CREATE_RECOVERY_UNSUPPORTED_RECORD"
+REASON_RECOVERY_COMPETING = "R0B_CREATE_RECOVERY_COMPETING_PROOF"
+REASON_RECOVERY_IDENTITY = "R0B_CREATE_RECOVERY_IDENTITY_UNPROVEN"
+REASON_RECOVERY_EFFECT = "R0B_CREATE_RECOVERY_UNKNOWN_EFFECT"
+REASON_RECOVERY_TARGET = "R0B_CREATE_RECOVERY_TARGET_MISMATCH"
+REASON_RECOVERY_BODY = "R0B_CREATE_RECOVERY_BODY_RELATION_REFUSED"
+REASON_TRANSPORT_UNSUPPORTED = "R0B_TRANSPORT_SOURCE_UNSUPPORTED"
+
+# The only prior effects a first bounded recovery may observe besides the sole
+# create attempt. A crashed-before-commit recovery may have appended its own
+# evidence event; that event is never authorization and is recollected.
+RECOVERY_ALLOWED_PRIOR_EVENTS = (E_INTENT_RECORDED, E_CREATE_ISSUING,
+                                 E_RECOVERY, E_EVIDENCE_REFUSED,
+                                 E_RECOVERY_EVIDENCE)
+RECOVERY_FORBIDDEN_METHODS = ("create_backlog_issue", "create_issue",
+                              "assign_ownership_no_start", "assign_trigger",
+                              "rerun_issue", "publish_handoff")
 
 # --- preflight (YZT-83 accepted forward repair) ------------------------------
 AUTHORITY_EVIDENCE_SCHEMA = "u12-r0b-authority-evidence/1.0"
@@ -170,6 +229,105 @@ def adapter_digest(path=None) -> str:
     return "sha256:" + hashlib.sha256(data).hexdigest()
 
 
+def _sha256_utf8(text: str) -> str:
+    """Exact raw-bytes digest of one UTF-8 string (no newline conversion)."""
+    return "sha256:" + hashlib.sha256(text.encode("utf-8")).hexdigest()
+
+
+def single_terminal_lf_relation(source, observed) -> dict:
+    """The accepted directional `single-terminal-lf/1` transport relation.
+
+    Exact equality stays valid under the existing contract. The only
+    exceptional form is: source ends in exactly one LF (never CRLF and never
+    a repeated terminal LF), carries no other trailing whitespace, and the
+    observed bytes equal the source with exactly that last byte removed.
+    Interior, leading, Unicode and whitespace-equivalence changes are refused,
+    and an arbitrary readback is never normalized until it matches.
+    """
+    if not isinstance(source, str) or not isinstance(observed, str):
+        return {"accepted": False, "relation": None,
+                "reason": REASON_TRANSPORT_UNSUPPORTED,
+                "detail": "source and observed must both be strings"}
+    if source == observed:
+        return {"accepted": True, "relation": "exact", "removed_lf": False,
+                "reason": None, "detail": ""}
+    if source.endswith("\r\n") or source.endswith("\n\n"):
+        return {"accepted": False, "relation": None, "removed_lf": False,
+                "reason": REASON_TRANSPORT_UNSUPPORTED,
+                "detail": "source has a CRLF or repeated terminal LF"}
+    if source.endswith("\n"):
+        if source[:-1] and source[:-1][-1] in " \t\r\f\v":
+            return {"accepted": False, "relation": None, "removed_lf": False,
+                    "reason": REASON_TRANSPORT_UNSUPPORTED,
+                    "detail": "source carries trailing whitespace before the "
+                              "final LF"}
+        if observed == source[:-1]:
+            return {"accepted": True, "relation": "single-terminal-lf-removed",
+                    "removed_lf": True, "reason": None, "detail": ""}
+        return {"accepted": False, "relation": None, "removed_lf": False,
+                "reason": REASON_RECOVERY_BODY,
+                "detail": "observed bytes differ beyond the terminal LF"}
+    if source and source[-1] in " \t\r\f\v":
+        return {"accepted": False, "relation": None, "removed_lf": False,
+                "reason": REASON_TRANSPORT_UNSUPPORTED,
+                "detail": "source carries unsupported trailing whitespace"}
+    return {"accepted": False, "relation": None, "removed_lf": False,
+            "reason": REASON_RECOVERY_BODY,
+            "detail": "observed bytes are not an exact transport match"}
+
+
+def prepare_transport_body(source_body, *,
+                           profile: str = TRANSPORT_PROFILE) -> dict:
+    """Prospective source-to-transport preparation for `single-terminal-lf/1`.
+
+    The transport body is constructed here, before the creation spec is
+    approved/persisted/digested, so the persisted bytes are exactly the bytes
+    sent. The raw source and the named transformation are returned as separate
+    provenance; unsupported trailing whitespace is a typed refusal and is
+    never silently stripped. Unsupported profiles refuse.
+    """
+    if profile not in TRANSPORT_PROFILES:
+        raise R0BValidationRefused(
+            "transport profile is not accepted", profile=profile,
+            accepted=list(TRANSPORT_PROFILES))
+    if not isinstance(source_body, str) or not source_body:
+        raise R0BValidationRefused(
+            "source_body must be a non-empty string",
+            profile=profile)
+    if source_body.endswith("\r\n") or source_body.endswith("\n\n"):
+        raise R0BValidationRefused(
+            "source has a CRLF or repeated terminal LF; supply explicit "
+            "source preparation instead of relying on trimming", profile=profile)
+    if source_body.endswith("\n"):
+        transport = source_body[:-1]
+        if transport and transport[-1] in " \t\r\f\v":
+            raise R0BValidationRefused(
+                "source carries trailing whitespace before the final LF; "
+                "explicit source preparation is required", profile=profile)
+        transformation = "remove-single-terminal-lf"
+    else:
+        if source_body[-1] in " \t\r\f\v":
+            raise R0BValidationRefused(
+                "source carries unsupported trailing whitespace; explicit "
+                "source preparation is required", profile=profile)
+        transport = source_body
+        transformation = "identity"
+    return {
+        "profile": profile,
+        "transformation": transformation,
+        "transport_body": transport,
+        "transport_body_digest": _sha256_utf8(transport),
+        "transport_body_lf_digest": digest_text_lf(transport),
+        "source_raw_digest": _sha256_utf8(source_body),
+        "source_lf_digest": digest_text_lf(source_body),
+        "source_chars": len(source_body),
+        "source_utf8_bytes": len(source_body.encode("utf-8")),
+        "transport_chars": len(transport),
+        "transport_utf8_bytes": len(transport.encode("utf-8")),
+        "body_digest_method": "digest_text_lf",
+    }
+
+
 def new_operation_id(kind: str, payload: dict, *, nonce: str | None = None) -> str:
     body = {"kind": kind, "payload": payload, "nonce": nonce or uuid.uuid4().hex}
     return "OP-" + hashlib.sha256(
@@ -205,6 +363,16 @@ class R0BContractError(R0BError):
 
 class R0BDowngradeRefused(R0BError):
     code = "r0b_downgrade_refused"
+
+
+class R0BCompatibilityRefused(R0BError):
+    """A known-predecessor record without a committed forward recovery.
+
+    The record stays readable/auditable, but no lifecycle operation except
+    `recover_created_target` may execute it (no automatic migration, no
+    downgrade).
+    """
+    code = "r0b_predecessor_requires_recovery"
 
 
 class R0BValidationRefused(R0BError):
@@ -459,6 +627,49 @@ class EvidenceReader:
         except dispatch.DispatchError as exc:
             raise PublicationProvenanceIncomplete(
                 f"issue runs contract violated: {exc.message}") from exc
+
+    def issue_children(self, parent_issue_id: str) -> dict:
+        """Complete parent-child discovery including the live `unstaged` child.
+
+        The documented listing carries staged groups plus one `unstaged`
+        entry (object or list). The accepted O2 boundary drops `unstaged`;
+        recovery must not, so this reader flattens both and reports the
+        declared total so a partial listing fails closed.
+        """
+        data = self._json(["issue", "children", str(parent_issue_id),
+                           "--output", "json"], "issue children")
+        if not isinstance(data, dict) or not isinstance(
+                data.get("stages"), list):
+            if isinstance(data, list):
+                return {"rows": [x for x in data if isinstance(x, dict)],
+                        "total": len(data), "declared_total": len(data)}
+            raise PublicationProvenanceIncomplete(
+                "issue children JSON shape is unknown")
+        rows: list = []
+        for stage in data["stages"]:
+            if not isinstance(stage, dict) or \
+                    not isinstance(stage.get("issues"), list):
+                raise PublicationProvenanceIncomplete(
+                    "issue children stage is malformed")
+            rows.extend(x for x in stage["issues"] if isinstance(x, dict))
+        unstaged = data.get("unstaged")
+        if isinstance(unstaged, dict):
+            rows.append(unstaged)
+        elif isinstance(unstaged, list):
+            rows.extend(x for x in unstaged if isinstance(x, dict))
+        elif unstaged is not None:
+            raise PublicationProvenanceIncomplete(
+                "issue children unstaged entry is malformed")
+        declared = data.get("total")
+        if not isinstance(declared, int):
+            raise PublicationProvenanceIncomplete(
+                "issue children carries no declared total; completeness "
+                "cannot be proven")
+        if declared != len(rows):
+            raise PublicationProvenanceIncomplete(
+                "issue children listing is partial",
+                declared_total=declared, collected=len(rows))
+        return {"rows": rows, "total": len(rows), "declared_total": declared}
 
 
 class ReadinessManifestAuthorityReader:
@@ -733,9 +944,38 @@ def _require_text(value, field: str, limit: int = 400) -> str:
 
 def validate_creation_spec(spec: dict) -> dict:
     spec = _require_dict(spec, "creation_spec")
+    source_body = spec.get("source_body")
+    transport_profile = spec.get("transport_profile")
+    transport_preparation = None
+    if source_body is not None or transport_profile is not None:
+        if transport_profile is None:
+            raise R0BValidationRefused(
+                "source_body requires the named transport_profile for "
+                "persisted source-to-transport preparation")
+        prepared = prepare_transport_body(source_body,
+                                          profile=transport_profile)
+        declared_body = spec.get("body")
+        if declared_body is not None and \
+                declared_body != prepared["transport_body"]:
+            raise R0BValidationRefused(
+                "creation_spec.body is not the prepared transport body; the "
+                "persisted bytes must be the sent bytes", profile=transport_profile)
+        declared_digest = spec.get("body_digest")
+        if declared_digest is not None and \
+                declared_digest != prepared["transport_body_lf_digest"]:
+            raise R0BValidationRefused(
+                "creation_spec.body_digest is not the prepared transport "
+                "digest", profile=transport_profile)
+        body = prepared["transport_body"]
+        body_digest = prepared["transport_body_lf_digest"]
+        transport_preparation = {k: v for k, v in prepared.items()
+                                 if k != "transport_body"}
+    else:
+        body = spec.get("body")
+        body_digest = spec.get("body_digest")
     out = {
         "title": _require_text(spec.get("title"), "creation_spec.title"),
-        "body": _require_text(spec.get("body"), "creation_spec.body",
+        "body": _require_text(body, "creation_spec.body",
                               limit=200000),
         "parent_issue_id": _require_text(spec.get("parent_issue_id"),
                                          "creation_spec.parent_issue_id"),
@@ -751,12 +991,14 @@ def validate_creation_spec(spec: dict) -> dict:
                                             "creation_spec.publisher_agent_id"),
         "status": _require_text(spec.get("status"), "creation_spec.status"),
         "marker": _require_text(spec.get("marker"), "creation_spec.marker"),
-        "body_digest": _require_digest(spec.get("body_digest"),
+        "body_digest": _require_digest(body_digest,
                                        "creation_spec.body_digest"),
         "creation_task_ref": _require_text(spec.get("creation_task_ref"),
                                            "creation_spec.creation_task_ref"),
         "authority_refs": spec.get("authority_refs"),
     }
+    if transport_preparation is not None:
+        out["transport_preparation"] = transport_preparation
     if out["target_role"] != EXECUTION_ROLE:
         raise R0BValidationRefused(
             "creation_spec.target_role must be the execution role",
@@ -890,23 +1132,255 @@ def r0b_execution_context(execution_context: dict, spec: dict, *,
     return validated
 
 
-def validate_intent_record(intent: dict, *, require=()) -> dict:
-    """Every entry/resume validates the namespaced data. Never downgrade."""
+def _validate_execution_binding(intent: dict, data: dict) -> dict:
+    """Validate a committed forward-recovery execution binding.
+
+    This is the narrow compatibility receipt: only a record whose original
+    adapter pin is the exact known predecessor, whose recovery proof is
+    present and self-consistent, and whose execution adapter digest is the
+    current module may execute under these bytes. A missing, edited, copied or
+    cross-intent proof refuses; nothing is inferred from a bare pin.
+    """
+    execution = data.get("execution_binding")
+    if not isinstance(execution, dict):
+        raise R0BContractError(
+            "record carries no execution binding to validate",
+            intent_id=intent["intent_id"])
+    if execution.get("schema") != EXECUTION_BINDING_SCHEMA:
+        raise R0BContractError(
+            "execution binding schema is unsupported",
+            schema=execution.get("schema"))
+    if execution.get("contract_version") != CONTRACT_VERSION:
+        raise R0BContractError(
+            "execution binding contract version is unsupported",
+            contract_version=execution.get("contract_version"))
+    if execution.get("adapter_digest") != adapter_digest():
+        raise R0BDowngradeRefused(
+            "execution binding names different execution adapter bytes; "
+            "refusing to execute under a changed adapter (fail closed)",
+            intent_id=intent["intent_id"])
+    if execution.get("original_contract_version") != \
+            PREDECESSOR_CONTRACT_VERSION or \
+            execution.get("original_adapter_digest") != \
+            PREDECESSOR_ADAPTER_DIGEST or \
+            execution.get("predecessor_commit") != PREDECESSOR_ADAPTER_COMMIT:
+        raise R0BDowngradeRefused(
+            "execution binding does not name the exact known predecessor "
+            "contract/digest/commit", intent_id=intent["intent_id"])
+    if data.get("adapter_digest") != PREDECESSOR_ADAPTER_DIGEST:
+        raise R0BValidationRefused(
+            "the original adapter pin was relabeled; the predecessor pin must "
+            "be preserved as recorded", intent_id=intent["intent_id"])
+    proof = data.get("recovery_proof")
+    if not isinstance(proof, dict):
+        raise R0BContractError(
+            "execution binding carries no committed recovery proof",
+            intent_id=intent["intent_id"])
+    recorded = proof.get("proof_digest")
+    recomputed = digest({k: v for k, v in proof.items()
+                         if k != "proof_digest"})
+    if not isinstance(recorded, str) or recorded != recomputed:
+        raise R0BValidationRefused(
+            "the committed recovery proof digest does not reproduce; the "
+            "record is edited or incomplete", intent_id=intent["intent_id"])
+    if execution.get("recovery_proof_digest") != recorded:
+        raise R0BValidationRefused(
+            "the execution binding does not reference the committed recovery "
+            "proof", intent_id=intent["intent_id"])
+    if proof.get("schema") != RECOVERY_PROOF_SCHEMA or \
+            proof.get("contract_version") != CONTRACT_VERSION:
+        raise R0BContractError(
+            "recovery proof schema/version is unsupported",
+            intent_id=intent["intent_id"])
+    if proof.get("intent_id") != intent["intent_id"]:
+        raise R0BValidationRefused(
+            "the committed recovery proof belongs to a different intent "
+            "(cross-intent proof refused)", intent_id=intent["intent_id"])
+    if proof.get("state_before") != o2.S_CREATE_AMBIGUOUS:
+        raise R0BValidationRefused(
+            "the committed recovery proof does not bind the supported prior "
+            "phase CREATE_AMBIGUOUS", intent_id=intent["intent_id"])
+    target = data.get("target_binding") or {}
+    target_id = target.get("issue_id")
+    if not isinstance(target_id, str) or \
+            proof.get("target", {}).get("issue_id") != target_id or \
+            intent["fields"].get("issue_id") != target_id:
+        raise R0BValidationRefused(
+            "the committed recovery proof, target binding and intent field do "
+            "not name the same target", intent_id=intent["intent_id"])
+    before = proof.get("intent_revision_before")
+    if not isinstance(before, int) or \
+            execution.get("transition_revision") != before + 1 or \
+            intent["revision"] < before + 1:
+        raise R0BValidationRefused(
+            "the committed recovery proof is not bound to the recorded intent "
+            "revision/transition", intent_id=intent["intent_id"])
+    transport = proof.get("transport") or {}
+    if execution.get("transport_profile") != transport.get("profile") or \
+            execution.get("effective_transport_body_digest") != \
+            transport.get("effective_transport_body_digest") or \
+            execution.get("effective_transport_body_lf_digest") != \
+            transport.get("effective_transport_body_lf_digest"):
+        raise R0BValidationRefused(
+            "the execution binding does not carry the proof's effective "
+            "transport identity", intent_id=intent["intent_id"])
+    decision = proof.get("decision") or {}
+    if execution.get("recovery_decision_digest") != \
+            decision.get("decision_digest"):
+        raise R0BValidationRefused(
+            "the execution binding does not reference the committed recovery "
+            "decision", intent_id=intent["intent_id"])
+    if proof.get("decision_digest") != decision.get("decision_digest"):
+        raise R0BValidationRefused(
+            "the recovery proof does not bind its recovery decision",
+            intent_id=intent["intent_id"])
+    original = proof.get("original") or {}
+    if original.get("create_attempt_digest") != digest(
+            original.get("create_attempt") or {}):
+        raise R0BValidationRefused(
+            "the recovery proof's sole create attempt digest does not "
+            "reproduce", intent_id=intent["intent_id"])
+    if original.get("create_attempt", {}).get("body_digest") != \
+            (data.get("creation_spec") or {}).get("body_digest"):
+        raise R0BValidationRefused(
+            "the recovery proof's sole create attempt does not match the "
+            "preserved original body digest", intent_id=intent["intent_id"])
+    return execution
+
+
+def validate_recovery_decision(decision: dict) -> dict:
+    """Validate one immutable create-recovery disposition.
+
+    The disposition references the accepted design and the Lead acceptance,
+    names the exact predecessor pins and the exact intent/target/revisions,
+    and carries a self-digest that makes every field tamper-evident. Unknown
+    fields are refused for the same reason.
+    """
+    decision = _require_dict(decision, "recovery_decision")
+    out = {
+        "schema": decision.get("schema"),
+        "decision_id": _require_text(decision.get("decision_id"),
+                                     "recovery_decision.decision_id"),
+        "disposition": decision.get("disposition"),
+        "scope": decision.get("scope"),
+        "intent_id": decision.get("intent_id"),
+        "expected_target_id": _require_uuid(
+            decision.get("expected_target_id"),
+            "recovery_decision.expected_target_id"),
+        "expected_intent_revision": decision.get("expected_intent_revision"),
+        "expected_target_revision": decision.get("expected_target_revision"),
+        "expected_creator_id": _require_uuid(
+            decision.get("expected_creator_id"),
+            "recovery_decision.expected_creator_id"),
+        "predecessor_commit": decision.get("predecessor_commit"),
+        "predecessor_adapter_digest": decision.get(
+            "predecessor_adapter_digest"),
+        "design_ref": _require_text(decision.get("design_ref"),
+                                    "recovery_decision.design_ref"),
+        "design_digest": _require_digest(decision.get("design_digest"),
+                                         "recovery_decision.design_digest"),
+        "approval_ref": _require_text(decision.get("approval_ref"),
+                                      "recovery_decision.approval_ref"),
+        "approved_by": _require_text(decision.get("approved_by"),
+                                     "recovery_decision.approved_by"),
+        "approved_at": _require_text(decision.get("approved_at"),
+                                     "recovery_decision.approved_at"),
+        "decision_digest": _require_digest(decision.get("decision_digest"),
+                                          "recovery_decision.decision_digest"),
+    }
+    extras = sorted(set(decision) - set(out))
+    if extras:
+        raise R0BValidationRefused(
+            "recovery decision carries unsupported fields; the disposition "
+            "must stay within the exact schema", fields=extras)
+    if out["schema"] != RECOVERY_DECISION_SCHEMA:
+        raise R0BValidationRefused(
+            "recovery decision schema is unsupported", schema=out["schema"])
+    if out["disposition"] != RECOVERY_DISPOSITION:
+        raise R0BValidationRefused(
+            "recovery decision disposition is unsupported",
+            disposition=out["disposition"])
+    if out["scope"] != RECOVERY_SCOPE:
+        raise R0BValidationRefused(
+            "recovery decision scope is unsupported", scope=out["scope"])
+    if not isinstance(out["intent_id"], str) or \
+            not re.match(r"^DI-[0-9a-f]{16}$", out["intent_id"]):
+        raise R0BValidationRefused(
+            "recovery decision intent_id is not DI-<16 hex>")
+    for field in ("expected_intent_revision", "expected_target_revision"):
+        if not isinstance(out[field], int) or out[field] < 0:
+            raise R0BValidationRefused(
+                f"recovery decision {field} must be a non-negative integer")
+    if out["predecessor_commit"] != PREDECESSOR_ADAPTER_COMMIT:
+        raise R0BValidationRefused(
+            "recovery decision does not name the exact known predecessor "
+            "commit", predecessor_commit=out["predecessor_commit"])
+    if out["predecessor_adapter_digest"] != PREDECESSOR_ADAPTER_DIGEST:
+        raise R0BValidationRefused(
+            "recovery decision does not name the exact known predecessor "
+            "adapter digest",
+            predecessor_adapter_digest=out["predecessor_adapter_digest"])
+    if out["design_ref"] != RECOVERY_DESIGN_REF or \
+            out["design_digest"] != RECOVERY_DESIGN_DIGEST:
+        raise R0BValidationRefused(
+            "recovery decision does not reference the accepted design and its "
+            "exact digest", design_ref=out["design_ref"],
+            design_digest=out["design_digest"])
+    try:
+        o2.parse_ts(out["approved_at"])
+    except (ValueError, TypeError) as exc:
+        raise R0BValidationRefused(
+            f"recovery decision approved_at is not a timestamp: {exc}")
+    recomputed = digest({k: v for k, v in out.items()
+                         if k != "decision_digest"})
+    if out["decision_digest"] != recomputed:
+        raise R0BValidationRefused(
+            "recovery decision self-digest does not reproduce; the "
+            "disposition is edited or incomplete",
+            expected=recomputed, found=out["decision_digest"])
+    return out
+
+
+def validate_intent_record(intent: dict, *, require=(),
+                           executable: bool = False) -> dict:
+    """Every entry/resume validates the namespaced data. Never downgrade.
+
+    `executable=False` is the audit/recovery read: a known-predecessor record
+    (U12-R0B/1.0 with the exact predecessor pin) is readable/classifiable but
+    only `recover_created_target` may execute it. `executable=True` requires
+    either current recorded bytes or a committed forward recovery.
+    """
     data = intent["fields"].get(R0B_FIELD)
     if not isinstance(data, dict):
         raise R0BContractError(
             "intent is not tagged with an R0B contract; the R0B forward "
             "adapter refuses to execute it (no downgrade)",
             intent_id=intent["intent_id"])
-    if data.get("contract_version") != CONTRACT_VERSION:
+    version = data.get("contract_version")
+    if version == CONTRACT_VERSION:
+        if isinstance(data.get("execution_binding"), dict):
+            _validate_execution_binding(intent, data)
+        elif data.get("adapter_digest") != adapter_digest():
+            raise R0BDowngradeRefused(
+                "R0B intent was recorded by different adapter bytes; refusing "
+                "to resume under a changed adapter (fail closed)",
+                intent_id=intent["intent_id"])
+    elif version == PREDECESSOR_CONTRACT_VERSION:
+        if data.get("adapter_digest") != PREDECESSOR_ADAPTER_DIGEST:
+            raise R0BDowngradeRefused(
+                "intent names a different adapter than the exact known "
+                "predecessor; no wildcard predecessor is accepted",
+                intent_id=intent["intent_id"])
+        if executable:
+            raise R0BCompatibilityRefused(
+                "intent was recorded by the known predecessor adapter and "
+                "carries no committed forward recovery; only "
+                "recover_created_target may execute it (no automatic "
+                "migration)", intent_id=intent["intent_id"])
+    else:
         raise R0BContractError(
             "unsupported R0B contract version; stop, never downgrade",
-            contract_version=data.get("contract_version"))
-    if data.get("adapter_digest") != adapter_digest():
-        raise R0BDowngradeRefused(
-            "R0B intent was recorded by different adapter bytes; refusing to "
-            "resume under a changed adapter (fail closed)",
-            intent_id=intent["intent_id"])
+            contract_version=version)
     for section in require:
         if not isinstance(data.get(section), dict):
             raise R0BContractError(
@@ -1498,9 +1972,11 @@ class R0BForwardFactory(strict.CanaryOrchestrator):
         self.authority_reader = authority_reader
 
     # -- contract gates ------------------------------------------------------
-    def _load(self, intent_id: str, *, require=()) -> dict:
+    def _load(self, intent_id: str, *, require=(),
+              executable: bool = True) -> dict:
         intent = self.store.get(intent_id)
-        data = validate_intent_record(intent, require=require)
+        data = validate_intent_record(intent, require=require,
+                                      executable=executable)
         stored_digest = intent["fields"].get("artifact_dependency_digest")
         spec = data.get("creation_spec") or {}
         bound = (spec.get("artifact_dependency") or {}).get("digest")
@@ -1531,8 +2007,8 @@ class R0BForwardFactory(strict.CanaryOrchestrator):
                              detail=detail)
 
     def validate(self, intent_id: str) -> dict:
-        intent = self._load(intent_id)
-        data = validate_intent_record(intent)
+        intent = self._load(intent_id, executable=False)
+        data = validate_intent_record(intent, executable=False)
         return {
             "ok": True,
             "intent_id": intent_id,
@@ -1691,7 +2167,7 @@ class R0BForwardFactory(strict.CanaryOrchestrator):
     def mark_prepared(self, intent_id: str, *, package_id: str,
                       artifact_dependency_digest: str, actor: str) -> dict:
         intent = self.store.get(intent_id)
-        validate_intent_record(intent)
+        validate_intent_record(intent, executable=True)
         raise R0BDowngradeRefused(
             "R0B intents must bind E through bind_execution_package; "
             "the plain mark_prepared transition is not an accepted R0B path",
@@ -1700,7 +2176,7 @@ class R0BForwardFactory(strict.CanaryOrchestrator):
     def mark_published(self, intent_id: str, *, note_comment_id: str,
                        receipt_digest: str | None, actor: str) -> dict:
         intent = self.store.get(intent_id)
-        validate_intent_record(intent)
+        validate_intent_record(intent, executable=True)
         raise R0BDowngradeRefused(
             "R0B intents must confirm publication through "
             "confirm_publication_and_bind; the plain mark_published "
@@ -1902,6 +2378,12 @@ class R0BForwardFactory(strict.CanaryOrchestrator):
         if issue.get("title") != spec["title"]:
             raise R0BValidationRefused("created target title mismatch")
         description = issue.get("description") or ""
+        if "transport_preparation" in spec:
+            if description != spec["body"]:
+                raise R0BValidationRefused(
+                    "created target does not carry the exact persisted "
+                    "transport body bytes")
+            return status
         if spec["marker"] not in description:
             raise R0BValidationRefused(
                 "created target does not carry the standalone intent marker")
@@ -2024,6 +2506,685 @@ class R0BForwardFactory(strict.CanaryOrchestrator):
                        f"{exc.message}")
         return self._bind_target(intent_id, data=data, issue=issue, actor=actor,
                                  receipt=None, discovered=True)
+
+    # -- forward create recovery (YZT-83 accepted decision) ------------------
+    def recover_created_target(self, intent_id: str, *,
+                               expected_target_id: str,
+                               recovery_decision: dict, actor: str,
+                               authority_evidence: dict | None = None,
+                               execution_commit: str | None = None) -> dict:
+        """Bind the sole already-created target after the LF-loss ambiguity.
+
+        This is the only operation that may execute a known-predecessor
+        record. It has no create/assign/comment/rerun capability: every
+        runner command it issues is a read, and the only durable writes are
+        the namespaced recovery evidence plus the existing
+        CREATE_AMBIGUOUS -> TARGET_BOUND edge. Replay of a committed recovery
+        is read-only.
+        """
+        expected_target_id = _require_uuid(expected_target_id,
+                                           "expected_target_id")
+        decision = validate_recovery_decision(recovery_decision)
+        if decision["expected_target_id"] != expected_target_id:
+            raise R0BValidationRefused(
+                "the recovery disposition names a different target than the "
+                "operation", disposition=decision["expected_target_id"],
+                operation=expected_target_id)
+        if decision["intent_id"] != intent_id:
+            raise R0BValidationRefused(
+                "the recovery disposition names a different intent",
+                disposition=decision["intent_id"], operation=intent_id)
+        if execution_commit is not None and \
+                not re.match(r"^[0-9a-f]{7,40}$", str(execution_commit)):
+            raise R0BValidationRefused(
+                "execution_commit is not a git revision",
+                execution_commit=str(execution_commit)[:40])
+        intent = self.store.get(intent_id)
+        data = validate_intent_record(intent, executable=False)
+        if intent["state"] == o2.S_TARGET_BOUND and \
+                isinstance(data.get("execution_binding"), dict):
+            return self._replay_committed_recovery(
+                intent, data, expected_target_id, decision, actor)
+        if data.get("contract_version") != PREDECESSOR_CONTRACT_VERSION:
+            raise R0BValidationRefused(
+                "recover_created_target applies only to the exact known "
+                "predecessor record before any binding; current records use "
+                "the ordinary lifecycle", intent_id=intent_id,
+                state=intent["state"],
+                contract_version=data.get("contract_version"))
+        return self._execute_create_recovery(
+            intent_id, expected_target_id=expected_target_id,
+            decision=decision, actor=actor,
+            authority_evidence=authority_evidence,
+            execution_commit=execution_commit)
+
+    def _replay_committed_recovery(self, intent, data, expected_target_id,
+                                   decision, actor) -> dict:
+        _validate_execution_binding(intent, data)
+        target = data.get("target_binding") or {}
+        if target.get("issue_id") != expected_target_id:
+            raise R0BValidationRefused(
+                "the committed recovery binds a different target; competing "
+                "recovery is refused", committed=target.get("issue_id"),
+                expected=expected_target_id)
+        proof = data.get("recovery_proof") or {}
+        committed = proof.get("decision") or {}
+        if committed.get("decision_digest") != decision["decision_digest"]:
+            raise R0BValidationRefused(
+                "a different recovery decision is already committed; "
+                "competing proof is refused",
+                committed=committed.get("decision_digest"),
+                supplied=decision["decision_digest"])
+        return {"status": o2.S_TARGET_BOUND, "intent_id": intent["intent_id"],
+                "issue_id": target.get("issue_id"),
+                "identifier": target.get("identifier"),
+                "issue_revision": target.get("post_create_revision"),
+                "revision": intent["revision"], "replayed": True,
+                "side_effects": 0, "next_action": RECOVERY_OWNERSHIP_NEXT,
+                "proof_digest": proof.get("proof_digest")}
+
+    def _require_predecessor_recovery_state(self, intent, decision) -> None:
+        data = intent["fields"][R0B_FIELD]
+        if data.get("contract_version") != PREDECESSOR_CONTRACT_VERSION:
+            raise R0BValidationRefused(
+                "recovery requires a record from the exact known predecessor "
+                "contract", contract_version=data.get("contract_version"))
+        if data.get("adapter_digest") != PREDECESSOR_ADAPTER_DIGEST:
+            raise R0BDowngradeRefused(
+                "recovery requires the exact known predecessor adapter pin",
+                adapter_digest=data.get("adapter_digest"))
+        if intent["state"] != o2.S_CREATE_AMBIGUOUS:
+            raise R0BValidationRefused(
+                "recovery requires the exact CREATE_AMBIGUOUS prior phase",
+                state=intent["state"], intent_id=intent["intent_id"])
+        fields = intent["fields"]
+        if fields.get("issue_id") is not None or \
+                data.get("target_binding") is not None or \
+                data.get("execution_binding") is not None or \
+                data.get("publication_binding") is not None:
+            raise R0BValidationRefused(
+                "the record already carries a binding; recovery never "
+                "rebinds or overwrites", intent_id=intent["intent_id"])
+        if intent["revision"] != decision["expected_intent_revision"]:
+            raise R0BValidationRefused(
+                "the disposition's expected intent revision differs from the "
+                "recorded revision",
+                expected=decision["expected_intent_revision"],
+                found=intent["revision"])
+
+    def _recovery_refusal(self, intent_id: str, refusal: PreflightRefusal,
+                          actor: str) -> dict:
+        """Typed, zero-native-effect refusal: the state stays CREATE_AMBIGUOUS.
+
+        The bounded diagnostic event is appended for audit; it is never
+        reusable authorization.
+        """
+        subjects = {}
+        for key, value in refusal.subjects.items():
+            if isinstance(value, str):
+                subjects[key] = value[:200]
+            else:
+                subjects[key] = canonical_json(value)[:200]
+        self.store.append_event(
+            intent_id, E_EVIDENCE_REFUSED, actor=actor, now=self.now(),
+            data={"reason": refusal.reason, "state": refusal.state,
+                  "detail": refusal.detail[:200], "subjects": subjects,
+                  "window": "create_recovery"})
+        return {"status": o2.S_CREATE_AMBIGUOUS, "intent_id": intent_id,
+                "outcome": "RECOVERY_REFUSED", "reason": refusal.reason,
+                "detail": refusal.detail, "external_writes": 0,
+                "side_effects": 0}
+
+    def _discover_recovery_candidates(self, spec, intent_id,
+                                      expected_target_id) -> dict:
+        """Complete parent-child discovery with exact standalone identity.
+
+        Marker substrings are never identity proof: a candidate matches only
+        when its full body carries exactly one standalone marker line and
+        exactly one standalone Intent line for this intent. The `unstaged`
+        child the accepted O2 listing drops is included, and the declared
+        listing total must match the collected rows.
+        """
+        try:
+            listing = self.reader.issue_children(spec["parent_issue_id"])
+        except o2.IntentError as exc:
+            raise PreflightRefusal(
+                o2.S_BLOCKED, REASON_MATERIAL_UNAVAILABLE,
+                f"parent-child discovery is incomplete: {exc}",
+                subject="discovery")
+        marker_line = "Intent marker: " + spec["marker"]
+        intent_line = "Intent: " + intent_id
+        matches = []
+        for row in listing["rows"]:
+            row_id = row.get("id")
+            if not isinstance(row_id, str) or not row_id:
+                raise PreflightRefusal(
+                    o2.S_BLOCKED, REASON_MATERIAL_UNAVAILABLE,
+                    "a discovered child carries no id", subject="discovery")
+            if row.get("parent_issue_id") not in (None,
+                                                  spec["parent_issue_id"]):
+                continue
+            haystack = json.dumps(row, ensure_ascii=False, sort_keys=True)
+            likely = (row_id == expected_target_id
+                      or row.get("title") == spec["title"]
+                      or spec["marker"] in haystack
+                      or intent_id in haystack)
+            if not likely:
+                continue
+            body = row.get("description")
+            if not isinstance(body, str):
+                try:
+                    body = self.reader.issue_get(row_id).get(
+                        "description") or ""
+                except o2.IntentError as exc:
+                    raise PreflightRefusal(
+                        o2.S_BLOCKED, REASON_MATERIAL_UNAVAILABLE,
+                        f"candidate {row_id} body is not readable or "
+                        f"complete: {exc}", subject="discovery")
+            lines = body.split("\n")
+            if lines.count(marker_line) == 1 and lines.count(intent_line) == 1:
+                matches.append({"id": row_id, "title": row.get("title"),
+                                "parent_issue_id": row.get("parent_issue_id"),
+                                "body_digest": digest_text_lf(body)})
+        if len(matches) != 1:
+            raise PreflightRefusal(
+                o2.S_BLOCKED, REASON_RECOVERY_IDENTITY,
+                "expected exactly one identity-proven marker/Intent candidate, "
+                f"found {len(matches)}; marker substrings alone are never "
+                "accepted", subject="discovery",
+                candidates=[m["id"] for m in matches[:4]])
+        if matches[0]["id"] != expected_target_id:
+            raise PreflightRefusal(
+                o2.S_BLOCKED, REASON_RECOVERY_IDENTITY,
+                "the sole identity-proven candidate is not the expected "
+                "target; never bind a different real target",
+                subject="discovery", candidate=matches[0]["id"],
+                expected=expected_target_id)
+        return {"total": listing["total"],
+                "declared_total": listing["declared_total"],
+                "matches": matches}
+
+    def _recovery_prerequisites(self, intent, data, *, expected_target_id,
+                                decision, authority_evidence) -> dict:
+        """All recovery prerequisites, read-only, under the intent lease."""
+        fields = intent["fields"]
+        spec = validate_creation_spec(data.get("creation_spec") or {})
+        if spec.get("transport_preparation") is not None:
+            raise PreflightRefusal(
+                o2.S_BLOCKED, REASON_RECOVERY_UNSUPPORTED,
+                "a predecessor record cannot carry prospective transport "
+                "preparation", subject="spec")
+        creation = r0b_creation_context(
+            data.get("creation_context") or {}, spec,
+            artifact_digest=(data.get("artifact_dependency") or {}).get(
+                "digest"))
+        artifact = data.get("artifact_dependency") or {}
+        if not isinstance(artifact.get("digest"), str) or \
+                not isinstance(artifact.get("entries"), dict):
+            raise PreflightRefusal(
+                o2.S_BLOCKED, REASON_MATERIAL_UNAVAILABLE,
+                "the original artifact dependency is not available",
+                subject="artifact")
+        provenance = fields.get("provenance") or {}
+        problems = []
+        if fields.get("logical_task_key") != spec["logical_task_key"]:
+            problems.append("logical task key")
+        if fields.get("target_agent_id") != spec["target_agent_id"]:
+            problems.append("target agent")
+        if fields.get("target_role") != spec["target_role"]:
+            problems.append("target role")
+        if fields.get("parent_issue_id") != spec["parent_issue_id"]:
+            problems.append("parent")
+        if fields.get("package_id") != creation.get("package_id"):
+            problems.append("creation package")
+        if fields.get("artifact_dependency_digest") != artifact.get("digest"):
+            problems.append("artifact dependency digest")
+        if provenance.get("adapter_digest") != PREDECESSOR_ADAPTER_DIGEST:
+            problems.append("provenance adapter pin")
+        if provenance.get("contract_version") != PREDECESSOR_CONTRACT_VERSION:
+            problems.append("provenance contract version")
+        if fields.get("source_task_id") != provenance.get("source_run"):
+            problems.append("source run")
+        if creation.get("source_task_id") not in (None,
+                                                  fields.get("source_task_id")):
+            problems.append("creation context source run")
+        if problems:
+            raise PreflightRefusal(
+                o2.S_BLOCKED, REASON_RECOVERY_UNSUPPORTED,
+                "the original record does not revalidate: "
+                + ", ".join(problems), subject="record", fields=problems)
+        source = spec["body"]
+        marker_line = "Intent marker: " + spec["marker"]
+        intent_line = "Intent: " + intent["intent_id"]
+        lines = source.split("\n")
+        if lines.count(marker_line) != 1 or lines.count(intent_line) != 1:
+            raise PreflightRefusal(
+                o2.S_BLOCKED, REASON_RECOVERY_IDENTITY,
+                "the original source does not carry exactly one standalone "
+                "marker line and Intent line", subject="spec")
+        names = [e.get("name") for e in intent["events"]]
+        unexpected = sorted({n for n in names
+                             if n not in RECOVERY_ALLOWED_PRIOR_EVENTS})
+        if unexpected:
+            raise PreflightRefusal(
+                o2.S_BLOCKED, REASON_RECOVERY_EFFECT,
+                "the record carries unexplained non-create effects; this first "
+                "recovery rejects them", effects=unexpected)
+        if names.count(E_INTENT_RECORDED) != 1:
+            raise PreflightRefusal(
+                o2.S_BLOCKED, REASON_RECOVERY_UNSUPPORTED,
+                "the record does not carry exactly one intent-recorded event",
+                subject="events")
+        creates = [e for e in intent["events"]
+                   if e.get("name") == E_CREATE_ISSUING]
+        if len(creates) != 1:
+            raise PreflightRefusal(
+                o2.S_BLOCKED, REASON_RECOVERY_UNSUPPORTED,
+                "recovery requires exactly one durable create attempt, found "
+                f"{len(creates)}", subject="create")
+        if len(intent["transitions"]) != 1:
+            raise PreflightRefusal(
+                o2.S_BLOCKED, REASON_RECOVERY_UNSUPPORTED,
+                "recovery requires exactly the one CREATE_AMBIGUOUS "
+                "transition", count=len(intent["transitions"]))
+        transition = intent["transitions"][0]
+        if transition.get("from") != o2.S_INTENT_RECORDED or \
+                transition.get("to") != o2.S_CREATE_AMBIGUOUS or \
+                transition.get("revision") != 1:
+            raise PreflightRefusal(
+                o2.S_BLOCKED, REASON_RECOVERY_UNSUPPORTED,
+                "the recorded transition chain is not the exact "
+                "INTENT_RECORDED -> CREATE_AMBIGUOUS edge",
+                subject="transition")
+        create_event = creates[0]
+        create_data = create_event.get("data") or {}
+        attempt = {
+            "event_seq": create_event.get("seq"),
+            "at": create_event.get("at"),
+            "actor": create_event.get("actor"),
+            "operation_id": create_data.get("operation_id"),
+            "body_digest": create_data.get("body_digest"),
+            "title": create_data.get("title"),
+            "parent_issue_id": create_data.get("parent_issue_id"),
+            "project_id": create_data.get("project_id"),
+            "status": create_data.get("status"),
+            "marker": create_data.get("marker"),
+            "receipt": None,
+            "receipt_note": "no receipt was persisted: the readback refusal "
+                            "path records the durable attempt event only",
+        }
+        if not attempt["operation_id"] or \
+                attempt["body_digest"] != spec["body_digest"] or \
+                attempt["marker"] != spec["marker"] or \
+                attempt["title"] != spec["title"] or \
+                attempt["parent_issue_id"] != spec["parent_issue_id"] or \
+                attempt["project_id"] != spec.get("project_id") or \
+                attempt["status"] != BACKLOG_STATUS:
+            raise PreflightRefusal(
+                o2.S_BLOCKED, REASON_RECOVERY_UNSUPPORTED,
+                "the durable create attempt does not revalidate against the "
+                "preserved creation spec", subject="create")
+        records = self.store.read_records()
+        intent_records = [r for r in records
+                          if r.get("intent_id") == intent["intent_id"]]
+        foreign = [r for r in intent_records
+                   if r.get("record_type") != o2.INTENT_RECORD_TYPE]
+        if foreign:
+            raise PreflightRefusal(
+                o2.S_BLOCKED, REASON_RECOVERY_EFFECT,
+                "the shared ledger carries non-intent records linked to this "
+                "intent", count=len(foreign))
+        chain = {
+            "ledger_records": len(records),
+            "ledger_tip_seq": records[-1].get("seq") if records else 0,
+            "ledger_tip_digest": (digest(records[-1]) if records else None),
+            "intent_records": len(intent_records),
+            "intent_tip_seq": (intent_records[-1].get("seq")
+                               if intent_records else 0),
+            "intent_tip_digest": (digest(intent_records[-1])
+                                  if intent_records else None),
+            "intent_revision_before": intent["revision"],
+            "transition_reason": transition.get("reason"),
+        }
+        rebuilt = compare_artifact_dependency(
+            artifact["digest"], artifact["entries"],
+            rebuild_artifact_dependency(artifact["entries"],
+                                        root=self.artifact_root,
+                                        blob_reader=self.artifact_blob_reader))
+        authority = validate_authority_evidence(
+            self._resolve_authority(authority_evidence), data=data)
+        discovery = self._discover_recovery_candidates(
+            spec, intent["intent_id"], expected_target_id)
+        try:
+            evidence = collect_evidence(self.reader, expected_target_id)
+        except o2.IntentError as exc:
+            raise PreflightRefusal(
+                o2.S_BLOCKED, REASON_MATERIAL_UNAVAILABLE,
+                f"live target evidence is incomplete or unreadable: {exc}",
+                subject="evidence")
+        issue = evidence["issue"]
+        try:
+            recheck = self.reader.issue_get(expected_target_id)
+        except o2.IntentError as exc:
+            raise PreflightRefusal(
+                o2.S_BLOCKED, REASON_MATERIAL_UNAVAILABLE,
+                f"post-collection target re-read failed: {exc}",
+                subject="evidence")
+        if recheck.get("revision") != issue.get("revision") or \
+                issue_projection(recheck) != issue_projection(issue):
+            raise PreflightRefusal(
+                o2.S_BLOCKED, REASON_MOVING_EVIDENCE,
+                "the target moved while its evidence was collected",
+                subject="evidence")
+        status = issue.get("status_category") or issue.get("status")
+        target_problems = []
+        if issue.get("id") != expected_target_id:
+            target_problems.append("target id")
+        if issue.get("parent_issue_id") != spec["parent_issue_id"]:
+            target_problems.append("parent")
+        if issue.get("title") != spec["title"]:
+            target_problems.append("title")
+        if issue.get("project_id") != spec.get("project_id"):
+            target_problems.append("project (including null)")
+        if spec.get("priority") is not None and \
+                issue.get("priority") != spec.get("priority"):
+            target_problems.append("priority")
+        if issue.get("creator_id") != decision["expected_creator_id"] or \
+                issue.get("creator_type") != "agent":
+            target_problems.append("expected creator")
+        if status != BACKLOG_STATUS:
+            target_problems.append(f"backlog status ({status})")
+        if issue.get("assignee_id") not in (None, ""):
+            target_problems.append("unassigned status")
+        if not isinstance(issue.get("revision"), int):
+            target_problems.append("revision")
+        elif issue.get("revision") != decision["expected_target_revision"]:
+            target_problems.append(
+                f"stable revision {decision['expected_target_revision']} "
+                f"(found {issue['revision']})")
+        if target_problems:
+            raise PreflightRefusal(
+                o2.S_REFRESH_REQUIRED, REASON_RECOVERY_TARGET,
+                "the live target does not match the exact expected fields: "
+                + ", ".join(target_problems), subject="issue",
+                fields=target_problems)
+        if evidence["comments"]:
+            raise PreflightRefusal(
+                o2.S_REFRESH_REQUIRED, REASON_RECOVERY_EFFECT,
+                "the target carries comment(s); unexplained mutation",
+                count=len(evidence["comments"]))
+        if evidence["runs"]:
+            raise PreflightRefusal(
+                o2.S_REFRESH_REQUIRED, REASON_RECOVERY_EFFECT,
+                "the target already carries run(s)",
+                run_ids=[r.get("id") for r in evidence["runs"][:4]])
+        activities = evidence["activities"]
+        if len(activities) != 1 or \
+                activities[0].get("action") != "created" or \
+                activities[0].get("actor_id") != decision["expected_creator_id"]:
+            raise PreflightRefusal(
+                o2.S_REFRESH_REQUIRED, REASON_RECOVERY_EFFECT,
+                "the creation timeline is not exactly one creator 'created' "
+                "activity", activities=len(activities))
+        observed = issue.get("description") or ""
+        relation = single_terminal_lf_relation(source, observed)
+        if not relation["accepted"]:
+            raise PreflightRefusal(
+                o2.S_BLOCKED, relation["reason"], relation["detail"],
+                subject="body")
+        if relation["relation"] == "single-terminal-lf-removed":
+            transport_body = source[:-1]
+            transformation = "remove-single-terminal-lf"
+        else:
+            transport_body = source
+            transformation = "identity"
+        return {
+            "spec": spec,
+            "creation": creation,
+            "artifact": rebuilt,
+            "authority": authority,
+            "chain": chain,
+            "attempt": attempt,
+            "discovery": discovery,
+            "evidence": evidence,
+            "evidence_digest": evidence_digest(evidence),
+            "issue": issue,
+            "status": status,
+            "recheck": recheck,
+            "source": source,
+            "observed": observed,
+            "relation": relation,
+            "transport_body": transport_body,
+            "transformation": transformation,
+        }
+
+    def _build_recovery_proof(self, *, intent, bundle, decision, actor,
+                              execution_commit) -> dict:
+        fields = intent["fields"]
+        data = fields[R0B_FIELD]
+        spec = bundle["spec"]
+        issue = bundle["issue"]
+        entries = (data.get("artifact_dependency") or {}).get("entries") or {}
+        observed = bundle["observed"]
+        proof = {
+            "schema": RECOVERY_PROOF_SCHEMA,
+            "contract_version": CONTRACT_VERSION,
+            "profile": TRANSPORT_PROFILE,
+            "intent_id": intent["intent_id"],
+            "logical_task_key": fields.get("logical_task_key"),
+            "source_run": fields.get("source_task_id"),
+            "state_before": o2.S_CREATE_AMBIGUOUS,
+            "intent_revision_before": bundle["chain"][
+                "intent_revision_before"],
+            "target": {
+                "issue_id": issue["id"],
+                "identifier": issue.get("identifier"),
+                "revision": issue["revision"],
+                "parent_issue_id": issue.get("parent_issue_id"),
+                "project_id": issue.get("project_id"),
+                "priority": issue.get("priority"),
+                "creator_id": issue.get("creator_id"),
+                "creator_type": issue.get("creator_type"),
+                "status_category": bundle["status"],
+                "assignee_id": issue.get("assignee_id"),
+                "snapshot_digest": digest(issue_projection(issue)),
+            },
+            "original": {
+                "contract_version": PREDECESSOR_CONTRACT_VERSION,
+                "adapter_module": ADAPTER_MODULE,
+                "adapter_digest": PREDECESSOR_ADAPTER_DIGEST,
+                "adapter_commit": PREDECESSOR_ADAPTER_COMMIT,
+                "creation_spec_digest": digest(spec),
+                "body_digest": spec["body_digest"],
+                "body_source_raw_digest": _sha256_utf8(spec["body"]),
+                "body_source_lf_digest": digest_text_lf(spec["body"]),
+                "creation_context_digest": digest(
+                    data.get("creation_context") or {}),
+                "creation_authority": fields.get("creation_authority"),
+                "authority_refs": spec["authority_refs"],
+                "artifact_dependency_digest":
+                    (data.get("artifact_dependency") or {}).get("digest"),
+                "accepted_pins": {
+                    "strict_gate_digest":
+                        (entries.get("tools/u12_strict_receipt.py") or {}).get(
+                            "sha256"),
+                    "chandoff_intent_digest":
+                        (entries.get("tools/chandoff_intent.py") or {}).get(
+                            "sha256"),
+                    "readiness_manifest_digest":
+                        (entries.get(AUTHORITY_ARTIFACT_PATH) or {}).get(
+                            "sha256"),
+                },
+                "artifact_rebuild_digest": bundle["artifact"]["digest"],
+                "authority": bundle["authority"],
+                "chain": bundle["chain"],
+                "create_attempt": bundle["attempt"],
+                "create_attempt_digest": digest(bundle["attempt"]),
+            },
+            "observed": {
+                "issue_id": issue["id"],
+                "issue_revision": issue["revision"],
+                "readback_raw_digest": _sha256_utf8(observed),
+                "readback_lf_digest": digest_text_lf(observed),
+                "readback_chars": len(observed),
+                "readback_utf8_bytes": len(observed.encode("utf-8")),
+                "source_raw_digest": _sha256_utf8(bundle["source"]),
+                "source_lf_digest": digest_text_lf(bundle["source"]),
+                "source_chars": len(bundle["source"]),
+                "source_utf8_bytes": len(bundle["source"].encode("utf-8")),
+                "relation": bundle["relation"]["relation"],
+                "removed_terminal_lf": bundle["relation"]["removed_lf"],
+                "profile": TRANSPORT_PROFILE,
+                "exact_comparison": True,
+                "evidence_digest": bundle["evidence_digest"],
+                "issue_projection_digest": digest(issue_projection(issue)),
+                "recheck_revision": bundle["recheck"].get("revision"),
+                "recheck_snapshot_digest":
+                    digest(issue_projection(bundle["recheck"])),
+                "comment_count": len(bundle["evidence"]["comments"]),
+                "activity_count": len(bundle["evidence"]["activities"]),
+                "run_count": len(bundle["evidence"]["runs"]),
+                "discovery_total": bundle["discovery"]["total"],
+                "discovery_declared_total":
+                    bundle["discovery"]["declared_total"],
+                "discovery_matches": [
+                    m["id"] for m in bundle["discovery"]["matches"]],
+            },
+            "transport": {
+                "profile": TRANSPORT_PROFILE,
+                "transformation": bundle["transformation"],
+                "effective_transport_body_digest":
+                    _sha256_utf8(bundle["transport_body"]),
+                "effective_transport_body_lf_digest":
+                    digest_text_lf(bundle["transport_body"]),
+                "transport_chars": len(bundle["transport_body"]),
+                "transport_utf8_bytes":
+                    len(bundle["transport_body"].encode("utf-8")),
+            },
+            "execution_authority": {
+                "contract_version": CONTRACT_VERSION,
+                "adapter_module": ADAPTER_MODULE,
+                "adapter_digest": adapter_digest(),
+                "adapter_commit": execution_commit,
+                "strategy": "exact-known-predecessor-forward-recovery",
+            },
+            "decision": decision,
+            "decision_digest": decision["decision_digest"],
+            "actor": actor,
+            "observed_at": self.now(),
+        }
+        proof["proof_digest"] = digest(proof)
+        return proof
+
+    def _execute_create_recovery(self, intent_id: str, *,
+                                 expected_target_id: str, decision: dict,
+                                 actor: str, authority_evidence,
+                                 execution_commit) -> dict:
+        self._claim(intent_id, actor)
+        try:
+            fresh = self.store.get(intent_id)
+            fresh_data = validate_intent_record(fresh, executable=False)
+            self._require_predecessor_recovery_state(fresh, decision)
+            try:
+                bundle = self._recovery_prerequisites(
+                    fresh, fresh_data, expected_target_id=expected_target_id,
+                    decision=decision,
+                    authority_evidence=authority_evidence)
+            except PreflightRefusal as refusal:
+                return self._recovery_refusal(intent_id, refusal, actor)
+            proof = self._build_recovery_proof(
+                intent=fresh, bundle=bundle, decision=decision, actor=actor,
+                execution_commit=execution_commit)
+            self.store.append_event(
+                intent_id, E_RECOVERY_EVIDENCE, actor=actor, now=self.now(),
+                data=proof)
+            current = self.store.get(intent_id)
+            if current["revision"] != proof["intent_revision_before"] or \
+                    current["state"] != o2.S_CREATE_AMBIGUOUS:
+                raise R0BValidationRefused(
+                    "the intent moved during recovery; the compare-and-set "
+                    "refuses without any binding", intent_id=intent_id,
+                    state=current["state"], revision=current["revision"])
+            spec = bundle["spec"]
+            issue = bundle["issue"]
+            transport = proof["transport"]
+            binding = dict(fresh_data)
+            binding["contract_version"] = CONTRACT_VERSION
+            binding["phase"] = "TARGET_BOUND"
+            binding["target_binding"] = {
+                "issue_id": issue["id"],
+                "identifier": issue.get("identifier"),
+                "parent_issue_id": issue.get("parent_issue_id"),
+                "project_id": issue.get("project_id"),
+                "target_role": spec["target_role"],
+                "target_agent_id": spec["target_agent_id"],
+                "post_create_revision": issue["revision"],
+                "post_create_snapshot_digest":
+                    digest(issue_projection(issue)),
+                "post_create_status": bundle["status"],
+                "creation_marker": spec["marker"],
+                "creation_receipt_digest": None,
+                "discovered_by_read_only_proof": True,
+                "bound_at": self.now(),
+                "recovered_forward_binding": True,
+            }
+            binding["recovery_proof"] = proof
+            binding["execution_binding"] = {
+                "schema": EXECUTION_BINDING_SCHEMA,
+                "contract_version": CONTRACT_VERSION,
+                "adapter_module": ADAPTER_MODULE,
+                "adapter_digest": adapter_digest(),
+                "adapter_commit": execution_commit,
+                "original_contract_version": PREDECESSOR_CONTRACT_VERSION,
+                "original_adapter_digest": PREDECESSOR_ADAPTER_DIGEST,
+                "predecessor_commit": PREDECESSOR_ADAPTER_COMMIT,
+                "transport_profile": transport["profile"],
+                "effective_transport_body_digest":
+                    transport["effective_transport_body_digest"],
+                "effective_transport_body_lf_digest":
+                    transport["effective_transport_body_lf_digest"],
+                "recovery_proof_digest": proof["proof_digest"],
+                "recovery_decision_digest": decision["decision_digest"],
+                "transition_revision": current["revision"] + 1,
+                "bound_at": self.now(),
+            }
+            fields = {
+                "issue_id": issue["id"],
+                "expected_issue_revision": issue["revision"],
+                "expected_status_category": bundle["status"],
+                "expected_assignee_id": None,
+                "creation_receipt_digest": None,
+                "discovered_by_read_only_proof": True,
+                R0B_FIELD: binding,
+            }
+            transition = self.store.transition(
+                intent_id, o2.S_TARGET_BOUND,
+                expected_revision=current["revision"], actor=actor,
+                now=self.now(), fields=fields)
+            if transition.get("revision") != current["revision"] + 1:
+                raise R0BValidationRefused(
+                    "recovery transition revision is not the exact "
+                    "compare-and-set successor", intent_id=intent_id)
+            self.store.append_event(
+                intent_id, E_RECOVERY_BOUND, actor=actor, now=self.now(),
+                data={"issue_id": issue["id"],
+                      "proof_digest": proof["proof_digest"],
+                      "decision_digest": decision["decision_digest"],
+                      "transition_revision": transition["revision"],
+                      "transport_profile": transport["profile"],
+                      "effective_transport_body_digest":
+                          transport["effective_transport_body_digest"],
+                      "next_action": RECOVERY_OWNERSHIP_NEXT})
+            return {"status": o2.S_TARGET_BOUND, "intent_id": intent_id,
+                    "issue_id": issue["id"],
+                    "identifier": issue.get("identifier"),
+                    "issue_revision": issue["revision"],
+                    "revision": transition["revision"], "replayed": False,
+                    "side_effects": 0,
+                    "next_action": RECOVERY_OWNERSHIP_NEXT,
+                    "proof_digest": proof["proof_digest"]}
+        finally:
+            self._release(intent_id, actor)
 
     # -- step 3: ownership without start ------------------------------------
     def assign_ownership_once(self, intent_id: str, *, actor: str) -> dict:
@@ -2762,7 +3923,7 @@ class R0BForwardFactory(strict.CanaryOrchestrator):
 
     def _recover_impl(self, intent_id: str, *, actor: str,
                       allow_create: bool = False) -> dict:
-        intent = self._load(intent_id)
+        intent = self._load(intent_id, executable=False)
         data = intent["fields"].get(R0B_FIELD) or {}
         state = intent["state"]
         names = {e.get("name") for e in intent["events"]}
@@ -2772,6 +3933,15 @@ class R0BForwardFactory(strict.CanaryOrchestrator):
                   "create": E_CREATE_ISSUING in names,
                   "ownership": E_OWNERSHIP_ISSUING in names,
                   "publication": E_PUBLICATION_ISSUING in names})
+        if data.get("contract_version") == PREDECESSOR_CONTRACT_VERSION:
+            return {
+                "classification": "PREDECESSOR_CREATE_RECOVERY_REQUIRED",
+                "action": "RECOVER_CREATED_TARGET", "performed": False,
+                "reason": "the record was recorded by the known predecessor "
+                          "adapter and is not executable under these bytes; "
+                          "use the narrow recover_created_target operation "
+                          "with a Lead recovery disposition",
+                "side_effects": 0}
         if state in (o2.S_INTENT_RECORDED, o2.S_CREATE_AMBIGUOUS):
             if E_CREATE_ISSUING not in names:
                 if not allow_create:
@@ -3047,6 +4217,38 @@ def _create_checks_backlog(text: str) -> bool:
             and "arg" in text)
 
 
+def _unparse(node) -> str:
+    return ast.unparse(node) if node is not None else ""
+
+
+def _recovery_is_read_only(factory) -> bool:
+    nodes = [_method(factory, name) for name in (
+        "recover_created_target", "_execute_create_recovery",
+        "_replay_committed_recovery", "_recovery_prerequisites",
+        "_discover_recovery_candidates", "_build_recovery_proof",
+        "_recovery_refusal", "_require_predecessor_recovery_state")]
+    if any(node is None for node in nodes):
+        return False
+    for node in nodes:
+        for call, _line in _call_sites(node):
+            if call in RECOVERY_FORBIDDEN_METHODS:
+                return False
+    return True
+
+
+def _recovery_transitions(factory) -> bool:
+    node = _method(factory, "_execute_create_recovery")
+    if node is None:
+        return False
+    transitions = [sub for sub in ast.walk(node)
+                   if isinstance(sub, ast.Call)
+                   and getattr(sub.func, "attr", None) == "transition"]
+    if len(transitions) != 1:
+        return False
+    states = set(re.findall(r"o2\.S_[A-Z_]+", ast.unparse(transitions[0])))
+    return states == {"o2.S_TARGET_BOUND"}
+
+
 def wiring_proof(source=None, module_path=None) -> dict:
     """Static proof of factory-only execution and strict-only triggering."""
     path = Path(module_path) if module_path else Path(__file__).resolve()
@@ -3137,6 +4339,35 @@ def wiring_proof(source=None, module_path=None) -> dict:
         "publication_attempt_before_call": text.index(
             "E_PUBLICATION_ISSUING, actor=actor") < text.index(
             "note.publish_handoff("),
+        "transport_profile_present": (
+            f'TRANSPORT_PROFILE = "{TRANSPORT_PROFILE}"' in text
+            and functions.get("prepare_transport_body") is not None
+            and functions.get("single_terminal_lf_relation") is not None),
+        "prospective_preparation_before_spec": (
+            "source_body" in text and "transport_preparation" in text
+            and "transport_preparation" in _unparse(
+                functions.get("validate_creation_spec"))),
+        "recovery_operation_present": (
+            _method(factory, "recover_created_target") is not None
+            and _method(factory, "_execute_create_recovery") is not None),
+        "recovery_has_no_native_operations": _recovery_is_read_only(factory),
+        "recovery_uses_only_target_bound_edge": _recovery_transitions(
+            factory),
+        "predecessor_fence_present": (
+            "PREDECESSOR_CONTRACT_VERSION" in text
+            and "PREDECESSOR_ADAPTER_DIGEST" in text
+            and "R0BCompatibilityRefused" in text),
+        "execution_binding_validated": (
+            functions.get("_validate_execution_binding") is not None
+            and _calls_name(_method(factory, "_load"),
+                            "validate_intent_record")),
+        "recovery_decision_validated": (
+            functions.get("validate_recovery_decision") is not None
+            and _calls_name(_method(factory, "recover_created_target"),
+                            "validate_recovery_decision")),
+        "old_listing_kept_unstaged_discovery": (
+            _method(classes.get("EvidenceReader"), "issue_children") is not None
+            and "issue_children" in text),
     }
     checks["ok"] = all(bool(v) for v in checks.values())
     return {"module": ADAPTER_MODULE, "checks": checks, "ok": checks["ok"]}
@@ -3164,6 +4395,16 @@ def contract_proof() -> dict:
         "authority_artifact_path": AUTHORITY_ARTIFACT_PATH,
         "authority_ref": AUTHORITY_REF,
         "snapshot_taking_entrypoints_refused": True,
+        "predecessor_contract_version": PREDECESSOR_CONTRACT_VERSION,
+        "predecessor_adapter_digest": PREDECESSOR_ADAPTER_DIGEST,
+        "predecessor_adapter_commit": PREDECESSOR_ADAPTER_COMMIT,
+        "transport_profiles": list(TRANSPORT_PROFILES),
+        "recovery_decision_schema": RECOVERY_DECISION_SCHEMA,
+        "recovery_operation": "recover_created_target",
+        "recovery_native_capability": "none (reads and ledger writes only)",
+        "recovery_transition": "CREATE_AMBIGUOUS -> TARGET_BOUND",
+        "recovery_execution_fence": "U12-R0B/1.1 fenced execution binding",
+        "recovery_evidence_events": [E_RECOVERY_EVIDENCE, E_RECOVERY_BOUND],
     }
 
 
@@ -3230,6 +4471,84 @@ def cmd_authority_evidence(args) -> int:
     return 0
 
 
+def cmd_recover_created_target(args) -> int:
+    """Operator entrypoint: read-only runner + the one forward recovery edge.
+
+    The runner executes documentation-defined read commands only; the adapter
+    contains no create/assign/comment/rerun call on the recovery path.
+    """
+    store = o2.DurableIntentStore(args.ledger)
+    factory = build_r0b_factory(
+        store, runner=_probe_runner, executable=args.executable,
+        artifact_root=args.artifact_root or str(ROOT),
+        authority_reader=ReadinessManifestAuthorityReader(
+            args.authority_root or args.artifact_root or str(ROOT)))
+    decision = _load_json(args.decision_file)
+    try:
+        result = factory.recover_created_target(
+            args.intent_id, expected_target_id=args.target,
+            recovery_decision=decision, actor=args.actor,
+            execution_commit=args.execution_commit)
+    except o2.IntentError as exc:
+        print(json.dumps({"ok": False, "code": getattr(exc, "code", None),
+                          "message": exc.message,
+                          "details": getattr(exc, "details", {})},
+                         ensure_ascii=False, indent=2, sort_keys=True))
+        return 2
+    result = dict(result)
+    result["ok"] = result.get("status") == o2.S_TARGET_BOUND and \
+        result.get("outcome") != "RECOVERY_REFUSED"
+    print(json.dumps(result, ensure_ascii=False, indent=2, sort_keys=True))
+    return 0 if result["ok"] else 1
+
+
+def cmd_prepare_transport(args) -> int:
+    source = Path(args.source_file).read_text(encoding="utf-8")
+    try:
+        prepared = prepare_transport_body(source, profile=args.profile)
+    except R0BError as exc:
+        print(json.dumps({"ok": False, "code": getattr(exc, "code", None),
+                          "message": exc.message,
+                          "details": getattr(exc, "details", {})},
+                         ensure_ascii=False, indent=2, sort_keys=True))
+        return 2
+    out = {k: v for k, v in prepared.items() if k != "transport_body"}
+    out["ok"] = True
+    if args.out:
+        Path(args.out).write_text(prepared["transport_body"], encoding="utf-8",
+                                  newline="")
+        out["written"] = str(Path(args.out))
+    print(json.dumps(out, ensure_ascii=False, indent=2, sort_keys=True))
+    return 0
+
+
+def cmd_transport_relation(args) -> int:
+    source = Path(args.source_file).read_text(encoding="utf-8")
+    observed = Path(args.observed_file).read_text(encoding="utf-8")
+    result = single_terminal_lf_relation(source, observed)
+    result["ok"] = bool(result["accepted"])
+    print(json.dumps(result, ensure_ascii=False, indent=2, sort_keys=True))
+    return 0 if result["ok"] else 1
+
+
+def cmd_recovery_decision_digest(args) -> int:
+    decision = _load_json(args.decision_file)
+    if not isinstance(decision, dict):
+        print(json.dumps({"ok": False,
+                          "message": "recovery decision is not an object"},
+                         ensure_ascii=False, indent=2, sort_keys=True))
+        return 1
+    body = {k: v for k, v in decision.items() if k != "decision_digest"}
+    recomputed = digest(body)
+    result = {"ok": True, "decision_digest": recomputed}
+    if args.check:
+        found = decision.get("decision_digest")
+        result["found"] = found
+        result["ok"] = found == recomputed
+    print(json.dumps(result, ensure_ascii=False, indent=2, sort_keys=True))
+    return 0 if result["ok"] else 1
+
+
 def _probe_runner(argv: list) -> tuple:
     try:
         proc = subprocess.run(argv, capture_output=True, text=True,
@@ -3277,6 +4596,45 @@ def build_parser() -> argparse.ArgumentParser:
     auth.add_argument("--root", default=str(ROOT),
                       help="repository root holding the bound authority path")
     auth.set_defaults(func=cmd_authority_evidence)
+
+    rec = sub.add_parser("recover-created-target",
+                         help="one narrow forward recovery of the sole "
+                              "already-created target (CREATE_AMBIGUOUS -> "
+                              "TARGET_BOUND); read-only runner commands and "
+                              "the namespaced ledger edge only")
+    rec.add_argument("--ledger", required=True)
+    rec.add_argument("--intent-id", required=True)
+    rec.add_argument("--target", required=True)
+    rec.add_argument("--decision-file", required=True)
+    rec.add_argument("--actor", required=True)
+    rec.add_argument("--artifact-root", default=None)
+    rec.add_argument("--authority-root", default=None)
+    rec.add_argument("--execution-commit", default=None)
+    rec.add_argument("--executable", default="multica")
+    rec.set_defaults(func=cmd_recover_created_target)
+
+    prep = sub.add_parser("prepare-transport",
+                          help="prepare a source body for prospective "
+                               "creation under the accepted transport profile")
+    prep.add_argument("--source-file", required=True)
+    prep.add_argument("--profile", default=TRANSPORT_PROFILE)
+    prep.add_argument("--out", default=None,
+                      help="optional path for the prepared transport body")
+    prep.set_defaults(func=cmd_prepare_transport)
+
+    rel = sub.add_parser("transport-relation",
+                         help="read-only classification of one source/observed "
+                              "pair under the accepted transport relation")
+    rel.add_argument("--source-file", required=True)
+    rel.add_argument("--observed-file", required=True)
+    rel.set_defaults(func=cmd_transport_relation)
+
+    dec = sub.add_parser("recovery-decision-digest",
+                         help="print (and optionally check) the canonical "
+                              "self-digest of a recovery disposition")
+    dec.add_argument("--decision-file", required=True)
+    dec.add_argument("--check", action="store_true")
+    dec.set_defaults(func=cmd_recovery_decision_digest)
     return parser
 
 

@@ -1657,6 +1657,7 @@ class ImmutabilityTests(unittest.TestCase):
 
 class ProductionLedgerNonWriteTests(unittest.TestCase):
     PRODUCTION = Path(r"D:\AI\multica-state\web-imagegen\dispatch\ledger.jsonl")
+    LIVE_INTENT = "DI-e5e2b856f6b7cd36"
 
     @classmethod
     def setUpClass(cls):
@@ -1678,13 +1679,38 @@ class ProductionLedgerNonWriteTests(unittest.TestCase):
                 "production ledger changed during the isolated test run")
 
     def test_isolated_tests_do_not_touch_the_production_ledger(self):
+        """The isolated run must never write the production ledger.
+
+        The former whole-file digest pin was invalidated by the authorized
+        live R0 create (the ledger now carries the real DI-e5e2b856f6b7cd36
+        intent) and would be invalidated again by the Lead's later live
+        recovery, so the stable invariants are checked instead: the file is
+        intact append-only JSONL, it folds without corruption, the one live
+        intent still carries exactly one durable create attempt, and the
+        bytes are unchanged across the whole test run.
+        """
         if self.before is None:
             self.skipTest("production ledger not readable in this runtime")
         import hashlib
-        self.assertEqual(
+        self.assertRegex(
             "sha256:" + hashlib.sha256(self.before).hexdigest(),
-            "sha256:c96838987bd362b263c177ba670e193f2cdcdf02e1694f896667ab579"
-            "20c3412")
+            r"^sha256:[0-9a-f]{64}$")
+        records = []
+        for line in self.before.decode("utf-8").splitlines():
+            if not line.strip():
+                continue
+            record = json.loads(line)
+            self.assertIsInstance(record, dict)
+            records.append(record)
+        folded = o2.fold_records(records)
+        live = folded["intents"].get(self.LIVE_INTENT)
+        self.assertIsNotNone(
+            live, "the single live R0 intent must remain in the ledger")
+        attempts = [event for event in live["events"]
+                    if event.get("name") == u12.E_CREATE_ISSUING]
+        self.assertEqual(
+            len(attempts), 1,
+            "the live intent must keep exactly one durable create attempt")
 
 
 if __name__ == "__main__":
