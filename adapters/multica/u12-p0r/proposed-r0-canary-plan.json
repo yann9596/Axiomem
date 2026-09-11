@@ -33,11 +33,11 @@
   "run_correlation_rule": {
     "listing": "trusted untruncated full `issue runs <target> --output json` execution history; any truncation or ambiguity means manual stop",
     "on_ambiguity": "typed stop (TRIGGER_AMBIGUOUS); manual Lead/Human decision; no retry, no re-route, no status toggle",
-    "receipt": "strict gate only: direct run object, one-item run list, or {runs:[one]} with observable contract fields (id, issue_id, agent_id, status); `{run:{...}}`, competing wrapper keys, empty/multi lists, missing/blank fields, any repeated JSON object key at any nesting level (same-valued or not) and every other shape fail closed before the O2 parser",
+    "receipt": "strict gate only: direct run object, one-item run list, or {runs:[one]} with observable contract fields (id, issue_id, agent_id, status); `{run:{...}}`, competing wrapper keys, empty/multi lists, missing/blank fields, any repeated JSON object key at any nesting level (same-valued or not), any unquoted NaN/Infinity/-Infinity token at any position and every other shape fail closed before the O2 parser",
     "receipt_entrypoint": "tools.u12_strict_receipt.StrictReceiptBoundary.rerun_issue",
     "require": "exactly one new run with agent_id=fa7d16a7-2dae-4994-80b8-7435b3fcca47 and issue_id=target; zero new, multiple new, or a wrong-target run fails closed"
   },
-  "schema_version": "U12-P0R/1.1",
+  "schema_version": "U12-P0R/1.2",
   "sole_trigger": {
     "count": 1,
     "forbidden": [
@@ -71,13 +71,16 @@
     "duplicate_key_scope": "every_json_object_at_every_nesting_level",
     "evidence": "strict-receipt-gate-evidence.json",
     "module": "tools/u12_strict_receipt.py",
+    "non_json_constant_rejected": true,
+    "non_json_constant_scope": "every_position_at_every_nesting_level",
     "orchestrator": "tools.u12_strict_receipt.CanaryOrchestrator",
     "permissive_entrypoint": "tools.chandoff_intent.O2DispatchBoundary.rerun_issue",
     "permissive_entrypoint_reachable_in_r0_path": false,
+    "quoted_constant_words_remain_legal": true,
     "receipt_entrypoint": "tools.u12_strict_receipt.StrictReceiptBoundary.rerun_issue",
     "same_valued_duplicate_keys_rejected": true,
-    "sha256_lf": "sha256:6d6452a5a17911926503a2eece3725cd58ac22b1ef10d7bb5f292901a207eb49",
-    "version": "U12-P0R/1.1"
+    "sha256_lf": "sha256:f37ed0912ecbdc3944529cffc6d7a28bc9a41d1faba8cd1e284eab6b0ccf4bed",
+    "version": "U12-P0R/1.2"
   },
   "supersedes": {
     "digest": "sha256:0b88856d9e9969d1d9357b3da7a114f34089e7b0247794c412dcb0e1a7febc7a",

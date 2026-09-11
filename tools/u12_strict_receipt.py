@@ -26,6 +26,18 @@ now raises during decoding, before classification and before the immutable O2
 parser is reachable. Duplicate-key refusal is a typed ambiguity
 (`duplicate_json_key` -> `StrictReceiptRefused` -> `TRIGGER_AMBIGUOUS`).
 
+F5 (YZT-82 repair): the strict decoder additionally refuses the unquoted
+constants `NaN`, `Infinity` and `-Infinity` at every position and nesting
+level. Python's default `json` decoder maps these three non-JSON tokens to
+float values, so `{"id": "r", ..., "extra": NaN}` passed classification and
+reached the O2 parser inside an ignored extra field. The strict
+`parse_constant` hook raises during decoding, before classification and
+before the immutable O2 parser is reachable; the refusal is the typed
+ambiguity `non_json_constant` -> `StrictReceiptRefused` ->
+`TRIGGER_AMBIGUOUS`. Quoted occurrences (`"NaN"`, `"Infinity"`,
+`"-Infinity"`) remain ordinary strings and finite JSON numbers are unchanged;
+no numeric-range rule is added.
+
 The accepted O2 parser (`chandoff_intent.parse_run_object`) is immutable
 history and keeps its historical behavior for accepted U06–U11 replays. It is
 reachable from R0 receipt handling only behind this strict preclassification:
@@ -50,7 +62,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 import chandoff_dispatch as dispatch  # noqa: E402
 import chandoff_intent as o2  # noqa: E402
 
-GATE_VERSION = "U12-P0R/1.1"
+GATE_VERSION = "U12-P0R/1.2"
 RECEIPT_ENTRYPOINT = "tools.u12_strict_receipt.StrictReceiptBoundary.rerun_issue"
 PERMISSIVE_ENTRYPOINT = "tools.chandoff_intent.O2DispatchBoundary.rerun_issue"
 
@@ -64,6 +76,7 @@ RUN_FIELDS = tuple(dispatch.RUN_CONTRACT_FIELDS)
 R_INPUT_NOT_TEXT = "input_not_text"
 R_NOT_JSON = "not_json"
 R_DUPLICATE_KEY = "duplicate_json_key"
+R_NON_JSON_CONSTANT = "non_json_constant"
 R_SCALAR_OR_NULL = "scalar_or_null"
 R_RUN_WRAPPER = "run_wrapper_unauthorized"
 R_RUNS_NOT_LIST = "runs_not_list"
@@ -112,9 +125,37 @@ def _reject_duplicate_keys(pairs):
     return dict(pairs)
 
 
+class _NonJsonConstant(Exception):
+    """Strict-decoder refusal: an unquoted `NaN`/`Infinity`/`-Infinity`.
+
+    Raised from the `parse_constant` hook while decoding, so a receipt
+    carrying one of these non-JSON numeric tokens at any position or nesting
+    level never reaches shape classification or the immutable O2 parser.
+    Deliberately not a `ValueError` for the same reason as
+    `_DuplicateJsonKey`: the decoder may translate hook `ValueError`s into
+    `JSONDecodeError`, which would blur this typed refusal.
+    """
+
+    def __init__(self, token):
+        self.token = token
+        super().__init__(f"non-JSON numeric constant: {token}")
+
+
+def _reject_non_json_constant(token):
+    """`parse_constant` hook: fail closed on unquoted non-JSON constants.
+
+    The decoder calls this for exactly the unquoted tokens `NaN`, `Infinity`
+    and `-Infinity` wherever they appear (top level, direct run extras, run
+    rows, wrapper rows, nested objects and arrays). Quoted occurrences are
+    ordinary strings and never reach this hook.
+    """
+    raise _NonJsonConstant(token)
+
+
 def _decode_strict_json(text):
-    """Decode receipt JSON with duplicate-key refusal at every level."""
-    return json.loads(text, object_pairs_hook=_reject_duplicate_keys)
+    """Decode receipt JSON with duplicate-key and non-JSON-constant refusal."""
+    return json.loads(text, object_pairs_hook=_reject_duplicate_keys,
+                      parse_constant=_reject_non_json_constant)
 
 
 class StrictReceiptRefused(o2.ReceiptAmbiguousError):
@@ -158,7 +199,9 @@ def classify_strict_receipt(text) -> dict:
     `{"accepted": bool, "shape": str|None, "reason": str|None, ...}`.
 
     Decoding rejects any repeated JSON object key at every nesting level
-    (`duplicate_json_key`) before any shape is considered.
+    (`duplicate_json_key`) and any unquoted `NaN`/`Infinity`/`-Infinity`
+    token at every position (`non_json_constant`) before any shape is
+    considered.
     """
     if not isinstance(text, (str, bytes, bytearray)):
         return _refusal(R_INPUT_NOT_TEXT,
@@ -168,6 +211,9 @@ def classify_strict_receipt(text) -> dict:
     except _DuplicateJsonKey as exc:
         return _refusal(R_DUPLICATE_KEY, detail=str(exc)[:120],
                         duplicate_keys=list(exc.keys))
+    except _NonJsonConstant as exc:
+        return _refusal(R_NON_JSON_CONSTANT, detail=str(exc)[:120],
+                        constant_token=exc.token)
     except (json.JSONDecodeError, UnicodeDecodeError) as exc:
         return _refusal(R_NOT_JSON, detail=str(exc)[:120])
     if isinstance(data, list):
@@ -301,6 +347,10 @@ def gate_descriptor(module_path=None) -> dict:
         "duplicate_key_fails_closed": True,
         "duplicate_key_scope": "every_json_object_at_every_nesting_level",
         "same_valued_duplicate_keys_fail_closed": True,
+        "non_json_constant_fails_closed": True,
+        "non_json_constants": ["NaN", "Infinity", "-Infinity"],
+        "non_json_constant_scope": "every_position_at_every_nesting_level",
+        "quoted_constant_words_remain_legal": True,
         "no_bypass_no_fallback": True,
     }
 
@@ -362,6 +412,16 @@ def wiring_proof(source=None, module_path=None) -> dict:
                 return True
         return False
 
+    def _uses_parse_constant(node) -> bool:
+        if node is None:
+            return False
+        for sub in ast.walk(node):
+            if not isinstance(sub, ast.Call):
+                continue
+            if any(kw.arg == "parse_constant" for kw in sub.keywords):
+                return True
+        return False
+
     module_parse_calls = [
         (name, line) for node in tree.body
         for name, line in _call_sites(node) if name == "parse_run_object"]
@@ -384,6 +444,11 @@ def wiring_proof(source=None, module_path=None) -> dict:
         "duplicate_key_guard_present":
             functions.get("_reject_duplicate_keys") is not None
             and _uses_object_pairs_hook(functions.get("_decode_strict_json"))
+            and any(name == "_decode_strict_json"
+                    for name, _ in classify_sites),
+        "non_json_constant_guard_present":
+            functions.get("_reject_non_json_constant") is not None
+            and _uses_parse_constant(functions.get("_decode_strict_json"))
             and any(name == "_decode_strict_json"
                     for name, _ in classify_sites),
         "refusal_precedes_o2_parser":

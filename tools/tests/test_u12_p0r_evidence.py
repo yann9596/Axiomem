@@ -53,6 +53,16 @@ class InputBoundaryTests(unittest.TestCase):
                         result["checks"]["prior_p0r_gate"])
         self.assertEqual(result["checks"]["prior_p0r_manifest"]["commit"],
                          g.PRIOR_COMMIT)
+        self.assertEqual(result["checks"]["lineage_p0r_manifest"]["expected"],
+                         g.LINEAGE_P0R_MANIFEST_DIGEST)
+        self.assertEqual(result["checks"]["lineage_p0r_gate"]["expected"],
+                         g.LINEAGE_P0R_GATE_SHA256_LF)
+        self.assertTrue(result["checks"]["lineage_p0r_manifest"]["match"],
+                        result["checks"]["lineage_p0r_manifest"])
+        self.assertTrue(result["checks"]["lineage_p0r_gate"]["match"],
+                        result["checks"]["lineage_p0r_gate"])
+        self.assertEqual(result["checks"]["lineage_p0r_manifest"]["commit"],
+                         g.LINEAGE_COMMIT)
 
     def test_accepted_pins_and_errata_row(self):
         pins = g.pin_evidence(ROOT)
@@ -129,6 +139,14 @@ class CommittedBundleTests(unittest.TestCase):
                          g.PRIOR_P0R_GATE_SHA256_LF)
         self.assertTrue(prior_rev["verified_manifest_match"])
         self.assertTrue(prior_rev["verified_gate_match"])
+        lineage = manifest["supersedes"]["prior_u12_p0r_lineage"]
+        self.assertEqual(lineage["manifest_digest"],
+                         g.LINEAGE_P0R_MANIFEST_DIGEST)
+        self.assertEqual(lineage["strict_gate_sha256_lf"],
+                         g.LINEAGE_P0R_GATE_SHA256_LF)
+        self.assertEqual(lineage["commit"], g.LINEAGE_COMMIT)
+        self.assertTrue(lineage["verified_manifest_match"])
+        self.assertTrue(lineage["verified_gate_match"])
         self.assertFalse(manifest["r0_canary_authorized"])
         completion = manifest["completion_evidence"]
         self.assertEqual(completion["authorized_receipt_shapes_accepted"],
@@ -141,6 +159,14 @@ class CommittedBundleTests(unittest.TestCase):
         self.assertEqual(completion["f4_disposition"],
                          "RESOLVED_BY_STRICT_DUPLICATE_KEY_DECODER")
         self.assertIn("U12-P0R-F4", manifest["findings"])
+        self.assertTrue(completion["non_json_constants_rejected"])
+        self.assertEqual(completion["non_json_constant_parser_calls_on_rejection"],
+                         0)
+        self.assertEqual(completion["non_json_constant_cases_rejected"],
+                         "13/13")
+        self.assertEqual(completion["f5_disposition"],
+                         "RESOLVED_BY_STRICT_NON_JSON_CONSTANT_GUARD")
+        self.assertIn("U12-P0R-F5", manifest["findings"])
         self.assertTrue(completion["r0_path_uses_strict_gate_only"])
         self.assertFalse(completion["o2_parser_or_history_modified"])
         self.assertFalse(completion["trigger_route_derived_from_attribution_text"])
@@ -165,6 +191,10 @@ class CommittedBundleTests(unittest.TestCase):
         self.assertTrue(bound["same_valued_duplicate_keys_rejected"])
         self.assertEqual(bound["duplicate_key_scope"],
                          descriptor["duplicate_key_scope"])
+        self.assertTrue(bound["non_json_constant_rejected"])
+        self.assertEqual(bound["non_json_constant_scope"],
+                         descriptor["non_json_constant_scope"])
+        self.assertTrue(bound["quoted_constant_words_remain_legal"])
         provenance = plan["sole_trigger"]["route_provenance"]
         self.assertFalse(provenance["run_attribution_text_used_for_route"])
         self.assertEqual(provenance["source"], "issuing_transaction_and_ledger")
@@ -191,15 +221,28 @@ class CommittedBundleTests(unittest.TestCase):
         self.assertEqual(matrix["duplicate_key_cases_rejected"], "7/7")
         self.assertEqual(matrix["duplicate_key_parser_calls_on_rejection"], 0)
         self.assertEqual(len(matrix["duplicate_key_cases"]), 7)
+        self.assertTrue(matrix["non_json_constants_rejected"])
+        self.assertEqual(matrix["non_json_constant_cases_rejected"], "13/13")
+        self.assertEqual(
+            matrix["non_json_constant_parser_calls_on_rejection"], 0)
+        self.assertEqual(len(matrix["non_json_constant_cases"]), 13)
         self.assertEqual(matrix["permissive_parser_invoked_on_refusal"], 0)
         self.assertTrue(evidence["wiring_proof"]["ok"])
         self.assertTrue(
             evidence["wiring_proof"]["checks"]["duplicate_key_guard_present"])
+        self.assertTrue(
+            evidence["wiring_proof"]["checks"]
+            ["non_json_constant_guard_present"])
         self.assertTrue(evidence["gate"]["duplicate_key_fails_closed"])
         self.assertTrue(
             evidence["gate"]["same_valued_duplicate_keys_fail_closed"])
+        self.assertTrue(evidence["gate"]["non_json_constant_fails_closed"])
         self.assertTrue(evidence["f4_duplicate_key_boundary"]
                         ["enforced_before_o2_parser"])
+        self.assertTrue(evidence["f5_non_json_constant_boundary"]
+                        ["enforced_before_o2_parser"])
+        self.assertTrue(evidence["f5_non_json_constant_boundary"]
+                        ["quoted_constant_words_remain_legal"])
         self.assertFalse(
             evidence["r0_path"]["permissive_entrypoint_reachable_in_r0_path"])
         self.assertFalse(

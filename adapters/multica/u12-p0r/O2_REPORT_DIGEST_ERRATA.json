@@ -16,7 +16,7 @@
     "o2_report_edited": false,
     "superseding_value_for_future_verification": "sha256:78fb99d40ad22ffcf45a087314901e26df5c1d502b038404728c4f1672283665"
   },
-  "schema_version": "U12-P0R/1.1",
+  "schema_version": "U12-P0R/1.2",
   "status": "ACCEPTED_FORWARD_ERRATA",
   "subject": {
     "correct_lf_digest": "sha256:78fb99d40ad22ffcf45a087314901e26df5c1d502b038404728c4f1672283665",

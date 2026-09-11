@@ -75,6 +75,55 @@ DUPLICATE_RECEIPTS = (
     DUP_LIST_ROW_FIELD,
 )
 
+# U12-P0R-F5: unquoted NaN/Infinity/-Infinity are not valid JSON numeric
+# tokens. The first entry is the exact Lead reproduction. raw text again:
+# json.dumps would not emit these tokens for a strict consumer.
+NON_JSON_LEAD_REPRODUCTION = (
+    '{"id":"r","issue_id":"i","agent_id":"a","status":"queued","extra":NaN}')
+NON_JSON_TOP_LEVEL_NAN = "NaN"
+NON_JSON_TOP_LEVEL_INFINITY = "Infinity"
+NON_JSON_TOP_LEVEL_NEG_INFINITY = "-Infinity"
+NON_JSON_TOP_LEVEL_LIST = "[NaN]"
+NON_JSON_DIRECT_RUN_EXTRA_NAN = (
+    '{"id": "%s", "issue_id": "%s", "agent_id": "%s", "status": "queued", '
+    '"extra": NaN}' % (RUN_ID, ISSUE_ID, TARGET_AGENT))
+NON_JSON_DIRECT_RUN_EXTRA_INFINITY = (
+    '{"id": "%s", "issue_id": "%s", "agent_id": "%s", "status": "queued", '
+    '"extra": Infinity}' % (RUN_ID, ISSUE_ID, TARGET_AGENT))
+NON_JSON_DIRECT_RUN_EXTRA_NEG_INFINITY = (
+    '{"id": "%s", "issue_id": "%s", "agent_id": "%s", "status": "queued", '
+    '"extra": -Infinity}' % (RUN_ID, ISSUE_ID, TARGET_AGENT))
+NON_JSON_RUN_LIST_ROW_EXTRA = (
+    '[{"id": "%s", "issue_id": "%s", "agent_id": "%s", "status": "queued", '
+    '"extra": NaN}]' % (RUN_ID, ISSUE_ID, TARGET_AGENT))
+NON_JSON_RUNS_WRAPPER_ROW_EXTRA = (
+    '{"runs": [{"id": "%s", "issue_id": "%s", "agent_id": "%s", '
+    '"status": "queued", "extra": -Infinity}]}'
+    % (RUN_ID, ISSUE_ID, TARGET_AGENT))
+NON_JSON_RUNS_VALUE = '{"runs": NaN}'
+NON_JSON_NESTED_EXTRA_OBJECT = (
+    '{"id": "%s", "issue_id": "%s", "agent_id": "%s", "status": "queued", '
+    '"extra": {"k": Infinity}}' % (RUN_ID, ISSUE_ID, TARGET_AGENT))
+NON_JSON_NESTED_EXTRA_ARRAY = (
+    '{"id": "%s", "issue_id": "%s", "agent_id": "%s", "status": "queued", '
+    '"extra": [NaN]}' % (RUN_ID, ISSUE_ID, TARGET_AGENT))
+
+NON_JSON_CONSTANT_RECEIPTS = (
+    NON_JSON_LEAD_REPRODUCTION,
+    NON_JSON_TOP_LEVEL_NAN,
+    NON_JSON_TOP_LEVEL_INFINITY,
+    NON_JSON_TOP_LEVEL_NEG_INFINITY,
+    NON_JSON_TOP_LEVEL_LIST,
+    NON_JSON_DIRECT_RUN_EXTRA_NAN,
+    NON_JSON_DIRECT_RUN_EXTRA_INFINITY,
+    NON_JSON_DIRECT_RUN_EXTRA_NEG_INFINITY,
+    NON_JSON_RUN_LIST_ROW_EXTRA,
+    NON_JSON_RUNS_WRAPPER_ROW_EXTRA,
+    NON_JSON_RUNS_VALUE,
+    NON_JSON_NESTED_EXTRA_OBJECT,
+    NON_JSON_NESTED_EXTRA_ARRAY,
+)
+
 
 def run_json(**over) -> dict:
     payload = dict(RUN)
@@ -271,6 +320,82 @@ class DuplicateKeyTests(unittest.TestCase):
         self.assertEqual(len(spy.calls), 3)
 
 
+class NonJsonConstantTests(unittest.TestCase):
+    """U12-P0R-F5: unquoted NaN/Infinity/-Infinity fail closed at decode."""
+
+    def test_lead_reproduction_is_refused(self):
+        result = gate.classify_strict_receipt(NON_JSON_LEAD_REPRODUCTION)
+        self.assertFalse(result["accepted"])
+        self.assertEqual(result["reason"], gate.R_NON_JSON_CONSTANT)
+        self.assertIsNone(result["shape"])
+        self.assertEqual(result["constant_token"], "NaN")
+
+    def test_constants_refused_at_every_position_and_nesting_level(self):
+        tokens = {"NaN", "Infinity", "-Infinity"}
+        for payload in NON_JSON_CONSTANT_RECEIPTS:
+            with self.subTest(payload=payload):
+                result = gate.classify_strict_receipt(payload)
+                self.assertFalse(result["accepted"])
+                self.assertEqual(result["reason"], gate.R_NON_JSON_CONSTANT)
+                self.assertIsNone(result["shape"])
+                self.assertIn(result["constant_token"], tokens)
+
+    def test_constant_refusal_is_typed_ambiguous(self):
+        with self.assertRaises(gate.StrictReceiptRefused) as caught:
+            gate.parse_strict_receipt(NON_JSON_DIRECT_RUN_EXTRA_NAN)
+        self.assertEqual(caught.exception.code, "trigger_receipt_ambiguous")
+        self.assertIsInstance(caught.exception, o2.ReceiptAmbiguousError)
+        self.assertEqual(caught.exception.details.get("reason"),
+                         gate.R_NON_JSON_CONSTANT)
+
+    def test_constant_rejection_calls_no_o2_parser(self):
+        with ParserSpy() as spy:
+            for payload in NON_JSON_CONSTANT_RECEIPTS:
+                with self.subTest(payload=payload):
+                    with self.assertRaises(gate.StrictReceiptRefused):
+                        gate.parse_strict_receipt(payload)
+            self.assertEqual(spy.calls, [])
+
+    def test_bytes_receipt_constant_refused(self):
+        with self.assertRaises(gate.StrictReceiptRefused) as caught:
+            gate.parse_strict_receipt(
+                NON_JSON_RUNS_WRAPPER_ROW_EXTRA.encode("utf-8"))
+        self.assertEqual(caught.exception.details.get("reason"),
+                         gate.R_NON_JSON_CONSTANT)
+
+    def test_quoted_constant_words_and_finite_numbers_remain_legal(self):
+        controls = (
+            run_json(extra="NaN", note="-Infinity",
+                     nested={"words": ["Infinity", "-Infinity", "NaN"],
+                             "numbers": [0, 1, -2.5, 1e3]}),
+            run_json(status="Infinity"),
+        )
+        with ParserSpy() as spy:
+            for value in controls:
+                with self.subTest(value=value):
+                    parsed = gate.parse_strict_receipt(text(value))
+                    self.assertEqual(parsed["shape"], gate.SHAPE_RUN_OBJECT)
+                    self.assertEqual(parsed["run"]["id"], RUN_ID)
+        self.assertEqual(len(spy.calls), len(controls))
+
+    def test_authorized_shapes_without_constants_still_accepted(self):
+        with ParserSpy() as spy:
+            for shape, value in (
+                    (gate.SHAPE_RUN_OBJECT, RUN),
+                    (gate.SHAPE_RUN_LIST, [RUN]),
+                    (gate.SHAPE_RUNS_WRAPPER, {"runs": [RUN]})):
+                parsed = gate.parse_strict_receipt(text(value))
+                self.assertEqual(parsed["shape"], shape)
+                self.assertEqual(parsed["run"]["id"], RUN_ID)
+        self.assertEqual(len(spy.calls), 3)
+
+    def test_f4_duplicate_receipts_still_refused(self):
+        for payload in DUPLICATE_RECEIPTS:
+            with self.subTest(payload=payload):
+                result = gate.classify_strict_receipt(payload)
+                self.assertEqual(result["reason"], gate.R_DUPLICATE_KEY)
+
+
 class ParserReachabilityTests(unittest.TestCase):
     def test_permissive_parser_never_called_for_refused_shapes(self):
         refused = ({"run": RUN}, {"run": RUN, "runs": [RUN]},
@@ -302,6 +427,8 @@ class ParserReachabilityTests(unittest.TestCase):
         self.assertTrue(checks["assign_trigger_is_refused_without_parse"])
         self.assertTrue(checks["permissive_boundary_method_overridden"])
         self.assertTrue(checks["canary_orchestrator_replaces_boundary"])
+        self.assertTrue(checks["duplicate_key_guard_present"])
+        self.assertTrue(checks["non_json_constant_guard_present"])
         self.assertFalse(checks["permissive_entrypoint_reachable_in_r0_path"])
         self.assertEqual(checks["parse_run_object_call_sites"], 1)
 
@@ -312,6 +439,10 @@ class ParserReachabilityTests(unittest.TestCase):
         self.assertEqual(descriptor["receipt_entrypoint"],
                          gate.RECEIPT_ENTRYPOINT)
         self.assertFalse(descriptor["run_wrapper_authorized"])
+        self.assertTrue(descriptor["non_json_constant_fails_closed"])
+        self.assertEqual(descriptor["non_json_constant_scope"],
+                         "every_position_at_every_nesting_level")
+        self.assertTrue(descriptor["quoted_constant_words_remain_legal"])
         self.assertTrue(descriptor["sha256_lf"].startswith("sha256:"))
 
 
@@ -477,6 +608,34 @@ class CanaryOrchestratorE2ETests(unittest.TestCase):
     def test_duplicate_key_receipt_never_reaches_o2_parser(self):
         orch, runner, snap = self._armed(
             rerun_stdout=DUP_RUNS_EMPTY_OVERWRITTEN_VALID,
+            runs_post=[RUN])
+        with ParserSpy() as spy:
+            result = orch.issue_trigger(INTENT_ID, snap, actor="r1")
+        self.assertEqual(result["status"], o2.S_TRIGGER_AMBIGUOUS)
+        self.assertEqual(spy.calls, [])
+
+    def test_non_json_constant_receipt_stops_typed_and_never_retries(self):
+        orch, runner, snap = self._armed(
+            rerun_stdout=NON_JSON_DIRECT_RUN_EXTRA_NAN, runs_post=[RUN])
+        result = orch.issue_trigger(INTENT_ID, snap, actor="r1")
+        self.assertEqual(result["status"], o2.S_TRIGGER_AMBIGUOUS)
+        self.assertEqual(result["reason"], o2.R_TRIGGER_AMBIGUOUS)
+        self.assertEqual(result["side_effects"], 0)
+        triggers = [argv for argv in runner.issued
+                    if o2.classify_o2_command(argv)
+                    in o2.TRIGGER_COMMAND_CLASSES]
+        self.assertEqual(len(triggers), 1)
+        self.assertEqual(o2.classify_o2_command(triggers[0]),
+                         o2.C_RERUN_TRIGGER)
+        self.assertEqual(self.store.get(INTENT_ID)["state"],
+                         o2.S_TRIGGER_AMBIGUOUS)
+        replay = orch.issue_trigger(INTENT_ID, snap, actor="r1")
+        self.assertTrue(replay.get("replayed"))
+        self.assertEqual(len(runner.issued), 1)
+
+    def test_non_json_constant_receipt_never_reaches_o2_parser(self):
+        orch, runner, snap = self._armed(
+            rerun_stdout=NON_JSON_RUNS_WRAPPER_ROW_EXTRA,
             runs_post=[RUN])
         with ParserSpy() as spy:
             result = orch.issue_trigger(INTENT_ID, snap, actor="r1")

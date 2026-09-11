@@ -5,7 +5,7 @@
     "lead_u12_decision": "01a08e89-22ec-7db7-a581-0c62f30db538",
     "parent": "YZT-66"
   },
-  "evidence_digest": "sha256:837865b7f965e09a28a9f049283d913af8aa1b30bf3ca343dbcf070bd2e1ce21",
+  "evidence_digest": "sha256:86adfc6b62d27862efc4e26e8fb50712e9885ef475553a0c8b7f0ecbb6a0232b",
   "f4_duplicate_key_boundary": {
     "decoder": "_decode_strict_json with object_pairs_hook=_reject_duplicate_keys",
     "enforced_before_classification": true,
@@ -14,6 +14,21 @@
     "finding": "U12-P0R-F4",
     "same_valued_duplicates_rejected": true,
     "scope": "every JSON object at every nesting level (observable fields, runs wrapper, run rows, nested extra-field objects and arrays)"
+  },
+  "f5_non_json_constant_boundary": {
+    "constants": [
+      "NaN",
+      "Infinity",
+      "-Infinity"
+    ],
+    "decoder": "_decode_strict_json with parse_constant=_reject_non_json_constant",
+    "enforced_before_classification": true,
+    "enforced_before_o2_parser": true,
+    "enforced_during_decoding": true,
+    "finding": "U12-P0R-F5",
+    "finite_json_numbers_unchanged": true,
+    "quoted_constant_words_remain_legal": true,
+    "scope": "every position at every nesting level (top level, direct run extras, run rows, wrapper rows, nested extra-field objects and arrays, `runs` value)"
   },
   "gate": {
     "authorized_shapes": [
@@ -26,6 +41,13 @@
     "duplicate_key_scope": "every_json_object_at_every_nesting_level",
     "module": "tools/u12_strict_receipt.py",
     "no_bypass_no_fallback": true,
+    "non_json_constant_fails_closed": true,
+    "non_json_constant_scope": "every_position_at_every_nesting_level",
+    "non_json_constants": [
+      "NaN",
+      "Infinity",
+      "-Infinity"
+    ],
     "observable_fields": [
       "id",
       "issue_id",
@@ -34,11 +56,12 @@
     ],
     "orchestrator": "tools.u12_strict_receipt.CanaryOrchestrator",
     "permissive_entrypoint": "tools.chandoff_intent.O2DispatchBoundary.rerun_issue",
+    "quoted_constant_words_remain_legal": true,
     "receipt_entrypoint": "tools.u12_strict_receipt.StrictReceiptBoundary.rerun_issue",
     "run_wrapper_authorized": false,
     "same_valued_duplicate_keys_fail_closed": true,
-    "sha256_lf": "sha256:6d6452a5a17911926503a2eece3725cd58ac22b1ef10d7bb5f292901a207eb49",
-    "version": "U12-P0R/1.1"
+    "sha256_lf": "sha256:f37ed0912ecbdc3944529cffc6d7a28bc9a41d1faba8cd1e284eab6b0ccf4bed",
+    "version": "U12-P0R/1.2"
   },
   "history_boundary": {
     "o2_parser_modified": false,
@@ -56,7 +79,7 @@
     "permissive_entrypoint_reachable_in_r0_path": false,
     "receipt_entrypoint": "tools.u12_strict_receipt.StrictReceiptBoundary.rerun_issue"
   },
-  "schema_version": "U12-P0R/1.1",
+  "schema_version": "U12-P0R/1.2",
   "shape_matrix": {
     "all_unauthorized_or_ambiguous_shapes_rejected": true,
     "authorized_cases": [
@@ -71,6 +94,14 @@
       {
         "accepted": true,
         "case": "direct_run_object_with_extra_fields",
+        "classified_shape": "run_object",
+        "expected_shape": "run_object",
+        "parse_run_object_calls": 1,
+        "run_id": "run-1"
+      },
+      {
+        "accepted": true,
+        "case": "direct_run_object_with_quoted_constant_words",
         "classified_shape": "run_object",
         "expected_shape": "run_object",
         "parse_run_object_calls": 1,
@@ -93,7 +124,7 @@
         "run_id": "run-1"
       }
     ],
-    "authorized_cases_accepted": "4/4",
+    "authorized_cases_accepted": "5/5",
     "authorized_receipt_shapes_accepted": "3/3",
     "authorized_shapes": [
       "run_object",
@@ -114,14 +145,33 @@
     "duplicate_key_parser_calls_on_rejection": 0,
     "duplicate_key_policy": "any repeated JSON object key at any nesting level fails closed during decoding, before classification and the O2 parser",
     "duplicate_keys_including_same_value_rejected": true,
-    "gate_version": "U12-P0R/1.1",
+    "gate_version": "U12-P0R/1.2",
     "kind": "u12_p0r_strict_receipt_shape_matrix",
     "live_triggers_issued": 0,
+    "non_json_constant_cases": [
+      "non_json_constant_lead_reproduction",
+      "non_json_constant_top_level_nan",
+      "non_json_constant_top_level_infinity",
+      "non_json_constant_top_level_neg_infinity",
+      "non_json_constant_top_level_list",
+      "non_json_constant_direct_run_extra_nan",
+      "non_json_constant_direct_run_extra_infinity",
+      "non_json_constant_direct_run_extra_neg_infinity",
+      "non_json_constant_run_list_row_extra",
+      "non_json_constant_runs_wrapper_row_extra",
+      "non_json_constant_runs_value",
+      "non_json_constant_nested_extra_object",
+      "non_json_constant_nested_extra_array"
+    ],
+    "non_json_constant_cases_rejected": "13/13",
+    "non_json_constant_parser_calls_on_rejection": 0,
+    "non_json_constant_policy": "unquoted NaN, Infinity and -Infinity are not JSON tokens and fail closed during decoding at every position and nesting level, before classification and the O2 parser; quoted occurrences remain ordinary strings",
+    "non_json_constants_rejected": true,
     "ok": true,
     "permissive_parser_invoked_on_refusal": 0,
     "permissive_parser_invoked_only_after_classification": true,
     "receipt_alone_counts_as_delivery": false,
-    "refused_case_count": 28,
+    "refused_case_count": 41,
     "refused_cases": [
       {
         "accepted": false,
@@ -514,10 +564,192 @@
           "reason": "duplicate_json_key",
           "type": "StrictReceiptRefused"
         }
+      },
+      {
+        "accepted": false,
+        "case": "non_json_constant_lead_reproduction",
+        "classified_shape": null,
+        "expected_reason": "non_json_constant",
+        "parse_run_object_calls": 0,
+        "reason": "non_json_constant",
+        "typed_stop": {
+          "code": "trigger_receipt_ambiguous",
+          "is_receipt_ambiguous": true,
+          "reason": "non_json_constant",
+          "type": "StrictReceiptRefused"
+        }
+      },
+      {
+        "accepted": false,
+        "case": "non_json_constant_top_level_nan",
+        "classified_shape": null,
+        "expected_reason": "non_json_constant",
+        "parse_run_object_calls": 0,
+        "reason": "non_json_constant",
+        "typed_stop": {
+          "code": "trigger_receipt_ambiguous",
+          "is_receipt_ambiguous": true,
+          "reason": "non_json_constant",
+          "type": "StrictReceiptRefused"
+        }
+      },
+      {
+        "accepted": false,
+        "case": "non_json_constant_top_level_infinity",
+        "classified_shape": null,
+        "expected_reason": "non_json_constant",
+        "parse_run_object_calls": 0,
+        "reason": "non_json_constant",
+        "typed_stop": {
+          "code": "trigger_receipt_ambiguous",
+          "is_receipt_ambiguous": true,
+          "reason": "non_json_constant",
+          "type": "StrictReceiptRefused"
+        }
+      },
+      {
+        "accepted": false,
+        "case": "non_json_constant_top_level_neg_infinity",
+        "classified_shape": null,
+        "expected_reason": "non_json_constant",
+        "parse_run_object_calls": 0,
+        "reason": "non_json_constant",
+        "typed_stop": {
+          "code": "trigger_receipt_ambiguous",
+          "is_receipt_ambiguous": true,
+          "reason": "non_json_constant",
+          "type": "StrictReceiptRefused"
+        }
+      },
+      {
+        "accepted": false,
+        "case": "non_json_constant_top_level_list",
+        "classified_shape": null,
+        "expected_reason": "non_json_constant",
+        "parse_run_object_calls": 0,
+        "reason": "non_json_constant",
+        "typed_stop": {
+          "code": "trigger_receipt_ambiguous",
+          "is_receipt_ambiguous": true,
+          "reason": "non_json_constant",
+          "type": "StrictReceiptRefused"
+        }
+      },
+      {
+        "accepted": false,
+        "case": "non_json_constant_direct_run_extra_nan",
+        "classified_shape": null,
+        "expected_reason": "non_json_constant",
+        "parse_run_object_calls": 0,
+        "reason": "non_json_constant",
+        "typed_stop": {
+          "code": "trigger_receipt_ambiguous",
+          "is_receipt_ambiguous": true,
+          "reason": "non_json_constant",
+          "type": "StrictReceiptRefused"
+        }
+      },
+      {
+        "accepted": false,
+        "case": "non_json_constant_direct_run_extra_infinity",
+        "classified_shape": null,
+        "expected_reason": "non_json_constant",
+        "parse_run_object_calls": 0,
+        "reason": "non_json_constant",
+        "typed_stop": {
+          "code": "trigger_receipt_ambiguous",
+          "is_receipt_ambiguous": true,
+          "reason": "non_json_constant",
+          "type": "StrictReceiptRefused"
+        }
+      },
+      {
+        "accepted": false,
+        "case": "non_json_constant_direct_run_extra_neg_infinity",
+        "classified_shape": null,
+        "expected_reason": "non_json_constant",
+        "parse_run_object_calls": 0,
+        "reason": "non_json_constant",
+        "typed_stop": {
+          "code": "trigger_receipt_ambiguous",
+          "is_receipt_ambiguous": true,
+          "reason": "non_json_constant",
+          "type": "StrictReceiptRefused"
+        }
+      },
+      {
+        "accepted": false,
+        "case": "non_json_constant_run_list_row_extra",
+        "classified_shape": null,
+        "expected_reason": "non_json_constant",
+        "parse_run_object_calls": 0,
+        "reason": "non_json_constant",
+        "typed_stop": {
+          "code": "trigger_receipt_ambiguous",
+          "is_receipt_ambiguous": true,
+          "reason": "non_json_constant",
+          "type": "StrictReceiptRefused"
+        }
+      },
+      {
+        "accepted": false,
+        "case": "non_json_constant_runs_wrapper_row_extra",
+        "classified_shape": null,
+        "expected_reason": "non_json_constant",
+        "parse_run_object_calls": 0,
+        "reason": "non_json_constant",
+        "typed_stop": {
+          "code": "trigger_receipt_ambiguous",
+          "is_receipt_ambiguous": true,
+          "reason": "non_json_constant",
+          "type": "StrictReceiptRefused"
+        }
+      },
+      {
+        "accepted": false,
+        "case": "non_json_constant_runs_value",
+        "classified_shape": null,
+        "expected_reason": "non_json_constant",
+        "parse_run_object_calls": 0,
+        "reason": "non_json_constant",
+        "typed_stop": {
+          "code": "trigger_receipt_ambiguous",
+          "is_receipt_ambiguous": true,
+          "reason": "non_json_constant",
+          "type": "StrictReceiptRefused"
+        }
+      },
+      {
+        "accepted": false,
+        "case": "non_json_constant_nested_extra_object",
+        "classified_shape": null,
+        "expected_reason": "non_json_constant",
+        "parse_run_object_calls": 0,
+        "reason": "non_json_constant",
+        "typed_stop": {
+          "code": "trigger_receipt_ambiguous",
+          "is_receipt_ambiguous": true,
+          "reason": "non_json_constant",
+          "type": "StrictReceiptRefused"
+        }
+      },
+      {
+        "accepted": false,
+        "case": "non_json_constant_nested_extra_array",
+        "classified_shape": null,
+        "expected_reason": "non_json_constant",
+        "parse_run_object_calls": 0,
+        "reason": "non_json_constant",
+        "typed_stop": {
+          "code": "trigger_receipt_ambiguous",
+          "is_receipt_ambiguous": true,
+          "reason": "non_json_constant",
+          "type": "StrictReceiptRefused"
+        }
       }
     ],
     "run_wrapper_shape_rejected": true,
-    "schema_version": "U12-P0R/1.1",
+    "schema_version": "U12-P0R/1.2",
     "shape_acceptance": {
       "run_list": true,
       "run_object": true,
@@ -542,6 +774,7 @@
       "canary_orchestrator_replaces_boundary": true,
       "classify_precedes_o2_parser": true,
       "duplicate_key_guard_present": true,
+      "non_json_constant_guard_present": true,
       "ok": true,
       "parse_run_object_call_sites": 1,
       "parse_run_object_only_in_parse_strict_receipt": true,
