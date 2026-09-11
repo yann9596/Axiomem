@@ -1,0 +1,137 @@
+{
+  "generated_at": "2026-09-11T06:31:57Z",
+  "honesty_statement": "Fixture-positive lifecycle evidence is not live evidence sufficiency; no live create/assign/publication/rerun was performed.",
+  "immutable_bytes_and_non_write": {
+    "test_accepted_predecessor_pins_reproduce": "ok",
+    "test_adapter_has_no_production_ledger_reference": "ok",
+    "test_artifact_dependency_digest_matches_accepted_pins": "ok",
+    "test_imported_implementations_are_byte_unchanged_vs_base_commit": "ok",
+    "test_isolated_tests_do_not_touch_the_production_ledger": "ok",
+    "test_strict_gate_wiring_and_version_unchanged": "ok"
+  },
+  "kind": "u12_r0bi_lifecycle_evidence",
+  "positive_lifecycle": {
+    "case": "HappyPathTests.test_full_lifecycle_binds_observed_revision_and_one_rerun",
+    "create_commands": 1,
+    "description": "real frozen C -> unique unassigned backlog create -> ownership no-start -> real-target E -> own original note, attributed observed revision -> TRIGGER_READY -> one strict rerun -> exactly one correlated run",
+    "observed_revision_binding": true,
+    "ownership_commands": 1,
+    "publication_commands": 1,
+    "rerun_commands": 1,
+    "status": "ok"
+  },
+  "predicate_matrix": {
+    "test_artifact_or_fingerprint_failure_is_incomplete": "ok",
+    "test_missing_note_is_not_a_pass": "ok",
+    "test_moving_revision_during_collection_is_refused": "ok",
+    "test_multiple_attempts_are_incomplete": "ok",
+    "test_run_evidence_is_refused": "ok",
+    "test_unknown_changed_field_is_refused": "ok"
+  },
+  "recovery_and_leases": {
+    "test_ambiguous_create_without_discovery_stops_and_never_duplicates": "ok",
+    "test_attempt_without_visible_note_stays_blocked": "ok",
+    "test_competing_lease_refuses_before_any_external_call": "ok",
+    "test_expired_lease_can_resume_without_duplicate_attempt": "ok",
+    "test_lost_create_response_recovers_read_only": "ok",
+    "test_no_ownership_attempt_allows_one_authorized_call": "ok",
+    "test_ownership_attempt_without_proof_stops": "ok",
+    "test_recover_never_republishes_after_attempt": "ok",
+    "test_uncertain_publication_then_read_only_confirmation": "ok"
+  },
+  "recovery_matrix": {
+    "test_classification_at_every_boundary": "ok",
+    "test_factory_trigger_rejects_snapshot_note_binding": "ok",
+    "test_malformed_rerun_receipt_is_trigger_ambiguous_and_never_retried": "ok",
+    "test_refresh_state_requires_lead_disposition": "ok",
+    "test_trigger_issuing_without_visible_run_is_read_only": "ok",
+    "test_two_workers_never_duplicate_the_create": "ok"
+  },
+  "rejected_cases": {
+    "ImmutabilityTests": {
+      "cases": {
+        "test_accepted_predecessor_pins_reproduce": "ok",
+        "test_adapter_has_no_production_ledger_reference": "ok",
+        "test_artifact_dependency_digest_matches_accepted_pins": "ok",
+        "test_imported_implementations_are_byte_unchanged_vs_base_commit": "ok",
+        "test_strict_gate_wiring_and_version_unchanged": "ok"
+      },
+      "status": "all_ok"
+    },
+    "PredicateMatrixTests": {
+      "cases": {
+        "test_artifact_or_fingerprint_failure_is_incomplete": "ok",
+        "test_missing_note_is_not_a_pass": "ok",
+        "test_moving_revision_during_collection_is_refused": "ok",
+        "test_multiple_attempts_are_incomplete": "ok",
+        "test_run_evidence_is_refused": "ok",
+        "test_unknown_changed_field_is_refused": "ok"
+      },
+      "status": "all_ok"
+    },
+    "ProductionLedgerNonWriteTests": {
+      "cases": {
+        "test_isolated_tests_do_not_touch_the_production_ledger": "ok"
+      },
+      "status": "all_ok"
+    },
+    "PublicationRejectionTests": {
+      "cases": {
+        "test_assignee_and_status_change_fail_closed": "ok",
+        "test_description_change_around_publication_fails_closed": "ok",
+        "test_duplicate_identical_note_fails_closed": "ok",
+        "test_edited_note_fails_closed": "ok",
+        "test_missing_source_run_fails_closed": "ok",
+        "test_truncated_comment_evidence_is_incomplete": "ok",
+        "test_truncated_run_evidence_is_incomplete": "ok",
+        "test_truncated_timeline_evidence_is_incomplete": "ok",
+        "test_unexpected_run_around_publication_fails_closed": "ok",
+        "test_unrelated_activity_delta_fails_closed": "ok"
+      },
+      "status": "all_ok"
+    },
+    "RecoveryMatrixTests": {
+      "cases": {
+        "test_classification_at_every_boundary": "ok",
+        "test_factory_trigger_rejects_snapshot_note_binding": "ok",
+        "test_malformed_rerun_receipt_is_trigger_ambiguous_and_never_retried": "ok",
+        "test_refresh_state_requires_lead_disposition": "ok",
+        "test_trigger_issuing_without_visible_run_is_read_only": "ok",
+        "test_two_workers_never_duplicate_the_create": "ok"
+      },
+      "status": "all_ok"
+    },
+    "RecoveryTests": {
+      "cases": {
+        "test_ambiguous_create_without_discovery_stops_and_never_duplicates": "ok",
+        "test_attempt_without_visible_note_stays_blocked": "ok",
+        "test_competing_lease_refuses_before_any_external_call": "ok",
+        "test_expired_lease_can_resume_without_duplicate_attempt": "ok",
+        "test_lost_create_response_recovers_read_only": "ok",
+        "test_no_ownership_attempt_allows_one_authorized_call": "ok",
+        "test_ownership_attempt_without_proof_stops": "ok",
+        "test_recover_never_republishes_after_attempt": "ok",
+        "test_uncertain_publication_then_read_only_confirmation": "ok"
+      },
+      "status": "all_ok"
+    },
+    "RejectionMatrixTests": {
+      "cases": {
+        "test_failed_self_check_is_refused": "ok",
+        "test_foreign_execution_task_ref_is_refused_before_publication": "ok",
+        "test_missing_authority_or_spec_pin_is_refused": "ok",
+        "test_partial_creation_package_is_refused": "ok",
+        "test_stale_creation_package_is_refused": "ok",
+        "test_tampered_artifact_dependency_digest_is_refused": "ok",
+        "test_wrong_creation_role_is_refused_before_create": "ok"
+      },
+      "status": "all_ok"
+    }
+  },
+  "schema_version": "U12-R0BI/1.0",
+  "task": "YZT-84",
+  "unchanged_revision_case": {
+    "case": "HappyPathTests.test_unchanged_revision_publication_is_accepted",
+    "status": "ok"
+  }
+}
