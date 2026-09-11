@@ -154,6 +154,7 @@ E_RECOVERY = "r0b_recovery"
 E_EVIDENCE_REFUSED = "r0b_evidence_refused"
 E_RECOVERY_EVIDENCE = "r0b_recovery_evidence"
 E_RECOVERY_BOUND = "r0b_recovery_bound"
+E_PUBLICATION_RECOVERY_EVIDENCE = "r0b_publication_recovery_evidence"
 
 # --- typed reasons -----------------------------------------------------------
 REASON_CONTRACT = "R0B_CONTRACT_MISSING_OR_UNSUPPORTED"
@@ -222,6 +223,55 @@ PUB_UNEXPECTED_RUN = "PUBLICATION_UNEXPECTED_RUN"
 PUB_MOVING_REVISION = "PUBLICATION_MOVING_REVISION"
 
 VOLATILE_ISSUE_FIELDS = ("revision", "updated_at", "last_activity_at")
+
+# --- publication transport repair + proof-bearing O2 recovery exception ------
+# YZT-84 approved exception (Human approval comment
+# 01a09003-f830-79ac-b022-c7aaf2cf4039; Lead boundary
+# 01a08ffb-fb18-7135-bc19-c17297426127; authoritative contract
+# U12_R0_PUBLICATION_TRANSPORT_DECISION.md, raw SHA256 0df4cec9...). Only the
+# proof-bearing recovery commit writer/reducer and the execution-identity
+# migration are opened; ordinary BLOCKED transitions, the trigger matrix, the
+# strict receipt gate, Core and frozen T00 remain unchanged.
+PUBLICATION_TRANSPORT_PROFILE = "publication-single-terminal-lf-v1"
+PUBLICATION_TRANSPORT_PROFILES = (PUBLICATION_TRANSPORT_PROFILE,)
+PUBLICATION_TRANSPORT_RENDERER_TAIL = "\n```\n"
+PUBLICATION_RELATION_DIRECTIONAL = "publication-single-terminal-lf-removed"
+PUBLICATION_RECOVERY_OP = "publication_recovery_commit_v1"
+PUBLICATION_RECOVERY_DECISION_SCHEMA = \
+    "u12-r0b-publication-recovery-decision/1.0"
+PUBLICATION_RECOVERY_PROOF_SCHEMA = "u12-r0b-publication-recovery-proof/1.0"
+PUBLICATION_MIGRATION_SCHEMA = \
+    "u12-r0b-publication-execution-migration/1.0"
+PUBLICATION_RECOVERY_DISPOSITION = "RECOVER_BLOCKED_PUBLICATION"
+PUBLICATION_RECOVERY_SCOPE = "PUBLICATION_TRANSPORT_REPAIR"
+PUBLICATION_RECOVERY_PURPOSE = "SINGLE_PUBLICATION_RECOVERY_COMMIT"
+PUBLICATION_TRIGGER_POLICY = "NO_TRIGGER_ARM_OR_CREATE"
+PUBLICATION_TRANSPORT_DESIGN_REF = \
+    "attachment/01a08ffa-604f-70c3-a03e-0d166505fa3d"
+PUBLICATION_TRANSPORT_DESIGN_DIGEST = (
+    "sha256:0df4cec9a7cfb26a2b9146806280a2dcae4924f6cdb29190560ab17db32c8997")
+PUBLICATION_RECOVERY_HUMAN_APPROVAL_REF = \
+    "multica://comment/01a09003-f830-79ac-b022-c7aaf2cf4039"
+PUBLICATION_RECOVERY_LEAD_APPROVAL_REF = \
+    "multica://comment/01a08ffb-fb18-7135-bc19-c17297426127"
+PUBLICATION_SOURCE_ACTIVATION_REF = \
+    "multica://comment/01a08ff4-83c5-7b0c-a075-ec60184a843a"
+PREDECESSOR_FORWARD_COMMIT = "da99c112093ea576a449a1f3c8ce355652805a40"
+PREDECESSOR_FORWARD_ADAPTER_DIGEST = (
+    "sha256:40ccf07dd088d6a4077213714deef45c83f46116478ccc462c203ef7f07641fa")
+PUBLICATION_MIGRATION_COMMIT_REVISION = 5
+PUBLICATION_BLOCKER_REASON = REASON_PUBLICATION_PROVENANCE
+PUBLICATION_BLOCKER_CODE = PUB_NOTE_NOT_FOUND
+BODY_DIGEST_METHOD_LF = "digest_text_lf"
+BODY_DIGEST_METHOD_RAW = "raw_utf8"
+PUBLICATION_BINDING_SCHEMA = "u12-r0b-publication-binding/1.1"
+
+# Publication-history classification vocabulary (shared audit form).
+CLS_PUBLICATION_COMMAND = "uniquely-correlated-publication-command"
+CLS_PUBLICATION_RESULT = "uniquely-correlated-publication-result"
+CLS_OWNERSHIP_COMMAND = "uniquely-correlated-ownership-command"
+CLS_OWNERSHIP_RESULT = "uniquely-correlated-ownership-result"
+
 
 CREATE_FLAGS = ("--title", "--description-file", "--parent", "--project",
                 "--priority", "--status", "--output")
@@ -358,6 +408,104 @@ def prepare_transport_body(source_body, *,
         "transport_utf8_bytes": len(transport.encode("utf-8")),
         "body_digest_method": "digest_text_lf",
     }
+
+
+def prepare_publication_transport_body(rendered_body, *,
+                                       profile: str =
+                                       PUBLICATION_TRANSPORT_PROFILE) -> dict:
+    """Prepare the versioned publication transport body (future sends).
+
+    The accepted publication profile removes exactly one terminal U+000A from
+    the renderer output and sends the remaining characters verbatim. The
+    renderer's ending must be the exact accepted `\\n```\\n` shape -- no
+    strip/rstrip, no line-ending normalization, no BOM handling and no variant
+    guessing. The raw identities of the rendered body (R) and the transport
+    body (T) are recorded separately.
+    """
+    if profile not in PUBLICATION_TRANSPORT_PROFILES:
+        raise R0BValidationRefused(
+            "publication transport profile is not accepted", profile=profile,
+            accepted=list(PUBLICATION_TRANSPORT_PROFILES))
+    if not isinstance(rendered_body, str) or not rendered_body:
+        raise R0BValidationRefused(
+            "rendered_body must be a non-empty string", profile=profile)
+    if rendered_body.startswith("\ufeff"):
+        raise R0BValidationRefused(
+            "rendered_body carries a UTF-8 BOM; the publication transport "
+            "never normalizes framing bytes", profile=profile)
+    if rendered_body.endswith("\r\n") or rendered_body.endswith("\n\n"):
+        raise R0BValidationRefused(
+            "rendered_body carries a CRLF or repeated terminal LF; the "
+            "accepted renderer shape is exactly LF-fence-LF", profile=profile)
+    if not rendered_body.endswith(PUBLICATION_TRANSPORT_RENDERER_TAIL):
+        raise R0BValidationRefused(
+            "rendered_body does not end with the accepted LF-fence-LF "
+            "renderer shape; no variant is guessed", profile=profile)
+    transport = rendered_body[:-1]
+    if transport and transport[-1] in " \t\r\f\v":
+        raise R0BValidationRefused(
+            "rendered_body carries trailing whitespace before the final LF; "
+            "no trimming is applied", profile=profile)
+    return {
+        "profile": profile,
+        "relation": PUBLICATION_RELATION_DIRECTIONAL,
+        "transformation": "remove-single-terminal-lf",
+        "rendered_body": rendered_body,
+        "transport_body": transport,
+        "rendered_body_digest_raw": _sha256_utf8(rendered_body),
+        "rendered_body_digest_lf": digest_text_lf(rendered_body),
+        "transport_body_digest_raw": _sha256_utf8(transport),
+        "transport_body_digest_lf": digest_text_lf(transport),
+        "rendered_chars": len(rendered_body),
+        "rendered_utf8_bytes": len(rendered_body.encode("utf-8")),
+        "transport_chars": len(transport),
+        "transport_utf8_bytes": len(transport.encode("utf-8")),
+        "observed_digest_method": BODY_DIGEST_METHOD_RAW,
+    }
+
+
+def publication_transport_relation(transport, observed) -> dict:
+    """The future publication acceptance relation: O == T, exactly.
+
+    Only byte-exact equality of the prepared transport text and the observed
+    readback is accepted. There is no silent normalization fallback: leading
+    or interior whitespace changes, CRLF rewrites, BOMs, trailing spaces,
+    doubled terminal LFs and Unicode changes are all refusals.
+    """
+    if not isinstance(transport, str) or not isinstance(observed, str):
+        return {"accepted": False, "relation": None,
+                "reason": REASON_TRANSPORT_UNSUPPORTED,
+                "detail": "transport and observed must both be strings"}
+    if observed == transport:
+        return {"accepted": True, "relation": "exact-transport",
+                "removed_lf": False, "reason": None, "detail": ""}
+    return {"accepted": False, "relation": None, "removed_lf": False,
+            "reason": REASON_TRANSPORT_UNSUPPORTED,
+            "detail": "observed bytes are not exactly the prepared transport "
+                      "body; normalization is never applied"}
+
+
+def adapter_raw_digest(path=None) -> str:
+    """Exact raw sha256 of this module's bytes (no LF normalization)."""
+    target = Path(path) if path else Path(__file__).resolve()
+    return "sha256:" + hashlib.sha256(target.read_bytes()).hexdigest()
+
+
+def _file_lf_digest(path) -> str:
+    data = Path(path).read_bytes().replace(b"\r\n", b"\n")
+    return "sha256:" + hashlib.sha256(data).hexdigest()
+
+
+def _git_rev_parse(rev: str) -> str:
+    proc = subprocess.run(
+        ["git", "-c", f"safe.directory={ROOT}", "-C", str(ROOT),
+         "rev-parse", rev],
+        capture_output=True, text=True, encoding="utf-8")
+    if proc.returncode != 0:
+        raise R0BValidationRefused(
+            "git revision is not resolvable in this checkout",
+            rev=rev, error=(proc.stderr or "")[:160])
+    return (proc.stdout or "").strip()
 
 
 def _raw_prefix_digest(lines: list) -> str:
@@ -1262,7 +1410,9 @@ def r0b_execution_context(execution_context: dict, spec: dict, *,
     return validated
 
 
-def _validate_execution_binding(intent: dict, data: dict) -> dict:
+def _validate_execution_binding(intent: dict, data: dict, *,
+                                executing: str | None = None,
+                                allow_migration: bool = False) -> dict:
     """Validate a committed v1.1 forward-recovery binding end to end.
 
     This is the narrow compatibility receipt: only a record whose original
@@ -1272,6 +1422,13 @@ def _validate_execution_binding(intent: dict, data: dict) -> dict:
     bytes. Missing, edited, copied, cross-intent or hash-only proof refuses;
     an old v1.0 proof is preserved for inspection but is never silently
     upgraded into recovery authority.
+
+    `executing` names the digest the binding must match -- the running adapter
+    bytes by default, or the explicit historical da99c11 pin on the restricted
+    publication-recovery inspection path. `allow_migration` permits the
+    original da99c11 execution bytes only when a committed, complete
+    `publication_execution_migration` binds them to the running bytes; the
+    migration is validated on every such load, never trusted.
     """
     execution = data.get("execution_binding")
     if not isinstance(execution, dict):
@@ -1287,8 +1444,16 @@ def _validate_execution_binding(intent: dict, data: dict) -> dict:
         raise R0BContractError(
             "execution binding contract version is unsupported",
             contract_version=execution.get("contract_version"))
-    running = adapter_digest()
-    if execution.get("adapter_digest") != running:
+    running = executing or adapter_digest()
+    identity_granted_by_migration = False
+    migration = data.get("publication_execution_migration")
+    if migration is not None:
+        validate_publication_execution_migration(intent, data, migration,
+                                                 applying=False)
+        identity_granted_by_migration = (
+            migration.get("new_adapter_lf_digest") == running)
+    if execution.get("adapter_digest") != running and \
+            not identity_granted_by_migration:
         raise R0BDowngradeRefused(
             "execution binding names different execution adapter bytes; "
             "refusing to execute under a changed adapter (fail closed)",
@@ -1415,13 +1580,15 @@ def _validate_execution_binding(intent: dict, data: dict) -> dict:
         raise R0BValidationRefused(
             "the committed accepted adapter digest does not match the "
             "disposition", intent_id=intent["intent_id"])
-    if authority.get("adapter_digest") != running:
+    if authority.get("adapter_digest") != running and \
+            not identity_granted_by_migration:
         raise R0BValidationRefused(
             "the committed proof execution adapter digest does not match "
             "these executing bytes", intent_id=intent["intent_id"])
     if resolution.get("ok") is not True or \
             resolution.get("commit") != accepted["commit"] or \
-            resolution.get("adapter_digest") != running or \
+            (resolution.get("adapter_digest") != running
+             and not identity_granted_by_migration) or \
             resolution.get("resolver") not in EXECUTION_RESOLVERS:
         raise R0BValidationRefused(
             "the committed execution blob resolution is missing, mismatched "
@@ -1686,6 +1853,986 @@ def validate_recovery_decision(decision: dict) -> dict:
     return out
 
 
+def _strict_keys(obj, keys, what: str) -> dict:
+    if not isinstance(obj, dict):
+        raise R0BValidationRefused(f"{what} must be an object")
+    extras = sorted(set(obj) - set(keys))
+    missing = sorted(set(keys) - set(obj))
+    if extras or missing:
+        raise R0BValidationRefused(
+            f"{what} must stay within the exact schema",
+            extras=extras, missing=missing)
+    return obj
+
+
+def _require_full_commit(value, field: str) -> str:
+    if not isinstance(value, str) or not re.match(r"^[0-9a-f]{40}$", value):
+        raise R0BValidationRefused(
+            f"{field} must be a full 40-hex git object id",
+            value=str(value)[:48])
+    return value
+
+
+def validate_publication_recovery_decision(decision: dict) -> dict:
+    """Validate one immutable publication-recovery disposition (v1.0).
+
+    The Lead fixes the exact incident objects: the BLOCKED revision and its
+    blocking transition/evidence records, the sole publication attempt, the
+    exact expected note and the raw R/O digests, the completed create-recovery
+    proof/decision/execution-binding references, the accepted source
+    activation, the new execution-migration identities and the single-purpose
+    no-trigger scope. Every field is a commitment revalidated by the operation;
+    an unchecked boolean or a caller-supplied hash is never accepted.
+    """
+    fields = (
+        "schema", "decision_id", "disposition", "scope", "intent_id",
+        "expected_target_id", "expected_intent_revision", "expected_blocker",
+        "publication_attempt", "expected_note", "original_create_recovery",
+        "source_activation", "execution_migration", "purpose",
+        "trigger_policy", "design_ref", "design_digest", "human_approval_ref",
+        "lead_approval_ref", "approval_ref", "approved_by", "approved_at",
+        "decision_digest")
+    decision = _strict_keys(_require_dict(decision, "publication_recovery_"
+                                                     "decision"),
+                            fields, "publication recovery decision")
+    if decision["schema"] != PUBLICATION_RECOVERY_DECISION_SCHEMA:
+        raise R0BValidationRefused(
+            "publication recovery decision schema is unsupported; an old or "
+            "hash-only disposition is never accepted",
+            schema=decision["schema"])
+    _require_text(decision["decision_id"], "decision.decision_id")
+    if decision["disposition"] != PUBLICATION_RECOVERY_DISPOSITION:
+        raise R0BValidationRefused(
+            "publication recovery disposition is unsupported",
+            disposition=decision["disposition"])
+    if decision["scope"] != PUBLICATION_RECOVERY_SCOPE:
+        raise R0BValidationRefused(
+            "publication recovery scope is unsupported",
+            scope=decision["scope"])
+    if not isinstance(decision["intent_id"], str) or \
+            not re.match(r"^DI-[0-9a-f]{16}$", decision["intent_id"]):
+        raise R0BValidationRefused(
+            "publication recovery decision intent_id is not DI-<16 hex>")
+    _require_uuid(decision["expected_target_id"],
+                  "decision.expected_target_id")
+    revision = decision["expected_intent_revision"]
+    if not isinstance(revision, int) or revision < 1:
+        raise R0BValidationRefused(
+            "decision.expected_intent_revision must be a positive integer")
+    blocker = _strict_keys(
+        decision["expected_blocker"],
+        ("seq", "digest", "reason", "evidence_code", "evidence_event"),
+        "decision.expected_blocker")
+    if not isinstance(blocker["seq"], int) or blocker["seq"] < 1:
+        raise R0BValidationRefused(
+            "decision.expected_blocker.seq must be a positive integer")
+    _require_digest(blocker["digest"], "decision.expected_blocker.digest")
+    if blocker["reason"] != PUBLICATION_BLOCKER_REASON:
+        raise R0BValidationRefused(
+            "decision.expected_blocker.reason is not the exact blocking reason",
+            reason=blocker["reason"])
+    if blocker["evidence_code"] != PUBLICATION_BLOCKER_CODE:
+        raise R0BValidationRefused(
+            "decision.expected_blocker.evidence_code is not the exact "
+            "publication evidence code", evidence_code=blocker["evidence_code"])
+    evidence_event = _strict_keys(
+        blocker["evidence_event"], ("seq", "digest"),
+        "decision.expected_blocker.evidence_event")
+    if not isinstance(evidence_event["seq"], int) or evidence_event["seq"] < 1:
+        raise R0BValidationRefused(
+            "decision.expected_blocker.evidence_event.seq must be positive")
+    _require_digest(evidence_event["digest"],
+                    "decision.expected_blocker.evidence_event.digest")
+    attempt = _strict_keys(
+        decision["publication_attempt"],
+        ("seq", "digest", "operation_id"),
+        "decision.publication_attempt")
+    if not isinstance(attempt["seq"], int) or attempt["seq"] < 1:
+        raise R0BValidationRefused(
+            "decision.publication_attempt.seq must be a positive integer")
+    _require_digest(attempt["digest"], "decision.publication_attempt.digest")
+    _require_text(attempt["operation_id"],
+                  "decision.publication_attempt.operation_id")
+    note = _strict_keys(
+        decision["expected_note"],
+        ("note_comment_id", "revision", "created_at", "updated_at",
+         "author_id", "author_type", "source_task_id", "parent_id",
+         "rendered_raw_digest", "observed_raw_digest"),
+        "decision.expected_note")
+    _require_uuid(note["note_comment_id"], "decision.expected_note."
+                                           "note_comment_id")
+    if note["revision"] != 1:
+        raise R0BValidationRefused(
+            "decision.expected_note.revision must be the original revision 1")
+    _require_text(note["created_at"], "decision.expected_note.created_at")
+    _require_text(note["updated_at"], "decision.expected_note.updated_at")
+    if note["created_at"] != note["updated_at"]:
+        raise R0BValidationRefused(
+            "decision.expected_note must be an unedited original comment")
+    _require_uuid(note["author_id"], "decision.expected_note.author_id")
+    if note["author_type"] != "agent":
+        raise R0BValidationRefused(
+            "decision.expected_note.author_type must be agent",
+            author_type=note["author_type"])
+    _require_uuid(note["source_task_id"],
+                  "decision.expected_note.source_task_id")
+    if note["parent_id"] is not None:
+        raise R0BValidationRefused(
+            "decision.expected_note.parent_id must be null for this incident",
+            parent_id=str(note["parent_id"])[:48])
+    _require_digest(note["rendered_raw_digest"],
+                    "decision.expected_note.rendered_raw_digest")
+    _require_digest(note["observed_raw_digest"],
+                    "decision.expected_note.observed_raw_digest")
+    original = _strict_keys(
+        decision["original_create_recovery"],
+        ("decision_digest", "proof_digest", "execution_binding_digest",
+         "accepted_commit", "accepted_adapter_digest"),
+        "decision.original_create_recovery")
+    for key in ("decision_digest", "proof_digest", "execution_binding_digest",
+                "accepted_adapter_digest"):
+        _require_digest(original[key], f"decision.original_create_recovery.{key}")
+    _require_full_commit(original["accepted_commit"],
+                         "decision.original_create_recovery.accepted_commit")
+    activation = _strict_keys(
+        decision["source_activation"],
+        ("comment_id", "resolution_digest", "attachment_id"),
+        "decision.source_activation")
+    _require_text(activation["comment_id"], "decision.source_activation."
+                                            "comment_id")
+    _require_digest(activation["resolution_digest"],
+                    "decision.source_activation.resolution_digest")
+    _require_text(activation["attachment_id"], "decision.source_activation."
+                                               "attachment_id")
+    migration = _strict_keys(
+        decision["execution_migration"],
+        ("accepted_commit", "accepted_tree", "adapter_raw_digest",
+         "adapter_lf_digest", "store_file_digest", "note_file_digest",
+         "artifact_dependency_digest"),
+        "decision.execution_migration")
+    _require_full_commit(migration["accepted_commit"],
+                         "decision.execution_migration.accepted_commit")
+    _require_full_commit(migration["accepted_tree"],
+                         "decision.execution_migration.accepted_tree")
+    for key in ("adapter_raw_digest", "adapter_lf_digest", "store_file_digest",
+                "note_file_digest", "artifact_dependency_digest"):
+        _require_digest(migration[key], f"decision.execution_migration.{key}")
+    if decision["purpose"] != PUBLICATION_RECOVERY_PURPOSE:
+        raise R0BValidationRefused(
+            "decision.purpose is not the single bounded recovery purpose",
+            purpose=decision["purpose"])
+    if decision["trigger_policy"] != PUBLICATION_TRIGGER_POLICY:
+        raise R0BValidationRefused(
+            "decision.trigger_policy must forbid arm/trigger/create",
+            trigger_policy=decision["trigger_policy"])
+    if decision["design_ref"] != PUBLICATION_TRANSPORT_DESIGN_REF or \
+            decision["design_digest"] != PUBLICATION_TRANSPORT_DESIGN_DIGEST:
+        raise R0BValidationRefused(
+            "decision does not reference the accepted publication transport "
+            "contract and its exact digest",
+            design_ref=decision["design_ref"],
+            design_digest=decision["design_digest"])
+    if decision["human_approval_ref"] != \
+            PUBLICATION_RECOVERY_HUMAN_APPROVAL_REF:
+        raise R0BValidationRefused(
+            "decision does not reference the exact Human approval",
+            human_approval_ref=decision["human_approval_ref"])
+    if decision["lead_approval_ref"] != PUBLICATION_RECOVERY_LEAD_APPROVAL_REF:
+        raise R0BValidationRefused(
+            "decision does not reference the exact Lead exception boundary",
+            lead_approval_ref=decision["lead_approval_ref"])
+    _require_text(decision["approval_ref"], "decision.approval_ref")
+    _require_text(decision["approved_by"], "decision.approved_by")
+    _require_text(decision["approved_at"], "decision.approved_at")
+    try:
+        o2.parse_ts(decision["approved_at"])
+    except (ValueError, TypeError) as exc:
+        raise R0BValidationRefused(
+            f"decision.approved_at is not a timestamp: {exc}")
+    recomputed = digest({k: v for k, v in decision.items()
+                         if k != "decision_digest"})
+    if decision["decision_digest"] != recomputed:
+        raise R0BValidationRefused(
+            "publication recovery decision self-digest does not reproduce; "
+            "the disposition is edited or incomplete",
+            expected=recomputed, found=decision["decision_digest"])
+    return {k: v for k, v in decision.items()}
+
+
+def validate_publication_execution_migration(intent: dict, data: dict,
+                                             migration: dict, *,
+                                             applying: bool = False) -> dict:
+    """Validate the committed execution-identity migration chain exactly.
+
+    The migration binds the complete old da99c11 create-recovery identity
+    (execution binding, proof, decision, exact predecessor pins), the current
+    incident/attempt/blocker and audited shared prefix, and the new
+    commit/tree/adapter raw+LF identity plus the modified store/note/
+    dependency file digests. New adapter bytes and the migrated store/note
+    bytes are checked against the committed blobs and the executing files; a
+    migration that only substitutes the adapter hash, copies across intents or
+    hides changed dependency bytes is refused.
+    """
+    fields = (
+        "schema", "migration_id", "intent_id", "old_execution_binding_digest",
+        "old_recovery_proof_digest", "old_decision_digest",
+        "predecessor_commit", "predecessor_adapter_digest", "blocker_digest",
+        "attempt_digest", "shared_prefix", "new_commit", "new_tree",
+        "new_adapter_raw_digest", "new_adapter_lf_digest",
+        "store_file_digest", "note_file_digest", "artifact_dependency_digest",
+        "migration_decision_digest", "publication_recovery_proof_digest",
+        "from_revision", "commit_revision", "migration_digest")
+    migration = _strict_keys(_require_dict(
+        migration, "publication_execution_migration"), fields,
+        "publication execution migration")
+    if migration["schema"] != PUBLICATION_MIGRATION_SCHEMA:
+        raise R0BValidationRefused(
+            "publication execution migration schema is unsupported",
+            schema=migration["schema"])
+    _require_text(migration["migration_id"], "migration.migration_id")
+    if migration["intent_id"] != intent["intent_id"]:
+        raise R0BValidationRefused(
+            "the execution migration belongs to a different intent "
+            "(cross-intent migration refused)", intent_id=intent["intent_id"])
+    execution = data.get("execution_binding")
+    proof = data.get("recovery_proof")
+    if not isinstance(execution, dict) or not isinstance(proof, dict):
+        raise R0BValidationRefused(
+            "the execution migration requires the complete original "
+            "create-recovery binding and proof")
+    if migration["old_execution_binding_digest"] != digest(execution):
+        raise R0BValidationRefused(
+            "the migration does not bind the exact committed execution "
+            "binding digest")
+    if migration["old_recovery_proof_digest"] != digest(proof):
+        raise R0BValidationRefused(
+            "the migration does not bind the exact committed create-recovery "
+            "proof digest")
+    old_decision = proof.get("decision") or {}
+    if migration["old_decision_digest"] != old_decision.get("decision_digest"):
+        raise R0BValidationRefused(
+            "the migration does not bind the committed create-recovery "
+            "decision")
+    if execution.get("adapter_digest") != PREDECESSOR_FORWARD_ADAPTER_DIGEST or \
+            migration["predecessor_commit"] != PREDECESSOR_FORWARD_COMMIT or \
+            migration["predecessor_adapter_digest"] != \
+            PREDECESSOR_FORWARD_ADAPTER_DIGEST:
+        raise R0BValidationRefused(
+            "the migration does not name the exact da99c11 predecessor "
+            "commit/adapter identity")
+    publication_proof = data.get("publication_recovery_proof")
+    if not isinstance(publication_proof, dict):
+        raise R0BValidationRefused(
+            "the execution migration requires the committed publication "
+            "recovery proof")
+    if migration["publication_recovery_proof_digest"] != \
+            publication_proof.get("proof_digest"):
+        raise R0BValidationRefused(
+            "the migration does not bind the committed publication recovery "
+            "proof digest")
+    if migration["blocker_digest"] != \
+            (publication_proof.get("blocker") or {}).get("transition_digest"):
+        raise R0BValidationRefused(
+            "the migration blocker digest does not match the committed "
+            "publication recovery proof")
+    if migration["attempt_digest"] != \
+            (publication_proof.get("attempt") or {}).get("event_digest"):
+        raise R0BValidationRefused(
+            "the migration attempt digest does not match the committed "
+            "publication recovery proof")
+    shared_prefix = _strict_keys(
+        migration["shared_prefix"], ("length", "digest", "raw_prefix_digest"),
+        "migration.shared_prefix")
+    if not isinstance(shared_prefix["length"], int) or \
+            shared_prefix["length"] < 1:
+        raise R0BValidationRefused(
+            "migration.shared_prefix.length must be a positive integer")
+    _require_digest(shared_prefix["digest"],
+                    "migration.shared_prefix.digest")
+    _require_digest(shared_prefix["raw_prefix_digest"],
+                    "migration.shared_prefix.raw_prefix_digest")
+    if shared_prefix != (publication_proof.get("shared_history") or {}).get(
+            "audited_prefix"):
+        raise R0BValidationRefused(
+            "the migration shared prefix does not equal the committed "
+            "publication proof's audited prefix")
+    if migration["migration_decision_digest"] != \
+            (publication_proof.get("decision") or {}).get("decision_digest"):
+        raise R0BValidationRefused(
+            "the migration does not bind the Lead migration decision")
+    _require_full_commit(migration["new_commit"], "migration.new_commit")
+    _require_full_commit(migration["new_tree"], "migration.new_tree")
+    if migration["new_adapter_lf_digest"] != adapter_digest() or \
+            migration["new_adapter_raw_digest"] != adapter_raw_digest():
+        raise R0BValidationRefused(
+            "the migration's new adapter identity does not match these "
+            "executing adapter bytes; execution is never granted to "
+            "unaccepted bytes")
+    if _git_rev_parse(migration["new_commit"]) != migration["new_commit"]:
+        raise R0BValidationRefused(
+            "the migration's new commit is not resolvable in this checkout")
+    if _git_rev_parse(migration["new_commit"] + "^{tree}") != \
+            migration["new_tree"]:
+        raise R0BValidationRefused(
+            "the migration's new tree does not match the committed tree")
+    blob_reader = _git_blob_reader(ROOT)
+    for path, recorded in (
+            (ADAPTER_MODULE, migration["new_adapter_lf_digest"]),
+            ("tools/chandoff_intent.py", migration["store_file_digest"]),
+            ("tools/chandoff_note.py", migration["note_file_digest"])):
+        try:
+            blob = blob_reader(migration["new_commit"], path)
+        except Exception as exc:  # noqa: BLE001 - unresolvable is a refusal
+            raise R0BValidationRefused(
+                f"the migration's committed {path} blob is not resolvable: "
+                f"{type(exc).__name__}: {exc}")
+        actual = "sha256:" + hashlib.sha256(
+            bytes(blob).replace(b"\r\n", b"\n")).hexdigest()
+        if actual != recorded:
+            raise R0BValidationRefused(
+                f"the committed {path} bytes do not match the migration "
+                "digest", path=path, recorded=recorded, actual=actual)
+    if _file_lf_digest(ROOT / "tools/chandoff_intent.py") != \
+            migration["store_file_digest"]:
+        raise R0BValidationRefused(
+            "the executing store bytes changed after the migration; the "
+            "migrated identity does not cover these bytes")
+    if _file_lf_digest(ROOT / "tools/chandoff_note.py") != \
+            migration["note_file_digest"]:
+        raise R0BValidationRefused(
+            "the executing note bytes changed after the migration; the "
+            "migrated identity does not cover these bytes")
+    if migration["artifact_dependency_digest"] != \
+            (data.get("artifact_dependency") or {}).get("digest"):
+        raise R0BValidationRefused(
+            "the migration artifact-dependency digest does not match the "
+            "intent record")
+    if not isinstance(migration["from_revision"], int) or \
+            not isinstance(migration["commit_revision"], int):
+        raise R0BValidationRefused(
+            "migration revisions must be integers")
+    if migration["commit_revision"] != migration["from_revision"] + 1 or \
+            migration["commit_revision"] != PUBLICATION_MIGRATION_COMMIT_REVISION:
+        raise R0BValidationRefused(
+            "the migration must bind exactly the single BLOCKED -> "
+            "HANDOFF_PUBLISHED commit revision",
+            from_revision=migration["from_revision"],
+            commit_revision=migration["commit_revision"])
+    if applying:
+        if intent["revision"] != migration["from_revision"]:
+            raise R0BValidationRefused(
+                "the migration is not applied to its exact prior revision",
+                expected=migration["from_revision"],
+                found=intent["revision"])
+    elif intent["revision"] < migration["commit_revision"]:
+        raise R0BValidationRefused(
+            "the record has not reached the migration commit revision",
+            revision=intent["revision"])
+    recomputed = digest({k: v for k, v in migration.items()
+                         if k != "migration_digest"})
+    if migration["migration_digest"] != recomputed:
+        raise R0BValidationRefused(
+            "the execution migration self-digest does not reproduce",
+            expected=recomputed, found=migration["migration_digest"])
+    return dict(migration)
+
+
+def validate_publication_recovery_proof(proof: dict, *, intent: dict,
+                                        data: dict,
+                                        applying: bool = False) -> dict:
+    """Recompute every committed publication-recovery proof predicate.
+
+    The proof is fully inline and audit-reconstructable: the exact blocking
+    transition and evidence event, the sole publication attempt, the observed
+    note with both raw identities and the exact single-terminal-LF relation,
+    the complete platform observations, the classification of every shared
+    ledger record, the historical execution authority and the material
+    rechecks. Hash/count-only, edited, truncated or cross-intent proofs are
+    refused; successful parsing is never sufficient.
+    """
+    fields = (
+        "schema", "contract_version", "intent_id", "target", "state_before",
+        "intent_revision_before", "commit_revision", "blocker", "attempt",
+        "note", "original_create_recovery", "execution_authority_historical",
+        "observations", "shared_history", "material", "decision",
+        "decision_digest", "proof_digest")
+    proof = _strict_keys(_require_dict(proof, "publication_recovery_proof"),
+                         fields, "publication recovery proof")
+    if proof["schema"] != PUBLICATION_RECOVERY_PROOF_SCHEMA:
+        raise R0BValidationRefused(
+            "publication recovery proof schema is unsupported; an old or "
+            "hash-only proof is never accepted recovery authority",
+            schema=proof["schema"])
+    if proof["contract_version"] != CONTRACT_VERSION:
+        raise R0BValidationRefused(
+            "publication recovery proof contract version is unsupported")
+    if proof["intent_id"] != intent["intent_id"]:
+        raise R0BValidationRefused(
+            "the publication recovery proof belongs to a different intent "
+            "(cross-intent proof refused)")
+    if proof["state_before"] != o2.S_BLOCKED:
+        raise R0BValidationRefused(
+            "the publication recovery proof does not bind the supported prior "
+            "phase BLOCKED")
+    if proof["intent_revision_before"] != intent["revision"] and not applying:
+        raise R0BValidationRefused(
+            "the publication recovery proof revision does not match the "
+            "record", expected=proof["intent_revision_before"],
+            found=intent["revision"])
+    if applying and proof["intent_revision_before"] != intent["revision"]:
+        raise R0BValidationRefused(
+            "the publication recovery proof is not applied to its exact prior "
+            "revision")
+    if proof["commit_revision"] != proof["intent_revision_before"] + 1 or \
+            proof["commit_revision"] != PUBLICATION_MIGRATION_COMMIT_REVISION:
+        raise R0BValidationRefused(
+            "the publication recovery proof must bind exactly one "
+            "BLOCKED -> HANDOFF_PUBLISHED commit revision")
+    target = _strict_keys(proof["target"], ("issue_id", "identifier"),
+                          "proof.target")
+    bound_target = data.get("target_binding") or {}
+    if target["issue_id"] != bound_target.get("issue_id") or \
+            target["issue_id"] != intent["fields"].get("issue_id"):
+        raise R0BValidationRefused(
+            "the publication recovery proof target does not match the bound "
+            "target")
+    blocker = _strict_keys(
+        proof["blocker"],
+        ("transition_seq", "transition_digest", "reason", "evidence_code",
+         "evidence_event_seq", "evidence_event_digest", "detail"),
+        "proof.blocker")
+    for key in ("transition_seq", "evidence_event_seq"):
+        if not isinstance(blocker[key], int) or blocker[key] < 1:
+            raise R0BValidationRefused(
+                f"proof.blocker.{key} must be a positive integer")
+    _require_digest(blocker["transition_digest"], "proof.blocker."
+                                                   "transition_digest")
+    _require_digest(blocker["evidence_event_digest"], "proof.blocker."
+                                                      "evidence_event_digest")
+    if blocker["reason"] != REASON_PUBLICATION_PROVENANCE or \
+            blocker["evidence_code"] != PUB_NOTE_NOT_FOUND:
+        raise R0BValidationRefused(
+            "the publication recovery proof does not bind the exact typing "
+            "incident blocker")
+    attempt = _strict_keys(
+        proof["attempt"],
+        ("event_seq", "event_digest", "operation_id", "package_id",
+         "envelope_digest", "rendered_body_digest_lf",
+         "rendered_body_digest_raw", "rendered_chars",
+         "before_issue_revision", "prepared_by",
+         "prepared_at", "publisher_run_id", "parent_comment_id",
+         "before_evidence_digest"),
+        "proof.attempt")
+    if not isinstance(attempt["event_seq"], int) or attempt["event_seq"] < 1:
+        raise R0BValidationRefused(
+            "proof.attempt.event_seq must be a positive integer")
+    for key in ("event_digest", "envelope_digest", "rendered_body_digest_lf",
+                "rendered_body_digest_raw", "before_evidence_digest"):
+        _require_digest(attempt[key], f"proof.attempt.{key}")
+    execution = data.get("execution_context") or {}
+    if attempt["package_id"] != execution.get("package_id") or \
+            attempt["envelope_digest"] != execution.get("envelope_digest"):
+        raise R0BValidationRefused(
+            "the publication recovery proof attempt does not bind the "
+            "original E package identity")
+    if not isinstance(attempt["rendered_chars"], int) or \
+            attempt["rendered_chars"] < 1:
+        raise R0BValidationRefused(
+            "proof.attempt.rendered_chars must be a positive integer")
+    if not isinstance(attempt["before_issue_revision"], int) or \
+            attempt["before_issue_revision"] < 1:
+        raise R0BValidationRefused(
+            "proof.attempt.before_issue_revision must be a positive integer")
+    note = _strict_keys(
+        proof["note"],
+        ("note_comment_id", "revision", "created_at", "updated_at",
+         "author_id", "author_type", "source_task_id", "parent_id",
+         "observed_raw_digest", "observed_lf_digest", "observed_chars",
+         "observed_utf8_bytes", "rendered_raw_digest", "rendered_lf_digest",
+         "rendered_chars", "rendered_utf8_bytes", "relation",
+         "meta_prepared_by", "meta_prepared_at", "meta_package_id",
+         "meta_task_ref", "meta_target_role", "envelope_digest",
+         "record_parsed"),
+        "proof.note")
+    for key in ("observed_raw_digest", "observed_lf_digest",
+                "rendered_raw_digest", "rendered_lf_digest",
+                "envelope_digest"):
+        _require_digest(note[key], f"proof.note.{key}")
+    if note["relation"] != PUBLICATION_RELATION_DIRECTIONAL:
+        raise R0BValidationRefused(
+            "the publication recovery proof note relation is not the exact "
+            "approved historical single-terminal-LF removal",
+            relation=note["relation"])
+    if note["parent_id"] is not None:
+        raise R0BValidationRefused(
+            "the publication recovery proof note parent must be null")
+    if note["record_parsed"] is not True:
+        raise R0BValidationRefused(
+            "the publication recovery proof note must parse as a complete "
+            "CONTEXT_HANDOFF record")
+    if note["observed_chars"] + 1 != note["rendered_chars"]:
+        raise R0BValidationRefused(
+            "the publication recovery proof note lengths do not encode "
+            "exactly one removed terminal LF")
+    original = _strict_keys(
+        proof["original_create_recovery"],
+        ("decision_digest", "proof_digest", "execution_binding_digest",
+         "accepted_commit", "accepted_adapter_digest"),
+        "proof.original_create_recovery")
+    recovered_execution = data.get("execution_binding") or {}
+    recovered_proof = data.get("recovery_proof") or {}
+    recovered_decision = recovered_proof.get("decision") or {}
+    if original["execution_binding_digest"] != digest(recovered_execution) or \
+            original["proof_digest"] != digest(recovered_proof) or \
+            original["decision_digest"] != \
+            recovered_decision.get("decision_digest"):
+        raise R0BValidationRefused(
+            "the publication recovery proof does not reference the exact "
+            "committed create-recovery proof/decision/binding")
+    if original["accepted_commit"] != \
+            recovered_execution.get("accepted_execution_commit") or \
+            original["accepted_adapter_digest"] != \
+            recovered_execution.get("accepted_execution_adapter_digest"):
+        raise R0BValidationRefused(
+            "the publication recovery proof does not bind the accepted "
+            "create-recovery execution identity")
+    authority = _strict_keys(
+        proof["execution_authority_historical"],
+        ("commit", "adapter_digest", "resolver", "path", "ok"),
+        "proof.execution_authority_historical")
+    if authority["commit"] != PREDECESSOR_FORWARD_COMMIT or \
+            authority["adapter_digest"] != PREDECESSOR_FORWARD_ADAPTER_DIGEST \
+            or authority["resolver"] not in EXECUTION_RESOLVERS or \
+            authority["path"] != ADAPTER_MODULE or authority["ok"] is not True:
+        raise R0BValidationRefused(
+            "the publication recovery proof does not carry the exact "
+            "historical da99c11 execution authority")
+    observations = _strict_keys(
+        proof["observations"],
+        ("target_issue", "target_recheck", "comments", "activities", "runs",
+         "raw_responses", "digests"),
+        "proof.observations")
+    digests = _strict_keys(
+        observations["digests"],
+        ("target_issue", "target_recheck", "comments", "activities", "runs",
+         "raw_responses"),
+        "proof.observations.digests")
+    sections = {
+        "target_issue": (observations["target_issue"], dict),
+        "target_recheck": (observations["target_recheck"], dict),
+        "comments": (observations["comments"], list),
+        "activities": (observations["activities"], list),
+        "runs": (observations["runs"], list),
+        "raw_responses": (observations["raw_responses"], list),
+    }
+    for name, (body, kind) in sections.items():
+        if not isinstance(body, kind) or digests[name] != digest(body):
+            raise R0BValidationRefused(
+                f"the publication recovery proof {name} observations are "
+                "missing, edited, truncated or do not recompute")
+    if observations["target_issue"].get("id") != target["issue_id"] or \
+            observations["target_recheck"].get("id") != target["issue_id"]:
+        raise R0BValidationRefused(
+            "the publication recovery proof target observations do not name "
+            "the bound target")
+    for response in observations["raw_responses"]:
+        entry = _strict_keys(
+            response, ("argv", "exit_code", "stdout", "stdout_digest"),
+            "proof.observations.raw_responses[]")
+        if not isinstance(entry["argv"], list) or \
+                not all(isinstance(a, str) for a in entry["argv"]) or \
+                entry["exit_code"] != 0:
+            raise R0BValidationRefused(
+                "a publication recovery proof raw response is malformed or "
+                "was not a successful read")
+        if not isinstance(entry["stdout"], str) or \
+                entry["stdout_digest"] != _sha256_utf8(entry["stdout"]):
+            raise R0BValidationRefused(
+                "a publication recovery proof raw read response digest does "
+                "not reproduce")
+    shared = _strict_keys(
+        proof["shared_history"],
+        ("interval", "audited_prefix", "records", "create_pair",
+         "ownership_pair", "publication_pair", "classification_digest"),
+        "proof.shared_history")
+    if not isinstance(shared["records"], list) or not shared["records"]:
+        raise R0BValidationRefused(
+            "the publication recovery proof carries no inline shared-history "
+            "classification; a hash/count-only proof is not accepted")
+    if shared["classification_digest"] != publication_history_digest(shared):
+        raise R0BValidationRefused(
+            "the publication recovery proof shared-history classification "
+            "does not recompute; the proof is edited or incomplete")
+    for entry in shared["records"]:
+        item = _strict_keys(
+            entry, ("seq", "digest", "classification", "reason", "record"),
+            "proof.shared_history.records[]")
+        if item["digest"] != digest(item["record"]):
+            raise R0BValidationRefused(
+                "a publication recovery proof shared-history record digest "
+                "does not reproduce")
+    for pair_name in ("create_pair", "ownership_pair"):
+        pair = shared[pair_name]
+        if pair is not None:
+            pair = _strict_keys(
+                pair,
+                ("command_seq", "command_digest", "result_seq",
+                 "result_digest"),
+                f"proof.shared_history.{pair_name}")
+            if pair["result_seq"] != pair["command_seq"] + 1:
+                raise R0BValidationRefused(
+                    f"the publication recovery proof {pair_name} is not the "
+                    "uniquely correlated adjacent pair")
+            for key in ("command_digest", "result_digest"):
+                _require_digest(pair[key],
+                                f"proof.shared_history.{pair_name}.{key}")
+    publication_pair = shared["publication_pair"]
+    if publication_pair is not None:
+        publication_pair = _strict_keys(
+            publication_pair,
+            ("command_seq", "command_digest", "result_seq", "result_digest"),
+            "proof.shared_history.publication_pair")
+        if publication_pair["result_seq"] != \
+                publication_pair["command_seq"] + 1:
+            raise R0BValidationRefused(
+                "the publication command pair is not adjacent")
+        for key in ("command_digest", "result_digest"):
+            _require_digest(publication_pair[key],
+                            f"proof.shared_history.publication_pair.{key}")
+    material = _strict_keys(
+        proof["material"],
+        ("artifact_dependency_digest", "artifact_recheck_ok",
+         "authority", "fingerprint", "self_check", "source_join"),
+        "proof.material")
+    if material["artifact_dependency_digest"] != \
+            (data.get("artifact_dependency") or {}).get("digest"):
+        raise R0BValidationRefused(
+            "the publication recovery proof artifact dependency does not "
+            "match the intent record")
+    if material["artifact_recheck_ok"] is not True:
+        raise R0BValidationRefused(
+            "the publication recovery proof does not carry a true artifact "
+            "recheck")
+    fingerprint = _strict_keys(
+        material["fingerprint"], ("task_fingerprint", "built_from_digest"),
+        "proof.material.fingerprint")
+    _require_digest(fingerprint["task_fingerprint"],
+                    "proof.material.fingerprint.task_fingerprint")
+    _require_digest(fingerprint["built_from_digest"],
+                    "proof.material.fingerprint.built_from_digest")
+    self_check = _strict_keys(
+        material["self_check"], ("status", "action", "package_id", "reasons"),
+        "proof.material.self_check")
+    if self_check["status"] != "READY" or \
+            self_check["action"] != "USE_EXISTING":
+        raise R0BValidationRefused(
+            "the publication recovery proof SELF_CHECK is not "
+            "READY/USE_EXISTING")
+    join = _strict_keys(
+        material["source_join"],
+        ("creation_package_id", "execution_package_id", "envelope_digest",
+         "parent_issue_id", "target_task_ref"),
+        "proof.material.source_join")
+    if join["execution_package_id"] != attempt["package_id"] or \
+            join["envelope_digest"] != attempt["envelope_digest"]:
+        raise R0BValidationRefused(
+            "the publication recovery proof source parent/E join is broken")
+    recorded_decision = _strict_keys(
+        proof["decision"],
+        ("schema", "decision_id", "disposition", "scope", "intent_id",
+         "expected_target_id", "expected_intent_revision", "expected_blocker",
+         "publication_attempt", "expected_note", "original_create_recovery",
+         "source_activation", "execution_migration", "purpose",
+         "trigger_policy", "design_ref", "design_digest", "human_approval_ref",
+         "lead_approval_ref", "approval_ref", "approved_by", "approved_at",
+         "decision_digest"),
+        "proof.decision")
+    decision = validate_publication_recovery_decision(recorded_decision)
+    if proof["decision_digest"] != decision["decision_digest"]:
+        raise R0BValidationRefused(
+            "the publication recovery proof does not bind its decision")
+    # -- the decision's exact incident objects must equal the inline proof ---
+    if decision["intent_id"] != intent["intent_id"] or \
+            decision["expected_target_id"] != target["issue_id"]:
+        raise R0BValidationRefused(
+            "the decision does not name this intent/target")
+    if decision["expected_intent_revision"] != \
+            proof["intent_revision_before"]:
+        raise R0BValidationRefused(
+            "the decision prior revision does not match the proof")
+    expected_blocker = decision["expected_blocker"]
+    if expected_blocker["seq"] != blocker["transition_seq"] or \
+            expected_blocker["digest"] != blocker["transition_digest"] or \
+            expected_blocker["reason"] != blocker["reason"] or \
+            expected_blocker["evidence_code"] != blocker["evidence_code"] or \
+            expected_blocker["evidence_event"]["seq"] != \
+            blocker["evidence_event_seq"] or \
+            expected_blocker["evidence_event"]["digest"] != \
+            blocker["evidence_event_digest"]:
+        raise R0BValidationRefused(
+            "the decision blocker does not match the committed proof blocker")
+    expected_attempt = decision["publication_attempt"]
+    if expected_attempt["seq"] != attempt["event_seq"] or \
+            expected_attempt["digest"] != attempt["event_digest"] or \
+            expected_attempt["operation_id"] != attempt["operation_id"]:
+        raise R0BValidationRefused(
+            "the decision publication attempt does not match the committed "
+            "proof attempt")
+    expected_note = decision["expected_note"]
+    for key in ("note_comment_id", "revision", "created_at", "updated_at",
+                "author_id", "author_type", "source_task_id", "parent_id"):
+        if expected_note[key] != note[key]:
+            raise R0BValidationRefused(
+                f"the decision expected note {key} does not match the "
+                "committed proof")
+    if expected_note["rendered_raw_digest"] != note["rendered_raw_digest"] or \
+            expected_note["observed_raw_digest"] != note["observed_raw_digest"]:
+        raise R0BValidationRefused(
+            "the decision note raw digests do not match the committed proof")
+    expected_original = decision["original_create_recovery"]
+    if expected_original["decision_digest"] != original["decision_digest"] or \
+            expected_original["proof_digest"] != original["proof_digest"] or \
+            expected_original["execution_binding_digest"] != \
+            original["execution_binding_digest"] or \
+            expected_original["accepted_commit"] != \
+            original["accepted_commit"] or \
+            expected_original["accepted_adapter_digest"] != \
+            original["accepted_adapter_digest"]:
+        raise R0BValidationRefused(
+            "the decision original create-recovery references do not match "
+            "the committed proof")
+    expected_migration = decision["execution_migration"]
+    if expected_migration["adapter_lf_digest"] != adapter_digest() or \
+            expected_migration["adapter_raw_digest"] != adapter_raw_digest():
+        raise R0BValidationRefused(
+            "the decision execution migration does not name these executing "
+            "adapter bytes")
+    recomputed = digest({k: v for k, v in proof.items()
+                         if k != "proof_digest"})
+    if proof["proof_digest"] != recomputed:
+        raise R0BValidationRefused(
+            "the publication recovery proof digest does not reproduce; the "
+            "record is edited or incomplete",
+            expected=recomputed, found=proof["proof_digest"])
+    return dict(proof)
+
+
+def publication_history_digest(shared: dict) -> str:
+    """Recomputable digest of the serialized publication-history form."""
+    body = {key: shared.get(key) for key in (
+        "interval", "audited_prefix", "records", "create_pair",
+        "ownership_pair", "publication_pair")}
+    return digest(body)
+
+
+def _publication_commit_fields(intent: dict, data: dict, proof: dict,
+                               migration: dict, *, actor: str,
+                               now: str) -> dict:
+    """The exact new-state fields of the single recovery commit.
+
+    Only publication-state fields and the namespaced R0B binding may change.
+    The original execution binding, recovery proof, creation spec, E, attempt
+    digests and every historical section are preserved byte-for-byte.
+    """
+    binding = dict(data)
+    binding["phase"] = "HANDOFF_PUBLISHED"
+    binding["publication_binding"] = {
+        "schema": PUBLICATION_BINDING_SCHEMA,
+        "contract_version": CONTRACT_VERSION,
+        "issue_id": proof["target"]["issue_id"],
+        "package_id": proof["attempt"]["package_id"],
+        "envelope_digest": proof["attempt"]["envelope_digest"],
+        "note_comment_id": proof["note"]["note_comment_id"],
+        "note_revision": proof["note"]["revision"],
+        "author_id": proof["note"]["author_id"],
+        "author_type": proof["note"]["author_type"],
+        "source_task_id": proof["note"]["source_task_id"],
+        "parent_id": proof["note"]["parent_id"],
+        "body_digest": proof["note"]["observed_raw_digest"],
+        "body_digest_method": BODY_DIGEST_METHOD_RAW,
+        "rendered_body_digest_raw": proof["note"]["rendered_raw_digest"],
+        "rendered_body_digest_lf": proof["note"]["rendered_lf_digest"],
+        "observed_body_digest_lf": proof["note"]["observed_lf_digest"],
+        "relation": proof["note"]["relation"],
+        "transport_profile": None,
+        "operation_id": proof["attempt"]["operation_id"],
+        "publisher_run_id": proof["attempt"]["publisher_run_id"],
+        "prepared_by": proof["attempt"]["prepared_by"],
+        "prepared_at": proof["attempt"]["prepared_at"],
+        "before_issue_revision": proof["attempt"]["before_issue_revision"],
+        "after_issue_revision":
+            (proof["observations"]["target_issue"] or {}).get("revision"),
+        "recovered": True,
+    }
+    binding["publication_recovery_proof"] = dict(proof)
+    binding["publication_execution_migration"] = dict(migration)
+    allowed_top = {
+        "note_comment_id", "publish_receipt_digest", "published_at",
+        "expected_issue_revision", "expected_status_category",
+        "expected_assignee_id", R0B_FIELD,
+    }
+    fields = {
+        "note_comment_id": proof["note"]["note_comment_id"],
+        "publish_receipt_digest": proof["proof_digest"],
+        "published_at": now,
+        "expected_issue_revision":
+            (proof["observations"]["target_issue"] or {}).get("revision"),
+        "expected_status_category": "backlog",
+        "expected_assignee_id": intent["fields"].get("expected_assignee_id"),
+        R0B_FIELD: binding,
+    }
+    return fields, allowed_top
+
+
+def validate_publication_recovery_commit_record(record: dict,
+                                                intent: dict) -> dict:
+    """Shared writer/reducer validation of one publication recovery commit.
+
+    The writer validates before the single fsync append; the reducer runs the
+    identical predicate while folding the ledger. Ordinary
+    `transition(BLOCKED, ...)` remains refused: this op is the only entry and
+    it must bind the exact incident, revision CAS, complete proof and
+    migration, single consumption and old-field immutability.
+    """
+    fields = (
+        "kind", "record_type", "schema_version", "op", "intent_id", "from",
+        "to", "revision", "actor", "at", "publication_recovery_proof",
+        "publication_execution_migration", "fields",
+    )
+    record = _strict_keys(_require_dict(record, "publication recovery commit"),
+                          fields, "publication recovery commit")
+    if record["kind"] != "intent" or \
+            record["record_type"] != o2.INTENT_RECORD_TYPE or \
+            record["schema_version"] != o2.O2_SCHEMA or \
+            record["op"] != PUBLICATION_RECOVERY_OP:
+        raise R0BValidationRefused(
+            "the recovery record is not the exact versioned O2 extension op")
+    if record["intent_id"] != intent["intent_id"]:
+        raise R0BValidationRefused(
+            "the recovery commit intent_id does not match")
+    if record["from"] != o2.S_BLOCKED or record["to"] != o2.S_HANDOFF_PUBLISHED:
+        raise R0BValidationRefused(
+            "only the single BLOCKED -> HANDOFF_PUBLISHED recovery commit is "
+            "authorized", **{"from": record["from"], "to": record["to"]})
+    if intent["state"] != o2.S_BLOCKED:
+        raise R0BValidationRefused(
+            "the recovery commit requires the exact prior BLOCKED phase",
+            state=intent["state"])
+    if record["revision"] != intent["revision"] + 1:
+        raise R0BValidationRefused(
+            "the recovery commit revision is not the exact single increment")
+    _require_text(record["actor"], "recovery commit actor")
+    _require_text(record["at"], "recovery commit at")
+    data = intent["fields"].get(R0B_FIELD) or {}
+    if data.get("publication_recovery_proof") is not None or \
+            data.get("publication_execution_migration") is not None:
+        raise R0BValidationRefused(
+            "a publication recovery proof/commit already exists for this "
+            "intent; a second commit is refused")
+    proof = validate_publication_recovery_proof(
+        record["publication_recovery_proof"], intent=intent, data=data,
+        applying=True)
+    migration = validate_publication_execution_migration(
+        intent, data, record["publication_execution_migration"],
+        applying=True)
+    expected_migration = (proof.get("decision") or {}).get(
+        "execution_migration") or {}
+    if migration["new_commit"] != expected_migration.get("accepted_commit") or \
+            migration["new_tree"] != expected_migration.get("accepted_tree") or \
+            migration["new_adapter_raw_digest"] != \
+            expected_migration.get("adapter_raw_digest") or \
+            migration["new_adapter_lf_digest"] != \
+            expected_migration.get("adapter_lf_digest") or \
+            migration["store_file_digest"] != \
+            expected_migration.get("store_file_digest") or \
+            migration["note_file_digest"] != \
+            expected_migration.get("note_file_digest") or \
+            migration["artifact_dependency_digest"] != \
+            expected_migration.get("artifact_dependency_digest"):
+        raise R0BValidationRefused(
+            "the commit migration does not equal the decision's accepted "
+            "execution identities")
+    if migration["migration_decision_digest"] != proof["decision_digest"]:
+        raise R0BValidationRefused(
+            "the commit migration and publication proof do not share the "
+            "single Lead decision")
+    new_fields, allowed_top = _publication_commit_fields(
+        intent, data, proof, migration, actor=record["actor"],
+        now=record["at"])
+    fields_body = record["fields"]
+    if not isinstance(fields_body, dict):
+        raise R0BValidationRefused("the recovery commit fields must be an "
+                                   "object")
+    extras = sorted(set(fields_body) - allowed_top)
+    if extras:
+        raise R0BValidationRefused(
+            "the recovery commit would change unapproved top-level fields",
+            fields=extras)
+    binding = fields_body.get(R0B_FIELD)
+    if not isinstance(binding, dict):
+        raise R0BValidationRefused(
+            "the recovery commit carries no namespaced binding")
+    for key, old_value in data.items():
+        if key in ("phase", "publication_binding", "publication_recovery_proof",
+                   "publication_execution_migration"):
+            continue
+        if canonical_json(binding.get(key)) != canonical_json(old_value):
+            raise R0BValidationRefused(
+                "the recovery commit would rewrite a preserved original "
+                "binding section", section=key)
+    if canonical_json(binding.get("execution_binding")) != \
+            canonical_json(data.get("execution_binding")) or \
+            canonical_json(binding.get("recovery_proof")) != \
+            canonical_json(data.get("recovery_proof")) or \
+            canonical_json(binding.get("creation_spec")) != \
+            canonical_json(data.get("creation_spec")):
+        raise R0BValidationRefused(
+            "the recovery commit would rewrite the preserved original "
+            "execution binding, recovery proof or creation spec")
+    if binding.get("phase") != "HANDOFF_PUBLISHED":
+        raise R0BValidationRefused(
+            "the recovery commit binding phase is not HANDOFF_PUBLISHED")
+    if canonical_json(binding) != canonical_json(new_fields[R0B_FIELD]):
+        raise R0BValidationRefused(
+            "the recovery commit namespaced binding is not the exact "
+            "proof/migration-bound HANDOFF_PUBLISHED binding")
+    return {"proof": proof, "migration": migration, "fields": new_fields}
+
+
+def fold_publication_recovery_commit(record: dict, intent: dict,
+                                     intents: dict) -> None:
+    """Reducer for the single versioned publication recovery commit op.
+
+    Runs the exact same complete validation as the writer and then applies
+    the committed state/revision delta. Any failure is ledger corruption: the
+    record is never silently ignored, and a second commit for the same intent
+    fails closed instead of replaying it as a state change.
+    """
+    if any(item.get("op") == PUBLICATION_RECOVERY_OP
+           for item in intent.get("recovery_commits") or []):
+        raise o2.LedgerCorruptionError(
+            "duplicate publication recovery commit for this intent",
+            intent_id=intent["intent_id"], seq=record.get("seq"))
+    try:
+        validated = validate_publication_recovery_commit_record(record, intent)
+    except R0BError as exc:
+        raise o2.LedgerCorruptionError(
+            "publication recovery commit failed strict validation; fail "
+            f"closed: {exc.message}", intent_id=intent["intent_id"],
+            seq=record.get("seq")) from exc
+    intent["state"] = record["to"]
+    intent["revision"] = record["revision"]
+    if isinstance(record.get("fields"), dict):
+        intent["fields"].update(record["fields"])
+    intent.setdefault("recovery_commits", []).append(record)
+    intent["updated_at"] = record.get("at") or intent["updated_at"]
+    return validated
+
+
+o2.register_extension_op(PUBLICATION_RECOVERY_OP,
+                         fold_publication_recovery_commit)
+
+
 def validate_intent_record(intent: dict, *, require=(),
                            executable: bool = False) -> dict:
     """Every entry/resume validates the namespaced data. Never downgrade.
@@ -1704,7 +2851,7 @@ def validate_intent_record(intent: dict, *, require=(),
     version = data.get("contract_version")
     if version == CONTRACT_VERSION:
         if isinstance(data.get("execution_binding"), dict):
-            _validate_execution_binding(intent, data)
+            _validate_execution_binding(intent, data, allow_migration=True)
         elif data.get("adapter_digest") != adapter_digest():
             raise R0BDowngradeRefused(
                 "R0B intent was recorded by different adapter bytes; refusing "
@@ -1749,6 +2896,7 @@ def comment_record(doc: dict) -> dict:
         "source_task_id": doc.get("source_task_id"),
         "resolved_at": doc.get("resolved_at"),
         "content_digest": digest_text_lf(doc.get("content") or ""),
+        "content_raw_digest": _sha256_utf8(doc.get("content") or ""),
     }
 
 
@@ -1851,15 +2999,49 @@ def evaluate_publication_predicate(
                     f"artifact_ok={artifact_ok} fingerprint_ok={fingerprint_ok} "
                     f"self_check_ok={self_check_ok}")
 
-    matches = [c for c in after["comments"]
-               if c.get("content_digest") == expected["body_digest"]]
-    if not matches:
-        return fail(PUB_NOTE_NOT_FOUND,
-                    "no publication is visible for this attempt")
-    if len(matches) > 1:
-        return fail(PUB_DUPLICATE_NOTE,
-                    f"{len(matches)} identical note candidates; never choose "
-                    "the latest")
+    profile = expected.get("transport_profile")
+    if profile is not None:
+        if profile not in PUBLICATION_TRANSPORT_PROFILES:
+            return fail(PUB_INCOMPLETE,
+                        f"unsupported publication transport profile {profile}")
+        t_raw = expected.get("transport_body_digest_raw")
+        r_raw = expected.get("rendered_body_digest_raw")
+        if not isinstance(t_raw, str) or not isinstance(r_raw, str):
+            return fail(PUB_INCOMPLETE,
+                        "the prepared rendered/transport byte identities are "
+                        "missing for this versioned transport")
+        relation_candidates = [
+            c for c in after["comments"]
+            if c.get("content_raw_digest") in (t_raw, r_raw)]
+        if not relation_candidates:
+            return fail(PUB_NOTE_NOT_FOUND,
+                        "no publication is visible for this attempt")
+        if len(relation_candidates) > 1:
+            return fail(PUB_DUPLICATE_NOTE,
+                        f"{len(relation_candidates)} notes match the "
+                        "rendered/transport byte identities (duplicate note or "
+                        "an R/T pair); never choose the latest")
+        candidate = relation_candidates[0]
+        if candidate.get("content_raw_digest") != t_raw:
+            return fail(PUB_INCOMPLETE,
+                        "the visible note is not the prepared transport body "
+                        "(O != T); no normalization fallback exists")
+        observed_text = _content_of(after, candidate["id"])
+        if _sha256_utf8(observed_text) != t_raw:
+            return fail(PUB_INCOMPLETE,
+                        "the visible note bytes do not reproduce the prepared "
+                        "transport digest")
+        matches = relation_candidates
+    else:
+        matches = [c for c in after["comments"]
+                   if c.get("content_digest") == expected["body_digest"]]
+        if not matches:
+            return fail(PUB_NOTE_NOT_FOUND,
+                        "no publication is visible for this attempt")
+        if len(matches) > 1:
+            return fail(PUB_DUPLICATE_NOTE,
+                        f"{len(matches)} identical note candidates; never choose "
+                        "the latest")
     candidate = matches[0]
     if expected.get("note_comment_id") is not None and \
             candidate.get("id") != expected.get("note_comment_id"):
@@ -1944,11 +3126,7 @@ def evaluate_publication_predicate(
         return fail(PUB_INCOMPLETE,
                     "visible note envelope differs from the prepared E")
 
-    return {
-        "ok": True,
-        "code": PUB_OK,
-        "detail": "",
-        "proof": {
+    proof = {
             "note_comment_id": candidate["id"],
             "note_revision": candidate["revision"],
             "author_id": candidate["author_id"],
@@ -1977,8 +3155,18 @@ def evaluate_publication_predicate(
                 "concurrency is not transactionally locked and an invisible "
                 "concurrent write cannot be excluded by the adapter lease"),
             "artifact_dependency_digest": expected["artifact_dependency_digest"],
-        },
     }
+    if profile is not None:
+        proof.update({
+            "body_digest_method": BODY_DIGEST_METHOD_RAW,
+            "transport_profile": profile,
+            "transport_body_digest_raw":
+                expected.get("transport_body_digest_raw"),
+            "rendered_body_digest_raw":
+                expected.get("rendered_body_digest_raw"),
+            "observed_relation": "exact-transport",
+        })
+    return {"ok": True, "code": PUB_OK, "detail": "", "proof": proof}
 
 
 # ---------------------------------------------------------------------------
@@ -2185,9 +3373,19 @@ def preflight_note_check(data, evidence) -> dict:
             "the bound publication note id appears more than once",
             subject="note", note_comment_id=note_id)
     candidate = candidates[0]
+    method = publication.get("body_digest_method", BODY_DIGEST_METHOD_LF)
     problems = []
-    if candidate.get("content_digest") != body_digest:
-        problems.append("body digest")
+    if method == BODY_DIGEST_METHOD_RAW:
+        if candidate.get("content_raw_digest") != body_digest:
+            problems.append("raw body digest")
+    elif method == BODY_DIGEST_METHOD_LF:
+        if candidate.get("content_digest") != body_digest:
+            problems.append("body digest")
+    else:
+        raise PreflightRefusal(
+            o2.S_BLOCKED, REASON_MATERIAL_UNAVAILABLE,
+            f"the bound publication body digest method {method!r} is "
+            "unsupported; no normalization fallback exists", subject="note")
     if candidate.get("revision") != publication.get("note_revision"):
         problems.append("original comment revision")
     if candidate.get("updated_at") != candidate.get("created_at"):
@@ -2205,8 +3403,16 @@ def preflight_note_check(data, evidence) -> dict:
             "the bound publication note drifted: " + ", ".join(problems),
             subject="note", note_comment_id=note_id,
             fields=problems)
-    matching = [c for c in evidence.get("comments") or []
-                if c.get("content_digest") == body_digest]
+    if method == BODY_DIGEST_METHOD_RAW:
+        related = {body_digest}
+        rendered_raw = publication.get("rendered_body_digest_raw")
+        if isinstance(rendered_raw, str):
+            related.add(rendered_raw)
+        matching = [c for c in evidence.get("comments") or []
+                    if c.get("content_raw_digest") in related]
+    else:
+        matching = [c for c in evidence.get("comments") or []
+                    if c.get("content_digest") == body_digest]
     if len(matching) != 1:
         raise PreflightRefusal(
             o2.S_BLOCKED, REASON_MATERIAL_UNAVAILABLE,
@@ -4491,14 +5697,31 @@ class R0BForwardFactory(strict.CanaryOrchestrator):
             envelope,
             prepared_by=o2._require_text(prepared_by, "prepared_by"),
             prepared_at=approved_at)
-        body_digest = digest_text_lf(body)
+        prepared = prepare_publication_transport_body(body)
+        transport_body = prepared["transport_body"]
         attempt = {
             "contract_version": CONTRACT_VERSION,
+            "transport_profile": prepared["profile"],
+            "transport_relation": prepared["relation"],
             "operation_id": new_operation_id("publication", {
-                "intent_id": intent_id, "body_digest": body_digest}),
+                "intent_id": intent_id,
+                "rendered_body_digest_raw":
+                    prepared["rendered_body_digest_raw"],
+                "transport_body_digest_raw":
+                    prepared["transport_body_digest_raw"]}),
             "package_id": execution["package_id"],
             "envelope_digest": execution["envelope_digest"],
-            "body_digest": body_digest,
+            "body_digest": prepared["rendered_body_digest_lf"],
+            "body_digest_method": BODY_DIGEST_METHOD_LF,
+            "rendered_body_digest_lf": prepared["rendered_body_digest_lf"],
+            "rendered_body_digest_raw": prepared["rendered_body_digest_raw"],
+            "transport_body_digest_raw":
+                prepared["transport_body_digest_raw"],
+            "transport_body_digest_lf": prepared["transport_body_digest_lf"],
+            "rendered_chars": prepared["rendered_chars"],
+            "rendered_utf8_bytes": prepared["rendered_utf8_bytes"],
+            "transport_chars": prepared["transport_chars"],
+            "transport_utf8_bytes": prepared["transport_utf8_bytes"],
             "artifact_dependency_digest":
                 data["artifact_dependency"]["digest"],
             "prepared_by": prepared_by,
@@ -4531,7 +5754,8 @@ class R0BForwardFactory(strict.CanaryOrchestrator):
                 published = note.publish_handoff(
                     envelope, issue_id=binding_issue_id(data),
                     prepared_by=prepared_by, prepared_at=approved_at,
-                    parent_comment_id=parent_comment_id, cli=self.note_cli)
+                    parent_comment_id=parent_comment_id, cli=self.note_cli,
+                    transport_body=transport_body)
             except Exception as exc:  # noqa: BLE001 - never retry a send
                 self.store.append_event(
                     intent_id, E_PUBLICATION_UNCERTAIN, actor=actor,
@@ -4551,6 +5775,25 @@ class R0BForwardFactory(strict.CanaryOrchestrator):
                               "read-only confirmation",
                     "intent_id": intent_id, "side_effects": 0,
                 }
+            sent_hex = str(published.get("body_sha256") or "")
+            if published.get("published") and \
+                    sent_hex != prepared["transport_body_digest_raw"][7:]:
+                self.store.append_event(
+                    intent_id, E_PUBLICATION_UNCERTAIN, actor=actor,
+                    now=self.now(),
+                    data={"operation_id": attempt["operation_id"],
+                          "error": "the sent transport bytes differ from the "
+                                   "verified prepared transport body",
+                          "retry": False})
+                return {
+                    "status": intent["state"],
+                    "outcome": "PUBLICATION_UNCERTAIN",
+                    "reason": REASON_PUBLICATION_AMBIGUOUS,
+                    "detail": "the publisher did not send the verified exact "
+                              "transport bytes; no retry and no second "
+                              "publication",
+                    "intent_id": intent_id, "side_effects": 0,
+                }
             self.store.append_event(
                 intent_id, E_PUBLICATION_RESPONSE, actor=actor, now=self.now(),
                 data={"operation_id": attempt["operation_id"],
@@ -4558,6 +5801,9 @@ class R0BForwardFactory(strict.CanaryOrchestrator):
                       "idempotent": bool(published.get("idempotent")),
                       "comment_id": (published.get("comment") or {}).get("id"),
                       "body_sha256": published.get("body_sha256"),
+                      "transport_profile": attempt["transport_profile"],
+                      "transport_body_digest_raw":
+                          attempt["transport_body_digest_raw"],
                       "write_commands": (published.get("trace") or {}).get(
                           "write_commands")})
             return self._confirm_locked(intent_id, data=data, actor=actor,
@@ -4607,6 +5853,11 @@ class R0BForwardFactory(strict.CanaryOrchestrator):
         envelope = execution["result"]
         expected = {
             "body_digest": attempt["body_digest"],
+            "transport_profile": attempt.get("transport_profile"),
+            "transport_body_digest_raw":
+                attempt.get("transport_body_digest_raw"),
+            "rendered_body_digest_raw":
+                attempt.get("rendered_body_digest_raw"),
             "envelope_digest": execution["envelope_digest"],
             "envelope_canonical": canonical_json(envelope),
             "package_id": execution["package_id"],
@@ -4655,7 +5906,7 @@ class R0BForwardFactory(strict.CanaryOrchestrator):
         proof = verdict["proof"]
         binding = dict(data)
         binding["phase"] = "HANDOFF_PUBLISHED"
-        binding["publication_binding"] = dict(proof, **{
+        publication_binding = dict(proof, **{
             "issue_id": binding_issue_id(data),
             "package_id": execution["package_id"],
             "task_ref": execution["task_ref"],
@@ -4665,6 +5916,26 @@ class R0BForwardFactory(strict.CanaryOrchestrator):
             "prepared_at": attempt.get("prepared_at"),
             "operation_id": attempt.get("operation_id"),
         })
+        if attempt.get("transport_profile") is not None:
+            publication_binding.update({
+                "schema": PUBLICATION_BINDING_SCHEMA,
+                "contract_version": CONTRACT_VERSION,
+                "body_digest": attempt["transport_body_digest_raw"],
+                "body_digest_method": BODY_DIGEST_METHOD_RAW,
+                "rendered_body_digest_raw":
+                    attempt["rendered_body_digest_raw"],
+                "rendered_body_digest_lf":
+                    attempt["rendered_body_digest_lf"],
+                "observed_body_digest_lf":
+                    attempt["transport_body_digest_lf"],
+                "relation": PUBLICATION_RELATION_DIRECTIONAL,
+                "before_issue_revision": attempt.get("before_issue_revision"),
+                "recovered": False,
+            })
+        else:
+            publication_binding.setdefault("body_digest_method",
+                                           BODY_DIGEST_METHOD_LF)
+        binding["publication_binding"] = publication_binding
         target = dict(binding.get("target_binding") or {})
         target.update({
             "post_publication_revision": proof["after_issue_revision"],
@@ -4954,6 +6225,1060 @@ class R0BForwardFactory(strict.CanaryOrchestrator):
                 "reason": "terminal or typed stop; no dispatch action",
                 "side_effects": 0}
 
+    # -- step 9: approved proof-bearing publication recovery -----------------
+    def _publication_recovery_inspection(self, intent_id: str) -> tuple:
+        """Restricted historical inspection of the da99c11 recovered record.
+
+        This is the only pre-commit path allowed to read the original
+        create-recovery binding under the explicit historical da99c11 pin. It
+        never grants general execution: normal load still refuses these bytes
+        until the committed migration binds them, and an already-committed
+        recovery is never inspected as if it were pending.
+        """
+        intent = self.store.get(intent_id)
+        data = intent["fields"].get(R0B_FIELD)
+        if not isinstance(data, dict):
+            raise R0BContractError(
+                "intent is not tagged with an R0B contract",
+                intent_id=intent_id)
+        if data.get("contract_version") != CONTRACT_VERSION:
+            raise R0BValidationRefused(
+                "publication recovery requires the exact current R0B contract "
+                "version on the already create-recovered record",
+                contract_version=data.get("contract_version"))
+        if data.get("adapter_digest") != PREDECESSOR_ADAPTER_DIGEST:
+            raise R0BDowngradeRefused(
+                "publication recovery requires the exact known predecessor "
+                "adapter pin preserved on the record",
+                adapter_digest=data.get("adapter_digest"))
+        if not isinstance(data.get("execution_binding"), dict):
+            raise R0BValidationRefused(
+                "publication recovery requires the committed forward "
+                "create-recovery execution binding")
+        _validate_execution_binding(
+            intent, data, executing=PREDECESSOR_FORWARD_ADAPTER_DIGEST)
+        if data.get("publication_recovery_proof") is not None or \
+                data.get("publication_execution_migration") is not None:
+            raise R0BValidationRefused(
+                "a publication recovery proof/migration is already committed; "
+                "use the committed replay path, never a second commit")
+        if data.get("publication_binding") is not None:
+            raise R0BValidationRefused(
+                "the record already carries a publication binding; recovery "
+                "never rebinds or overwrites")
+        return intent, data
+
+    def recover_blocked_publication(self, intent_id: str, *,
+                                    decision: dict,
+                                    accepted_execution: dict,
+                                    actor: str,
+                                    current_findings: list | None = None,
+                                    authority_evidence: dict | None = None
+                                    ) -> dict:
+        """Recover this exact publication incident to HANDOFF_PUBLISHED.
+
+        Factory-only, single-use: platform access is read-only, and the only
+        durable effects are the bounded evidence event plus the versioned
+        `publication_recovery_commit_v1` record that atomically moves
+        BLOCKED revision 4 to HANDOFF_PUBLISHED revision 5 and binds the
+        execution-identity migration. There is no note resend, no new E, no
+        create recovery, no assign/status/rerun and no ARM/TRIGGER.
+        """
+        decision = validate_publication_recovery_decision(decision)
+        if decision["intent_id"] != intent_id:
+            raise R0BValidationRefused(
+                "the publication recovery disposition names a different "
+                "intent", disposition=decision["intent_id"],
+                operation=intent_id)
+        accepted = dict(_require_dict(accepted_execution,
+                                      "accepted_execution"))
+        if canonical_json(accepted) != \
+                canonical_json(decision["execution_migration"]):
+            raise R0BValidationRefused(
+                "the accepted execution input does not equal the disposition's "
+                "accepted migration identities")
+        intent = self.store.get(intent_id)
+        data = intent["fields"].get(R0B_FIELD)
+        if intent["state"] == o2.S_HANDOFF_PUBLISHED and \
+                isinstance(data, dict) and \
+                isinstance(data.get("publication_recovery_proof"), dict):
+            return self._replay_publication_recovery(intent, data, decision,
+                                                     actor)
+        intent, data = self._publication_recovery_inspection(intent_id)
+        try:
+            bundle = self._publication_recovery_prerequisites(
+                intent, data, decision=decision,
+                current_findings=current_findings,
+                authority_evidence=authority_evidence)
+        except PreflightRefusal as refusal:
+            return self._publication_recovery_refusal(intent_id, refusal,
+                                                      actor)
+        proof = self._build_publication_recovery_proof(
+            intent, data, decision, bundle)
+        migration = self._build_publication_execution_migration(
+            intent, data, decision, proof)
+        record = {
+            "kind": "intent",
+            "record_type": o2.INTENT_RECORD_TYPE,
+            "schema_version": o2.O2_SCHEMA,
+            "op": PUBLICATION_RECOVERY_OP,
+            "intent_id": intent_id,
+            "from": o2.S_BLOCKED,
+            "to": o2.S_HANDOFF_PUBLISHED,
+            "revision": proof["commit_revision"],
+            "actor": o2._require_text(actor, "actor"),
+            "at": self.now(),
+            "publication_recovery_proof": proof,
+            "publication_execution_migration": migration,
+        }
+        fields, _allowed = _publication_commit_fields(
+            intent, data, proof, migration, actor=record["actor"],
+            now=record["at"])
+        record["fields"] = fields
+        validate_publication_recovery_commit_record(record, intent)
+        self._claim(intent_id, actor)
+        try:
+            tail_digests = []
+            claim = self._claim(intent_id, actor)
+            if isinstance(claim.get("record"), dict):
+                tail_digests.append(digest(claim["record"]))
+            evidence_event = self.store.append_event(
+                intent_id, E_PUBLICATION_RECOVERY_EVIDENCE, actor=actor,
+                now=self.now(),
+                data={"stage": "pre_commit",
+                      "proof_digest": proof["proof_digest"],
+                      "decision_digest": decision["decision_digest"],
+                      "note_comment_id": proof["note"]["note_comment_id"]})
+            tail_digests.append(digest(evidence_event))
+            try:
+                committed = self._commit_publication_recovery(
+                    intent_id, record=record,
+                    expected_revision=proof["intent_revision_before"],
+                    expected_tail_digests=tail_digests,
+                    prefix_count=bundle["ledger_prefix_count"],
+                    prefix_raw_digest=bundle["ledger_prefix_raw_digest"])
+            except PreflightRefusal as refusal:
+                return self._publication_recovery_refusal(intent_id, refusal,
+                                                          actor)
+            return {
+                "status": o2.S_HANDOFF_PUBLISHED,
+                "intent_id": intent_id,
+                "outcome": "PUBLICATION_RECOVERED",
+                "revision": committed.get("revision"),
+                "note_comment_id": proof["note"]["note_comment_id"],
+                "proof_digest": proof["proof_digest"],
+                "migration_digest": migration["migration_digest"],
+                "platform_writes": 0,
+                "ledger_commits": 1,
+                "notes_sent": 0,
+                "triggers_issued": 0,
+                "next_action": "LEAD_DECISION_ARM_OR_STOP",
+            }
+        finally:
+            self._release(intent_id, actor)
+
+    def _replay_publication_recovery(self, intent, data, decision,
+                                     actor) -> dict:
+        proof = data.get("publication_recovery_proof") or {}
+        committed = proof.get("decision") or {}
+        if committed.get("decision_digest") != decision["decision_digest"]:
+            raise R0BValidationRefused(
+                "a different publication recovery decision is already "
+                "committed; competing proof is refused",
+                committed=committed.get("decision_digest"),
+                supplied=decision["decision_digest"])
+        return {
+            "status": o2.S_HANDOFF_PUBLISHED,
+            "intent_id": intent["intent_id"],
+            "outcome": "PUBLICATION_RECOVERED",
+            "revision": intent["revision"],
+            "note_comment_id": (data.get("publication_binding") or {}).get(
+                "note_comment_id"),
+            "proof_digest": proof.get("proof_digest"),
+            "migration_digest": (data.get("publication_execution_migration")
+                                 or {}).get("migration_digest"),
+            "replayed": True,
+            "platform_writes": 0,
+            "ledger_commits": 0,
+            "notes_sent": 0,
+            "triggers_issued": 0,
+            "next_action": "LEAD_DECISION_ARM_OR_STOP",
+        }
+
+    def _publication_recovery_refusal(self, intent_id: str,
+                                      refusal: PreflightRefusal,
+                                      actor: str) -> dict:
+        """Typed zero-native-effect refusal: the state stays BLOCKED."""
+        subjects = {}
+        for key, value in refusal.subjects.items():
+            if isinstance(value, str):
+                subjects[key] = value[:200]
+            else:
+                subjects[key] = canonical_json(value)[:200]
+        self.store.append_event(
+            intent_id, E_EVIDENCE_REFUSED, actor=actor, now=self.now(),
+            data={"reason": refusal.reason, "state": refusal.state,
+                  "detail": refusal.detail[:200], "subjects": subjects,
+                  "window": "publication_recovery"})
+        return {"status": o2.S_BLOCKED, "intent_id": intent_id,
+                "outcome": "RECOVERY_REFUSED", "reason": refusal.reason,
+                "detail": refusal.detail, "platform_writes": 0,
+                "ledger_commits": 0, "recovered": False}
+
+    @staticmethod
+    def _publication_record_class(record: dict, previous, *, intent_id: str,
+                                  spec: dict, target_id: str) -> dict:
+        """Classify one publication-history record; refusal is the default.
+
+        The accepted create and ownership commands survive as proven history;
+        at most one `issue comment add` command/result pair is admitted as the
+        single historical publication; reads and this intent's own records
+        stay allowed. Any other write/trigger class, unrecognized verb, orphan
+        or unpaired result is unresolved evidence and stops.
+        """
+        entry = {"seq": record.get("seq"), "digest": digest(record),
+                 "record": record, "classification": None, "reason": None}
+        if record.get("record_type") == o2.INTENT_RECORD_TYPE:
+            if record.get("intent_id") != intent_id:
+                raise PreflightRefusal(
+                    o2.S_BLOCKED, REASON_PUBLICATION_PROVENANCE,
+                    "a foreign dispatch-intent record lies in the relevant "
+                    "publication interval; its effects cannot be proven "
+                    "disjoint", subject="shared_history",
+                    record_seq=record.get("seq"))
+            if record.get("op") == PUBLICATION_RECOVERY_OP:
+                raise PreflightRefusal(
+                    o2.S_BLOCKED, REASON_PUBLICATION_PROVENANCE,
+                    "a competing publication recovery commit record already "
+                    "exists; no second commit", subject="shared_history",
+                    record_seq=record.get("seq"))
+            entry.update(classification=CLS_INTENT_HISTORY,
+                         reason="expected intent record (recorded/transition/"
+                                "event/lease)")
+            return entry
+        kind = record.get("kind")
+        if kind == "command":
+            argv = record.get("argv")
+            recorded = record.get("command_class")
+            if not isinstance(argv, list) or not argv or \
+                    not all(isinstance(a, str) for a in argv) or \
+                    not isinstance(recorded, str):
+                raise PreflightRefusal(
+                    o2.S_BLOCKED, REASON_PUBLICATION_PROVENANCE,
+                    "a shared command record carries a malformed argv or no "
+                    "recorded class; it is never treated as a read",
+                    subject="shared_history", record_seq=record.get("seq"))
+            derived = o2.classify_o2_command(argv, "multica")
+            if recorded != derived:
+                raise PreflightRefusal(
+                    o2.S_BLOCKED, REASON_PUBLICATION_PROVENANCE,
+                    "recorded command class and structured argv disagree; a "
+                    "mislabelled command never becomes a read by trusting one "
+                    "field", subject="shared_history",
+                    record_seq=record.get("seq"), recorded=recorded,
+                    derived=derived)
+            if derived == o2.C_ISSUE_CREATE:
+                problems = _original_create_argv_problems(argv, spec)
+                if problems:
+                    raise PreflightRefusal(
+                        o2.S_BLOCKED, REASON_RECOVERY_ORIGINAL_EVIDENCE,
+                        "the shared create command does not reproduce the "
+                        "preserved creation spec: " + "; ".join(problems),
+                        subject="original_create",
+                        record_seq=record.get("seq"))
+                entry.update(classification=CLS_ORIGINAL_CREATE_COMMAND,
+                             reason="structured argv fully matches the "
+                                    "retained creation spec")
+                return entry
+            if derived == o2.C_OWNERSHIP_BINDING:
+                if not o2._valid_binding_argv(argv, "multica"):
+                    raise PreflightRefusal(
+                        o2.S_BLOCKED, REASON_PUBLICATION_PROVENANCE,
+                        "the shared ownership-binding command is not the "
+                        "accepted exact argv form", subject="shared_history",
+                        record_seq=record.get("seq"))
+                entry.update(classification=CLS_OWNERSHIP_COMMAND,
+                             reason="exact accepted no-start ownership "
+                                    "binding argv")
+                return entry
+            if derived == o2.C_MENTION_TRIGGER:
+                core = o2._core_argv(argv, "multica")
+                name = re.split(r"[\\/]", str(
+                    core[core.index("--content-file") + 1]))[-1] \
+                    if "--content-file" in core else ""
+                if tuple(core[:3]) != ("issue", "comment", "add") or \
+                        len(core) < 4 or core[3] != target_id or \
+                        not name.startswith(".t06-note-") or \
+                        not name.endswith(".md"):
+                    raise PreflightRefusal(
+                        o2.S_BLOCKED, REASON_PUBLICATION_PROVENANCE,
+                        "the shared comment-add command is not the exact "
+                        "accepted publisher form for this target",
+                        subject="shared_history", record_seq=record.get("seq"))
+                entry.update(
+                    classification=CLS_PUBLICATION_COMMAND,
+                    reason="the single publication publisher argv (exact "
+                           "target, --content-file with the publisher temp "
+                           "name)")
+                return entry
+            if derived in o2.WRITE_COMMAND_CLASSES:
+                raise PreflightRefusal(
+                    o2.S_BLOCKED, REASON_PUBLICATION_PROVENANCE,
+                    "a relevant prior native write/trigger attempt is "
+                    "persisted in the shared ledger; a persisted attempt "
+                    "dominates any current emptiness", subject="shared_history",
+                    record_seq=record.get("seq"), command_class=derived,
+                    argv=[str(a) for a in argv[:8]])
+            if derived == o2.C_READ:
+                entry.update(classification=CLS_READ_COMMAND,
+                             reason="narrow known-read verb with matching "
+                                    "recorded class")
+                return entry
+            raise PreflightRefusal(
+                o2.S_BLOCKED, REASON_PUBLICATION_PROVENANCE,
+                "an unrecognized shared command verb is unresolved evidence; "
+                "an unknown effect stops", subject="shared_history",
+                record_seq=record.get("seq"), argv=[str(a) for a in argv[:8]])
+        if kind == "command_result":
+            if previous is None or previous["classification"] not in (
+                    CLS_ORIGINAL_CREATE_COMMAND, CLS_OWNERSHIP_COMMAND,
+                    CLS_PUBLICATION_COMMAND, CLS_READ_COMMAND):
+                raise PreflightRefusal(
+                    o2.S_BLOCKED, REASON_PUBLICATION_PROVENANCE,
+                    "an orphan, duplicate or interleaved command result is "
+                    "unresolved evidence; results are never paired by guess",
+                    subject="shared_history", record_seq=record.get("seq"))
+            command = previous["record"]
+            if record.get("command_class") != command.get("command_class") or \
+                    record.get("transaction_id") != \
+                    command.get("transaction_id"):
+                raise PreflightRefusal(
+                    o2.S_BLOCKED, REASON_PUBLICATION_PROVENANCE,
+                    "a command result does not correlate with its immediately "
+                    "preceding command (class/transaction mismatch)",
+                    subject="shared_history", record_seq=record.get("seq"))
+            exit_code = record.get("exit_code")
+            if previous["classification"] == CLS_ORIGINAL_CREATE_COMMAND:
+                if exit_code != 0:
+                    raise PreflightRefusal(
+                        o2.S_BLOCKED, REASON_RECOVERY_ORIGINAL_EVIDENCE,
+                        "the sole original create result is not the uniquely "
+                        "paired successful result", subject="original_create",
+                        record_seq=record.get("seq"))
+                entry.update(classification=CLS_ORIGINAL_CREATE_RESULT,
+                             reason="uniquely paired adjacent successful "
+                                    "create result")
+                return entry
+            if previous["classification"] == CLS_OWNERSHIP_COMMAND:
+                if exit_code != 0:
+                    raise PreflightRefusal(
+                        o2.S_BLOCKED, REASON_PUBLICATION_PROVENANCE,
+                        "the sole ownership-binding result is not the uniquely "
+                        "paired successful result", subject="shared_history",
+                        record_seq=record.get("seq"))
+                entry.update(classification=CLS_OWNERSHIP_RESULT,
+                             reason="uniquely paired adjacent successful "
+                                    "ownership result")
+                return entry
+            if previous["classification"] == CLS_PUBLICATION_COMMAND:
+                if exit_code != 0:
+                    raise PreflightRefusal(
+                        o2.S_BLOCKED, REASON_PUBLICATION_PROVENANCE,
+                        "the sole publication command result is not the "
+                        "uniquely paired successful result",
+                        subject="shared_history", record_seq=record.get("seq"))
+                entry.update(classification=CLS_PUBLICATION_RESULT,
+                             reason="uniquely paired adjacent successful "
+                                    "publication result")
+                return entry
+            entry.update(classification=CLS_READ_RESULT,
+                         reason="uniquely paired adjacent read result")
+            return entry
+        raise PreflightRefusal(
+            o2.S_BLOCKED, REASON_PUBLICATION_PROVENANCE,
+            "an unrecognized shared ledger record kind is unresolved evidence",
+            subject="shared_history", record_seq=record.get("seq"))
+
+    def _classify_publication_history(self, intent, spec, decision) -> dict:
+        """Complete publication-interval classification with exact counts.
+
+        The full interval from this intent's original record to the fresh tip
+        is audited, shared records without `intent_id` included. Exactly one
+        create pair, exactly one ownership pair and at most one publication
+        command pair may exist; the durable publication issuing/response
+        events must each occur exactly once; any trigger receipt, run
+        correlation or publication-bound event refuses.
+        """
+        intent_id = intent["intent_id"]
+        target_id = intent["fields"].get("issue_id") or ""
+        lines, records = self._read_ledger_lines()
+        if not records:
+            raise PreflightRefusal(
+                o2.S_BLOCKED, REASON_PUBLICATION_PROVENANCE,
+                "the shared ledger is empty; the original intent record is "
+                "missing", subject="ledger")
+        start = None
+        for index, record in enumerate(records):
+            if record.get("record_type") == o2.INTENT_RECORD_TYPE and \
+                    record.get("intent_id") == intent_id:
+                if start is None:
+                    start = index
+                continue
+            if start is None and self._mentions_intent(
+                    record, intent_id, spec.get("marker")):
+                start = index
+        if start is None:
+            raise PreflightRefusal(
+                o2.S_BLOCKED, REASON_PUBLICATION_PROVENANCE,
+                "no original intent record for this intent exists in the "
+                "shared ledger", subject="ledger")
+        if start > 0 and records[start - 1].get("kind") == "command":
+            start -= 1
+        entries = []
+        for index in range(start, len(records)):
+            previous = entries[-1] if entries else None
+            entry = self._publication_record_class(
+                records[index], previous, intent_id=intent_id, spec=spec,
+                target_id=target_id)
+            entry["index"] = index
+            entries.append(entry)
+        classes = [e["classification"] for e in entries]
+
+        def class_entries(name):
+            return [e for e in entries if e["classification"] == name]
+
+        create_commands = class_entries(CLS_ORIGINAL_CREATE_COMMAND)
+        create_results = class_entries(CLS_ORIGINAL_CREATE_RESULT)
+        ownership_commands = class_entries(CLS_OWNERSHIP_COMMAND)
+        ownership_results = class_entries(CLS_OWNERSHIP_RESULT)
+        publication_commands = class_entries(CLS_PUBLICATION_COMMAND)
+        publication_results = class_entries(CLS_PUBLICATION_RESULT)
+        if len(create_commands) != 1 or len(create_results) != 1:
+            raise PreflightRefusal(
+                o2.S_BLOCKED, REASON_RECOVERY_ORIGINAL_EVIDENCE,
+                "the durable original create command/result pair is not "
+                "uniquely present in the shared ledger",
+                subject="original_create",
+                commands=len(create_commands), results=len(create_results))
+        if len(ownership_commands) != 1 or len(ownership_results) != 1:
+            raise PreflightRefusal(
+                o2.S_BLOCKED, REASON_PUBLICATION_PROVENANCE,
+                "the single accepted no-start ownership command/result pair is "
+                "not uniquely present", subject="shared_history",
+                commands=len(ownership_commands), results=len(ownership_results))
+        if len(publication_commands) > 1 or len(publication_results) > 1 or \
+                (len(publication_commands) != len(publication_results)):
+            raise PreflightRefusal(
+                o2.S_BLOCKED, REASON_PUBLICATION_PROVENANCE,
+                "the shared ledger carries more than one publication command "
+                "pair or an unpaired publication command; a second "
+                "publication is never accepted", subject="shared_history")
+        attempt_events = [e for e in intent["events"]
+                          if e.get("name") == E_PUBLICATION_ISSUING]
+        response_events = [e for e in intent["events"]
+                           if e.get("name") == E_PUBLICATION_RESPONSE]
+        forbidden_events = sorted(
+            e.get("name") for e in intent["events"]
+            if e.get("name") in (E_PUBLICATION_BOUND, E_PUBLICATION_UNCERTAIN,
+                                 "r0b_trigger_receipt", o2.E_TRIGGER_RECEIPT,
+                                 o2.E_RUN_CORRELATION, o2.E_PARENT_WAKE,
+                                 o2.E_EXECUTION_RECOVERY, o2.E_DISCOVERY,
+                                 o2.E_RECONCILIATION))
+        if len(attempt_events) != 1 or len(response_events) != 1 or \
+                forbidden_events:
+            raise PreflightRefusal(
+                o2.S_BLOCKED, REASON_PUBLICATION_PROVENANCE,
+                "the intent does not carry exactly one publication attempt "
+                "and one recorded response with no bound/triggered/uncertain "
+                "state", subject="shared_history",
+                attempts=len(attempt_events), responses=len(response_events),
+                forbidden=forbidden_events[:4])
+        audited_length = len(records)
+        raw_prefix = _raw_prefix_digest(lines)
+        shared = {
+            "interval": {
+                "start_index": start,
+                "start_seq": records[start].get("seq"),
+                "tip_index": len(records) - 1,
+                "tip_seq": records[-1].get("seq"),
+                "ledger_record_count": len(records),
+                "relevant_record_count": len(entries),
+            },
+            "audited_prefix": {
+                "length": audited_length,
+                "digest": raw_prefix,
+                "raw_prefix_digest": raw_prefix,
+            },
+            "records": [
+                {key: entry[key] for key in (
+                    "seq", "digest", "classification", "reason", "record")}
+                for entry in entries],
+            "create_pair": {
+                "command_seq": create_commands[0]["record"].get("seq"),
+                "command_digest": create_commands[0]["digest"],
+                "result_seq": create_results[0]["record"].get("seq"),
+                "result_digest": create_results[0]["digest"],
+            },
+            "ownership_pair": {
+                "command_seq": ownership_commands[0]["record"].get("seq"),
+                "command_digest": ownership_commands[0]["digest"],
+                "result_seq": ownership_results[0]["record"].get("seq"),
+                "result_digest": ownership_results[0]["digest"],
+            },
+            "publication_pair": (
+                {
+                    "command_seq": publication_commands[0]["record"].get("seq"),
+                    "command_digest": publication_commands[0]["digest"],
+                    "result_seq": publication_results[0]["record"].get("seq"),
+                    "result_digest": publication_results[0]["digest"],
+                } if publication_commands else None),
+        }
+        shared["classification_digest"] = publication_history_digest(shared)
+        return shared
+
+    def _publication_recovery_prerequisites(self, intent, data, *, decision,
+                                            current_findings,
+                                            authority_evidence) -> dict:
+        """Collect and validate every live recovery precondition, in order.
+
+        Read-only: current issue/comments/timeline/runs, the complete stable
+        re-read, the exact note relation, the full before/after delta, the
+        shared-ledger history, the pinned artifact/authority material, the
+        frozen fingerprint/SELF_CHECK and the source parent/E join. Raises
+        `PreflightRefusal`; nothing is mutated and no live call is issued.
+        """
+        intent_id = intent["intent_id"]
+        expected_blocker = decision["expected_blocker"]
+        transitions = intent.get("transitions") or []
+        if not transitions:
+            raise PreflightRefusal(
+                o2.S_BLOCKED, REASON_PUBLICATION_PROVENANCE,
+                "the intent carries no recorded transition", subject="blocker")
+        blocker_transition = transitions[-1]
+        if blocker_transition.get("to") != o2.S_BLOCKED or \
+                blocker_transition.get("reason") != \
+                REASON_PUBLICATION_PROVENANCE or \
+                blocker_transition.get("seq") != expected_blocker["seq"] or \
+                digest(blocker_transition) != expected_blocker["digest"]:
+            raise PreflightRefusal(
+                o2.S_BLOCKED, REASON_PUBLICATION_PROVENANCE,
+                "the recorded blocking transition is not the exact disposed "
+                "BLOCKED transition", subject="blocker")
+        evidence_events = [
+            e for e in intent["events"]
+            if e.get("name") == E_EVIDENCE_REFUSED and
+            (e.get("data") or {}).get("reason") ==
+            REASON_PUBLICATION_PROVENANCE and
+            (e.get("data") or {}).get("code") == PUB_NOTE_NOT_FOUND]
+        if len(evidence_events) != 1:
+            raise PreflightRefusal(
+                o2.S_BLOCKED, REASON_PUBLICATION_PROVENANCE,
+                "expected exactly one blocking evidence event with code "
+                f"{PUB_NOTE_NOT_FOUND}, found {len(evidence_events)}",
+                subject="blocker")
+        evidence_event = evidence_events[0]
+        if evidence_event.get("seq") != \
+                expected_blocker["evidence_event"]["seq"] or \
+                digest(evidence_event) != \
+                expected_blocker["evidence_event"]["digest"]:
+            raise PreflightRefusal(
+                o2.S_BLOCKED, REASON_PUBLICATION_PROVENANCE,
+                "the blocking evidence event does not match the disposition",
+                subject="blocker")
+        if intent["revision"] != decision["expected_intent_revision"]:
+            raise PreflightRefusal(
+                o2.S_BLOCKED, REASON_PUBLICATION_PROVENANCE,
+                "the intent revision is not the disposed BLOCKED revision",
+                subject="blocker", revision=intent["revision"])
+        attempts = [e for e in intent["events"]
+                    if e.get("name") == E_PUBLICATION_ISSUING]
+        attempt_event = attempts[0]
+        attempt = attempt_event.get("data") or {}
+        expected_attempt = decision["publication_attempt"]
+        if attempt_event.get("seq") != expected_attempt["seq"] or \
+                digest(attempt_event) != expected_attempt["digest"] or \
+                attempt.get("operation_id") != expected_attempt["operation_id"]:
+            raise PreflightRefusal(
+                o2.S_BLOCKED, REASON_PUBLICATION_PROVENANCE,
+                "the sole publication attempt does not match the disposition",
+                subject="attempt")
+        execution = data.get("execution_context") or {}
+        envelope = execution.get("result")
+        if not isinstance(envelope, dict) or \
+                not isinstance(execution.get("request"), dict):
+            raise PreflightRefusal(
+                o2.S_BLOCKED, REASON_MATERIAL_UNAVAILABLE,
+                "the bound original E result/request is not available",
+                subject="context")
+        expected_note = decision["expected_note"]
+        if attempt.get("publisher_run_id") != \
+                expected_note["source_task_id"]:
+            raise PreflightRefusal(
+                o2.S_BLOCKED, REASON_PUBLICATION_PROVENANCE,
+                "the durable attempt source run does not match the disposed "
+                "note source run", subject="attempt")
+        if attempt.get("parent_comment_id") != expected_note["parent_id"]:
+            raise PreflightRefusal(
+                o2.S_BLOCKED, REASON_PUBLICATION_PROVENANCE,
+                "the durable attempt parent does not match the disposed note "
+                "parent", subject="attempt")
+        if evidence_digest(attempt.get("before") or {}) != \
+                attempt.get("before_evidence_digest"):
+            raise PreflightRefusal(
+                o2.S_BLOCKED, REASON_PUBLICATION_PROVENANCE,
+                "the durable attempt before-evidence digest does not "
+                "reproduce", subject="attempt")
+        try:
+            rendered, _record = note.render_note_record(
+                envelope, prepared_by=attempt.get("prepared_by"),
+                prepared_at=attempt.get("prepared_at"))
+        except Exception as exc:  # noqa: BLE001
+            raise PreflightRefusal(
+                o2.S_BLOCKED, REASON_MATERIAL_UNAVAILABLE,
+                f"the original E cannot be re-rendered with the durable "
+                f"attempt meta: {type(exc).__name__}: {exc}", subject="attempt")
+        if digest_text_lf(rendered) != attempt.get("body_digest"):
+            raise PreflightRefusal(
+                o2.S_BLOCKED, REASON_PUBLICATION_PROVENANCE,
+                "the re-rendered original body does not reproduce the durable "
+                "attempt body digest", subject="attempt")
+        rendered_raw = _sha256_utf8(rendered)
+        if rendered_raw != expected_note["rendered_raw_digest"]:
+            raise PreflightRefusal(
+                o2.S_BLOCKED, REASON_PUBLICATION_PROVENANCE,
+                "the re-rendered original body digest does not match the "
+                "disposition's rendered digest", subject="attempt")
+        issue_id = binding_issue_id(data)
+        responses_start = len(self.reader.responses)
+        try:
+            evidence = collect_evidence(self.reader, issue_id)
+        except PublicationProvenanceIncomplete as exc:
+            raise PreflightRefusal(
+                o2.S_BLOCKED, REASON_PUBLICATION_PROVENANCE, exc.message,
+                subject="evidence")
+        except Exception as exc:  # noqa: BLE001
+            raise PreflightRefusal(
+                o2.S_BLOCKED, REASON_MATERIAL_UNAVAILABLE,
+                f"publication recovery evidence collection is incomplete or "
+                f"unreadable: {type(exc).__name__}: {exc}", subject="evidence")
+        issue = evidence["issue"]
+        if issue.get("id") != issue_id:
+            raise PreflightRefusal(
+                o2.S_BLOCKED, REASON_PUBLICATION_PROVENANCE,
+                "the fresh target identity changed", subject="issue")
+        try:
+            reread = collect_evidence(self.reader, issue_id)
+            recheck = self.reader.issue_get(issue_id)
+        except Exception as exc:  # noqa: BLE001
+            raise PreflightRefusal(
+                o2.S_BLOCKED, REASON_MATERIAL_UNAVAILABLE,
+                f"the stable second read is unavailable: "
+                f"{type(exc).__name__}: {exc}", subject="evidence")
+        if evidence_projection(reread) != evidence_projection(evidence) or \
+                issue_projection(recheck) != issue_projection(issue) or \
+                recheck.get("revision") != issue.get("revision"):
+            raise PreflightRefusal(
+                o2.S_BLOCKED, REASON_MOVING_EVIDENCE,
+                "the second complete read is not stable; recovery refuses a "
+                "moving platform", subject="evidence")
+        comments = evidence["comments"]
+        relation_candidates = [
+            c for c in comments
+            if c.get("content_raw_digest") in
+            (rendered_raw, expected_note["observed_raw_digest"])]
+        if len(relation_candidates) != 1:
+            raise PreflightRefusal(
+                o2.S_BLOCKED, REASON_PUBLICATION_PROVENANCE,
+                "expected exactly one note matching the rendered or observed "
+                f"raw identity, found {len(relation_candidates)}; duplicates "
+                "and R/R-minus-one pairs are never resolved by choice",
+                subject="note", candidates=len(relation_candidates))
+        candidate = relation_candidates[0]
+        if candidate.get("content_raw_digest") != \
+                expected_note["observed_raw_digest"]:
+            raise PreflightRefusal(
+                o2.S_BLOCKED, REASON_PUBLICATION_PROVENANCE,
+                "the sole candidate is the rendered body, not the observed "
+                "single-terminal-LF-removed transport", subject="note")
+        content = _content_of(evidence, candidate["id"])
+        if _sha256_utf8(content) != expected_note["observed_raw_digest"]:
+            raise PreflightRefusal(
+                o2.S_BLOCKED, REASON_PUBLICATION_PROVENANCE,
+                "the observed note bytes do not reproduce the disposed "
+                "observed digest", subject="note")
+        relation = single_terminal_lf_relation(rendered, content)
+        if not relation["accepted"] or not relation["removed_lf"]:
+            raise PreflightRefusal(
+                o2.S_BLOCKED, REASON_PUBLICATION_PROVENANCE,
+                "the observed content is not exactly the rendered body minus "
+                "one terminal LF: " + relation["detail"], subject="note")
+        for key in ("note_comment_id", "revision", "created_at", "updated_at",
+                    "author_id", "author_type", "source_task_id", "parent_id"):
+            field = "note_comment_id" if key == "note_comment_id" else key
+            if candidate.get("id" if key == "note_comment_id" else key) != \
+                    expected_note[key]:
+                raise PreflightRefusal(
+                    o2.S_BLOCKED, REASON_PUBLICATION_PROVENANCE,
+                    f"the observed note {key} does not match the disposition",
+                    subject="note", field=key)
+        parsed = note._parse_record(content)
+        meta = parsed.get("meta") or {}
+        if not parsed.get("ok_record"):
+            raise PreflightRefusal(
+                o2.S_BLOCKED, REASON_PUBLICATION_PROVENANCE,
+                "the visible note does not parse as a complete "
+                "CONTEXT_HANDOFF record", subject="note")
+        if meta.get("prepared_by") != attempt.get("prepared_by") or \
+                meta.get("prepared_at") != attempt.get("prepared_at"):
+            raise PreflightRefusal(
+                o2.S_BLOCKED, REASON_PUBLICATION_PROVENANCE,
+                "the note meta prepared_by/prepared_at do not equal the "
+                "durable attempt meta; the note never self-certifies",
+                subject="note")
+        if meta.get("package_id") != attempt.get("package_id") or \
+                meta.get("task_ref") != execution.get("task_ref") or \
+                meta.get("target_role") != execution.get("role"):
+            raise PreflightRefusal(
+                o2.S_BLOCKED, REASON_PUBLICATION_PROVENANCE,
+                "the note meta package/task/role do not match the bound E",
+                subject="note")
+        envelope_digest = digest(parsed["envelope"])
+        if envelope_digest != attempt.get("envelope_digest"):
+            raise PreflightRefusal(
+                o2.S_BLOCKED, REASON_PUBLICATION_PROVENANCE,
+                "the note envelope digest does not match the disposed attempt "
+                "envelope digest", subject="note")
+        before = attempt.get("before") or {}
+        before_map = {c.get("id"): c for c in before.get("comments") or []}
+        after_map = {c.get("id"): c for c in comments}
+        removed = sorted(set(before_map) - set(after_map))
+        added = sorted(set(after_map) - set(before_map))
+        edited = [
+            cid for cid in before_map
+            if canonical_json({
+                key: after_map[cid].get(key) for key in before_map[cid]})
+            != canonical_json(before_map[cid])]
+        if removed or edited or added != [candidate["id"]]:
+            raise PreflightRefusal(
+                o2.S_BLOCKED, REASON_PUBLICATION_CONFLICT,
+                "the before/after comment delta is not exactly the single "
+                "observed note", subject="delta", removed=removed[:4],
+                edited=edited[:4],
+                added=[i for i in added if i != candidate["id"]][:4])
+        changed = _issue_diff(issue_projection(before.get("issue") or {}),
+                              issue_projection(issue))
+        if changed:
+            raise PreflightRefusal(
+                o2.S_BLOCKED, REASON_PUBLICATION_CONFLICT,
+                "target issue fields changed around the publication: "
+                + ",".join(changed), subject="issue")
+        if canonical_json(before.get("activities") or []) != \
+                canonical_json(evidence["activities"]):
+            raise PreflightRefusal(
+                o2.S_BLOCKED, REASON_PUBLICATION_CONFLICT,
+                "timeline activity delta around the publication is not "
+                "attributable", subject="activities")
+        if evidence["runs"]:
+            raise PreflightRefusal(
+                o2.S_REFRESH_REQUIRED, REASON_MATERIAL_STALE,
+                "the target already carries run(s): "
+                + ",".join(str(r.get("id")) for r in evidence["runs"][:4]),
+                subject="runs")
+        shared = self._classify_publication_history(
+            intent, data["creation_spec"], decision)
+        artifact = compare_artifact_dependency(
+            data["artifact_dependency"]["digest"],
+            data["artifact_dependency"]["entries"],
+            rebuild_artifact_dependency(
+                data["artifact_dependency"]["entries"],
+                root=self.artifact_root,
+                blob_reader=self.artifact_blob_reader))
+        authority = validate_authority_evidence(
+            self._resolve_authority(authority_evidence), data=data)
+        if not self._fingerprint_recheck(data):
+            raise PreflightRefusal(
+                o2.S_REFRESH_REQUIRED, REASON_MATERIAL_STALE,
+                "the frozen fingerprint/built_from recheck failed",
+                subject="request")
+        check = preflight_self_check(data, execution.get("request"),
+                                     current_findings)
+        creation = data.get("creation_context") or {}
+        target = data.get("target_binding") or {}
+        spec = data["creation_spec"]
+        join = {
+            "creation_package_id": creation.get("package_id"),
+            "execution_package_id": execution.get("package_id"),
+            "envelope_digest": execution.get("envelope_digest"),
+            "parent_issue_id": spec["parent_issue_id"],
+            "target_task_ref": execution.get("target_task_ref"),
+        }
+        if join["execution_package_id"] != attempt.get("package_id") or \
+                join["envelope_digest"] != attempt.get("envelope_digest") or \
+                join["parent_issue_id"] != \
+                (before.get("issue") or {}).get("parent_issue_id") or \
+                join["creation_package_id"] != \
+                (creation.get("package_id") or
+                 (data.get("creation_context") or {}).get("package_id")):
+            raise PreflightRefusal(
+                o2.S_BLOCKED, REASON_PUBLICATION_PROVENANCE,
+                "the source parent/E identity join is broken",
+                subject="source_join")
+        return {
+            "blocker_transition": blocker_transition,
+            "blocker_evidence": evidence_event,
+            "attempt_event": attempt_event,
+            "attempt": attempt,
+            "rendered": rendered,
+            "rendered_raw": rendered_raw,
+            "candidate": candidate,
+            "content": content,
+            "parsed": parsed,
+            "evidence": evidence,
+            "reread": reread,
+            "recheck": recheck,
+            "shared": shared,
+            "artifact_digest": artifact["digest"],
+            "authority": authority,
+            "self_check": check,
+            "join": join,
+            "responses": list(self.reader.responses[responses_start:]),
+            "ledger_prefix_count": shared["audited_prefix"]["length"],
+            "ledger_prefix_raw_digest":
+                shared["audited_prefix"]["raw_prefix_digest"],
+        }
+
+    def _build_publication_recovery_proof(self, intent, data, decision,
+                                          bundle) -> dict:
+        """Assemble the complete inline publication recovery proof."""
+        attempt = bundle["attempt"]
+        candidate = bundle["candidate"]
+        note_info = bundle["parsed"]
+        meta = note_info.get("meta") or {}
+        envelope = bundle["parsed"]["envelope"]
+        observations = {
+            "target_issue": bundle["evidence"]["issue"],
+            "target_recheck": bundle["recheck"],
+            "comments": bundle["evidence"]["comments"],
+            "activities": bundle["evidence"]["activities"],
+            "runs": bundle["evidence"]["runs"],
+            "raw_responses": [
+                {"argv": response["argv"], "exit_code": 0,
+                 "stdout": response["raw"],
+                 "stdout_digest": response["raw_digest"]}
+                for response in bundle["responses"]],
+        }
+        observations["digests"] = {
+            name: digest(observations[name]) for name in (
+                "target_issue", "target_recheck", "comments", "activities",
+                "runs", "raw_responses")}
+        shared = bundle["shared"]
+        recovered_execution = data.get("execution_binding") or {}
+        recovered_proof = data.get("recovery_proof") or {}
+        recovered_decision = recovered_proof.get("decision") or {}
+        proof = {
+            "schema": PUBLICATION_RECOVERY_PROOF_SCHEMA,
+            "contract_version": CONTRACT_VERSION,
+            "intent_id": intent["intent_id"],
+            "target": {
+                "issue_id": bundle["evidence"]["issue"]["id"],
+                "identifier": bundle["evidence"]["issue"].get("identifier"),
+            },
+            "state_before": o2.S_BLOCKED,
+            "intent_revision_before": intent["revision"],
+            "commit_revision": intent["revision"] + 1,
+            "blocker": {
+                "transition_seq": bundle["blocker_transition"].get("seq"),
+                "transition_digest":
+                    digest(bundle["blocker_transition"]),
+                "reason": REASON_PUBLICATION_PROVENANCE,
+                "evidence_code": PUB_NOTE_NOT_FOUND,
+                "evidence_event_seq":
+                    bundle["blocker_evidence"].get("seq"),
+                "evidence_event_digest":
+                    digest(bundle["blocker_evidence"]),
+                "detail": ((bundle["blocker_evidence"].get("data") or {})
+                           .get("detail") or "")[:200],
+            },
+            "attempt": {
+                "event_seq": bundle["attempt_event"].get("seq"),
+                "event_digest": digest(bundle["attempt_event"]),
+                "operation_id": attempt.get("operation_id"),
+                "package_id": attempt.get("package_id"),
+                "envelope_digest": attempt.get("envelope_digest"),
+                "rendered_body_digest_lf": attempt.get("body_digest"),
+                "rendered_body_digest_raw": bundle["rendered_raw"],
+                "rendered_chars": len(bundle["rendered"]),
+                "before_issue_revision": ((attempt.get("before") or {}).get(
+                    "issue") or {}).get("revision"),
+                "prepared_by": attempt.get("prepared_by"),
+                "prepared_at": attempt.get("prepared_at"),
+                "publisher_run_id": attempt.get("publisher_run_id"),
+                "parent_comment_id": attempt.get("parent_comment_id"),
+                "before_evidence_digest": attempt.get(
+                    "before_evidence_digest"),
+            },
+            "note": {
+                "note_comment_id": candidate["id"],
+                "revision": candidate["revision"],
+                "created_at": candidate["created_at"],
+                "updated_at": candidate["updated_at"],
+                "author_id": candidate["author_id"],
+                "author_type": candidate["author_type"],
+                "source_task_id": candidate["source_task_id"],
+                "parent_id": candidate["parent_id"],
+                "observed_raw_digest": _sha256_utf8(bundle["content"]),
+                "observed_lf_digest": digest_text_lf(bundle["content"]),
+                "observed_chars": len(bundle["content"]),
+                "observed_utf8_bytes":
+                    len(bundle["content"].encode("utf-8")),
+                "rendered_raw_digest": bundle["rendered_raw"],
+                "rendered_lf_digest": digest_text_lf(bundle["rendered"]),
+                "rendered_chars": len(bundle["rendered"]),
+                "rendered_utf8_bytes":
+                    len(bundle["rendered"].encode("utf-8")),
+                "relation": PUBLICATION_RELATION_DIRECTIONAL,
+                "meta_prepared_by": meta.get("prepared_by"),
+                "meta_prepared_at": meta.get("prepared_at"),
+                "meta_package_id": meta.get("package_id"),
+                "meta_task_ref": meta.get("task_ref"),
+                "meta_target_role": meta.get("target_role"),
+                "envelope_digest": digest(envelope),
+                "record_parsed": bool(note_info.get("ok_record")),
+            },
+            "original_create_recovery": {
+                "decision_digest": recovered_decision.get("decision_digest"),
+                "proof_digest": recovered_proof.get("proof_digest"),
+                "execution_binding_digest": digest(recovered_execution),
+                "accepted_commit": recovered_execution.get(
+                    "accepted_execution_commit"),
+                "accepted_adapter_digest": recovered_execution.get(
+                    "accepted_execution_adapter_digest"),
+            },
+            "execution_authority_historical": {
+                "commit": PREDECESSOR_FORWARD_COMMIT,
+                "adapter_digest": PREDECESSOR_FORWARD_ADAPTER_DIGEST,
+                "resolver": self.execution_resolver_kind,
+                "path": ADAPTER_MODULE,
+                "ok": True,
+            },
+            "observations": observations,
+            "shared_history": shared,
+            "material": {
+                "artifact_dependency_digest": bundle["artifact_digest"],
+                "artifact_recheck_ok": True,
+                "authority": bundle["authority"],
+                "fingerprint": {
+                    "task_fingerprint": ((data.get("execution_context")
+                                          or {}).get("built_from")
+                                         or {}).get("task_fingerprint"),
+                    "built_from_digest": digest(
+                        (data.get("execution_context") or {}).get(
+                            "built_from") or {}),
+                },
+                "self_check": dict(bundle["self_check"]),
+                "source_join": bundle["join"],
+            },
+            "decision": dict(decision),
+            "decision_digest": decision["decision_digest"],
+        }
+        proof["proof_digest"] = digest({
+            k: v for k, v in proof.items() if k != "proof_digest"})
+        return proof
+
+    def _build_publication_execution_migration(self, intent, data, decision,
+                                               proof) -> dict:
+        """Build the single committed execution-identity migration."""
+        execution = decision["execution_migration"]
+        migration = {
+            "schema": PUBLICATION_MIGRATION_SCHEMA,
+            "migration_id": "u12-r0b-pub-migration-" + intent["intent_id"][3:],
+            "intent_id": intent["intent_id"],
+            "old_execution_binding_digest": digest(
+                data.get("execution_binding") or {}),
+            "old_recovery_proof_digest": digest(
+                data.get("recovery_proof") or {}),
+            "old_decision_digest": ((data.get("recovery_proof") or {}).get(
+                "decision") or {}).get("decision_digest"),
+            "predecessor_commit": PREDECESSOR_FORWARD_COMMIT,
+            "predecessor_adapter_digest": PREDECESSOR_FORWARD_ADAPTER_DIGEST,
+            "blocker_digest": proof["blocker"]["transition_digest"],
+            "attempt_digest": proof["attempt"]["event_digest"],
+            "shared_prefix": dict(proof["shared_history"]["audited_prefix"]),
+            "new_commit": execution["accepted_commit"],
+            "new_tree": execution["accepted_tree"],
+            "new_adapter_raw_digest": execution["adapter_raw_digest"],
+            "new_adapter_lf_digest": execution["adapter_lf_digest"],
+            "store_file_digest": execution["store_file_digest"],
+            "note_file_digest": execution["note_file_digest"],
+            "artifact_dependency_digest":
+                execution["artifact_dependency_digest"],
+            "migration_decision_digest": proof["decision_digest"],
+            "publication_recovery_proof_digest": proof["proof_digest"],
+            "from_revision": proof["intent_revision_before"],
+            "commit_revision": proof["commit_revision"],
+        }
+        migration["migration_digest"] = digest(migration)
+        return migration
+
+    def _commit_publication_recovery(self, intent_id: str, *, record: dict,
+                                     expected_revision: int,
+                                     expected_tail_digests: list,
+                                     prefix_count: int,
+                                     prefix_raw_digest: str) -> dict:
+        """The one atomic commit: OS lock, CAS/lease/tail recheck, one fsync."""
+        with self.store.lock:
+            lines, records = self._read_ledger_lines()
+            folded = o2.fold_records(records)
+            current = folded["intents"].get(intent_id)
+            if current is None:
+                raise PreflightRefusal(
+                    o2.S_BLOCKED, REASON_PUBLICATION_PROVENANCE,
+                    "the intent disappeared from the shared ledger",
+                    subject="commit")
+            now = self.now()
+            lease = current.get("lease")
+            if not lease or lease.get("holder") != record["actor"] or \
+                    o2.parse_ts(lease["expires_at"]) <= o2.parse_ts(now):
+                raise PreflightRefusal(
+                    o2.S_BLOCKED, REASON_MATERIAL_UNAVAILABLE,
+                    "the effective intent lease holder recheck failed under "
+                    "the OS ledger lock; no commit", subject="lease")
+            if current["state"] != o2.S_BLOCKED or \
+                    current["revision"] != expected_revision:
+                raise PreflightRefusal(
+                    o2.S_BLOCKED, REASON_PUBLICATION_PROVENANCE,
+                    "the revision/state compare-and-set failed under the OS "
+                    "ledger lock; a revision CAS alone is never sufficient",
+                    subject="cas", revision=current["revision"])
+            if len(lines) < prefix_count or \
+                    _raw_prefix_digest(lines[:prefix_count]) != \
+                    prefix_raw_digest:
+                raise PreflightRefusal(
+                    o2.S_BLOCKED, REASON_PUBLICATION_PROVENANCE,
+                    "the audited shared prefix changed after evidence "
+                    "collection; re-read is required and no commit is made",
+                    subject="prefix")
+            tail = records[prefix_count:]
+            if [digest(item) for item in tail] != expected_tail_digests:
+                raise PreflightRefusal(
+                    o2.S_BLOCKED, REASON_PUBLICATION_PROVENANCE,
+                    "an unexpected shared tail record appeared at the same "
+                    "revision; the append is refused", subject="tail",
+                    tail_seqs=[item.get("seq") for item in tail[:4]])
+            logic = current["fields"].get("logical_task_key")
+            for other in folded["intents"].values():
+                if other["intent_id"] == intent_id:
+                    continue
+                if other["fields"].get("logical_task_key") == logic and \
+                        other["state"] not in o2.TERMINAL_STATES:
+                    raise PreflightRefusal(
+                        o2.S_BLOCKED, REASON_PUBLICATION_PROVENANCE,
+                        "a conflicting open intent owns the same logical task "
+                        "key; no commit", subject="logical_key")
+            validate_publication_recovery_commit_record(record, current)
+            appended = self.store._append_locked(record, folded)
+            return dict(appended)
+
     # -- evidence capability probe (read-only) ------------------------------
     def probe_evidence_capability(self, issue_id: str) -> dict:
         """Read-only assessment of deployed CLI evidence coverage.
@@ -5176,7 +7501,13 @@ def _recovery_is_read_only(factory) -> bool:
         "_recovery_refusal", "_require_predecessor_recovery_state",
         "_classify_shared_history", "_classify_record", "_read_ledger_lines",
         "_resolve_receipt_evidence", "_resolve_execution_identity",
-        "audit_recovery_ledger")]
+        "audit_recovery_ledger", "recover_blocked_publication",
+        "_publication_recovery_inspection", "_replay_publication_recovery",
+        "_publication_recovery_refusal", "_classify_publication_history",
+        "_publication_record_class", "_publication_recovery_prerequisites",
+        "_build_publication_recovery_proof",
+        "_build_publication_execution_migration",
+        "_commit_publication_recovery")]
     if any(node is None for node in nodes):
         return False
     for node in nodes:
@@ -5351,6 +7682,52 @@ def wiring_proof(source=None, module_path=None) -> dict:
             "01a08fbb-51cd-7aeb-907f-a547e4e066e9" in text
             and "sha256:60f265a8a446b5329b534bbb183de12d306fc0ea38f1da767ff9"
                 "bf998ebd4334" in text),
+        "publication_transport_profile_pinned": (
+            f'PUBLICATION_TRANSPORT_PROFILE = "{PUBLICATION_TRANSPORT_PROFILE}"'
+            in text
+            and functions.get("prepare_publication_transport_body") is not None
+            and functions.get("publication_transport_relation") is not None
+            and functions.get("adapter_raw_digest") is not None),
+        "publication_send_is_exact_transport": (
+            "transport_body=transport_body" in _unparse(
+                _method(factory, "publish_handoff_once"))
+            and "sent_hex" in _unparse(
+                _method(factory, "publish_handoff_once"))
+            and "transport_body_digest_raw" in _unparse(
+                _method(factory, "publish_handoff_once"))),
+        "publication_recovery_operation_present": (
+            _method(factory, "recover_blocked_publication") is not None
+            and _method(factory, "_commit_publication_recovery") is not None
+            and functions.get("validate_publication_recovery_decision")
+            is not None
+            and functions.get("validate_publication_recovery_proof")
+            is not None),
+        "publication_recovery_op_registered": (
+            PUBLICATION_RECOVERY_OP in o2.registered_extension_ops()
+            and functions.get("fold_publication_recovery_commit") is not None
+            and functions.get("validate_publication_recovery_commit_record")
+            is not None),
+        "writer_and_reducer_share_validation": (
+            _calls_name(_method(factory, "_commit_publication_recovery"),
+                        "validate_publication_recovery_commit_record")
+            and _calls_name(functions.get("fold_publication_recovery_commit"),
+                            "validate_publication_recovery_commit_record")),
+        "execution_migration_validated_on_load": (
+            functions.get("validate_publication_execution_migration")
+            is not None
+            and _calls_name(functions.get("_validate_execution_binding"),
+                            "validate_publication_execution_migration")),
+        "historical_inspection_pin_explicit": (
+            "PREDECESSOR_FORWARD_ADAPTER_DIGEST" in text
+            and _calls_attr(_method(factory, "_publication_recovery_inspection"),
+                            "get")
+            and "executing=PREDECESSOR_FORWARD_ADAPTER_DIGEST" in text),
+        "no_blanket_blocked_exit": (
+            "PUBLICATION_RECOVERY_OP" in text
+            and "S_HANDOFF_PUBLISHED" in _unparse(
+                _method(factory, "recover_blocked_publication"))
+            and "S_BLOCKED" in _unparse(
+                _method(factory, "recover_blocked_publication"))),
     }
     checks["ok"] = all(bool(v) for v in checks.values())
     return {"module": ADAPTER_MODULE, "checks": checks, "ok": checks["ok"]}
@@ -5500,6 +7877,41 @@ def cmd_recover_created_target(args) -> int:
     return 0 if result["ok"] else 1
 
 
+def cmd_recover_blocked_publication(args) -> int:
+    """Operator entrypoint: one approved proof-bearing publication recovery.
+
+    Read-only platform reads plus the bounded evidence event and the single
+    versioned commit record. The exact Lead disposition, the accepted
+    execution-migration identities and the current Finding source are
+    mandatory; no note resend, create, assign, status, rerun or trigger is
+    reachable from this path.
+    """
+    store = o2.DurableIntentStore(args.ledger)
+    factory = build_r0b_factory(
+        store, runner=_probe_runner, executable=args.executable,
+        artifact_root=args.artifact_root or str(ROOT),
+        authority_reader=ReadinessManifestAuthorityReader(
+            args.authority_root or args.artifact_root or str(ROOT)))
+    decision = _load_json(args.decision_file)
+    accepted = _load_json(args.accepted_execution_file)
+    findings = _load_json(args.findings_file) if args.findings_file else None
+    try:
+        result = factory.recover_blocked_publication(
+            args.intent_id, decision=decision,
+            accepted_execution=accepted, actor=args.actor,
+            current_findings=findings)
+    except o2.IntentError as exc:
+        print(json.dumps({"ok": False, "code": getattr(exc, "code", None),
+                          "message": exc.message,
+                          "details": getattr(exc, "details", {})},
+                         ensure_ascii=False, indent=2, sort_keys=True))
+        return 2
+    result = dict(result)
+    result["ok"] = result.get("status") == o2.S_HANDOFF_PUBLISHED
+    print(json.dumps(result, ensure_ascii=False, indent=2, sort_keys=True))
+    return 0 if result["ok"] else 1
+
+
 def cmd_ledger_audit(args) -> int:
     """Read-only ledger audit for the disposition prefix/record pins."""
     store = o2.DurableIntentStore(args.ledger)
@@ -5639,6 +8051,27 @@ def build_parser() -> argparse.ArgumentParser:
                           "named by the disposition")
     rec.add_argument("--executable", default="multica")
     rec.set_defaults(func=cmd_recover_created_target)
+
+    pubrec = sub.add_parser(
+        "recover-blocked-publication",
+        help="one approved proof-bearing recovery of the exact BLOCKED "
+             "publication incident (BLOCKED rev4 -> HANDOFF_PUBLISHED rev5 "
+             "plus the execution-identity migration)")
+    pubrec.add_argument("--ledger", required=True)
+    pubrec.add_argument("--intent-id", required=True)
+    pubrec.add_argument("--decision-file", required=True,
+                        help="exact Lead publication recovery disposition")
+    pubrec.add_argument("--accepted-execution-file", required=True,
+                        help="accepted execution-migration identities "
+                             "(must equal decision.execution_migration)")
+    pubrec.add_argument("--findings-file", default=None,
+                        help="current Finding source (required; the adapter "
+                             "never forces an empty list)")
+    pubrec.add_argument("--actor", required=True)
+    pubrec.add_argument("--artifact-root", default=None)
+    pubrec.add_argument("--authority-root", default=None)
+    pubrec.add_argument("--executable", default="multica")
+    pubrec.set_defaults(func=cmd_recover_blocked_publication)
 
     audit = sub.add_parser("ledger-audit",
                            help="read-only full-interval classification of "

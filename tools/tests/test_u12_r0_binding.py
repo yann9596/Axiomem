@@ -1569,8 +1569,19 @@ class ImmutabilityTests(unittest.TestCase):
         root = TOOLS.parent
         self.assertEqual(u12.adapter_digest(TOOLS / "u12_strict_receipt.py"),
                          self.STRICT_GATE_LF)
-        self.assertEqual(u12.adapter_digest(TOOLS / "chandoff_intent.py"),
-                         self.CHANDOFF_INTENT_LF)
+        # The accepted artifact-dependency pin for tools/chandoff_intent.py is
+        # bound to the pinned commit blob, not to the executing working file:
+        # the approved YZT-84 publication-recovery exception changes those
+        # executing bytes and binds them through the committed execution
+        # migration (see test_u12_r0_publication_recovery.py). The frozen
+        # artifact pin must still reproduce exactly.
+        blob = u12._git_blob_reader(root)(
+            "49c48a9c2ef4ac89dd9321a42b0132a2a78cceb9",
+            "tools/chandoff_intent.py")
+        self.assertEqual(
+            "sha256:" + hashlib.sha256(
+                bytes(blob).replace(b"\r\n", b"\n")).hexdigest(),
+            self.CHANDOFF_INTENT_LF)
         manifest = json.loads(
             (root / "adapters/multica/u12-p0r/readiness-manifest.json")
             .read_text(encoding="utf-8"))
@@ -1629,7 +1640,6 @@ class ImmutabilityTests(unittest.TestCase):
 
     def test_imported_implementations_are_byte_unchanged_vs_base_commit(self):
         paths = [
-            "tools/chandoff_intent.py", "tools/chandoff_note.py",
             "tools/chandoff_dispatch.py", "tools/chandoff_adapter.py",
             "tools/chandoff.py", "tools/u12_strict_receipt.py",
             "tools/chandoff_plan.py", "tools/chandoff_compose.py",
@@ -1647,6 +1657,23 @@ class ImmutabilityTests(unittest.TestCase):
         if proc.returncode != 0:
             self.skipTest("base commit unavailable in this checkout")
         self.assertEqual(proc.stdout.strip(), "")
+        # The approved YZT-84 publication-recovery exception changes exactly
+        # the two dependency files it opens (the O2 store/fold increment and
+        # the note publisher's exact-transport send); nothing else.
+        proc = subprocess.run(
+            ["git", "-C", root, "diff", "--name-only", self.BASE_COMMIT,
+             "--", "tools"], capture_output=True, text=True)
+        changed_tools = set(
+            line for line in proc.stdout.splitlines() if line.strip())
+        self.assertTrue(
+            changed_tools <= {
+                "tools/chandoff_intent.py", "tools/chandoff_note.py",
+                "tools/u12_r0_binding.py",
+                "tools/tests/test_u12_r0_binding.py",
+                "tools/tests/test_u12_r0_create_recovery.py",
+                "tools/tests/test_u12_r0_recovery_evidence.py",
+                "tools/tests/test_u12_r0_publication_recovery.py"},
+            f"unexpected changed tools files: {sorted(changed_tools)}")
 
     def test_adapter_has_no_production_ledger_reference(self):
         source = (TOOLS / "u12_r0_binding.py").read_text(encoding="utf-8")

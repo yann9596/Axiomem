@@ -974,8 +974,15 @@ class PinAndProofFenceTests(unittest.TestCase):
             u12.adapter_digest(TOOLS / "u12_strict_receipt.py"),
             "sha256:f37ed0912ecbdc3944529cffc6d7a28bc9a41d1faba8cd1e2"
             "84eab6b0ccf4bed")
+        # The accepted pin for tools/chandoff_intent.py is the pinned commit
+        # blob; the approved YZT-84 publication-recovery exception binds the
+        # executing bytes through the committed execution migration instead.
+        blob = u12._git_blob_reader(TOOLS.parent)(
+            "49c48a9c2ef4ac89dd9321a42b0132a2a78cceb9",
+            "tools/chandoff_intent.py")
         self.assertEqual(
-            u12.adapter_digest(TOOLS / "chandoff_intent.py"),
+            "sha256:" + hashlib.sha256(
+                bytes(blob).replace(b"\r\n", b"\n")).hexdigest(),
             "sha256:0544046fa2ca97c12e6c48de574074df9de5715a950a"
             "d75a783cf31853037032")
         rebuilt = u12.build_artifact_dependency_digest()

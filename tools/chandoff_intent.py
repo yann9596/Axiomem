@@ -192,6 +192,38 @@ READ_COMMANDS = (
 )
 
 O2_SCAN = "o2_scan"
+
+# --- bounded O2 store/fold contract increment (YZT-84 approved exception) ----
+# The frozen O2 core stays unchanged for every ordinary path. A forward
+# adapter may register ONE explicit versioned dispatch_intent op whose writer
+# and reducer share the same complete proof validation: the fold dispatches to
+# the registered handler and applies its exact state/revision delta, and an
+# unknown op (including this one when no handler is registered, i.e. every
+# pre-change reader) still fails closed as ledger corruption. No generic
+# migration infrastructure is introduced.
+EXTENSION_OPS: dict = {}
+
+
+def register_extension_op(op: str, handler) -> None:
+    """Register one versioned dispatch_intent extension op and its reducer.
+
+    The handler signature is `handler(record, intent, intents)`; it must either
+    apply the record's exact state/revision delta to `intent` or raise
+    `LedgerCorruptionError`. Registration is process-local and never persists
+    in the ledger, so an old reader refuses the record instead of silently
+    ignoring it.
+    """
+    if not isinstance(op, str) or not op.strip():
+        raise IntentError("extension op name must be a non-blank string")
+    if not callable(handler):
+        raise IntentError("extension op handler must be callable")
+    EXTENSION_OPS[op.strip()] = handler
+
+
+def registered_extension_ops() -> tuple:
+    return tuple(sorted(EXTENSION_OPS))
+
+
 _UUID_RE = dispatch.UUID_RE
 _PACKAGE_ID_RE = re.compile(r"^CTX-[A-Za-z0-9._:-]+-[0-9a-f]{16}$")
 _INTENT_ID_RE = re.compile(r"^DI-[0-9a-f]{16}$")
@@ -536,7 +568,8 @@ class DurableIntentStore:
             raise IntentError("ledger record must be an object")
         if record.get("record_type") == INTENT_RECORD_TYPE:
             op = record.get("op")
-            if op not in ("recorded", "transition", "event", "lease"):
+            if op not in ("recorded", "transition", "event", "lease") and \
+                    op not in EXTENSION_OPS:
                 raise IntentError("unknown dispatch_intent record op",
                                   op=str(op))
         else:
@@ -758,7 +791,8 @@ def fold_records(records: list) -> dict:
             ignored += 1
             continue
         op = record.get("op")
-        if op not in ("recorded", "transition", "event", "lease"):
+        if op not in ("recorded", "transition", "event", "lease") and \
+                op not in EXTENSION_OPS:
             raise LedgerCorruptionError(
                 "dispatch_intent record has an unknown op; fail closed",
                 op=str(op), seq=record.get("seq"))
@@ -767,6 +801,16 @@ def fold_records(records: list) -> dict:
             raise LedgerCorruptionError(
                 "dispatch_intent record has a malformed intent_id",
                 intent_id=str(intent_id))
+        if op in EXTENSION_OPS:
+            intent = intents.get(intent_id)
+            if intent is None:
+                raise LedgerCorruptionError(
+                    "intent extension record precedes its intent_recorded "
+                    "record", intent_id=intent_id, op=op)
+            handler = EXTENSION_OPS[op]
+            handler(record, intent, intents)
+            intent["updated_at"] = record.get("at") or intent["updated_at"]
+            continue
         if op == "recorded":
             if intent_id in intents:
                 raise LedgerCorruptionError(

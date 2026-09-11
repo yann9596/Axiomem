@@ -741,19 +741,46 @@ def _package_id_of(parsed: dict):
 def publish_handoff(envelope, *, issue_id: str, prepared_by: str,
                     parent_comment_id: str | None = None,
                     allow_partial: bool = False, prepared_at: str | None = None,
-                    clock: Callable = now_iso, cli: NoteCli | None = None) -> dict:
+                    clock: Callable = now_iso, cli: NoteCli | None = None,
+                    transport_body: str | None = None) -> dict:
     """Publish ONE validated /note CONTEXT_HANDOFF record.
 
     Order of operations: frozen validation + integrity -> BLOCKED/PARTIAL
     policy -> render -> non-trigger body scan -> idempotency/conflict
     pre-check (reads only) -> exactly one comment-add write via a UTF-8
     --content-file inside the cwd -> temp file deleted in all cases.
+
+    `transport_body` (optional, versioned publication transport profile) is
+    the pre-validated UTF-8 transport text the caller prepared from the
+    rendered body. The legacy call without it sends the rendered body
+    verbatim. With it, the exact bytes written and sent are the supplied
+    transport text -- never a re-rendered body -- after the exact relation
+    `transport_body == rendered_body[:-1]` and the renderer's exact
+    `\\n```\\n` ending are re-verified here. The file write is byte-verified
+    before the one comment-add call, and no BOM is ever admitted.
     """
     cli = cli or NoteCli()
     commands_start = len(cli.commands)
     body, record = render_note_record(
         envelope, prepared_by=prepared_by, prepared_at=prepared_at,
         clock=clock, allow_partial=allow_partial)
+
+    if transport_body is not None:
+        if not isinstance(transport_body, str) or not transport_body:
+            raise AdapterError(
+                "transport_body must be a non-empty string",
+                field="transport_body")
+        if not body.endswith("\n```\n"):
+            raise AdapterError(
+                "the rendered body does not end with the accepted "
+                "LF-fence-LF renderer shape; no variant is guessed",
+                field="transport_body")
+        if transport_body != body[:-1]:
+            raise AdapterError(
+                "the supplied transport body is not exactly the rendered "
+                "body with its single terminal LF removed",
+                field="transport_body")
+    sent = transport_body if transport_body is not None else body
 
     if parent_comment_id is not None:
         _require_text(parent_comment_id, "parent_comment_id")
@@ -809,16 +836,26 @@ def publish_handoff(envelope, *, issue_id: str, prepared_by: str,
             "existing_comment": existing["comment"],
             "record": record,
             "reason": "identical_record_already_published",
-        }, cli, commands_start, temp_deleted=True, body=body)
+        }, cli, commands_start, temp_deleted=True, body=sent,
+            rendered_body=body)
 
-    body_sha256 = hashlib.sha256(body.encode("utf-8")).hexdigest()
+    body_sha256 = hashlib.sha256(sent.encode("utf-8")).hexdigest()
     cwd = Path.cwd()
     temp_path = cwd / f".t06-note-{uuid.uuid4().hex[:12]}.md"
     temp_deleted = False
     try:
         # Raw bytes: text mode would translate \n to \r\n on Windows and
-        # corrupt the record framing the deployed CLI reads back.
-        temp_path.write_bytes(body.encode("utf-8"))
+        # corrupt the record framing the deployed CLI reads back. The exact
+        # sent bytes are verified after the write; a BOM is never admitted.
+        payload = sent.encode("utf-8")
+        if payload.startswith(b"\xef\xbb\xbf"):
+            raise AdapterError("transport body carries a UTF-8 BOM; refused",
+                               field="transport_body")
+        temp_path.write_bytes(payload)
+        if temp_path.read_bytes() != payload:
+            raise AdapterError(
+                "the written content-file bytes differ from the verified "
+                "transport bytes; refusing to send", field="transport_body")
         resolved = temp_path.resolve()
         if not resolved.is_relative_to(cwd.resolve()):
             raise AdapterError("temp body file escaped the working directory",
@@ -840,11 +877,14 @@ def publish_handoff(envelope, *, issue_id: str, prepared_by: str,
         "comment": comment_ref,
         "record": record,
         "body_sha256": body_sha256,
-    }, cli, commands_start, temp_deleted=temp_deleted, body=body)
+        "transport_body": (transport_body is not None),
+    }, cli, commands_start, temp_deleted=temp_deleted, body=sent,
+        rendered_body=body)
 
 
 def _publish_trace(result: dict, cli: NoteCli, commands_start: int, *,
-                   temp_deleted: bool, body: str) -> dict:
+                   temp_deleted: bool, body: str,
+                   rendered_body: str | None = None) -> dict:
     issued = cli.commands[commands_start:]
     writes = [argv for argv in issued if tuple(argv[:3]) == WRITE_COMMAND]
     result["trace"] = {
@@ -854,6 +894,9 @@ def _publish_trace(result: dict, cli: NoteCli, commands_start: int, *,
         "write_commands": len(writes),
         "temp_file_deleted": bool(temp_deleted),
         "body_sha256": hashlib.sha256(body.encode("utf-8")).hexdigest(),
+        "sent_body_sha256": hashlib.sha256(
+            body.encode("utf-8")).hexdigest(),
+        "sent_body_utf8_bytes": len(body.encode("utf-8")),
         "guarantees": {
             "llm_called": False,
             "canonical_writes": 0,
@@ -865,6 +908,11 @@ def _publish_trace(result: dict, cli: NoteCli, commands_start: int, *,
             "frozen_schema_changes": 0,
         },
     }
+    if rendered_body is not None:
+        result["trace"]["rendered_body_sha256"] = hashlib.sha256(
+            rendered_body.encode("utf-8")).hexdigest()
+        result["trace"]["transport_renderer_relation"] = (
+            "rendered-minus-single-terminal-lf")
     return result
 
 
@@ -895,6 +943,9 @@ def main(argv=None) -> int:
     publish.add_argument("--parent", default=None,
                          help="optional parent comment id (reply routing)")
     publish.add_argument("--allow-partial", action="store_true")
+    publish.add_argument("--transport-body-file", default=None,
+                         help="pre-validated exact transport body (must be "
+                              "the rendered body minus its single terminal LF)")
     publish.add_argument("--dry-run", action="store_true",
                          help="validate + render without any CLI call")
     publish.add_argument("--executable", default="multica")
@@ -946,7 +997,10 @@ def main(argv=None) -> int:
                 envelope, issue_id=args.issue, prepared_by=args.prepared_by,
                 parent_comment_id=args.parent,
                 allow_partial=args.allow_partial, prepared_at=args.prepared_at,
-                cli=NoteCli(executable=args.executable))
+                cli=NoteCli(executable=args.executable),
+                transport_body=(
+                    Path(args.transport_body_file).read_bytes().decode("utf-8")
+                    if args.transport_body_file else None))
             print(json.dumps(result, ensure_ascii=False, indent=2, sort_keys=True))
             return 0
         cli = NoteCli(executable=args.executable)
