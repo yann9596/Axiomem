@@ -6339,10 +6339,9 @@ class R0BForwardFactory(strict.CanaryOrchestrator):
             now=record["at"])
         record["fields"] = fields
         validate_publication_recovery_commit_record(record, intent)
-        self._claim(intent_id, actor)
+        claim = self._claim(intent_id, actor)
         try:
             tail_digests = []
-            claim = self._claim(intent_id, actor)
             if isinstance(claim.get("record"), dict):
                 tail_digests.append(digest(claim["record"]))
             evidence_event = self.store.append_event(
