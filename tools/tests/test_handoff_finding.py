@@ -875,13 +875,13 @@ class RepoGuardTests(unittest.TestCase):
             "tools/chandoff_fallback.py":
                 "sha256:7884cfb6844d783fd2bd0664403752b2b45abaf615b88da95562b5b14148c93b",
             "tools/tests/test_handoff_fallback.py":
-                "sha256:37de2a32423ecd7222309d92946ef99ee24a223eedaad63ac91f38cfa6bc71b3",
+                "sha256:199a77faa6b876bcddfde2daab377ce4342b11cb3f8e20589519161019627e88",
             "tools/chandoff_mention.py":
-                "sha256:7bc27170bc612007317e4a69b37fea6733a33947de8d18312fa8d28c1ae90878",
+                "sha256:54f98c42c66279c281c9dfad66991cdd298332370f7b6ab098cef791b432047f",
             "tools/tests/test_handoff_mention.py":
-                "sha256:ba52f6153de7d7fbad55c625ed4fb17e53c840fbec090c2bb1d4123e743e2a72",
+                "sha256:16fef10f1a421565ff2f6974e292e28ae4a48361e28a42dc4e7f5a131622f072",
             "tools/chandoff_assignment.py":
-                "sha256:a03458d980f2ce13ad5f69ef2e6b780b5fd4bdd71bff011b5d06fa66bc40ba99",
+                "sha256:24d0962884903eefbe59fc30b5f0255becb84ce5bd5dba3ba1df27adf4a68b4e",
             "tools/chandoff_dispatch.py":
                 "sha256:62dbd08160dea730a9c9264449dbb7d6e7dd7c40ff01ee3b16dad43fab24cfaa",
         }

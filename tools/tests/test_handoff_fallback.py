@@ -52,6 +52,8 @@ UNSET = object()
 class FakeMultica:
     """Stateful in-memory stand-in for the deployed multica CLI."""
 
+    simulation_transport = True
+
     def __init__(self, *, version="v0.4.42", issue_id=ISSUE_ID,
                  identifier=IDENTIFIER, title=TITLE, description=DESCRIPTION,
                  assignee=None, project="web-imagegen", get_fails=False,

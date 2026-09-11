@@ -58,6 +58,9 @@ AUTHORITY_KEYS = {"comment_id", "issue_id", "author_id", "author_type", "digest"
 ALLOWED_KEYS = {"task_refs", "roles"}
 RUNTIME_KEYS = {"commit", "adapter_digest"}
 
+RESOLVER_CAPTURE_ONLY = "capture-only"
+RESOLVER_AUTHENTICATED_CLI = "authenticated-cli"
+
 
 class FindingsSourceRefusal(Exception):
     """Typed, bounded refusal. Never a partial-success list."""
@@ -263,6 +266,142 @@ def validate_binding(binding, *, project_id: str | None = None) -> dict:
     out = copy.deepcopy(binding)
     out["root"] = str(root_path)
     return out
+
+
+def is_simulation_transport(runner) -> bool:
+    """True only when the runner (or a wrapper) opts into fake/fixture effects."""
+    current = runner
+    seen: set[int] = set()
+    while current is not None and id(current) not in seen:
+        seen.add(id(current))
+        if getattr(current, "simulation_transport", False) is True:
+            return True
+        if type(current).__name__ == "FixtureRunner":
+            return True
+        nxt = getattr(current, "inner", None)
+        if nxt is None:
+            nxt = getattr(current, "runner", None)
+        current = nxt if nxt is not current else None
+    return False
+
+
+def resolver_kind(resolver) -> str | None:
+    kind = getattr(resolver, "kind", None)
+    return kind if isinstance(kind, str) else None
+
+
+class CaptureFileResolver:
+    """Simulation-only: rehash a local capture file. Never production authority.
+
+    Production publication/dispatch must refuse this resolver. The operator
+    helper CLI is the only supported capture-only consumer.
+    """
+
+    kind = RESOLVER_CAPTURE_ONLY
+    is_production = False
+
+    def __init__(self, path):
+        self.path = path
+        self.calls: list = []
+
+    def __call__(self, authority):
+        self.calls.append(copy.deepcopy(authority))
+        doc, _digest, _size = load_json_strict_file(
+            self.path, "authority capture")
+        return doc
+
+
+class AuthenticatedCommentResolver:
+    """Production authority: authenticated CLI read of the live comment.
+
+    Each call re-reads `issue comment list --thread` for the bound
+    comment_id. A local capture is never consulted; platform edit or
+    revocation with an unchanged capture is a refusal.
+    """
+
+    kind = RESOLVER_AUTHENTICATED_CLI
+    is_production = True
+
+    def __init__(self, cli):
+        if cli is None:
+            raise FindingsSourceRefusal(
+                "findings_source_unbound",
+                "authenticated authority resolution requires a CLI transport")
+        self.cli = cli
+        self.calls: list = []
+
+    def __call__(self, authority):
+        issue_id = authority.get("issue_id")
+        comment_id = authority.get("comment_id")
+        self.calls.append({"issue_id": issue_id, "comment_id": comment_id})
+        try:
+            thread = self.cli.comment_thread(issue_id, comment_id)
+        except FindingsSourceRefusal:
+            raise
+        except Exception as exc:  # noqa: BLE001 - CLI failure is a stop
+            raise FindingsSourceRefusal(
+                "findings_source_unbound",
+                "authenticated authority CLI read failed: "
+                f"{type(exc).__name__}: {exc}") from None
+        if not isinstance(thread, list):
+            raise FindingsSourceRefusal(
+                "findings_source_unbound",
+                "authenticated authority CLI did not return a comment list")
+        match = None
+        for rec in thread:
+            if isinstance(rec, dict) and rec.get("id") == comment_id:
+                match = rec
+                break
+        if match is None:
+            raise FindingsSourceRefusal(
+                "findings_source_unbound",
+                "the authority comment is absent or revoked on the platform; "
+                "a local capture is not authority")
+        content = match.get("content")
+        if not isinstance(content, str):
+            raise FindingsSourceRefusal(
+                "findings_source_unbound",
+                "the live authority comment carries no verifiable content")
+        return {
+            "comment_id": match.get("id"),
+            "issue_id": match.get("issue_id") or issue_id,
+            "author_id": match.get("author_id"),
+            "author_type": match.get("author_type"),
+            "content": content,
+        }
+
+
+def gate_effectful_findings(*, source, runner, require_source: bool,
+                            allow_legacy_fixture: bool, what: str) -> None:
+    """Refuse omitted/capture-only sources before publication or trigger.
+
+    A legacy fixture is allowed only when explicitly requested AND the
+    runner is a simulation transport that cannot reach the live platform.
+    """
+    sim = is_simulation_transport(runner)
+    if source is None:
+        if require_source or not allow_legacy_fixture:
+            raise FindingsSourceRefusal(
+                "findings_source_unbound",
+                f"{what} requires a verified Findings source binding; "
+                "omitted binding is refused")
+        if not sim:
+            raise FindingsSourceRefusal(
+                "findings_source_unbound",
+                f"legacy unbound Findings fixture mode cannot {what} "
+                "through a non-simulation transport")
+        return
+    kind = resolver_kind(getattr(source, "resolver", None))
+    if kind == RESOLVER_CAPTURE_ONLY and not sim:
+        raise FindingsSourceRefusal(
+            "findings_source_unbound",
+            f"capture-only authority cannot {what}; production requires "
+            "authenticated CLI reads of the live comment")
+    if not getattr(source, "is_production", False) and not sim:
+        raise FindingsSourceRefusal(
+            "findings_source_unbound",
+            f"a simulation-only Findings source cannot {what} through a "
+            "non-simulation transport")
 
 
 def verify_authority(binding: dict, resolver) -> dict:
@@ -637,10 +776,9 @@ class BoundFindingsSource:
 
     Every `read()` re-verifies the authority record freshly, rechecks runtime
     pins when expected pins are supplied, and reads the root from scratch; no
-    list or digest is cached between boundaries.
+    list or digest is cached between boundaries. Production identity follows
+    the resolver: capture-only is never production authority.
     """
-
-    is_production = True
 
     def __init__(self, binding: dict, *, resolver, reader=None,
                  project_id: str | None = None,
@@ -654,6 +792,13 @@ class BoundFindingsSource:
         self.expected_adapter_digest = expected_adapter_digest
         self.clock = clock or now_iso
         self._last_observation: dict | None = None
+
+    @property
+    def is_production(self) -> bool:
+        flag = getattr(self.resolver, "is_production", None)
+        if flag is not None:
+            return bool(flag)
+        return resolver_kind(self.resolver) == RESOLVER_AUTHENTICATED_CLI
 
     @property
     def source_id(self) -> str:
@@ -867,11 +1012,21 @@ def verify_worker_entry(source, *, task_ref=None, role=None,
     SELF_CHECK. A missing/changed source stops this worker; it never
     dispatches a replacement.
     """
+    if source is None:
+        raise FindingsSourceRefusal(
+            "findings_source_unbound",
+            "worker entry requires a verified Findings source binding; "
+            "omitted binding is refused")
     if not allow_simulation and not getattr(source, "is_production", False):
         raise FindingsSourceRefusal(
             "findings_source_unbound",
             "a simulation-only Findings source is not production worker-entry "
             "authority")
+    if not allow_simulation and resolver_kind(getattr(source, "resolver", None)) \
+            == RESOLVER_CAPTURE_ONLY:
+        raise FindingsSourceRefusal(
+            "findings_source_unbound",
+            "capture-only authority is not production worker-entry authority")
     snapshot = source.read(
         boundary="WORKER_START", observer_run_id=observer_run_id,
         task_ref=task_ref, role=role, request_digest=request_digest,
@@ -931,10 +1086,7 @@ def main(argv=None) -> int:
     read.add_argument("--boundary", default="OPERATOR_READ")
     args = parser.parse_args(argv)
 
-    def resolver(_authority):
-        doc, _d, _s = load_json_strict_file(args.authority_file,
-                                            "authority capture")
-        return doc
+    resolver = CaptureFileResolver(args.authority_file)
 
     try:
         source = source_from_binding_file(args.binding_file,
@@ -942,11 +1094,18 @@ def main(argv=None) -> int:
         if args.command == "validate":
             print(json.dumps({"ok": True, "source_id": source.source_id,
                               "binding_digest": source.binding_digest,
-                              "root": source.binding["root"]},
+                              "root": source.binding["root"],
+                              "authority_kind": RESOLVER_CAPTURE_ONLY,
+                              "is_production": source.is_production,
+                              "effects": "none — capture-only helper cannot "
+                                         "publish or dispatch"},
                              ensure_ascii=False, indent=2))
             return 0
         snap = source.read(boundary=args.boundary)
-        print(json.dumps(snap["observation"], ensure_ascii=False, indent=2))
+        observation = dict(snap["observation"])
+        observation["authority_kind"] = RESOLVER_CAPTURE_ONLY
+        observation["is_production"] = source.is_production
+        print(json.dumps(observation, ensure_ascii=False, indent=2))
         return 0
     except FindingsSourceRefusal as exc:
         print(json.dumps({"ok": False, **exc.as_dict()},

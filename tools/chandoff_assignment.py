@@ -41,7 +41,10 @@ import chandoff_adapter as adapter  # noqa: E402
 import chandoff_compose as compose  # noqa: E402
 import chandoff_dispatch as dispatch  # noqa: E402
 import chandoff_finalize as finalize  # noqa: E402
-from chandoff_findings_source import FindingsSourceRefusal  # noqa: E402
+from chandoff_findings_source import (  # noqa: E402
+    FindingsSourceRefusal, gate_effectful_findings, is_simulation_transport,
+    verify_worker_entry,
+)
 import chandoff_note as note  # noqa: E402
 import chandoff_plan as plan  # noqa: E402
 import chandoff_selfcheck as selfcheck  # noqa: E402
@@ -75,10 +78,14 @@ PINNED_SKILL_BUNDLE = (
     "sha256:7f861c320c115b328fb45db7356573ae449a5e443ac08b3572a764c79934fce9")
 # YZT-88 versions the U04 skill bundle forward: the design opens the skill
 # pipeline script with the verified Findings source-binding flags. The
-# historical accepted pin above is preserved as history; the forward pin is
-# the only bundle accepted by this candidate until Lead acceptance.
-FORWARD_SKILL_BUNDLE = (
+# historical accepted pin above is preserved as history. 261df9a forwarded
+# the bundle to 1a264577…; this correction re-forwards it because production
+# stages now re-read authority through authenticated CLI instead of a
+# capture file. The U05 bundle.json is still not edited in place.
+YZT88_SKILL_BUNDLE_261DF9A = (
     "sha256:1a2645771e38def5f44dc809bce991ca18ca7c9ef36777611e9b88726c018bc2")
+FORWARD_SKILL_BUNDLE = (
+    "sha256:f54f0395410cb5ed9596a2e4366dd9375813127391cd4131613942d9f30533ff")
 ACCEPTED_SKILL_BUNDLES = (FORWARD_SKILL_BUNDLE,)
 
 STATES = (
@@ -608,7 +615,8 @@ class AssignmentHandoff:
                  bundle_dir=None, finding_store=None, world: dict | None,
                  policy: dict | None, workdir: Path, executable: str,
                  crash_at: str | None = None, resume: dict | None = None,
-                 findings_source=None):
+                 findings_source=None, legacy_fixture: bool | None = None,
+                 effects_runner=None):
         self.spec = validated
         self.target_role_spec = target_role_spec
         self.recorder = recorder
@@ -623,8 +631,14 @@ class AssignmentHandoff:
         self.crash_at = crash_at
         self.resume = resume or {}
         self.findings_source = findings_source
+        self.effects_runner = effects_runner if effects_runner is not None \
+            else getattr(recorder, "inner", recorder)
+        if legacy_fixture is None:
+            legacy_fixture = is_simulation_transport(self.effects_runner)
+        self.legacy_fixture = bool(legacy_fixture)
         self._prepare_observation = None
         self._self_check_observation = None
+        self._worker_entry_observation = None
 
         self.dispatch_cli = dispatch.DispatchCli(
             executable, runner=recorder, workdir=workdir)
@@ -652,8 +666,45 @@ class AssignmentHandoff:
         if self.crash_at and self.machine.state == self.crash_at:
             raise CrashSimulated(self.crash_at)
 
+    def _require_findings_binding(self, what: str) -> None:
+        try:
+            gate_effectful_findings(
+                source=self.findings_source, runner=self.effects_runner,
+                require_source=not self.legacy_fixture,
+                allow_legacy_fixture=self.legacy_fixture, what=what)
+        except FindingsSourceRefusal as exc:
+            raise _Stop(
+                INVALID_INPUT,
+                f"{exc.message} [{exc.code}]",
+                extra={"findings_source_refusal": exc.as_dict()}) from None
+
+    def _verify_worker_entry(self, what: str) -> None:
+        if self.findings_source is None:
+            if self.legacy_fixture:
+                return
+            raise _Stop(
+                INVALID_INPUT,
+                "worker entry requires a verified Findings source binding")
+        try:
+            result = verify_worker_entry(
+                self.findings_source,
+                task_ref=self.task_ref,
+                role=(self.target or {}).get("role"),
+                prior_observation=self._self_check_observation
+                or self._prepare_observation,
+                observer_run_id=self.recorder.transaction_id,
+                allow_simulation=self.legacy_fixture)
+        except FindingsSourceRefusal as exc:
+            raise _Stop(
+                PACKAGE_STALE if exc.code == "findings_source_changed"
+                else INVALID_INPUT,
+                f"{what} refused at worker entry [{exc.code}]: {exc.message}",
+                extra={"findings_source_refusal": exc.as_dict()}) from None
+        self._worker_entry_observation = result["observation"]
+
     def run(self) -> dict:
         try:
+            self._require_findings_binding("assignment publication or trigger")
             self._record_start()
             if self.resume.get("canonical"):
                 self._restore_canonical(self.resume["canonical"])
@@ -679,6 +730,7 @@ class AssignmentHandoff:
             self._step_freshness_before_trigger()
             self._step_run_precheck("trigger")
             self._maybe_crash()
+            self._verify_worker_entry("assignment trigger")
             self._step_trigger()
             self._maybe_crash()
             self._step_correlate_run()
@@ -1010,6 +1062,12 @@ class AssignmentHandoff:
                             extra={"error": _bounded_reason(exc)}) from None
             self._prepare_observation = result.get("findings_observation")
             return result
+        if not self.legacy_fixture:
+            raise _Stop(
+                INVALID_INPUT,
+                "production assignment requires a verified Findings source "
+                "binding; world.findings and finding_store are not "
+                "production authority")
         try:
             return plan.prepare_handoff_plan(
                 request,
@@ -1413,7 +1471,7 @@ class AssignmentHandoff:
                 )
                 self._self_check_observation = trace.get(
                     "findings_observation")
-            else:
+            elif self.legacy_fixture:
                 trace = selfcheck.self_check_with_trace(
                     request, packages=[envelope],
                     registry=self.world.get("registry"),
@@ -1421,6 +1479,11 @@ class AssignmentHandoff:
                     findings=self.world.get("findings"),
                     finding_store=self.finding_store,
                 )
+            else:
+                raise _Stop(
+                    INVALID_INPUT,
+                    "production assignment SELF_CHECK requires a verified "
+                    "Findings source binding")
         except _Stop:
             raise
         except Exception as exc:
@@ -1670,7 +1733,8 @@ def run_assignment_handoff(spec, *, caller_role: str, target_role_spec: str,
                            workdir=None, executable: str = "multica",
                            crash_at: str | None = None,
                            resume: dict | None = None,
-                           findings_source=None) -> dict:
+                           findings_source=None,
+                           legacy_fixture: bool | None = None) -> dict:
     """Run one assignment-handoff transaction (simulation default).
 
     Idempotency: a recorded COMPLETED result for this transaction_id is
@@ -1711,6 +1775,8 @@ def run_assignment_handoff(spec, *, caller_role: str, target_role_spec: str,
             "uncertainty": list(UNCERTAINTY),
         }
     workdir = Path(workdir) if workdir is not None else Path.cwd()
+    if legacy_fixture is None:
+        legacy_fixture = is_simulation_transport(runner)
     recorder = dispatch.RecordingRunner(runner, ledger, executable=executable,
                                         transaction_id=transaction_id)
     handoff = AssignmentHandoff(
@@ -1718,7 +1784,8 @@ def run_assignment_handoff(spec, *, caller_role: str, target_role_spec: str,
         recorder=recorder, ledger=ledger, compose_fn=compose_fn, clock=clock,
         bundle_dir=bundle_dir, finding_store=finding_store, world=world,
         policy=policy, workdir=workdir, executable=executable,
-        crash_at=crash_at, resume=resume, findings_source=findings_source)
+        crash_at=crash_at, resume=resume, findings_source=findings_source,
+        legacy_fixture=legacy_fixture, effects_runner=runner)
     try:
         return handoff.run()
     except CrashSimulated as crash:
@@ -2037,12 +2104,15 @@ def main(argv=None) -> int:
     policy = json.loads(Path(args.policy_file).read_text(encoding="utf-8")) \
         if args.policy_file else None
     ledger = dispatch.TransactionLedger()
+    fixture_runner = dispatch.FixtureRunner(fixture_table)
+    fixture_runner.simulation_transport = True
     result = run_assignment_handoff(
         spec, caller_role=args.caller_role, target_role_spec=args.target_role,
-        runner=dispatch.FixtureRunner(fixture_table), ledger=ledger,
+        runner=fixture_runner, ledger=ledger,
         compose_fn=_deterministic_compose,
         transaction_id=args.transaction_id,
-        policy=policy, bundle_dir=args.bundle_dir, executable=args.executable)
+        policy=policy, bundle_dir=args.bundle_dir, executable=args.executable,
+        legacy_fixture=True)
     if args.ledger_file:
         ledger.save(args.ledger_file)
     print(json.dumps({"result": result,

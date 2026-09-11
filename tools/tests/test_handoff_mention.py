@@ -132,6 +132,8 @@ def run_evidence(tx, *, agent_id=AGENT_SE, run_id="r-1", source="mention",
 class FakeMultica:
     """Stateful in-memory stand-in for the deployed multica CLI."""
 
+    simulation_transport = True
+
     def __init__(self, *, version="v0.4.42", issue_id=ISSUE_ID,
                  identifier=IDENTIFIER, assignee=AGENT_SA, project=None,
                  get_fails=False, get_malformed=False, drop_note=False,
@@ -290,7 +292,7 @@ def run_tx(fake=None, *, spec=None, caller="solution-architect",
         policy=policy, clock=CLOCK, finding_store=finding_store or fake_store(),
         world=world, bundle_dir=bundle_dir, stage=stage,
         mention_evidence=mention, run_evidence=run_ev,
-        crash_at=crash_at, resume=resume)
+        crash_at=crash_at, resume=resume, legacy_fixture=True)
     return result, fake, ledger
 
 

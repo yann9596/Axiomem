@@ -29,6 +29,31 @@ PROJECT = "web-imagegen"
 _FIXTURE: dict | None = None
 
 
+class FakeAuthorityCli:
+    """In-memory authenticated comment transport for pipeline fixtures."""
+
+    simulation_transport = True
+
+    def __init__(self, record: dict):
+        self.record = dict(record)
+        self.calls: list = []
+
+    def comment_thread(self, issue_id, comment_id):
+        self.calls.append((issue_id, comment_id))
+        rec = self.record
+        if rec.get("id") != comment_id:
+            return []
+        if rec.get("issue_id") not in (None, issue_id):
+            return []
+        return [dict(rec)]
+
+    def edit_content(self, content: str):
+        self.record["content"] = content
+
+    def revoke(self):
+        self.record = {}
+
+
 def _write(path: Path, doc) -> Path:
     path.write_text(json.dumps(doc, ensure_ascii=False, indent=2) + "\n",
                     encoding="utf-8")
@@ -63,16 +88,24 @@ def fixture() -> dict:
         created_at="2026-09-11T00:00:00Z",
     )
     binding_path = _write(base / "binding.json", binding)
-    authority_path = _write(base / "authority.json", {
+    authority_record = {
+        "id": binding["authority"]["comment_id"],
         "comment_id": binding["authority"]["comment_id"],
         "issue_id": binding["authority"]["issue_id"],
         "author_id": binding["authority"]["author_id"],
         "author_type": binding["authority"]["author_type"],
         "content": content,
+    }
+    authority_path = _write(base / "authority.json", {
+        "comment_id": authority_record["comment_id"],
+        "issue_id": authority_record["issue_id"],
+        "author_id": authority_record["author_id"],
+        "author_type": authority_record["author_type"],
+        "content": content,
     })
+    cli = FakeAuthorityCli(authority_record)
     source = findings_source.BoundFindingsSource(
-        binding, resolver=lambda authority: json.loads(
-            authority_path.read_text(encoding="utf-8")),
+        binding, resolver=findings_source.AuthenticatedCommentResolver(cli),
         project_id=PROJECT, expected_commit="0" * 40,
         expected_adapter_digest="sha256:" + "0" * 64)
     snapshot = source.read(boundary="PREPARE", task_ref=TASK_REF, role=ROLE)
@@ -84,6 +117,7 @@ def fixture() -> dict:
         "authority_file": authority_path,
         "evidence_file": evidence_path,
         "binding": binding,
+        "authority_cli": cli,
     }
     return _FIXTURE
 
@@ -93,6 +127,8 @@ def findings_args() -> dict:
     return {
         "findings_source_binding_file": str(f["binding_file"]),
         "findings_authority_file": str(f["authority_file"]),
+        "findings_authority_cli": f["authority_cli"],
+        "findings_authority_capture_only": False,
         "findings_evidence_file": str(f["evidence_file"]),
         "findings_source_expect_commit": "0" * 40,
         "findings_source_expect_adapter_digest": "sha256:" + "0" * 64,

@@ -81,7 +81,10 @@ import chandoff_assignment as asm  # noqa: E402
 import chandoff_compose as compose  # noqa: E402
 import chandoff_dispatch as dispatch  # noqa: E402
 import chandoff_finalize as finalize  # noqa: E402
-from chandoff_findings_source import FindingsSourceRefusal  # noqa: E402
+from chandoff_findings_source import (  # noqa: E402
+    FindingsSourceRefusal, gate_effectful_findings, is_simulation_transport,
+    verify_worker_entry,
+)
 import chandoff_note as note  # noqa: E402
 import chandoff_plan as plan  # noqa: E402
 import chandoff_selfcheck as selfcheck  # noqa: E402
@@ -973,7 +976,8 @@ class MentionHandoff:
                  bundle_dir=None, finding_store=None, world: dict | None,
                  policy: dict | None, workdir: Path, executable: str,
                  crash_at: str | None = None, resume: dict | None = None,
-                 findings_source=None):
+                 findings_source=None, legacy_fixture: bool | None = None,
+                 effects_runner=None):
         self.spec = validated
         self.target_role_spec = target_role_spec
         self.recorder = recorder
@@ -988,8 +992,14 @@ class MentionHandoff:
         self.crash_at = crash_at
         self.resume = resume or {}
         self.findings_source = findings_source
+        self.effects_runner = effects_runner if effects_runner is not None \
+            else getattr(recorder, "inner", recorder)
+        if legacy_fixture is None:
+            legacy_fixture = is_simulation_transport(self.effects_runner)
+        self.legacy_fixture = bool(legacy_fixture)
         self._prepare_observation = None
         self._self_check_observation = None
+        self._worker_entry_observation = None
 
         self.dispatch_cli = dispatch.DispatchCli(
             executable, runner=recorder, workdir=workdir)
@@ -1024,9 +1034,46 @@ class MentionHandoff:
 
     # -- phase A -----------------------------------------------------------
 
+    def _require_findings_binding(self, what: str) -> None:
+        try:
+            gate_effectful_findings(
+                source=self.findings_source, runner=self.effects_runner,
+                require_source=not self.legacy_fixture,
+                allow_legacy_fixture=self.legacy_fixture, what=what)
+        except FindingsSourceRefusal as exc:
+            raise _Stop(
+                INVALID_INPUT,
+                f"{exc.message} [{exc.code}]",
+                extra={"findings_source_refusal": exc.as_dict()}) from None
+
+    def _verify_worker_entry(self, what: str) -> None:
+        if self.findings_source is None:
+            if self.legacy_fixture:
+                return
+            raise _Stop(
+                INVALID_INPUT,
+                "worker entry requires a verified Findings source binding")
+        try:
+            result = verify_worker_entry(
+                self.findings_source,
+                task_ref=self.task_ref,
+                role=(self.target or {}).get("role"),
+                prior_observation=self._self_check_observation
+                or self._prepare_observation,
+                observer_run_id=self.recorder.transaction_id,
+                allow_simulation=self.legacy_fixture)
+        except FindingsSourceRefusal as exc:
+            raise _Stop(
+                PACKAGE_STALE if exc.code == "findings_source_changed"
+                else INVALID_INPUT,
+                f"{what} refused at worker entry [{exc.code}]: {exc.message}",
+                extra={"findings_source_refusal": exc.as_dict()}) from None
+        self._worker_entry_observation = result["observation"]
+
     def run_ready(self) -> dict:
         self.machine = _Machine(self.ledger, self.recorder.transaction_id)
         try:
+            self._require_findings_binding("mention publication")
             if self.resume.get("issue"):
                 self._restore_issue(self.resume["issue"])
             else:
@@ -1412,6 +1459,12 @@ class MentionHandoff:
                             extra={"error": _bounded_reason(exc)}) from None
             self._prepare_observation = result.get("findings_observation")
             return result
+        if not self.legacy_fixture:
+            raise _Stop(
+                INVALID_INPUT,
+                "production mention requires a verified Findings source "
+                "binding; world.findings and finding_store are not "
+                "production authority")
         try:
             return plan.prepare_handoff_plan(
                 request,
@@ -1734,7 +1787,9 @@ class MentionHandoff:
                 "path stops before any native mention or run")
         self._recover(prior)
         try:
+            self._require_findings_binding("mention execute")
             self._step_reconfirm()
+            self._verify_worker_entry("mention execute")
             self._step_mention_evidence(mention_evidence)
             self._step_run_correlation(run_evidence)
             self._step_self_check()
@@ -2045,7 +2100,7 @@ class MentionHandoff:
                 )
                 self._self_check_observation = trace.get(
                     "findings_observation")
-            else:
+            elif self.legacy_fixture:
                 trace = selfcheck.self_check_with_trace(
                     request, packages=[envelope],
                     registry=self.world.get("registry"),
@@ -2053,6 +2108,11 @@ class MentionHandoff:
                     findings=self.world.get("findings"),
                     finding_store=self.finding_store,
                 )
+            else:
+                raise _Stop(
+                    INVALID_INPUT,
+                    "production mention SELF_CHECK requires a verified "
+                    "Findings source binding")
         except _Stop:
             raise
         except Exception as exc:
@@ -2391,7 +2451,8 @@ def run_mention_handoff(spec, *, caller_role: str, target_role_spec: str,
                         stage: str = PHASE_FULL,
                         crash_at: str | None = None,
                         resume: dict | None = None,
-                        findings_source=None) -> dict:
+                        findings_source=None,
+                        legacy_fixture: bool | None = None) -> dict:
     """Run one mention-handoff transaction (simulation default).
 
     stage:
@@ -2475,7 +2536,10 @@ def run_mention_handoff(spec, *, caller_role: str, target_role_spec: str,
         recorder=recorder, ledger=ledger, compose_fn=compose_fn,
         clock=clock, bundle_dir=bundle_dir, finding_store=finding_store,
         world=world, policy=policy, workdir=workdir, executable=executable,
-        crash_at=crash_at, resume=resume, findings_source=findings_source)
+        crash_at=crash_at, resume=resume, findings_source=findings_source,
+        legacy_fixture=(is_simulation_transport(runner)
+                        if legacy_fixture is None else legacy_fixture),
+        effects_runner=runner)
     ready_result = None
     if ready_already_staged:
         # The ready stage already ran for this id: never re-publish or
@@ -2527,7 +2591,8 @@ def run_execute_stage(ledger: dispatch.TransactionLedger, transaction_id: str,
                       finding_store=None, world: dict | None = None,
                       policy: dict | None = None, workdir=None,
                       clock: Callable = now_iso,
-                      findings_source=None) -> dict:
+                      findings_source=None,
+                      legacy_fixture: bool | None = None) -> dict:
     """Execute the staged mention handoff after the current agent emitted
     its one native mention. Revalidates everything from the ledger."""
     prior = _recorded_result(transaction_id, ledger)
@@ -2577,7 +2642,10 @@ def run_execute_stage(ledger: dispatch.TransactionLedger, transaction_id: str,
         compose_fn=_no_compose, clock=clock, bundle_dir=bundle_dir,
         finding_store=finding_store, world=world, policy=policy,
         workdir=Path(workdir) if workdir is not None else Path.cwd(),
-        executable=executable, findings_source=findings_source)
+        executable=executable, findings_source=findings_source,
+        legacy_fixture=(is_simulation_transport(runner)
+                        if legacy_fixture is None else legacy_fixture),
+        effects_runner=runner)
     release = getattr(runner, "on_mention_authorized", None)
     if callable(release):
         release(prior)
@@ -2964,6 +3032,7 @@ def main(argv=None) -> int:
             Path(args.run_evidence_file).read_text(encoding="utf-8")) \
             if args.run_evidence_file else None
         fixture = dispatch.FixtureRunner(fixture_table)
+        fixture.simulation_transport = True
         result = run_execute_stage(
             ledger, args.transaction_id, runner=fixture,
             executable=args.executable,
@@ -2986,10 +3055,12 @@ def main(argv=None) -> int:
 
     ledger = dispatch.TransactionLedger()
     stage = PHASE_READY if args.command == "ready" else PHASE_FULL
+    fixture_runner = dispatch.FixtureRunner(fixture_table)
+    fixture_runner.simulation_transport = True
     result = run_mention_handoff(
         spec, caller_role=args.caller_role,
         target_role_spec=args.target_role,
-        runner=dispatch.FixtureRunner(fixture_table), ledger=ledger,
+        runner=fixture_runner, ledger=ledger,
         compose_fn=_deterministic_compose,
         transaction_id=args.transaction_id,
         policy=policy, bundle_dir=args.bundle_dir,

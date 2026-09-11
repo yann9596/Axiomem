@@ -79,6 +79,11 @@ def make_binding(root, *, allowed=None, authority=None, runtime=None,
 
 
 class FakeResolver:
+    """Stand-in authenticated CLI resolver (live content, not a capture file)."""
+
+    kind = cfs.RESOLVER_AUTHENTICATED_CLI
+    is_production = True
+
     def __init__(self, content=AUTHORITY_TEXT, **overrides):
         self.content = content
         self.overrides = overrides
@@ -93,6 +98,30 @@ class FakeResolver:
                "content": self.content}
         out.update(self.overrides)
         return out
+
+
+class FakeAuthenticatedCli:
+    """Fake authenticated transport whose live comments are independent of
+    any local capture file. Each comment_thread call is a fresh read."""
+
+    simulation_transport = True
+
+    def __init__(self, comments):
+        self.comments = {c["id"]: dict(c) for c in comments}
+        self.calls = []
+
+    def comment_thread(self, issue_id, comment_id):
+        self.calls.append((issue_id, comment_id))
+        rec = self.comments.get(comment_id)
+        if rec is None or rec.get("issue_id") not in (None, issue_id):
+            return []
+        return [dict(rec)]
+
+    def edit(self, comment_id, **fields):
+        self.comments[comment_id].update(fields)
+
+    def revoke(self, comment_id):
+        self.comments.pop(comment_id, None)
 
 
 def bound_source(root, *, resolver=None, **binding_kwargs):
@@ -397,20 +426,58 @@ class SnapshotReaderTests(unittest.TestCase):
                 boundary="PREPARE", task_ref=TASK_REF, role=ROLE)
         self.assertEqual(ctx.exception.code, "findings_source_changed")
 
-    @unittest.skipIf(os.name == "nt" and not hasattr(os, "symlink"),
-                     "symlink unsupported")
-    def test_symlink_entry_refused(self):
-        target = self.root / "outside.json"
-        write_json(target, finding())
-        link = self.root / "FIND-WIMG-T88-000001.json"
-        try:
-            link.symlink_to(target)
-        except OSError:
-            self.skipTest("symlink creation not permitted")
+    def test_symlink_entry_refused_via_direntry(self):
+        """Code-path proof that does not depend on OS symlink privileges."""
+        class SymlinkEntry:
+            def __init__(self, name, path):
+                self.name = name
+                self.path = str(path)
+
+            def is_symlink(self):
+                return True
+
+            def is_file(self, follow_symlinks=False):
+                return False
+
+        class SymlinkReader(cfs.FilesystemReader):
+            def scandir(self, root):
+                return [SymlinkEntry("FIND-WIMG-T88-000001.json",
+                                     Path(root) / "FIND-WIMG-T88-000001.json")]
+
         with self.assertRaises(cfs.FindingsSourceRefusal) as ctx:
-            bound_source(self.root).read(boundary="PREPARE",
-                                         task_ref=TASK_REF, role=ROLE)
+            cfs.BoundFindingsSource(
+                make_binding(self.root), resolver=FakeResolver(),
+                reader=SymlinkReader()).read(
+                boundary="PREPARE", task_ref=TASK_REF, role=ROLE)
         self.assertEqual(ctx.exception.code, "findings_source_ambiguous")
+        self.assertIn("symlink", ctx.exception.message.lower()
+                      + ctx.exception.detail.lower())
+
+    def test_os_reparse_or_junction_root_refused_when_available(self):
+        """OS-level reparse proof. Falls back to the DirEntry path, never skip."""
+        target = Path(self.tmp.name) / "real-root"
+        target.mkdir()
+        write_json(target / "FIND-WIMG-T88-000001.json", finding())
+        link = Path(self.tmp.name) / "reparse-root"
+        created = False
+        if os.name == "nt":
+            proc = os.system(f'cmd /c mklink /J "{link}" "{target}" >NUL 2>&1')
+            created = proc == 0 and link.exists()
+        else:
+            try:
+                os.symlink(target, link, target_is_directory=True)
+                created = link.exists()
+            except OSError:
+                created = False
+        if created:
+            with self.assertRaises(cfs.FindingsSourceRefusal) as ctx:
+                bound_source(link).read(boundary="PREPARE", task_ref=TASK_REF,
+                                        role=ROLE)
+            self.assertEqual(ctx.exception.code, "findings_source_ambiguous")
+            return
+        # Junction/symlink not available: the DirEntry test above is the
+        # refusal proof. Assert the reader still rejects is_symlink entries.
+        self.test_symlink_entry_refused_via_direntry()
 
 
 class DriftAndJoinTests(unittest.TestCase):
@@ -709,6 +776,8 @@ class EngineIntegrationTests(unittest.TestCase):
         ns.artifact_review_level = None
         ns.findings_source_binding_file = None
         ns.findings_authority_file = None
+        ns.findings_authority_cli = None
+        ns.findings_authority_capture_only = False
         ns.findings_evidence_file = None
         ns.findings_source_expect_commit = None
         ns.findings_source_expect_adapter_digest = None
@@ -780,11 +849,15 @@ class PipelinePublicationDriftTests(unittest.TestCase):
         self.authority_file = write_json(self.base / "authority.json", {
             "comment_id": "c-1", "issue_id": "i-1", "author_id": "a-1",
             "author_type": "agent", "content": AUTHORITY_TEXT})
-        source = cfs.BoundFindingsSource(binding, resolver=FakeResolver(),
-                                         project_id=PROJECT,
-                                         expected_commit=RUNTIME["commit"],
-                                         expected_adapter_digest=(
-                                             RUNTIME["adapter_digest"]))
+        self.authority_cli = FakeAuthenticatedCli([{
+            "id": "c-1", "issue_id": "i-1", "author_id": "a-1",
+            "author_type": "agent", "content": AUTHORITY_TEXT}])
+        source = cfs.BoundFindingsSource(
+            binding,
+            resolver=cfs.AuthenticatedCommentResolver(self.authority_cli),
+            project_id=PROJECT,
+            expected_commit=RUNTIME["commit"],
+            expected_adapter_digest=RUNTIME["adapter_digest"])
         observation = source.read(boundary="PREPARE", task_ref=TASK_REF,
                                   role=ROLE)["observation"]
         self.evidence_file = write_json(self.base / "evidence.json",
@@ -805,6 +878,8 @@ class PipelinePublicationDriftTests(unittest.TestCase):
             artifact_review_level=None,
             findings_source_binding_file=str(self.binding_file),
             findings_authority_file=str(self.authority_file),
+            findings_authority_cli=self.authority_cli,
+            findings_authority_capture_only=False,
             findings_evidence_file=str(self.evidence_file),
             findings_source_expect_commit=RUNTIME["commit"],
             findings_source_expect_adapter_digest=RUNTIME["adapter_digest"],
@@ -884,6 +959,178 @@ class OrchestratorWorldOverrideTests(unittest.TestCase):
         with self.assertRaises(men._Stop) as ctx:
             handoff._plan(sample_request())
         self.assertEqual(ctx.exception.status, men.INVALID_INPUT)
+
+
+class AuthenticatedAuthorityTests(unittest.TestCase):
+    """Platform edit/revocation with an unchanged local capture must refuse."""
+
+    def setUp(self):
+        self.tmp = tempfile.TemporaryDirectory()
+        self.addCleanup(self.tmp.cleanup)
+        self.root = Path(self.tmp.name) / "findings"
+        self.root.mkdir()
+        write_json(self.root / "FIND-WIMG-T88-000001.json", finding())
+        self.capture = write_json(Path(self.tmp.name) / "capture.json", {
+            "comment_id": "c-1", "issue_id": "i-1", "author_id": "a-1",
+            "author_type": "agent", "content": AUTHORITY_TEXT})
+        self.live = FakeAuthenticatedCli([{
+            "id": "c-1", "issue_id": "i-1", "author_id": "a-1",
+            "author_type": "agent", "content": AUTHORITY_TEXT}])
+        self.binding = make_binding(self.root)
+
+    def test_live_cli_read_succeeds_and_is_fresh_each_boundary(self):
+        resolver = cfs.AuthenticatedCommentResolver(self.live)
+        source = cfs.BoundFindingsSource(
+            self.binding, resolver=resolver, project_id=PROJECT)
+        source.read(boundary="PREPARE", task_ref=TASK_REF, role=ROLE)
+        source.read(boundary="SELF_CHECK", task_ref=TASK_REF, role=ROLE)
+        self.assertEqual(len(self.live.calls), 2)
+        self.assertTrue(source.is_production)
+
+    def test_platform_edit_with_unchanged_capture_refused(self):
+        resolver = cfs.AuthenticatedCommentResolver(self.live)
+        source = cfs.BoundFindingsSource(
+            self.binding, resolver=resolver, project_id=PROJECT)
+        source.read(boundary="PREPARE", task_ref=TASK_REF, role=ROLE)
+        self.live.edit("c-1", content="revoked and replaced on the platform")
+        capture = json.loads(self.capture.read_text(encoding="utf-8"))
+        self.assertEqual(capture["content"], AUTHORITY_TEXT)
+        with self.assertRaises(cfs.FindingsSourceRefusal) as ctx:
+            source.read(boundary="SELF_CHECK", task_ref=TASK_REF, role=ROLE)
+        self.assertEqual(ctx.exception.code, "findings_source_unbound")
+
+    def test_platform_revocation_with_unchanged_capture_refused(self):
+        resolver = cfs.AuthenticatedCommentResolver(self.live)
+        source = cfs.BoundFindingsSource(
+            self.binding, resolver=resolver, project_id=PROJECT)
+        source.read(boundary="PREPARE", task_ref=TASK_REF, role=ROLE)
+        self.live.revoke("c-1")
+        capture = json.loads(self.capture.read_text(encoding="utf-8"))
+        self.assertEqual(capture["content"], AUTHORITY_TEXT)
+        with self.assertRaises(cfs.FindingsSourceRefusal) as ctx:
+            source.read(boundary="SELF_CHECK", task_ref=TASK_REF, role=ROLE)
+        self.assertEqual(ctx.exception.code, "findings_source_unbound")
+        self.assertIn("revoked", ctx.exception.message.lower())
+
+    def test_capture_only_source_is_not_production(self):
+        source = cfs.BoundFindingsSource(
+            self.binding, resolver=cfs.CaptureFileResolver(self.capture),
+            project_id=PROJECT)
+        self.assertFalse(source.is_production)
+        snap = source.read(boundary="OPERATOR_READ")
+        self.assertEqual(snap["observation"]["open_count"], 1)
+
+    def test_capture_only_cannot_publish_through_pipeline(self):
+        pipeline = pipeline_module()
+        ns = type("NS", (), {})()
+        ns.repo = str(TOOLS.parent)
+        ns.findings_source_binding_file = str(
+            write_json(Path(self.tmp.name) / "binding.json", self.binding))
+        ns.findings_authority_file = str(self.capture)
+        ns.findings_authority_cli = None
+        ns.findings_authority_capture_only = True
+        ns.findings_evidence_file = None
+        ns.findings_source_expect_commit = None
+        ns.findings_source_expect_adapter_digest = None
+        with self.assertRaises(pipeline.PipelineError) as ctx:
+            pipeline._load_findings_source(
+                ns, pipeline._tools(Path(ns.repo)),
+                project_id=PROJECT, stage="publish")
+        self.assertEqual(ctx.exception.code, "findings_source_unbound")
+        self.assertIn("capture-only", ctx.exception.message.lower())
+
+
+class OmittedBindingEntrypointTests(unittest.TestCase):
+    """Absent binding => zero publication/trigger on production entrypoints."""
+
+    def test_assignment_omitted_binding_zero_effects(self):
+        import chandoff_assignment as asm
+        import chandoff_dispatch as dispatch
+        issued = []
+
+        def runner(argv):
+            issued.append(list(argv))
+            return 0, "{}", ""
+
+        result = asm.run_assignment_handoff(
+            {"title": "Omitted binding assignment drill",
+             "description": "Prove omitted Findings binding issues zero "
+                            "native publication or trigger effects.",
+             "project_id": PROJECT, "purpose": "implementation"},
+            caller_role="engineering-lead",
+            target_role_spec="software-engineer",
+            runner=runner, ledger=dispatch.TransactionLedger(),
+            compose_fn=lambda *a, **k: None, transaction_id="tx-omit-asg",
+            legacy_fixture=False)
+        self.assertEqual(result["terminal_status"], asm.INVALID_INPUT)
+        self.assertEqual(issued, [])
+        self.assertIn("binding", result.get("stop_reason", "").lower())
+
+    def test_mention_omitted_binding_zero_effects(self):
+        import chandoff_mention as men
+        import chandoff_dispatch as dispatch
+        issued = []
+
+        def runner(argv):
+            issued.append(list(argv))
+            return 0, "{}", ""
+
+        result = men.run_mention_handoff(
+            {"issue_id": "22222222-0000-0000-0000-000000000065",
+             "project_id": PROJECT, "purpose": "implementation"},
+            caller_role="engineering-lead",
+            target_role_spec="software-engineer",
+            runner=runner, ledger=dispatch.TransactionLedger(),
+            compose_fn=lambda *a, **k: None, transaction_id="tx-omit-men",
+            legacy_fixture=False, stage="ready")
+        self.assertEqual(result["terminal_status"], men.INVALID_INPUT)
+        self.assertEqual(issued, [])
+
+    def test_assignment_legacy_fixture_refuses_real_transport(self):
+        import chandoff_assignment as asm
+        import chandoff_dispatch as dispatch
+        issued = []
+
+        def runner(argv):
+            issued.append(list(argv))
+            return 0, "{}", ""
+
+        result = asm.run_assignment_handoff(
+            {"title": "Legacy fixture real transport drill",
+             "description": "Prove legacy unbound Findings cannot issue "
+                            "real publication or trigger effects.",
+             "project_id": PROJECT, "purpose": "implementation"},
+            caller_role="engineering-lead",
+            target_role_spec="software-engineer",
+            runner=runner, ledger=dispatch.TransactionLedger(),
+            compose_fn=lambda *a, **k: None, transaction_id="tx-legacy-real",
+            legacy_fixture=True)
+        self.assertEqual(result["terminal_status"], asm.INVALID_INPUT)
+        self.assertEqual(issued, [])
+        self.assertIn("simulation", result.get("stop_reason", "").lower())
+
+    def test_r0_non_simulation_runner_omitted_binding_zero_effects(self):
+        import chandoff_intent as o2
+        import u12_r0_binding as u12
+
+        class LiveRunner:
+            def __init__(self):
+                self.commands = []
+
+            def __call__(self, argv):
+                self.commands.append(list(argv))
+                return 1, "", "live runner must not be used"
+
+        tmp = tempfile.TemporaryDirectory()
+        self.addCleanup(tmp.cleanup)
+        runner = LiveRunner()
+        store = o2.DurableIntentStore(Path(tmp.name) / "ledger.jsonl")
+        factory = u12.build_r0b_factory(store, runner=runner)
+        self.assertTrue(factory.require_findings_source)
+        self.assertIsNone(factory.findings_source)
+        with self.assertRaises(cfs.FindingsSourceRefusal):
+            factory._gate_findings_effects("R0 trigger")
+        self.assertEqual(runner.commands, [])
 
 
 if __name__ == "__main__":

@@ -43,6 +43,8 @@ DISPATCHER = "dispatcher-actor"
 class FakeCli:
     """Minimal read/write Multica surface used by the R0B lifecycle."""
 
+    simulation_transport = True
+
     def __init__(self, *, bump_revision_on_comment: bool = True):
         self.issues = {
             PARENT_ID: self._issue(PARENT_ID, "YZT-66", "parent",
@@ -1702,7 +1704,10 @@ class ImmutabilityTests(unittest.TestCase):
                 "tools/tests/test_handoff_artifact_readiness.py",
                 "tools/tests/test_handoff_findings_source.py",
                 "tools/tests/test_handoff_finding.py",
-                "tools/tests/findings_fixture.py"},
+                "tools/tests/findings_fixture.py",
+                "tools/tests/test_handoff_assignment.py",
+                "tools/tests/test_handoff_mention.py",
+                "tools/tests/test_handoff_fallback.py"},
             f"unexpected changed tools files: {sorted(changed_tools)}")
 
     def test_adapter_has_no_production_ledger_reference(self):
@@ -1783,7 +1788,39 @@ class FindingsSourceBindingR0Tests(unittest.TestCase):
         h.to_prepared()
         published = h.publish()
         self.assertEqual(published["status"], o2.S_BLOCKED, published)
+        self.assertEqual(h.cli.commands_of(["issue", "comment", "add"]), [])
         self.assertEqual(h.cli.commands_of(["issue", "rerun"]), [])
+
+    def test_trigger_invokes_verify_worker_entry(self):
+        self.h.to_prepared()
+        self.assertEqual(self.h.publish()["status"], o2.S_HANDOFF_PUBLISHED)
+        armed = self._arm_bound()
+        self.assertEqual(armed["status"], o2.S_TRIGGER_READY, armed)
+        triggered = self._trigger_bound()
+        self.assertEqual(triggered["status"], o2.S_RUN_CORRELATED, triggered)
+        entry = self.h.factory._last_worker_entry
+        self.assertIsInstance(entry, dict)
+        self.assertEqual(entry["observation"]["boundary"], "WORKER_START")
+        self.assertEqual(len(self.h.cli.commands_of(["issue", "rerun"])), 1)
+
+    def test_inferred_require_on_non_simulation_runner(self):
+        class LiveRunner:
+            def __init__(self):
+                self.commands = []
+
+            def __call__(self, argv):
+                self.commands.append(list(argv))
+                return 1, "", "live runner must not be used"
+
+        runner = LiveRunner()
+        factory = u12.build_r0b_factory(
+            o2.DurableIntentStore(Path(self.tmp.name) / "live-ledger.jsonl"),
+            runner=runner)
+        self.assertTrue(factory.require_findings_source)
+        with self.assertRaises(u12.cfs.FindingsSourceRefusal) as ctx:
+            factory._gate_findings_effects("R0 trigger")
+        self.assertEqual(ctx.exception.code, "findings_source_unbound")
+        self.assertEqual(runner.commands, [])
 
 
 class ProductionLedgerNonWriteTests(unittest.TestCase):

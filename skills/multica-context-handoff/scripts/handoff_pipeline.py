@@ -218,39 +218,48 @@ def _artifact_inputs(args, *, target_role: str, package: dict | None = None):
 # flag default and no fabricated empty list.
 # ---------------------------------------------------------------------------
 
-def _findings_binding_files(args, stage: str) -> tuple:
+def _findings_binding_files(args, stage: str) -> str:
     binding = getattr(args, "findings_source_binding_file", None)
-    authority = getattr(args, "findings_authority_file", None)
     if not binding:
         raise PipelineError(
             "findings_source_unbound",
             f"{stage} requires --findings-source-binding-file; a missing "
             "Findings binding is refused (never an empty store)")
-    if not authority:
+    if getattr(args, "findings_authority_capture_only", False):
         raise PipelineError(
             "findings_source_unbound",
-            f"{stage} requires --findings-authority-file (the captured "
-            "authoritative disposition the binding digest verifies)")
-    return binding, authority
+            f"{stage} refuses capture-only authority; production stages "
+            "re-read the live comment through authenticated CLI")
+    return binding
+
+
+def _authority_resolver(args, tools, stage: str):
+    cfs = tools["findings_source"]
+    cli = getattr(args, "findings_authority_cli", None)
+    if cli is None:
+        cli = tools["adapter"].MulticaCli(
+            executable=getattr(args, "executable", "multica"))
+    return cfs.AuthenticatedCommentResolver(cli)
 
 
 def _load_findings_source(args, tools, *, project_id, stage: str):
-    binding, authority = _findings_binding_files(args, stage)
+    binding = _findings_binding_files(args, stage)
     cfs = tools["findings_source"]
-
-    def resolver(_authority, _path=authority):
-        doc, _digest, _size = cfs.load_json_strict_file(
-            _path, "findings authority capture")
-        return doc
-
+    resolver = _authority_resolver(args, tools, stage)
     try:
-        return cfs.source_from_binding_file(
+        source = cfs.source_from_binding_file(
             binding, resolver=resolver, project_id=project_id,
             expected_commit=getattr(args, "findings_source_expect_commit", None),
             expected_adapter_digest=getattr(
                 args, "findings_source_expect_adapter_digest", None))
     except cfs.FindingsSourceRefusal as exc:
         raise PipelineError(exc.code, exc.message, **exc.details) from None
+    if not getattr(source, "is_production", False):
+        raise PipelineError(
+            "findings_source_unbound",
+            f"{stage} requires authenticated CLI authority; capture-only "
+            "or simulation sources cannot publish or dispatch")
+    return source
 
 
 def _findings_evidence(args, tools, stage: str) -> dict:
@@ -959,8 +968,12 @@ def _add_findings_args(p: argparse.ArgumentParser) -> None:
                    help="verified findings-source-binding/1 JSON "
                         "(required on every production stage)")
     p.add_argument("--findings-authority-file", default=None,
-                   help="captured authoritative disposition JSON whose "
-                        "content digest the binding verifies (required)")
+                   help="unused local capture (not production authority; "
+                        "each stage re-reads the live comment via CLI)")
+    p.add_argument("--findings-authority-capture-only", action="store_true",
+                   default=False,
+                   help="explicitly request capture-only authority "
+                        "(refused on every production pipeline stage)")
     p.add_argument("--findings-evidence-file", default=None,
                    help="prior boundary findings-source-observation/1 JSON "
                         "(required for finalize/selfcheck/publish)")

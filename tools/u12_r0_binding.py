@@ -4479,7 +4479,7 @@ class R0BForwardFactory(strict.CanaryOrchestrator):
                  ttl_seconds: int = 300, artifact_blob_reader=None,
                  artifact_root=None, authority_reader=None,
                  execution_blob_resolver=None, findings_source=None,
-                 require_findings_source: bool = False,
+                 require_findings_source: bool = True,
                  findings_baseline_observation=None):
         super().__init__(store, runner=runner, executable=executable,
                          clock=clock, workdir=workdir,
@@ -4495,6 +4495,8 @@ class R0BForwardFactory(strict.CanaryOrchestrator):
         self.findings_source = findings_source
         self.require_findings_source = bool(require_findings_source)
         self.findings_baseline_observation = findings_baseline_observation
+        self.effects_runner = runner
+        self._last_worker_entry = None
         if execution_blob_resolver is None:
             self.execution_blob_resolver = _git_blob_reader(ROOT)
             self.execution_resolver_kind = EXECUTION_RESOLVER_GIT
@@ -4701,6 +4703,52 @@ class R0BForwardFactory(strict.CanaryOrchestrator):
                     bundle["issue_proof"]["projection_digest"],
                 "run_ids": [r.get("id") for r in bundle["runs"]],
             })
+
+    def _gate_findings_effects(self, what: str) -> None:
+        cfs.gate_effectful_findings(
+            source=self.findings_source, runner=self.effects_runner,
+            require_source=self.require_findings_source,
+            allow_legacy_fixture=not self.require_findings_source,
+            what=what)
+
+    def _findings_effect_refusal(self, intent_id: str, actor: str, exc,
+                                 *, what: str) -> dict:
+        code = getattr(exc, "code", "findings_source_unbound")
+        state = (o2.S_REFRESH_REQUIRED if code == "findings_source_changed"
+                 else o2.S_BLOCKED)
+        reason = (REASON_MATERIAL_STALE if code == "findings_source_changed"
+                  else REASON_PREFLIGHT_INPUT_MISSING)
+        return self._refuse_preflight(
+            intent_id,
+            PreflightRefusal(
+                state, reason,
+                f"{what} refused [{code}]: {exc}",
+                subject="findings", findings_source_code=code),
+            actor)
+
+    def _verify_worker_entry(self, intent_id: str, data: dict, *,
+                             current_request=None) -> dict:
+        if self.findings_source is None:
+            if self.require_findings_source:
+                raise cfs.FindingsSourceRefusal(
+                    "findings_source_unbound",
+                    "R0 worker entry requires a verified Findings source "
+                    "binding")
+            return {}
+        execution = data.get("execution_context") or {}
+        request = current_request or execution.get("request") or {}
+        if not isinstance(request, dict):
+            request = {}
+        return cfs.verify_worker_entry(
+            self.findings_source,
+            task_ref=request.get("task_ref"),
+            role=((request.get("target") or {}).get("role")),
+            request_digest=digest(request) if request else None,
+            envelope_digest=execution.get("envelope_digest"),
+            prior_observation=(self.findings_baseline_observation
+                               or execution.get("findings_observation")),
+            observer_run_id=intent_id,
+            allow_simulation=cfs.is_simulation_transport(self.effects_runner))
 
     def _refuse_preflight(self, intent_id: str, refusal: PreflightRefusal,
                           actor: str) -> dict:
@@ -6690,6 +6738,11 @@ class R0BForwardFactory(strict.CanaryOrchestrator):
             raise o2.IllegalTransitionError(
                 "publication requires HANDOFF_PREPARED",
                 intent_id=intent_id, state=intent["state"])
+        try:
+            self._gate_findings_effects("R0 publication")
+        except cfs.FindingsSourceRefusal as exc:
+            return self._findings_effect_refusal(
+                intent_id, actor, exc, what="R0 publication")
         _require_uuid(publisher_run_id, "publisher_run_id")
         execution = data["execution_context"]
         envelope = execution.get("result")
@@ -7064,6 +7117,11 @@ class R0BForwardFactory(strict.CanaryOrchestrator):
                 "arm requires HANDOFF_PUBLISHED", intent_id=intent_id,
                 state=intent["state"])
         try:
+            self._gate_findings_effects("R0 arm")
+        except cfs.FindingsSourceRefusal as exc:
+            return self._findings_effect_refusal(
+                intent_id, actor, exc, what="R0 arm")
+        try:
             bundle = self._preflight_materials(
                 intent_id, data, checkpoint="ARM",
                 current_request=current_request,
@@ -7143,6 +7201,11 @@ class R0BForwardFactory(strict.CanaryOrchestrator):
                 "trigger requires an armed intent", intent_id=intent_id,
                 state=state)
         try:
+            self._gate_findings_effects("R0 trigger")
+        except cfs.FindingsSourceRefusal as exc:
+            return self._findings_effect_refusal(
+                intent_id, actor, exc, what="R0 trigger")
+        try:
             bundle = self._preflight_materials(
                 intent_id, data, checkpoint="TRIGGER",
                 current_request=current_request,
@@ -7150,6 +7213,12 @@ class R0BForwardFactory(strict.CanaryOrchestrator):
                 authority_evidence=authority_evidence)
         except PreflightRefusal as refusal:
             return self._refuse_preflight(intent_id, refusal, actor)
+        try:
+            self._last_worker_entry = self._verify_worker_entry(
+                intent_id, data, current_request=current_request)
+        except cfs.FindingsSourceRefusal as exc:
+            return self._findings_effect_refusal(
+                intent_id, actor, exc, what="R0 worker entry")
         self._require_intent_unchanged(intent_id, intent)
         self._record_preflight(intent_id, actor, bundle)
         snapshot = self._build_snapshot(data, issue=bundle["issue"],
@@ -8751,10 +8820,17 @@ def binding_issue_id(data: dict) -> str:
 def build_r0b_factory(store, *, runner, note_runner=None,
                       executable: str = "multica",
                       **kwargs) -> R0BForwardFactory:
-    """The single factory entrypoint. No implicit live runner exists."""
+    """The single factory entrypoint. No implicit live runner exists.
+
+    Omitted `require_findings_source` infers production (required) unless
+    the runner is an explicit simulation transport.
+    """
     if runner is None:
         raise o2.NotAuthorizedError(
             "the R0B factory requires an explicitly injected runner")
+    if "require_findings_source" not in kwargs:
+        kwargs["require_findings_source"] = not cfs.is_simulation_transport(
+            runner)
     return R0BForwardFactory(store, runner=runner, note_runner=note_runner,
                              executable=executable, **kwargs)
 
@@ -8947,6 +9023,10 @@ def wiring_proof(source=None, module_path=None) -> dict:
             _method(factory, "arm"), "_preflight_materials"),
         "trigger_runs_preflight": _calls_attr(
             _method(factory, "trigger"), "_preflight_materials"),
+        "trigger_verifies_worker_entry": _calls_attr(
+            _method(factory, "trigger"), "_verify_worker_entry"),
+        "trigger_gates_omitted_binding": _calls_attr(
+            _method(factory, "trigger"), "_gate_findings_effects"),
         "preflight_observes_artifact": _calls_name(
             _method(factory, "_preflight_materials"),
             "compare_artifact_dependency"),
@@ -9293,15 +9373,9 @@ def cmd_recover_blocked_publication(args) -> int:
         print(json.dumps({
             "ok": False, "code": "findings_source_unbound",
             "message": ("publication recovery requires "
-                        "--findings-source-binding-file and "
-                        "--findings-authority-file; the naked --findings-file "
-                        "list is not production Findings authority")},
-            ensure_ascii=False, indent=2, sort_keys=True))
-        return 2
-    if not authority_path:
-        print(json.dumps({
-            "ok": False, "code": "findings_source_unbound",
-            "message": "--findings-authority-file is required with the binding"},
+                        "--findings-source-binding-file; the naked "
+                        "--findings-file list is not production Findings "
+                        "authority, and a local capture is not authority")},
             ensure_ascii=False, indent=2, sort_keys=True))
         return 2
     if legacy_findings is not None:
@@ -9312,10 +9386,12 @@ def cmd_recover_blocked_publication(args) -> int:
             ensure_ascii=False, indent=2, sort_keys=True))
         return 2
 
-    def resolver(_authority, _path=authority_path):
-        doc, _digest, _size = cfs.load_json_strict_file(
-            _path, "findings authority capture")
-        return doc
+    authority_cli = getattr(args, "findings_authority_cli", None)
+    if authority_cli is None:
+        import chandoff_adapter
+        authority_cli = chandoff_adapter.MulticaCli(
+            executable=getattr(args, "executable", "multica"))
+    resolver = cfs.AuthenticatedCommentResolver(authority_cli)
 
     try:
         source = cfs.source_from_binding_file(binding_path, resolver=resolver)

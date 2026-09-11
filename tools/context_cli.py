@@ -123,19 +123,13 @@ def main() -> int:
             source = None
             prior = None
             if getattr(args, "findings_source_binding_file", None):
+                import chandoff_adapter
                 import chandoff_findings_source as cfs
-                if not args.findings_authority_file:
-                    raise ValueError(
-                        "--findings-authority-file is required with the "
-                        "findings source binding")
-
-                def resolver(_authority, _path=args.findings_authority_file):
-                    doc, _digest, _size = cfs.load_json_strict_file(
-                        _path, "findings authority capture")
-                    return doc
-
+                cli = getattr(args, "findings_authority_cli", None) or \
+                    chandoff_adapter.MulticaCli()
                 source = cfs.source_from_binding_file(
-                    args.findings_source_binding_file, resolver=resolver)
+                    args.findings_source_binding_file,
+                    resolver=cfs.AuthenticatedCommentResolver(cli))
                 if getattr(args, "findings_evidence_file", None):
                     prior = cfs.observation_from_file(
                         args.findings_evidence_file)

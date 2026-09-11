@@ -80,6 +80,8 @@ def fake_store():
 class FakeMultica:
     """Stateful in-memory stand-in for the deployed multica CLI."""
 
+    simulation_transport = True
+
     def __init__(self, *, version="v0.4.42", create_fails=False,
                  create_malformed=False, create_exit=2,
                  create_assignee=None, assign_exit=0, assign_stdout=None,
@@ -272,7 +274,8 @@ def run_tx(fake=None, *, spec=None, caller="engineering-lead",
         spec, caller_role=caller, target_role_spec=target, runner=fake,
         ledger=ledger, compose_fn=COMPOSE, transaction_id=tx,
         policy=policy, clock=CLOCK, finding_store=finding_store or fake_store(),
-        world=world, bundle_dir=bundle_dir, crash_at=crash_at, resume=resume)
+        world=world, bundle_dir=bundle_dir, crash_at=crash_at, resume=resume,
+        legacy_fixture=True)
     return result, fake, ledger
 
 
