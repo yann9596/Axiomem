@@ -2699,8 +2699,13 @@ def validate_publication_recovery_commit_record(record: dict,
         "from", "to", "revision", "actor", "at", "publication_recovery_proof",
         "publication_execution_migration", "fields",
     )
-    record = _strict_keys(_require_dict(record, "publication recovery commit"),
-                          fields, "publication recovery commit")
+    record = _require_dict(record, "publication recovery commit")
+    extras = sorted(set(record) - set(fields))
+    missing = sorted(set(fields) - {"seq"} - set(record))
+    if extras or missing:
+        raise R0BValidationRefused(
+            "publication recovery commit must stay within the exact schema",
+            extras=extras, missing=missing)
     if record["kind"] != "intent" or \
             record["record_type"] != o2.INTENT_RECORD_TYPE or \
             record["schema_version"] != o2.O2_SCHEMA or \
