@@ -38,3 +38,7 @@ adapters/multica/finding-challenge/** -text
 # YZT-79: byte-stability for O2 durable dispatch intent evidence (deterministic
 # bundle regeneration is asserted byte-for-byte in the focused tests).
 adapters/multica/dispatch-intent/** -text
+
+# YZT-80: byte-stability for U11 joint end-to-end replay evidence (deterministic
+# bundle regeneration is asserted byte-for-byte in the focused tests).
+adapters/multica/joint-replay/** -text

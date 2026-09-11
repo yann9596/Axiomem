@@ -1,0 +1,39 @@
+{
+  "decisions": [
+    {
+      "blocking": true,
+      "decision_id": "PRODUCTION_LEDGER_ROOT",
+      "owner": "engineering-lead + human",
+      "question": "select and deploy the canonical absolute shared ledger root (path, backup/retention, ACL, cross-machine behavior)",
+      "required_before": "U12 controlled enablement",
+      "u11_input": "capability proof passed on a caller-supplied absolute root; no production root was selected or deployed"
+    },
+    {
+      "blocking": true,
+      "decision_id": "RERUN_RECEIPT_CONTRACT",
+      "owner": "engineering-lead + human",
+      "question": "accept the current rerun receipt shapes as a bounded contract, or require a platform idempotency key before enablement",
+      "required_before": "U12 controlled enablement",
+      "u11_input": "receipt shapes captured read-only; correlation still requires the trusted run listing; no idempotency claim is made"
+    },
+    {
+      "blocking": true,
+      "decision_id": "DELIVERY_REVIEWER_QA_ACTIVATION",
+      "owner": "engineering-lead + human",
+      "question": "authorize the first live Delivery Review / QA activation (R0/R1/R2 canary order)",
+      "required_before": "U12",
+      "u11_input": "topology replay covers R0/R1/R2 simulation-only"
+    },
+    {
+      "blocking": false,
+      "decision_id": "U12_SCOPE_AND_WAKE_MODEL",
+      "owner": "engineering-lead + human",
+      "question": "confirm no autonomous wake is required (reconciler invocation stays manual/scheduled outside O2)",
+      "required_before": "U12",
+      "u11_input": "durable obligation observability demonstrates discoverability without a daemon"
+    }
+  ],
+  "kind": "u11_residual_decision_record",
+  "production_ledger_root_selected_or_deployed": false,
+  "schema_version": "U11/1.0"
+}

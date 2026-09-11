@@ -1,0 +1,164 @@
+{
+  "accepted_shapes": [
+    {
+      "input": {
+        "agent_id": "agent-id",
+        "id": "run-id",
+        "issue_id": "issue-id",
+        "status": "running"
+      },
+      "parsed_run_id": "run-id"
+    },
+    {
+      "input": [
+        {
+          "agent_id": "agent-id",
+          "id": "run-id",
+          "issue_id": "issue-id",
+          "status": "running"
+        }
+      ],
+      "parsed_run_id": "run-id"
+    },
+    {
+      "input": {
+        "runs": [
+          {
+            "agent_id": "agent-id",
+            "id": "run-id",
+            "issue_id": "issue-id",
+            "status": "running"
+          }
+        ]
+      },
+      "parsed_run_id": "run-id"
+    }
+  ],
+  "capture": {
+    "accepted_receipt_shapes": [
+      {
+        "example_fields": [
+          "id",
+          "issue_id",
+          "agent_id",
+          "status"
+        ],
+        "shape": "single run object"
+      },
+      {
+        "example_fields": [
+          "id",
+          "issue_id",
+          "agent_id",
+          "status"
+        ],
+        "shape": "one-element run list"
+      },
+      {
+        "example_fields": [
+          "runs[0].id",
+          "runs[0].issue_id",
+          "runs[0].agent_id",
+          "runs[0].status"
+        ],
+        "shape": "object with runs list"
+      }
+    ],
+    "captured_at": "2026-09-11T03:20:00Z",
+    "cli_version": {
+      "arch": "amd64",
+      "commit": "5fde73278",
+      "date": "2026-09-09T10:12:46Z",
+      "go": "go1.26.8",
+      "os": "windows",
+      "version": "v0.4.42"
+    },
+    "commands": [
+      {
+        "argv": [
+          "multica",
+          "version",
+          "--output",
+          "json"
+        ],
+        "exit": 0,
+        "stdout_digest": "sha256:5d883502cc52cebccbc59784e499db2ec3839d503b52cee0bf1a81aeaeabda72",
+        "stdout_excerpt": [
+          "{version json captured}"
+        ]
+      },
+      {
+        "argv": [
+          "multica",
+          "issue",
+          "rerun",
+          "--help"
+        ],
+        "exit": 0,
+        "stdout_digest": "sha256:2ecedb76dd1a445f1f1171fc6a230c53320af7b194580f6255bb1f55357c9a48",
+        "stdout_excerpt": [
+          "Re-enqueue an issue's current agent assignment as a fresh run",
+          "",
+          "USAGE",
+          "  multica issue rerun <id> [flags]",
+          "",
+          "FLAGS"
+        ]
+      },
+      {
+        "argv": [
+          "multica",
+          "issue",
+          "runs",
+          "--help"
+        ],
+        "exit": 0,
+        "stdout_digest": "sha256:bb5ef1a914cccc20dda7e3dd60334c5995f77dc53e91286ec0220f6907a1196f",
+        "stdout_excerpt": [
+          "List agent runs for an issue.",
+          "",
+          "Defaults to this issue's full execution history, newest first. Narrow it to work in flight with --active, or widen it across the sub-issue family with --siblings when you need to know whether another agent is already working next to you.",
+          "",
+          "USAGE",
+          "  multica issue runs <issue-id> [flags]"
+        ]
+      }
+    ],
+    "contract": {
+      "correlation_requires_trusted_run_listing": true,
+      "idempotency_claimed": false,
+      "live_write_commands_issued": 0,
+      "receipt_alone_sufficient_for_delivery": false,
+      "rerun_flags": [
+        "<id>",
+        "--output"
+      ],
+      "rerun_has_idempotency_key": false,
+      "runs_active_siblings_listing": "advisory only; capped at 20 rows; truncation reported on stderr; never used as a completeness proof",
+      "truncated_listing_is_trusted": false
+    },
+    "historical_observed_receipts": [
+      {
+        "fixture": "YZT-77",
+        "returned_run_id": "01a08ddc-7698-7c18-943b-f354ee6ec8fb",
+        "shape": "single run object",
+        "source": "O2 sanitized fixture (dispatch-intent/fixtures/yzt-77.json)"
+      },
+      {
+        "fixture": "YZT-78",
+        "returned_run_id": "01a08de0-e0cb-7adc-890e-c87fcadce826",
+        "shape": "single run object",
+        "source": "O2 sanitized fixture (dispatch-intent/fixtures/yzt-78.json)"
+      }
+    ],
+    "kind": "u11_rerun_receipt_capture",
+    "schema_version": "1.0"
+  },
+  "capture_digest": "sha256:b00f5664581592634a8b37899aec23b6d2e7ac41726919a320bef9b842cb24bd",
+  "correlation_requires_trusted_run_listing": true,
+  "evidence_digest": "sha256:4079f4c1a981654bc11e0d5525637ffe72df47970bba7e6a139326aa62a8cabd",
+  "idempotency_claimed": false,
+  "kind": "u11_rerun_receipt_contract",
+  "receipt_alone_counts_as_delivery": false,
+  "schema_version": "U11/1.0"
+}

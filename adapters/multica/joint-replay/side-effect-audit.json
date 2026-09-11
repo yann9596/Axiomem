@@ -1,0 +1,17 @@
+{
+  "canonical_writes": 0,
+  "evidence_digest": "sha256:39d66de2814517cb81780b59c6a99b394576c9d93e68c448494b2570f0d749bd",
+  "kind": "u11_side_effect_audit",
+  "live_mutations_or_triggers": 0,
+  "live_review_or_qa_activation": 0,
+  "merge_performed": false,
+  "predecessor_or_o2_history_rewritten": 0,
+  "product_repo_changes": 0,
+  "production_ledger_root_selected_or_deployed": false,
+  "replay_issued_commands": 34,
+  "replay_write_class_commands": 20,
+  "rerun_idempotency_claimed": false,
+  "schema_version": "U11/1.0",
+  "u09_drift": 0,
+  "unaccounted_findings": 0
+}

@@ -1,0 +1,203 @@
+{
+  "R0": {
+    "artifact_ready": {
+      "blocks_handoff": false,
+      "case": "r0_minimal_ready",
+      "checks": {
+        "authoritative_version_resolved": true,
+        "expected_artifact_type_present": true,
+        "required_semantics_present": true,
+        "stale": false,
+        "status_allowed_for_target_role": true,
+        "superseded": false,
+        "upstream_refs_resolvable": true
+      },
+      "dependency_digest": "sha256:dd78579413f087956bf5d14a173d81184a1249d8a4312236be991b3ab389b5fe",
+      "evidence_digest": "sha256:7811e588be08e20e8d63341c4c32be617c523b219e21fbf05138121fcf3ee571",
+      "failure_codes": [],
+      "review_level": "R0",
+      "status": "ARTIFACT_READY",
+      "target_role": "engineering-lead"
+    },
+    "delivery_review_artifacts_created": 0,
+    "evidence_digest": "sha256:bd484573f2fdc48ab048002ee66f7dda96e9c14c907969ef2eadc3600795d1ba",
+    "lead_mediated": true,
+    "level": "R0",
+    "qa_artifacts_created": 0,
+    "qa_guard": {
+      "code": "R0_QA_NOT_ALLOWED",
+      "level": "R0",
+      "ok": false,
+      "target_role": "qa"
+    },
+    "requires_delivery_review": false,
+    "requires_qa": false,
+    "review_guard": {
+      "code": "R0_REVIEW_NOT_ALLOWED",
+      "level": "R0",
+      "ok": false,
+      "target_role": "delivery-reviewer"
+    },
+    "routing_ok": true,
+    "routing_plan": {
+      "review_level": "R0"
+    },
+    "triggers_created": 0
+  },
+  "R1": {
+    "evidence_digest": "sha256:791943d548d81369234e21c579c4205180fd7ced6e600e5919e443976c76e911",
+    "lead_mediated": true,
+    "level": "R1",
+    "qa_guard": {
+      "code": "R1_QA_NOT_ALLOWED",
+      "level": "R1",
+      "ok": false,
+      "target_role": "qa"
+    },
+    "requires_delivery_review": true,
+    "requires_qa": false,
+    "review_dispatch": {
+      "artifact_revision": "sha256:9c2857ae252e1916ef79a4816dfb57c05a6f32ec1b97f31419cdfddfd9e83bfc",
+      "commands": 2,
+      "correlated": true,
+      "level": "R1",
+      "package_digest": "sha256:96cf5546265e9b3adadf263443094f1a2e19fb24006b19065f238b2f9482d3eb",
+      "ready_status": "ARTIFACT_READY",
+      "review_envelope_valid": true,
+      "reviewed_artifact_exact": [
+        "ART-WIMG-031",
+        "aaa111"
+      ],
+      "run_id": "b11e0000-0000-4000-8000-000000000105",
+      "triggers": 1,
+      "verdict": "APPROVE"
+    },
+    "review_guard": {
+      "code": "ROUTE_ALLOWED",
+      "level": "R1",
+      "ok": true,
+      "target_role": "delivery-reviewer"
+    },
+    "routing_ok": true,
+    "routing_plan": {
+      "review_input": {
+        "artifact_id": "ART-WIMG-031",
+        "artifact_type": "implementation",
+        "version": "aaa111"
+      },
+      "review_level": "R1"
+    },
+    "triggers_created": 0
+  },
+  "R2": {
+    "evidence_digest": "sha256:592a1570a7cf63bcc740f2152ba643f3c997094cc645fed9a1fd9e63014025f6",
+    "lead_mediated": true,
+    "level": "R2",
+    "qa_dispatch": {
+      "correlated": true,
+      "qa_envelope_valid": true,
+      "run_id": "b11e0000-0000-4000-8000-000000000106",
+      "triggers": 1,
+      "validated_against": [
+        [
+          "PE-WIMG-004",
+          "4"
+        ],
+        [
+          "SOL-WIMG-017",
+          "3"
+        ],
+        [
+          "ART-WIMG-031",
+          "aaa111"
+        ],
+        [
+          "REV-WIMG-008",
+          "1"
+        ]
+      ],
+      "verdict": "PASS"
+    },
+    "qa_guard": {
+      "code": "ROUTE_ALLOWED",
+      "level": "R2",
+      "ok": true,
+      "target_role": "qa"
+    },
+    "qa_ready": {
+      "blocks_handoff": false,
+      "case": "r2_qa_baselines_ready",
+      "checks": {
+        "authoritative_version_resolved": true,
+        "expected_artifact_type_present": true,
+        "required_semantics_present": true,
+        "stale": false,
+        "status_allowed_for_target_role": true,
+        "superseded": false,
+        "upstream_refs_resolvable": true
+      },
+      "dependency_digest": "sha256:d7922d0373a599515bff8954fa4c03bfe2bfbfa0243e5e5658963fb0b14a7ae4",
+      "evidence_digest": "sha256:d9dd5bcc72ac617d6c8d53952b445bdd8718e5e3628831db55860164929802d5",
+      "failure_codes": [],
+      "review_level": "R2",
+      "status": "ARTIFACT_READY",
+      "target_role": "qa"
+    },
+    "requires_delivery_review": true,
+    "requires_qa": true,
+    "review_dispatch": {
+      "artifact_revision": "sha256:9c2857ae252e1916ef79a4816dfb57c05a6f32ec1b97f31419cdfddfd9e83bfc",
+      "commands": 2,
+      "correlated": true,
+      "level": "R2",
+      "package_digest": "sha256:96cf5546265e9b3adadf263443094f1a2e19fb24006b19065f238b2f9482d3eb",
+      "ready_status": "ARTIFACT_READY",
+      "review_envelope_valid": true,
+      "reviewed_artifact_exact": [
+        "ART-WIMG-031",
+        "aaa111"
+      ],
+      "run_id": "b11e0000-0000-4000-8000-000000000105",
+      "triggers": 1,
+      "verdict": "APPROVE"
+    },
+    "review_guard": {
+      "code": "ROUTE_ALLOWED",
+      "level": "R2",
+      "ok": true,
+      "target_role": "delivery-reviewer"
+    },
+    "routing_ok": true,
+    "routing_plan": {
+      "qa_baselines": [
+        {
+          "artifact_id": "PE-WIMG-004",
+          "artifact_type": "product_expectation",
+          "version": "4"
+        },
+        {
+          "artifact_id": "SOL-WIMG-017",
+          "artifact_type": "design_baseline",
+          "version": "3"
+        },
+        {
+          "artifact_id": "ART-WIMG-031",
+          "artifact_type": "implementation",
+          "version": "aaa111"
+        },
+        {
+          "artifact_id": "REV-WIMG-008",
+          "artifact_type": "delivery_review",
+          "version": "1"
+        }
+      ],
+      "review_input": {
+        "artifact_id": "ART-WIMG-031",
+        "artifact_type": "implementation",
+        "version": "aaa111"
+      },
+      "review_level": "R2"
+    },
+    "triggers_created": 0
+  }
+}

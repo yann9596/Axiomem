@@ -1,0 +1,174 @@
+{
+  "artifact_contract_revision": "sha256:9c2857ae252e1916ef79a4816dfb57c05a6f32ec1b97f31419cdfddfd9e83bfc",
+  "envelopes": [
+    {
+      "artifact_id": "CTX-WIMG-021",
+      "artifact_type": "context_package",
+      "based_on": [
+        [
+          "ISS-WIMG-071",
+          "1"
+        ]
+      ],
+      "owner_role": "context-engineer",
+      "reviewed_artifact": null,
+      "status": "ready",
+      "validated_against": [],
+      "version": "1"
+    },
+    {
+      "artifact_id": "REV-WIMG-008",
+      "artifact_type": "delivery_review",
+      "based_on": [
+        [
+          "ART-WIMG-031",
+          "aaa111"
+        ]
+      ],
+      "owner_role": "delivery-reviewer",
+      "reviewed_artifact": [
+        "ART-WIMG-031",
+        "aaa111"
+      ],
+      "status": "accepted",
+      "validated_against": [],
+      "version": "1"
+    },
+    {
+      "artifact_id": "SOL-WIMG-016",
+      "artifact_type": "design_baseline",
+      "based_on": [],
+      "owner_role": "solution-architect",
+      "reviewed_artifact": null,
+      "status": "superseded",
+      "validated_against": [],
+      "version": "2"
+    },
+    {
+      "artifact_id": "SOL-WIMG-017",
+      "artifact_type": "design_baseline",
+      "based_on": [
+        [
+          "PE-WIMG-004",
+          "4"
+        ],
+        [
+          "CTX-WIMG-021",
+          "1"
+        ]
+      ],
+      "owner_role": "solution-architect",
+      "reviewed_artifact": null,
+      "status": "accepted",
+      "validated_against": [],
+      "version": "3"
+    },
+    {
+      "artifact_id": "ART-WIMG-031",
+      "artifact_type": "implementation",
+      "based_on": [
+        [
+          "SOL-WIMG-017",
+          "3"
+        ],
+        [
+          "ISS-WIMG-071",
+          "1"
+        ]
+      ],
+      "owner_role": "software-engineer",
+      "reviewed_artifact": null,
+      "status": "ready_for_review",
+      "validated_against": [],
+      "version": "aaa111"
+    },
+    {
+      "artifact_id": "ISS-WIMG-071",
+      "artifact_type": "issue_definition",
+      "based_on": [],
+      "owner_role": "engineering-lead",
+      "reviewed_artifact": null,
+      "status": "accepted",
+      "validated_against": [],
+      "version": "1"
+    },
+    {
+      "artifact_id": "ISS-WIMG-R0",
+      "artifact_type": "issue_definition",
+      "based_on": [],
+      "owner_role": "engineering-lead",
+      "reviewed_artifact": null,
+      "status": "accepted",
+      "validated_against": [],
+      "version": "1"
+    },
+    {
+      "artifact_id": "PE-WIMG-004",
+      "artifact_type": "product_expectation",
+      "based_on": [],
+      "owner_role": "context-engineer",
+      "reviewed_artifact": null,
+      "status": "superseded",
+      "validated_against": [],
+      "version": "3"
+    },
+    {
+      "artifact_id": "PE-WIMG-004",
+      "artifact_type": "product_expectation",
+      "based_on": [
+        [
+          "CTX-WIMG-021",
+          "1"
+        ]
+      ],
+      "owner_role": "context-engineer",
+      "reviewed_artifact": null,
+      "status": "accepted",
+      "validated_against": [],
+      "version": "4"
+    },
+    {
+      "artifact_id": "QA-WIMG-004",
+      "artifact_type": "qa_acceptance",
+      "based_on": [
+        [
+          "REV-WIMG-008",
+          "1"
+        ]
+      ],
+      "owner_role": "qa",
+      "reviewed_artifact": null,
+      "status": "accepted",
+      "validated_against": [
+        [
+          "PE-WIMG-004",
+          "4"
+        ],
+        [
+          "SOL-WIMG-017",
+          "3"
+        ],
+        [
+          "ART-WIMG-031",
+          "aaa111"
+        ],
+        [
+          "REV-WIMG-008",
+          "1"
+        ]
+      ],
+      "version": "1"
+    }
+  ],
+  "source": "tools/fixtures/artifact-contract/store-chain.json",
+  "source_digest": "sha256:9c754a93b11150b5a8952928493476a661123b901563c11ce82145658fcb981a",
+  "types": [
+    "issue_definition",
+    "context_package",
+    "product_expectation",
+    "design_baseline",
+    "implementation",
+    "delivery_review",
+    "qa_acceptance"
+  ]
+}

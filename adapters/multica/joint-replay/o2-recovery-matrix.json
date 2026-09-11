@@ -1,0 +1,193 @@
+{
+  "all_pass": true,
+  "cases": 23,
+  "evidence_digest": "sha256:21b27563d197422f2ef2d37e939505e95003530331dba4ec020d930272cd1273",
+  "kind": "u11_o2_recovery_matrix",
+  "rows": [
+    {
+      "audit_ok": true,
+      "case": "active_same_assignee_rerun",
+      "evidence_digest": "sha256:8ff597c13e03d94050029eb2444bf6d1776774f0079c16f624e9d3fe3baa38d8",
+      "fixture": "FIX-QA",
+      "passed": true,
+      "state": "RUN_CORRELATED"
+    },
+    {
+      "audit_ok": true,
+      "case": "active_unassigned_assignment_trigger",
+      "evidence_digest": "sha256:7c8b2f66f8e4513ac682fd9dd9f1a54bff21a9fb59642ff47da4bbbd15dc9224",
+      "fixture": "FIX-QA",
+      "passed": true,
+      "state": "RUN_CORRELATED"
+    },
+    {
+      "audit_ok": true,
+      "case": "ambiguous_create_0_targets",
+      "evidence_digest": "sha256:b8c7b67ab4fb8defae05b009934c4b01e0467bff00a94e38f475b715b4d22b94",
+      "fixture": "FIX-CHILD",
+      "passed": true,
+      "state": "CREATE_AMBIGUOUS"
+    },
+    {
+      "audit_ok": true,
+      "case": "ambiguous_create_1_targets",
+      "evidence_digest": "sha256:2049d7c499fd8c8e776b3fc19b8c12e457536734a446b4ee0758cef4b30dbacc",
+      "fixture": "FIX-CHILD",
+      "passed": true,
+      "state": "TARGET_BOUND"
+    },
+    {
+      "audit_ok": true,
+      "case": "ambiguous_create_2_targets",
+      "evidence_digest": "sha256:3ca698ece04930e523f67d49ea2c6665f45e1b7fee878666df16991ead932398",
+      "fixture": "FIX-CHILD",
+      "passed": true,
+      "state": "CREATE_AMBIGUOUS"
+    },
+    {
+      "audit_ok": true,
+      "case": "backlog_different_assignee_binding",
+      "evidence_digest": "sha256:a201b32926e37be0eb153211498ef14b44566d5a077bd37743e265bfab7c6acc",
+      "fixture": "FIX-QA",
+      "passed": true,
+      "state": "RUN_CORRELATED"
+    },
+    {
+      "audit_ok": true,
+      "case": "backlog_same_assignee_rerun",
+      "evidence_digest": "sha256:d3e90fefab22bfa2ce43ea122962a79ad66639861006b38fc4f04601b9c09515",
+      "fixture": "FIX-REVIEW",
+      "passed": true,
+      "state": "RUN_CORRELATED"
+    },
+    {
+      "audit_ok": true,
+      "case": "cli_success_not_delivery",
+      "evidence_digest": "sha256:355d03f65397784f58022ebf68ade65d1ee53c8eca9ab75aa805ddbd9eec093a",
+      "fixture": "FIX-QA-WAIT",
+      "passed": true,
+      "state": "TRIGGER_ISSUING"
+    },
+    {
+      "audit_ok": true,
+      "case": "completed_replay_zero_side_effects",
+      "evidence_digest": "sha256:e7b9b0837474ba2c5396a767adf66be16c679bc7c7b852a93cb7976c291f1bfa",
+      "fixture": "FIX-REVIEW",
+      "passed": true,
+      "state": "COMPLETED"
+    },
+    {
+      "audit_ok": true,
+      "case": "delayed_run_visibility_attach",
+      "evidence_digest": "sha256:5736587a41353ff701acebf055e64bca21f6aaec6e15ee7d69da278293139831",
+      "fixture": "FIX-REVIEW",
+      "passed": true,
+      "state": "RUN_CORRELATED"
+    },
+    {
+      "audit_ok": true,
+      "case": "duplicate_correlated_runs_refused",
+      "evidence_digest": "sha256:e74df0f69738e05172e88f5a06e1ec605b716db58b4dcbced61737a9896395a9",
+      "fixture": "FIX-REVIEW",
+      "passed": true,
+      "state": "BLOCKED"
+    },
+    {
+      "audit_ok": true,
+      "case": "hidden_open_intent_observable",
+      "evidence_digest": "sha256:71f461684706e7b95a40bf0d4ff5d50ff69e34b5ba4b81fe15aea233991864e4",
+      "fixture": null,
+      "passed": true,
+      "state": "HANDOFF_PUBLISHED"
+    },
+    {
+      "audit_ok": true,
+      "case": "intent_before_target_ordering",
+      "evidence_digest": "sha256:2a5627616086435f42a2032af4c35dda141b0faf9f3010f9fe7085387a62ef07",
+      "fixture": "FIX-CHILD",
+      "passed": true,
+      "state": "TARGET_BOUND"
+    },
+    {
+      "audit_ok": false,
+      "case": "legacy_ledger_preserved",
+      "evidence_digest": "sha256:8ccaf6a35235c050210fa49221b7d5e9866d6f86a20492504c6b60416a1560d0",
+      "fixture": null,
+      "passed": true,
+      "state": null
+    },
+    {
+      "audit_ok": true,
+      "case": "lost_trigger_response_no_retry",
+      "evidence_digest": "sha256:e43194bc53ecc034ec3156be324aeca1909a1e90bbaadfa34bb456d54dc49bb5",
+      "fixture": "FIX-REVIEW",
+      "passed": true,
+      "state": "RUN_CORRELATED"
+    },
+    {
+      "audit_ok": true,
+      "case": "pre_existing_unexpected_run_refused",
+      "evidence_digest": "sha256:792e351668bbfadc1a87c101990f357b3c7a599f0df753302eb5bc323e73ef4b",
+      "fixture": "FIX-REVIEW",
+      "passed": true,
+      "state": "BLOCKED"
+    },
+    {
+      "audit_ok": true,
+      "case": "provider_quota_execution_recovery",
+      "evidence_digest": "sha256:0e07ba3ad339e91fa287408bf0abdd9d958f5e5f91549018819671a50322232d",
+      "fixture": "FIX-REVIEW",
+      "passed": true,
+      "state": "RUN_CORRELATED"
+    },
+    {
+      "audit_ok": true,
+      "case": "publish_pre_trigger_kill_resume",
+      "evidence_digest": "sha256:dd3e268372004a914ccfdb90ab40f023080d054e49c23a35195bbc21ffa6afa4",
+      "fixture": "FIX-REVIEW",
+      "passed": true,
+      "state": "RUN_CORRELATED"
+    },
+    {
+      "audit_ok": true,
+      "case": "stale_lease_recovery",
+      "evidence_digest": "sha256:5586e4e79afd4e27b03caf640e6b87171374627112cd9381bbb635e270b8486f",
+      "fixture": null,
+      "passed": true,
+      "state": null
+    },
+    {
+      "audit_ok": true,
+      "case": "two_reconciler_race",
+      "evidence_digest": "sha256:8cbf4b0d3c070ec3e32288fdfeff49beac75ec76a2e670ce00eec4b2ad02d6f1",
+      "fixture": null,
+      "passed": true,
+      "state": "INTENT_RECORDED"
+    },
+    {
+      "audit_ok": true,
+      "case": "wrong_target_run_refused",
+      "evidence_digest": "sha256:53acdb78a1b94fc8655636e0b2a07282e7386b66fe8bd9f8cdae06fe8f870eef",
+      "fixture": "FIX-REVIEW",
+      "passed": true,
+      "state": "BLOCKED"
+    },
+    {
+      "audit_ok": null,
+      "case": "yzt_77_fixture_replay",
+      "evidence_digest": "sha256:892b1dd8fcdda2dbdf493c757d3c4ab08a9a1b6fd009e2a3c18124035891d210",
+      "fixture": "YZT-77",
+      "passed": true,
+      "state": "RUN_CORRELATED"
+    },
+    {
+      "audit_ok": null,
+      "case": "yzt_78_fixture_replay",
+      "evidence_digest": "sha256:b24d2dc99c5eeda06a13b137384d1a49bdb6be6dac04cd0003d22a7aaeac76f9",
+      "fixture": "YZT-78",
+      "passed": true,
+      "state": "RUN_CORRELATED"
+    }
+  ],
+  "schema_version": "U11/1.0"
+}

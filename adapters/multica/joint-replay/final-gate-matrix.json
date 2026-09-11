@@ -1,0 +1,309 @@
+{
+  "all_pass": true,
+  "counters_zero": true,
+  "evidence_digest": "sha256:4128057b99d5819ef96897c7ce300c98c2fbc6946852281076ce770913ec4f4b",
+  "kind": "u11_final_gate_matrix",
+  "o2_safety_gate": [
+    {
+      "actual": 0,
+      "detail": "",
+      "evidence_digest": "sha256:2a5627616086435f42a2032af4c35dda141b0faf9f3010f9fe7085387a62ef07",
+      "expected": 0,
+      "fixture": "intent-ordering",
+      "gate": "target_mutation_before_intent",
+      "status": "PASS"
+    },
+    {
+      "actual": 0,
+      "detail": "",
+      "evidence_digest": "sha256:badbe442e81b9e81045bbae39ba1541cb59b588ebac50456234261fdd9517754",
+      "expected": 0,
+      "fixture": "stage-wake",
+      "gate": "underspecified_parked_target",
+      "status": "PASS"
+    },
+    {
+      "actual": 0,
+      "detail": "",
+      "evidence_digest": "sha256:b24d2dc99c5eeda06a13b137384d1a49bdb6be6dac04cd0003d22a7aaeac76f9",
+      "expected": 0,
+      "fixture": "yzt-78",
+      "gate": "backlog_assignment_counted_as_enqueue",
+      "status": "PASS"
+    },
+    {
+      "actual": 0,
+      "detail": "",
+      "evidence_digest": "sha256:355d03f65397784f58022ebf68ade65d1ee53c8eca9ab75aa805ddbd9eec093a",
+      "expected": 0,
+      "fixture": "cli-success",
+      "gate": "cli_success_counted_as_delivery",
+      "status": "PASS"
+    },
+    {
+      "actual": 0,
+      "detail": "",
+      "evidence_digest": "sha256:e7b9b0837474ba2c5396a767adf66be16c679bc7c7b852a93cb7976c291f1bfa",
+      "expected": 0,
+      "fixture": "completed-replay",
+      "gate": "duplicate_note",
+      "status": "PASS"
+    },
+    {
+      "actual": 0,
+      "detail": "",
+      "evidence_digest": "sha256:e43194bc53ecc034ec3156be324aeca1909a1e90bbaadfa34bb456d54dc49bb5",
+      "expected": 0,
+      "fixture": "lost-response",
+      "gate": "duplicate_trigger",
+      "status": "PASS"
+    },
+    {
+      "actual": 0,
+      "detail": "",
+      "evidence_digest": "sha256:e43194bc53ecc034ec3156be324aeca1909a1e90bbaadfa34bb456d54dc49bb5",
+      "expected": 0,
+      "fixture": "lost-response",
+      "gate": "duplicate_correlated_run",
+      "status": "PASS"
+    },
+    {
+      "actual": 0,
+      "detail": "",
+      "evidence_digest": "sha256:e43194bc53ecc034ec3156be324aeca1909a1e90bbaadfa34bb456d54dc49bb5",
+      "expected": 0,
+      "fixture": "lost-response",
+      "gate": "ambiguous_trigger_retry",
+      "status": "PASS"
+    },
+    {
+      "actual": 0,
+      "detail": "",
+      "evidence_digest": "sha256:0e07ba3ad339e91fa287408bf0abdd9d958f5e5f91549018819671a50322232d",
+      "expected": 0,
+      "fixture": "provider",
+      "gate": "provider_failure_counted_as_orphan",
+      "status": "PASS"
+    },
+    {
+      "actual": 0,
+      "detail": "",
+      "evidence_digest": "sha256:71f461684706e7b95a40bf0d4ff5d50ff69e34b5ba4b81fe15aea233991864e4",
+      "expected": 0,
+      "fixture": "observe",
+      "gate": "hidden_open_intent",
+      "status": "PASS"
+    },
+    {
+      "actual": 0,
+      "detail": "",
+      "evidence_digest": "sha256:8ccaf6a35235c050210fa49221b7d5e9866d6f86a20492504c6b60416a1560d0",
+      "expected": 0,
+      "fixture": "legacy",
+      "gate": "legacy_history_rewritten",
+      "status": "PASS"
+    },
+    {
+      "actual": 0,
+      "detail": "",
+      "evidence_digest": "sha256:d598d2c5db96f3e16eed23627d1a9b8d007412fc21f29a5360f7addc81b005eb",
+      "expected": 0,
+      "fixture": "u09-bundle",
+      "gate": "u09_drift",
+      "status": "PASS"
+    }
+  ],
+  "parent_final_gate": [
+    {
+      "actual": 0,
+      "detail": "",
+      "evidence_digest": "sha256:2b5fd8101ef6b6a70b64f4443e8b5eabc81be5139a8de8e76f654ea1fbcd4dda",
+      "expected": 0,
+      "fixture": "retired-identity",
+      "gate": "feature_reviewer_activation",
+      "status": "PASS"
+    },
+    {
+      "actual": 0,
+      "detail": "",
+      "evidence_digest": "sha256:2b5fd8101ef6b6a70b64f4443e8b5eabc81be5139a8de8e76f654ea1fbcd4dda",
+      "expected": 0,
+      "fixture": "retired-identity",
+      "gate": "old_role_package_accepted",
+      "status": "PASS"
+    },
+    {
+      "actual": 0,
+      "detail": "",
+      "evidence_digest": "sha256:d540cb89fc47c66fe1f42c3013f56b63cd117d4007c9788e288f96dcf553bf61",
+      "expected": 0,
+      "fixture": "routing-negative",
+      "gate": "wrong_role_routing",
+      "status": "PASS"
+    },
+    {
+      "actual": 0,
+      "detail": "",
+      "evidence_digest": "sha256:a7cf7ccb3d52f5f04a02980b98010bf25d13c0955392aab6830f2e74549bd2d6",
+      "expected": 0,
+      "fixture": "stale-before-trigger",
+      "gate": "normal_path_run_before_ready_handoff",
+      "status": "PASS"
+    },
+    {
+      "actual": 0,
+      "detail": "",
+      "evidence_digest": "sha256:a8a8873b936ec10ef4fa584cfb578885bf5a7866193693ee33562e72caf459c0",
+      "expected": 0,
+      "fixture": "dispatch-yard",
+      "gate": "duplicate_intended_run",
+      "status": "PASS"
+    },
+    {
+      "actual": 0,
+      "detail": "",
+      "evidence_digest": "sha256:f3530ccb50b76594a801bf7c0aaba5fdf851a7c7b96fa8937cf8671e73bffc12",
+      "expected": 0,
+      "fixture": "topology-R1",
+      "gate": "duplicate_review_run",
+      "status": "PASS"
+    },
+    {
+      "actual": 0,
+      "detail": "",
+      "evidence_digest": "sha256:e43955a66f2b24a676aefc356f56df5030c4f63f9ff856b92f398c1a69aae418",
+      "expected": 0,
+      "fixture": "topology-R2",
+      "gate": "duplicate_qa_run",
+      "status": "PASS"
+    },
+    {
+      "actual": 0,
+      "detail": "",
+      "evidence_digest": "sha256:d3d71b3695496886da17236a54e1bc0284e3e62099701ca2feede491179c47ca",
+      "expected": 0,
+      "fixture": "stage-wake",
+      "gate": "duplicate_lead_stage_activation",
+      "status": "PASS"
+    },
+    {
+      "actual": 0,
+      "detail": "",
+      "evidence_digest": "sha256:3f492afb78e6cd186ed0337eae5360aff74e4180d807d20660fe53840ce3dc06",
+      "expected": 0,
+      "fixture": "topology-R0",
+      "gate": "scope_pollution",
+      "status": "PASS"
+    },
+    {
+      "actual": 0,
+      "detail": "",
+      "evidence_digest": "sha256:bcb848ea407b3027cf060312e8d786c6e0b1f0c8024f8fd257a07a1966eac182",
+      "expected": 0,
+      "fixture": "gate-a",
+      "gate": "invalid_rule_authority",
+      "status": "PASS"
+    },
+    {
+      "actual": 0,
+      "detail": "",
+      "evidence_digest": "sha256:ff9a3bf6c6c252de0b08f3f55590f2096944f855ed493d5e98a536d3346178d0",
+      "expected": 0,
+      "fixture": "finding-prepare",
+      "gate": "hidden_unresolved_conflict",
+      "status": "PASS"
+    },
+    {
+      "actual": 0,
+      "detail": "",
+      "evidence_digest": "sha256:a7cf7ccb3d52f5f04a02980b98010bf25d13c0955392aab6830f2e74549bd2d6",
+      "expected": 0,
+      "fixture": "stale-before-trigger",
+      "gate": "stale_or_missing_package_not_detected",
+      "status": "PASS"
+    },
+    {
+      "actual": 0,
+      "detail": "",
+      "evidence_digest": "sha256:a7cf7ccb3d52f5f04a02980b98010bf25d13c0955392aab6830f2e74549bd2d6",
+      "expected": 0,
+      "fixture": "stale-before-trigger",
+      "gate": "stale_artifact_triggered",
+      "status": "PASS"
+    },
+    {
+      "actual": 0,
+      "detail": "",
+      "evidence_digest": "sha256:a4274c1661ba4efd8a2179c29dd8f9245450da7c90cd4be60df06106c78ac9ed",
+      "expected": 0,
+      "fixture": "artifact-pe-superseded",
+      "gate": "stale_baseline_received_qa_pass",
+      "status": "PASS"
+    },
+    {
+      "actual": 0,
+      "detail": "",
+      "evidence_digest": "sha256:ff9a3bf6c6c252de0b08f3f55590f2096944f855ed493d5e98a536d3346178d0",
+      "expected": 0,
+      "fixture": "finding-prepare",
+      "gate": "relevant_finding_hidden",
+      "status": "PASS"
+    },
+    {
+      "actual": 0,
+      "detail": "",
+      "evidence_digest": "sha256:759b0cb410481c50770b1fdf14043e4baf1db3acab28b97e63063085f25022cc",
+      "expected": 0,
+      "fixture": "finding-drain",
+      "gate": "task_closed_with_open_unaccounted_finding",
+      "status": "PASS"
+    },
+    {
+      "actual": 0,
+      "detail": "",
+      "evidence_digest": "sha256:36980975c6fee1ebb96c3b6d4317cdd8ad6887cba9ef11368dd86f814fd86d79",
+      "expected": 0,
+      "fixture": "finding-clear",
+      "gate": "ordinary_ready_build_calls_context_engineer",
+      "status": "PASS"
+    },
+    {
+      "actual": 0,
+      "detail": "",
+      "evidence_digest": "sha256:c1f62f7c782b44825951c33c756d0e653bff6b9f4e93efe5107f63da44b7347d",
+      "expected": 0,
+      "fixture": "finding-external",
+      "gate": "grok_raw_signal_used_as_project_truth",
+      "status": "PASS"
+    },
+    {
+      "actual": 0,
+      "detail": "",
+      "evidence_digest": "sha256:d72ad5455141fbd764a87ddde981c9c0b96ca5de0e6c27dbe009be9d80f4dcac",
+      "expected": 0,
+      "fixture": "artifact-qa-missing",
+      "gate": "qa_without_required_baseline",
+      "status": "PASS"
+    },
+    {
+      "actual": 0,
+      "detail": "",
+      "evidence_digest": "sha256:37b7acdd809ef09eadbdb10d3096bbcf7b10e9f10c550e4923ece16ec4afa066",
+      "expected": 0,
+      "fixture": "artifact-verdict-preservation",
+      "gate": "delivery_review_without_exact_artifact_version",
+      "status": "PASS"
+    }
+  ],
+  "replay_integrity": {
+    "artifact_failures": [],
+    "capability_ok": true,
+    "dispatch_failures": [],
+    "finding_failures": [],
+    "retired_identity_ok": true,
+    "routing_negative_ok": true,
+    "stage_failures": [],
+    "topology_failures": []
+  },
+  "schema_version": "U11/1.0"
+}

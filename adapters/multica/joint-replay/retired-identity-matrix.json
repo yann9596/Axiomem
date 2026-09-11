@@ -1,0 +1,80 @@
+{
+  "all_ok": true,
+  "case": "retired_feature_reviewer_cannot_activate_or_alias",
+  "delivery_reviewer_role": "delivery-reviewer",
+  "evidence_digest": "sha256:2b5fd8101ef6b6a70b64f4443e8b5eabc81be5139a8de8e76f654ea1fbcd4dda",
+  "feature_reviewer_activation": 0,
+  "old_role_package_accepted": 0,
+  "rows": [
+    {
+      "case": "runtime_role_vocabulary_proof",
+      "detail": "adapter_rejects=True",
+      "ok": true
+    },
+    {
+      "case": "retired_token_not_resolvable",
+      "detail": "retired_no_alias",
+      "ok": true
+    },
+    {
+      "case": "delivery_reviewer_resolves",
+      "detail": "resolved",
+      "ok": true
+    },
+    {
+      "case": "display_name_never_resolves",
+      "detail": "05 Feature Reviewer",
+      "ok": true
+    },
+    {
+      "case": "staged_display_name_never_resolves",
+      "detail": "unknown_role",
+      "ok": true
+    },
+    {
+      "case": "old_05_package_cannot_activate_new_05",
+      "detail": "old_role_package_rejected,no_alias_rewrite,legacy_05_skill_binding_present",
+      "ok": true
+    },
+    {
+      "case": "retired_role_not_dispatchable",
+      "detail": "retired_no_alias,old_role_package_rejected,retired_role_not_dispatchable",
+      "ok": true
+    },
+    {
+      "case": "legacy_05_skill_bindings_refused",
+      "detail": "legacy_05_skill_binding_present",
+      "ok": true
+    },
+    {
+      "case": "o2_refuses_retired_role",
+      "detail": "retired_identity",
+      "ok": true
+    },
+    {
+      "case": "u09_refuses_retired_role",
+      "detail": "retired_identity_refused",
+      "ok": true
+    },
+    {
+      "case": "retired_package_binding_refused",
+      "detail": "retired_identity_refused",
+      "ok": true
+    },
+    {
+      "case": "retired_role_profile_absent",
+      "detail": "VALUE_ERROR",
+      "ok": true
+    },
+    {
+      "case": "old_05_package_not_accepted",
+      "detail": "False",
+      "ok": true
+    },
+    {
+      "case": "feature_reviewer_activation_zero",
+      "detail": "0",
+      "ok": true
+    }
+  ]
+}

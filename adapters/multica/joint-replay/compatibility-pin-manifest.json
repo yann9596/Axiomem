@@ -1,0 +1,52 @@
+{
+  "all_reproduce": true,
+  "artifact_contract_revision": "sha256:9c2857ae252e1916ef79a4816dfb57c05a6f32ec1b97f31419cdfddfd9e83bfc",
+  "base_commit": "49c48a9c2ef4ac89dd9321a42b0132a2a78cceb9",
+  "kind": "u11_compatibility_pin_manifest",
+  "o2_bundle": {
+    "digest": "sha256:3c207e85f195617fe50914e3384dd309e5847d4c6e55f33a96f328bae0924d4d",
+    "file_count": 16
+  },
+  "o2_bundle_expected": "sha256:3c207e85f195617fe50914e3384dd309e5847d4c6e55f33a96f328bae0924d4d",
+  "predecessor_pins": {
+    "tools/chandoff_assignment.py": {
+      "actual": "sha256:2d701541662c1862741202a6326eff7cccf39a2b2ad662f488332406c0b43129",
+      "match": true,
+      "pin": "sha256:2d701541662c1862741202a6326eff7cccf39a2b2ad662f488332406c0b43129"
+    },
+    "tools/chandoff_dispatch.py": {
+      "actual": "sha256:62dbd08160dea730a9c9264449dbb7d6e7dd7c40ff01ee3b16dad43fab24cfaa",
+      "match": true,
+      "pin": "sha256:62dbd08160dea730a9c9264449dbb7d6e7dd7c40ff01ee3b16dad43fab24cfaa"
+    },
+    "tools/chandoff_fallback.py": {
+      "actual": "sha256:7884cfb6844d783fd2bd0664403752b2b45abaf615b88da95562b5b14148c93b",
+      "match": true,
+      "pin": "sha256:7884cfb6844d783fd2bd0664403752b2b45abaf615b88da95562b5b14148c93b"
+    },
+    "tools/chandoff_finding.py": {
+      "actual": "sha256:efa29010b5a0b07aa76a329c107b903a54f342e8fa88cc3e99a384a121273848",
+      "match": true,
+      "pin": "sha256:efa29010b5a0b07aa76a329c107b903a54f342e8fa88cc3e99a384a121273848"
+    },
+    "tools/chandoff_mention.py": {
+      "actual": "sha256:d3bba5b442e582eba93de9bbd2aa6d04227f75b27d9ac3bb5302c56c642c96c1",
+      "match": true,
+      "pin": "sha256:d3bba5b442e582eba93de9bbd2aa6d04227f75b27d9ac3bb5302c56c642c96c1"
+    }
+  },
+  "schema_version": "U11/1.0",
+  "u05_pins": {
+    "artifact_contract_pin": "sha256:9c2857ae252e1916ef79a4816dfb57c05a6f32ec1b97f31419cdfddfd9e83bfc",
+    "binding_plan_revision": "sha256:7f83bfd523e2c0da3cd0dac4568869f3c9937e2d3ae6c0dc66b9853094a27c22",
+    "feature_reviewer_resolves_to": null,
+    "instruction_bundle_revision": "sha256:a93e146d6586cf6f474148aeed092032e3a9c871ad3138ee1152d28108b5b98f",
+    "old_05_package_accepted": false
+  },
+  "u09_bundle": {
+    "digest": "sha256:d598d2c5db96f3e16eed23627d1a9b8d007412fc21f29a5360f7addc81b005eb",
+    "file_count": 16
+  },
+  "u09_bundle_expected": "sha256:d598d2c5db96f3e16eed23627d1a9b8d007412fc21f29a5360f7addc81b005eb",
+  "u10_store_chain_digest": "sha256:9c754a93b11150b5a8952928493476a661123b901563c11ce82145658fcb981a"
+}

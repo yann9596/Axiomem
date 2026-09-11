@@ -1,0 +1,64 @@
+{
+  "exit_check_correlated_target_ok": {
+    "case": "exit_check_correlated_target_ok",
+    "evidence_digest": "sha256:c14754df113d752a729b538d61d758ea31590bda87140a2612507736b61f718c",
+    "ok": true,
+    "passed": true,
+    "violations": []
+  },
+  "exit_check_due_target_blocked": {
+    "case": "exit_check_due_target_blocked",
+    "evidence_digest": "sha256:34b91ab3a378c61479c40e71fa39b6e9a9447c9209d30bcf3d52c87be8ba1f39",
+    "ok": false,
+    "passed": true,
+    "violations": [
+      {
+        "detail": "no durable dispatch intent and no parked claim",
+        "intent_id": null,
+        "issue_id": "a11e0000-0000-4000-8000-000000000006",
+        "violation": "DUE_TARGET_UNTRACKED"
+      }
+    ]
+  },
+  "exit_check_underspecified_parked_blocked": {
+    "case": "exit_check_underspecified_parked_blocked",
+    "evidence_digest": "sha256:badbe442e81b9e81045bbae39ba1541cb59b588ebac50456234261fdd9517754",
+    "ok": false,
+    "parked_missing": [
+      "dependency",
+      "wake_boundary"
+    ],
+    "passed": true,
+    "violations": [
+      {
+        "intent_id": null,
+        "issue_id": "a11e0000-0000-4000-8000-000000000006",
+        "missing": [
+          "dependency",
+          "wake_boundary"
+        ],
+        "violation": "PARKED_TARGET_UNDERSPECIFIED"
+      }
+    ]
+  },
+  "parent_wake_failure_recovery": {
+    "active_lead_decision": "WAKE_REPAIR_REQUIRED",
+    "case": "parent_wake_failure_recovery",
+    "combined_with_trigger": true,
+    "delivered_then_decision": "NO_NEW_WAKE",
+    "evidence_digest": "sha256:ee01e50899381b59557a4f837136fbedd1b087f32f19db2195ef5ca9e7fd4bdd",
+    "exhausted_decision": "WAKE_EXHAUSTED",
+    "first_decision": "WAKE_ONE",
+    "passed": true,
+    "triggers": 1,
+    "wake_records": 3
+  },
+  "stage_completion_wake_idempotent": {
+    "case": "stage_completion_wake_idempotent",
+    "decision": "NO_NEW_WAKE",
+    "duplicate_lead_stage_activation": 0,
+    "evidence_digest": "sha256:d3d71b3695496886da17236a54e1bc0284e3e62099701ca2feede491179c47ca",
+    "passed": true,
+    "wake_count": 1
+  }
+}

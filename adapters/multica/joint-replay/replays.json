@@ -1,0 +1,1991 @@
+{
+  "artifacts": {
+    "design_stale_blocks_qa": {
+      "blocks_handoff": true,
+      "case": "design_stale_blocks_qa",
+      "checks": {
+        "authoritative_version_resolved": false,
+        "expected_artifact_type_present": true,
+        "required_semantics_present": true,
+        "stale": true,
+        "status_allowed_for_target_role": true,
+        "superseded": true,
+        "upstream_refs_resolvable": false
+      },
+      "dependency_digest": "sha256:d7922d0373a599515bff8954fa4c03bfe2bfbfa0243e5e5658963fb0b14a7ae4",
+      "evidence_digest": "sha256:90e4f4cc47daac9924694c8088ec8f28b6550393832038ebad92d96a66131726",
+      "failure_codes": [
+        "MISSING",
+        "STALE",
+        "SUPERSEDED"
+      ],
+      "passed": true,
+      "review_level": "R2",
+      "status": "ARTIFACT_NOT_READY",
+      "target_role": "qa"
+    },
+    "implementation_superseded": {
+      "blocks_handoff": true,
+      "case": "implementation_superseded",
+      "checks": {
+        "authoritative_version_resolved": false,
+        "expected_artifact_type_present": true,
+        "required_semantics_present": true,
+        "stale": false,
+        "status_allowed_for_target_role": true,
+        "superseded": true,
+        "upstream_refs_resolvable": true
+      },
+      "dependency_digest": "sha256:96cf5546265e9b3adadf263443094f1a2e19fb24006b19065f238b2f9482d3eb",
+      "evidence_digest": "sha256:9b7bad890ee4296efd8fa3c9943b401744ea7f1aef3edb3080cde48d49d8785e",
+      "failure_codes": [
+        "SUPERSEDED"
+      ],
+      "passed": true,
+      "review_level": "R1",
+      "status": "ARTIFACT_NOT_READY",
+      "target_role": "delivery-reviewer"
+    },
+    "latest_version_refused": {
+      "blocks_handoff": true,
+      "case": "latest_version_refused",
+      "checks": {
+        "authoritative_version_resolved": false,
+        "expected_artifact_type_present": true,
+        "required_semantics_present": true,
+        "stale": false,
+        "status_allowed_for_target_role": true,
+        "superseded": false,
+        "upstream_refs_resolvable": true
+      },
+      "dependency_digest": "sha256:06f4758a9b93de0321f98ebedfced080c8cfa5fe81018293ea7018ffa066a6cd",
+      "evidence_digest": "sha256:57fb2f44778aa06b8e2b814dd084dab40382f08e5c580ce53954ff8df62ea342",
+      "failure_codes": [
+        "VERSION_NOT_EXACT"
+      ],
+      "passed": true,
+      "review_level": "R1",
+      "status": "ARTIFACT_NOT_READY",
+      "target_role": "delivery-reviewer"
+    },
+    "pe_superseded_blocks_qa": {
+      "blocks_handoff": true,
+      "case": "pe_superseded_blocks_qa",
+      "checks": {
+        "authoritative_version_resolved": false,
+        "expected_artifact_type_present": true,
+        "required_semantics_present": true,
+        "stale": true,
+        "status_allowed_for_target_role": true,
+        "superseded": true,
+        "upstream_refs_resolvable": false
+      },
+      "dependency_digest": "sha256:d7922d0373a599515bff8954fa4c03bfe2bfbfa0243e5e5658963fb0b14a7ae4",
+      "evidence_digest": "sha256:a4274c1661ba4efd8a2179c29dd8f9245450da7c90cd4be60df06106c78ac9ed",
+      "failure_codes": [
+        "MISSING",
+        "STALE",
+        "SUPERSEDED"
+      ],
+      "passed": true,
+      "review_level": "R2",
+      "status": "ARTIFACT_NOT_READY",
+      "target_role": "qa"
+    },
+    "qa_after_changes_required_refused": {
+      "blocks_handoff": true,
+      "case": "qa_after_changes_required_refused",
+      "evidence_digest": "sha256:d7d698de0e5dab8b78c8ef917eecba275a8e0dfddf56931a4ed135027cacb0d4",
+      "failure_codes": [
+        "QA_GATE_BLOCKED"
+      ],
+      "passed": true,
+      "status": "ARTIFACT_NOT_READY"
+    },
+    "qa_missing_baseline_refused": {
+      "blocks_handoff": true,
+      "case": "qa_missing_baseline_refused",
+      "checks": {
+        "authoritative_version_resolved": false,
+        "expected_artifact_type_present": false,
+        "required_semantics_present": true,
+        "stale": false,
+        "status_allowed_for_target_role": true,
+        "superseded": false,
+        "upstream_refs_resolvable": true
+      },
+      "dependency_digest": "sha256:8358ec68d8c1f073173c1bfe8764be3a8d4a11b745a43e970c0cb4bc9ca9f95c",
+      "evidence_digest": "sha256:d72ad5455141fbd764a87ddde981c9c0b96ca5de0e6c27dbe009be9d80f4dcac",
+      "failure_codes": [
+        "QA_GATE_BLOCKED"
+      ],
+      "passed": true,
+      "review_level": "R2",
+      "status": "ARTIFACT_NOT_READY",
+      "target_role": "qa"
+    },
+    "r0_minimal_ready": {
+      "blocks_handoff": false,
+      "case": "r0_minimal_ready",
+      "checks": {
+        "authoritative_version_resolved": true,
+        "expected_artifact_type_present": true,
+        "required_semantics_present": true,
+        "stale": false,
+        "status_allowed_for_target_role": true,
+        "superseded": false,
+        "upstream_refs_resolvable": true
+      },
+      "dependency_digest": "sha256:dd78579413f087956bf5d14a173d81184a1249d8a4312236be991b3ab389b5fe",
+      "evidence_digest": "sha256:7811e588be08e20e8d63341c4c32be617c523b219e21fbf05138121fcf3ee571",
+      "failure_codes": [],
+      "passed": true,
+      "review_level": "R0",
+      "status": "ARTIFACT_READY",
+      "target_role": "engineering-lead"
+    },
+    "r1_review_input_ready": {
+      "blocks_handoff": false,
+      "case": "r1_review_input_ready",
+      "checks": {
+        "authoritative_version_resolved": true,
+        "expected_artifact_type_present": true,
+        "required_semantics_present": true,
+        "stale": false,
+        "status_allowed_for_target_role": true,
+        "superseded": false,
+        "upstream_refs_resolvable": true
+      },
+      "dependency_digest": "sha256:96cf5546265e9b3adadf263443094f1a2e19fb24006b19065f238b2f9482d3eb",
+      "evidence_digest": "sha256:6b21f983ded3f4fc883c50446fb1bb1ec08bcc9b49309ad69a894e25eb6a08d3",
+      "failure_codes": [],
+      "passed": true,
+      "review_level": "R1",
+      "status": "ARTIFACT_READY",
+      "target_role": "delivery-reviewer"
+    },
+    "r2_qa_baselines_ready": {
+      "blocks_handoff": false,
+      "case": "r2_qa_baselines_ready",
+      "checks": {
+        "authoritative_version_resolved": true,
+        "expected_artifact_type_present": true,
+        "required_semantics_present": true,
+        "stale": false,
+        "status_allowed_for_target_role": true,
+        "superseded": false,
+        "upstream_refs_resolvable": true
+      },
+      "dependency_digest": "sha256:d7922d0373a599515bff8954fa4c03bfe2bfbfa0243e5e5658963fb0b14a7ae4",
+      "evidence_digest": "sha256:d9dd5bcc72ac617d6c8d53952b445bdd8718e5e3628831db55860164929802d5",
+      "failure_codes": [],
+      "passed": true,
+      "review_level": "R2",
+      "status": "ARTIFACT_READY",
+      "target_role": "qa"
+    },
+    "verdict_preservation": {
+      "_note": "verdict-bearing history is marked stale and preserved; a new attempt is a new envelope",
+      "case": "verdict_preservation",
+      "evidence_digest": "sha256:37b7acdd809ef09eadbdb10d3096bbcf7b10e9f10c550e4923ece16ec4afa066",
+      "old_qa_status": "stale",
+      "old_qa_verdict": "PASS",
+      "old_review_status": "stale",
+      "old_review_verdict": "APPROVE",
+      "open_new_attempt": {
+        "history_preserved": true,
+        "new_attempt": "delivery_review:REV-WIMG-009@1",
+        "new_verdict": "APPROVE",
+        "previous": "delivery_review:REV-WIMG-008@1",
+        "previous_verdict": "APPROVE"
+      },
+      "passed": true,
+      "rewritten_verdicts": 0,
+      "source_serials_before": [
+        "ART-WIMG-031",
+        "CTX-WIMG-021",
+        "ISS-WIMG-071",
+        "ISS-WIMG-R0",
+        "PE-WIMG-004",
+        "QA-WIMG-004",
+        "REV-WIMG-008",
+        "SOL-WIMG-016",
+        "SOL-WIMG-017"
+      ]
+    }
+  },
+  "dispatch": {
+    "active_same_assignee_rerun": {
+      "actual": {
+        "correlated_run_id": "b11e0000-0000-4000-8000-000000000106",
+        "ownership_binding": null,
+        "plan_decision": "TRIGGER_READY",
+        "selected_trigger": "issue_rerun",
+        "state": "RUN_CORRELATED",
+        "triggers": 1
+      },
+      "audit": {
+        "creates": 0,
+        "issuing_precedes_trigger_command": true,
+        "mention_triggers": 0,
+        "ok": true,
+        "ownership_bindings": 0,
+        "status_triggers": 0,
+        "triggers": 1
+      },
+      "case": "active_same_assignee_rerun",
+      "evidence_digest": "sha256:8ff597c13e03d94050029eb2444bf6d1776774f0079c16f624e9d3fe3baa38d8",
+      "expected": {
+        "correlated_run_id": "b11e0000-0000-4000-8000-000000000106",
+        "ownership_binding": null,
+        "plan_decision": "TRIGGER_READY",
+        "selected_trigger": "issue_rerun",
+        "state": "RUN_CORRELATED",
+        "triggers": 1
+      },
+      "fixture": "FIX-QA",
+      "issued_commands": [
+        [
+          "multica",
+          "issue",
+          "rerun",
+          "a11e0000-0000-4000-8000-000000000006",
+          "--output",
+          "json"
+        ],
+        [
+          "multica",
+          "issue",
+          "runs",
+          "a11e0000-0000-4000-8000-000000000006",
+          "--output",
+          "json"
+        ]
+      ],
+      "live_mutations": 0,
+      "passed": true,
+      "write_commands": [
+        [
+          "multica",
+          "issue",
+          "rerun",
+          "a11e0000-0000-4000-8000-000000000006",
+          "--output",
+          "json"
+        ]
+      ]
+    },
+    "active_unassigned_assignment_trigger": {
+      "actual": {
+        "correlated_run_id": "b11e0000-0000-4000-8000-000000000106",
+        "ownership_binding": null,
+        "plan_decision": "TRIGGER_READY",
+        "selected_trigger": "issue_assign",
+        "state": "RUN_CORRELATED",
+        "triggers": 1
+      },
+      "audit": {
+        "creates": 0,
+        "issuing_precedes_trigger_command": true,
+        "mention_triggers": 0,
+        "ok": true,
+        "ownership_bindings": 0,
+        "status_triggers": 0,
+        "triggers": 1
+      },
+      "case": "active_unassigned_assignment_trigger",
+      "evidence_digest": "sha256:7c8b2f66f8e4513ac682fd9dd9f1a54bff21a9fb59642ff47da4bbbd15dc9224",
+      "expected": {
+        "correlated_run_id": "b11e0000-0000-4000-8000-000000000106",
+        "ownership_binding": null,
+        "plan_decision": "TRIGGER_READY",
+        "selected_trigger": "issue_assign",
+        "state": "RUN_CORRELATED",
+        "triggers": 1
+      },
+      "fixture": "FIX-QA",
+      "issued_commands": [
+        [
+          "multica",
+          "issue",
+          "assign",
+          "a11e0000-0000-4000-8000-000000000006",
+          "--to-id",
+          "30ce43d4-97a7-42a8-ab3e-78df0d894702",
+          "--output",
+          "json"
+        ],
+        [
+          "multica",
+          "issue",
+          "runs",
+          "a11e0000-0000-4000-8000-000000000006",
+          "--output",
+          "json"
+        ]
+      ],
+      "live_mutations": 0,
+      "passed": true,
+      "write_commands": [
+        [
+          "multica",
+          "issue",
+          "assign",
+          "a11e0000-0000-4000-8000-000000000006",
+          "--to-id",
+          "30ce43d4-97a7-42a8-ab3e-78df0d894702",
+          "--output",
+          "json"
+        ]
+      ]
+    },
+    "ambiguous_create_0_targets": {
+      "actual": {
+        "create_commands": 1,
+        "discovered": false,
+        "result_status": "CREATE_AMBIGUOUS",
+        "state": "CREATE_AMBIGUOUS"
+      },
+      "audit": {
+        "creates": 1,
+        "issuing_precedes_trigger_command": true,
+        "mention_triggers": 0,
+        "ok": true,
+        "ownership_bindings": 0,
+        "status_triggers": 0,
+        "triggers": 0
+      },
+      "case": "ambiguous_create_0_targets",
+      "evidence_digest": "sha256:b8c7b67ab4fb8defae05b009934c4b01e0467bff00a94e38f475b715b4d22b94",
+      "expected": {
+        "create_commands": 1,
+        "result_status": "CREATE_AMBIGUOUS",
+        "state": "CREATE_AMBIGUOUS"
+      },
+      "fixture": "FIX-CHILD",
+      "issued_commands": [
+        [
+          "multica",
+          "issue",
+          "create",
+          "--title",
+          "U11 ambiguous create fixture",
+          "--description-file",
+          "<workdir>/.o2-create-37c7af734cd2.md",
+          "--output",
+          "json",
+          "--parent",
+          "01a08921-207c-7a39-8a99-b431e75bed9f"
+        ],
+        [
+          "multica",
+          "issue",
+          "children",
+          "01a08921-207c-7a39-8a99-b431e75bed9f",
+          "--output",
+          "json"
+        ]
+      ],
+      "live_mutations": 0,
+      "passed": true,
+      "write_commands": [
+        [
+          "multica",
+          "issue",
+          "create",
+          "--title",
+          "U11 ambiguous create fixture",
+          "--description-file",
+          "<workdir>/.o2-create-37c7af734cd2.md",
+          "--output",
+          "json",
+          "--parent",
+          "01a08921-207c-7a39-8a99-b431e75bed9f"
+        ]
+      ]
+    },
+    "ambiguous_create_1_targets": {
+      "actual": {
+        "create_commands": 1,
+        "discovered": true,
+        "result_status": "TARGET_BOUND",
+        "state": "TARGET_BOUND"
+      },
+      "audit": {
+        "creates": 1,
+        "issuing_precedes_trigger_command": true,
+        "mention_triggers": 0,
+        "ok": true,
+        "ownership_bindings": 0,
+        "status_triggers": 0,
+        "triggers": 0
+      },
+      "case": "ambiguous_create_1_targets",
+      "evidence_digest": "sha256:2049d7c499fd8c8e776b3fc19b8c12e457536734a446b4ee0758cef4b30dbacc",
+      "expected": {
+        "create_commands": 1,
+        "result_status": "TARGET_BOUND",
+        "state": "TARGET_BOUND"
+      },
+      "fixture": "FIX-CHILD",
+      "issued_commands": [
+        [
+          "multica",
+          "issue",
+          "create",
+          "--title",
+          "U11 ambiguous create fixture",
+          "--description-file",
+          "<workdir>/.o2-create-2a137953991f.md",
+          "--output",
+          "json",
+          "--parent",
+          "01a08921-207c-7a39-8a99-b431e75bed9f"
+        ],
+        [
+          "multica",
+          "issue",
+          "children",
+          "01a08921-207c-7a39-8a99-b431e75bed9f",
+          "--output",
+          "json"
+        ],
+        [
+          "multica",
+          "issue",
+          "get",
+          "a11e0000-0000-4000-8000-000000000007",
+          "--output",
+          "json"
+        ]
+      ],
+      "live_mutations": 0,
+      "passed": true,
+      "write_commands": [
+        [
+          "multica",
+          "issue",
+          "create",
+          "--title",
+          "U11 ambiguous create fixture",
+          "--description-file",
+          "<workdir>/.o2-create-2a137953991f.md",
+          "--output",
+          "json",
+          "--parent",
+          "01a08921-207c-7a39-8a99-b431e75bed9f"
+        ]
+      ]
+    },
+    "ambiguous_create_2_targets": {
+      "actual": {
+        "create_commands": 1,
+        "discovered": false,
+        "result_status": "CREATE_AMBIGUOUS",
+        "state": "CREATE_AMBIGUOUS"
+      },
+      "audit": {
+        "creates": 1,
+        "issuing_precedes_trigger_command": true,
+        "mention_triggers": 0,
+        "ok": true,
+        "ownership_bindings": 0,
+        "status_triggers": 0,
+        "triggers": 0
+      },
+      "case": "ambiguous_create_2_targets",
+      "evidence_digest": "sha256:3ca698ece04930e523f67d49ea2c6665f45e1b7fee878666df16991ead932398",
+      "expected": {
+        "create_commands": 1,
+        "result_status": "CREATE_AMBIGUOUS",
+        "state": "CREATE_AMBIGUOUS"
+      },
+      "fixture": "FIX-CHILD",
+      "issued_commands": [
+        [
+          "multica",
+          "issue",
+          "create",
+          "--title",
+          "U11 ambiguous create fixture",
+          "--description-file",
+          "<workdir>/.o2-create-78e0207c3b3a.md",
+          "--output",
+          "json",
+          "--parent",
+          "01a08921-207c-7a39-8a99-b431e75bed9f"
+        ],
+        [
+          "multica",
+          "issue",
+          "children",
+          "01a08921-207c-7a39-8a99-b431e75bed9f",
+          "--output",
+          "json"
+        ]
+      ],
+      "live_mutations": 0,
+      "passed": true,
+      "write_commands": [
+        [
+          "multica",
+          "issue",
+          "create",
+          "--title",
+          "U11 ambiguous create fixture",
+          "--description-file",
+          "<workdir>/.o2-create-78e0207c3b3a.md",
+          "--output",
+          "json",
+          "--parent",
+          "01a08921-207c-7a39-8a99-b431e75bed9f"
+        ]
+      ]
+    },
+    "backlog_different_assignee_binding": {
+      "actual": {
+        "correlated_run_id": "b11e0000-0000-4000-8000-000000000106",
+        "ownership_binding": "issue_assign_no_start",
+        "plan_decision": "TRIGGER_READY",
+        "selected_trigger": "issue_rerun",
+        "state": "RUN_CORRELATED",
+        "triggers": 1
+      },
+      "audit": {
+        "creates": 0,
+        "issuing_precedes_trigger_command": true,
+        "mention_triggers": 0,
+        "ok": true,
+        "ownership_bindings": 1,
+        "status_triggers": 0,
+        "triggers": 1
+      },
+      "case": "backlog_different_assignee_binding",
+      "evidence_digest": "sha256:a201b32926e37be0eb153211498ef14b44566d5a077bd37743e265bfab7c6acc",
+      "expected": {
+        "correlated_run_id": "b11e0000-0000-4000-8000-000000000106",
+        "ownership_binding": "issue_assign_no_start",
+        "plan_decision": "TRIGGER_READY",
+        "selected_trigger": "issue_rerun",
+        "state": "RUN_CORRELATED",
+        "triggers": 1
+      },
+      "fixture": "FIX-QA",
+      "issued_commands": [
+        [
+          "multica",
+          "issue",
+          "assign",
+          "a11e0000-0000-4000-8000-000000000006",
+          "--to-id",
+          "30ce43d4-97a7-42a8-ab3e-78df0d894702",
+          "--no-start",
+          "--output",
+          "json"
+        ],
+        [
+          "multica",
+          "issue",
+          "get",
+          "a11e0000-0000-4000-8000-000000000006",
+          "--output",
+          "json"
+        ],
+        [
+          "multica",
+          "issue",
+          "rerun",
+          "a11e0000-0000-4000-8000-000000000006",
+          "--output",
+          "json"
+        ],
+        [
+          "multica",
+          "issue",
+          "runs",
+          "a11e0000-0000-4000-8000-000000000006",
+          "--output",
+          "json"
+        ]
+      ],
+      "live_mutations": 0,
+      "passed": true,
+      "write_commands": [
+        [
+          "multica",
+          "issue",
+          "assign",
+          "a11e0000-0000-4000-8000-000000000006",
+          "--to-id",
+          "30ce43d4-97a7-42a8-ab3e-78df0d894702",
+          "--no-start",
+          "--output",
+          "json"
+        ],
+        [
+          "multica",
+          "issue",
+          "rerun",
+          "a11e0000-0000-4000-8000-000000000006",
+          "--output",
+          "json"
+        ]
+      ]
+    },
+    "backlog_same_assignee_rerun": {
+      "actual": {
+        "correlated_run_id": "b11e0000-0000-4000-8000-000000000105",
+        "ownership_binding": null,
+        "plan_decision": "TRIGGER_READY",
+        "selected_trigger": "issue_rerun",
+        "state": "RUN_CORRELATED",
+        "triggers": 1
+      },
+      "audit": {
+        "creates": 0,
+        "issuing_precedes_trigger_command": true,
+        "mention_triggers": 0,
+        "ok": true,
+        "ownership_bindings": 0,
+        "status_triggers": 0,
+        "triggers": 1
+      },
+      "case": "backlog_same_assignee_rerun",
+      "evidence_digest": "sha256:d3e90fefab22bfa2ce43ea122962a79ad66639861006b38fc4f04601b9c09515",
+      "expected": {
+        "correlated_run_id": "b11e0000-0000-4000-8000-000000000105",
+        "ownership_binding": null,
+        "plan_decision": "TRIGGER_READY",
+        "selected_trigger": "issue_rerun",
+        "state": "RUN_CORRELATED",
+        "triggers": 1
+      },
+      "fixture": "FIX-REVIEW",
+      "issued_commands": [
+        [
+          "multica",
+          "issue",
+          "rerun",
+          "a11e0000-0000-4000-8000-000000000005",
+          "--output",
+          "json"
+        ],
+        [
+          "multica",
+          "issue",
+          "runs",
+          "a11e0000-0000-4000-8000-000000000005",
+          "--output",
+          "json"
+        ]
+      ],
+      "live_mutations": 0,
+      "passed": true,
+      "write_commands": [
+        [
+          "multica",
+          "issue",
+          "rerun",
+          "a11e0000-0000-4000-8000-000000000005",
+          "--output",
+          "json"
+        ]
+      ]
+    },
+    "cli_success_not_delivery": {
+      "actual": {
+        "awaiting_visibility": true,
+        "correlated": false,
+        "selected_trigger": "issue_assign",
+        "state": "TRIGGER_ISSUING",
+        "triggers": 1
+      },
+      "audit": {
+        "creates": 0,
+        "issuing_precedes_trigger_command": true,
+        "mention_triggers": 0,
+        "ok": true,
+        "ownership_bindings": 0,
+        "status_triggers": 0,
+        "triggers": 1
+      },
+      "case": "cli_success_not_delivery",
+      "evidence_digest": "sha256:355d03f65397784f58022ebf68ade65d1ee53c8eca9ab75aa805ddbd9eec093a",
+      "expected": {
+        "awaiting_visibility": true,
+        "correlated": false,
+        "selected_trigger": "issue_assign",
+        "state": "TRIGGER_ISSUING",
+        "triggers": 1
+      },
+      "fixture": "FIX-QA-WAIT",
+      "issued_commands": [
+        [
+          "multica",
+          "issue",
+          "assign",
+          "a11e0000-0000-4000-8000-000000000006",
+          "--to-id",
+          "30ce43d4-97a7-42a8-ab3e-78df0d894702",
+          "--output",
+          "json"
+        ],
+        [
+          "multica",
+          "issue",
+          "runs",
+          "a11e0000-0000-4000-8000-000000000006",
+          "--output",
+          "json"
+        ]
+      ],
+      "live_mutations": 0,
+      "passed": true,
+      "write_commands": [
+        [
+          "multica",
+          "issue",
+          "assign",
+          "a11e0000-0000-4000-8000-000000000006",
+          "--to-id",
+          "30ce43d4-97a7-42a8-ab3e-78df0d894702",
+          "--output",
+          "json"
+        ]
+      ]
+    },
+    "completed_replay_zero_side_effects": {
+      "actual": {
+        "commands_after_replays": 2,
+        "commands_after_terminal": 2,
+        "replay_action": "NONE",
+        "replay_classification": "TERMINAL_REPLAY",
+        "replay_complete": true,
+        "replay_publish": true,
+        "replay_side_effects": 0,
+        "replay_trigger_side_effects": 0,
+        "state": "COMPLETED"
+      },
+      "audit": {
+        "creates": 0,
+        "issuing_precedes_trigger_command": true,
+        "mention_triggers": 0,
+        "ok": true,
+        "ownership_bindings": 0,
+        "status_triggers": 0,
+        "triggers": 1
+      },
+      "case": "completed_replay_zero_side_effects",
+      "evidence_digest": "sha256:e7b9b0837474ba2c5396a767adf66be16c679bc7c7b852a93cb7976c291f1bfa",
+      "expected": {
+        "commands_after_replays": 2,
+        "commands_after_terminal": 2,
+        "replay_action": "NONE",
+        "replay_classification": "TERMINAL_REPLAY",
+        "replay_complete": true,
+        "replay_publish": true,
+        "replay_side_effects": 0,
+        "state": "COMPLETED"
+      },
+      "fixture": "FIX-REVIEW",
+      "issued_commands": [
+        [
+          "multica",
+          "issue",
+          "rerun",
+          "a11e0000-0000-4000-8000-000000000005",
+          "--output",
+          "json"
+        ],
+        [
+          "multica",
+          "issue",
+          "runs",
+          "a11e0000-0000-4000-8000-000000000005",
+          "--output",
+          "json"
+        ]
+      ],
+      "live_mutations": 0,
+      "passed": true,
+      "write_commands": [
+        [
+          "multica",
+          "issue",
+          "rerun",
+          "a11e0000-0000-4000-8000-000000000005",
+          "--output",
+          "json"
+        ]
+      ]
+    },
+    "delayed_run_visibility_attach": {
+      "actual": {
+        "awaiting_visibility": true,
+        "reconcile_action": "ATTACH_RUN",
+        "state_after_trigger": "TRIGGER_ISSUING",
+        "state_final": "RUN_CORRELATED",
+        "triggers": 1
+      },
+      "audit": {
+        "creates": 0,
+        "issuing_precedes_trigger_command": true,
+        "mention_triggers": 0,
+        "ok": true,
+        "ownership_bindings": 0,
+        "status_triggers": 0,
+        "triggers": 1
+      },
+      "case": "delayed_run_visibility_attach",
+      "evidence_digest": "sha256:5736587a41353ff701acebf055e64bca21f6aaec6e15ee7d69da278293139831",
+      "expected": {
+        "awaiting_visibility": true,
+        "reconcile_action": "ATTACH_RUN",
+        "state_after_trigger": "TRIGGER_ISSUING",
+        "state_final": "RUN_CORRELATED",
+        "triggers": 1
+      },
+      "fixture": "FIX-REVIEW",
+      "issued_commands": [
+        [
+          "multica",
+          "issue",
+          "rerun",
+          "a11e0000-0000-4000-8000-000000000005",
+          "--output",
+          "json"
+        ],
+        [
+          "multica",
+          "issue",
+          "runs",
+          "a11e0000-0000-4000-8000-000000000005",
+          "--output",
+          "json"
+        ]
+      ],
+      "live_mutations": 0,
+      "passed": true,
+      "write_commands": [
+        [
+          "multica",
+          "issue",
+          "rerun",
+          "a11e0000-0000-4000-8000-000000000005",
+          "--output",
+          "json"
+        ]
+      ]
+    },
+    "duplicate_correlated_runs_refused": {
+      "actual": {
+        "reason": "RUN_CORRELATION_FAILED",
+        "result_status": "BLOCKED",
+        "state": "BLOCKED",
+        "triggers": 1
+      },
+      "audit": {
+        "creates": 0,
+        "issuing_precedes_trigger_command": true,
+        "mention_triggers": 0,
+        "ok": true,
+        "ownership_bindings": 0,
+        "status_triggers": 0,
+        "triggers": 1
+      },
+      "case": "duplicate_correlated_runs_refused",
+      "evidence_digest": "sha256:e74df0f69738e05172e88f5a06e1ec605b716db58b4dcbced61737a9896395a9",
+      "expected": {
+        "result_status": "BLOCKED",
+        "state": "BLOCKED",
+        "triggers": 1
+      },
+      "fixture": "FIX-REVIEW",
+      "issued_commands": [
+        [
+          "multica",
+          "issue",
+          "rerun",
+          "a11e0000-0000-4000-8000-000000000005",
+          "--output",
+          "json"
+        ],
+        [
+          "multica",
+          "issue",
+          "runs",
+          "a11e0000-0000-4000-8000-000000000005",
+          "--output",
+          "json"
+        ]
+      ],
+      "live_mutations": 0,
+      "passed": true,
+      "write_commands": [
+        [
+          "multica",
+          "issue",
+          "rerun",
+          "a11e0000-0000-4000-8000-000000000005",
+          "--output",
+          "json"
+        ]
+      ]
+    },
+    "hidden_open_intent_observable": {
+      "actual": {
+        "hidden": 0,
+        "next_action": "arm_and_issue_trigger",
+        "next_owner": "source-run",
+        "open_count": 1,
+        "state": "HANDOFF_PUBLISHED"
+      },
+      "audit": {
+        "creates": 0,
+        "issuing_precedes_trigger_command": true,
+        "mention_triggers": 0,
+        "ok": true,
+        "ownership_bindings": 0,
+        "status_triggers": 0,
+        "triggers": 0
+      },
+      "case": "hidden_open_intent_observable",
+      "evidence_digest": "sha256:71f461684706e7b95a40bf0d4ff5d50ff69e34b5ba4b81fe15aea233991864e4",
+      "expected": {
+        "hidden": 0,
+        "next_owner": "source-run",
+        "open_count": 1,
+        "state": "HANDOFF_PUBLISHED"
+      },
+      "fixture": null,
+      "issued_commands": [],
+      "live_mutations": 0,
+      "passed": true,
+      "write_commands": []
+    },
+    "intent_before_target_ordering": {
+      "actual": {
+        "create_status": "TARGET_BOUND",
+        "create_without_intent_refused": "intent_not_found",
+        "intent_seq_before_create_seq": true,
+        "state": "TARGET_BOUND"
+      },
+      "audit": {
+        "creates": 1,
+        "issuing_precedes_trigger_command": true,
+        "mention_triggers": 0,
+        "ok": true,
+        "ownership_bindings": 0,
+        "status_triggers": 0,
+        "triggers": 0
+      },
+      "case": "intent_before_target_ordering",
+      "evidence_digest": "sha256:2a5627616086435f42a2032af4c35dda141b0faf9f3010f9fe7085387a62ef07",
+      "expected": {
+        "create_without_intent_refused": "intent_not_found",
+        "intent_seq_before_create_seq": true,
+        "state": "TARGET_BOUND"
+      },
+      "fixture": "FIX-CHILD",
+      "issued_commands": [
+        [
+          "multica",
+          "issue",
+          "create",
+          "--title",
+          "U11 created target",
+          "--description-file",
+          "<workdir>/.o2-create-d2f63a9ef7da.md",
+          "--output",
+          "json",
+          "--parent",
+          "01a08921-207c-7a39-8a99-b431e75bed9f"
+        ],
+        [
+          "multica",
+          "issue",
+          "get",
+          "a11e0000-0000-4000-8000-000000000007",
+          "--output",
+          "json"
+        ]
+      ],
+      "live_mutations": 0,
+      "passed": true,
+      "write_commands": [
+        [
+          "multica",
+          "issue",
+          "create",
+          "--title",
+          "U11 created target",
+          "--description-file",
+          "<workdir>/.o2-create-d2f63a9ef7da.md",
+          "--output",
+          "json",
+          "--parent",
+          "01a08921-207c-7a39-8a99-b431e75bed9f"
+        ]
+      ]
+    },
+    "legacy_ledger_preserved": {
+      "actual": {
+        "create_delta": 0,
+        "ignored_records_positive": true,
+        "legacy_records_readable": true,
+        "prefix_preserved": true,
+        "trigger_delta": 0
+      },
+      "audit": {
+        "creates": 1,
+        "issuing_precedes_trigger_command": false,
+        "mention_triggers": 0,
+        "ok": false,
+        "ownership_bindings": 0,
+        "status_triggers": 0,
+        "triggers": 1
+      },
+      "case": "legacy_ledger_preserved",
+      "evidence_digest": "sha256:8ccaf6a35235c050210fa49221b7d5e9866d6f86a20492504c6b60416a1560d0",
+      "expected": {
+        "create_delta": 0,
+        "ignored_records_positive": true,
+        "legacy_records_readable": true,
+        "prefix_preserved": true,
+        "trigger_delta": 0
+      },
+      "fixture": null,
+      "issued_commands": [],
+      "live_mutations": 0,
+      "passed": true,
+      "write_commands": []
+    },
+    "lost_trigger_response_no_retry": {
+      "actual": {
+        "reconcile_action": "ATTACH_RUN",
+        "state_after_trigger": "TRIGGER_AMBIGUOUS",
+        "state_final": "RUN_CORRELATED",
+        "trigger_reissued": false,
+        "trigger_status": "TRIGGER_AMBIGUOUS",
+        "triggers": 1
+      },
+      "audit": {
+        "creates": 0,
+        "issuing_precedes_trigger_command": true,
+        "mention_triggers": 0,
+        "ok": true,
+        "ownership_bindings": 0,
+        "status_triggers": 0,
+        "triggers": 1
+      },
+      "case": "lost_trigger_response_no_retry",
+      "evidence_digest": "sha256:e43194bc53ecc034ec3156be324aeca1909a1e90bbaadfa34bb456d54dc49bb5",
+      "expected": {
+        "reconcile_action": "ATTACH_RUN",
+        "state_after_trigger": "TRIGGER_AMBIGUOUS",
+        "state_final": "RUN_CORRELATED",
+        "trigger_reissued": false,
+        "triggers": 1
+      },
+      "fixture": "FIX-REVIEW",
+      "issued_commands": [
+        [
+          "multica",
+          "issue",
+          "rerun",
+          "a11e0000-0000-4000-8000-000000000005",
+          "--output",
+          "json"
+        ]
+      ],
+      "live_mutations": 0,
+      "passed": true,
+      "write_commands": [
+        [
+          "multica",
+          "issue",
+          "rerun",
+          "a11e0000-0000-4000-8000-000000000005",
+          "--output",
+          "json"
+        ]
+      ]
+    },
+    "pre_existing_unexpected_run_refused": {
+      "actual": {
+        "decision": "BLOCKED",
+        "issued_commands": 0,
+        "reason": "UNEXPECTED_RUN",
+        "state": "BLOCKED"
+      },
+      "audit": {
+        "creates": 0,
+        "issuing_precedes_trigger_command": true,
+        "mention_triggers": 0,
+        "ok": true,
+        "ownership_bindings": 0,
+        "status_triggers": 0,
+        "triggers": 0
+      },
+      "case": "pre_existing_unexpected_run_refused",
+      "evidence_digest": "sha256:792e351668bbfadc1a87c101990f357b3c7a599f0df753302eb5bc323e73ef4b",
+      "expected": {
+        "decision": "BLOCKED",
+        "issued_commands": 0,
+        "reason": "UNEXPECTED_RUN",
+        "state": "BLOCKED"
+      },
+      "fixture": "FIX-REVIEW",
+      "issued_commands": [],
+      "live_mutations": 0,
+      "passed": true,
+      "write_commands": []
+    },
+    "provider_quota_execution_recovery": {
+      "actual": {
+        "classification": "PROVIDER_QUOTA_FAILURE",
+        "dispatch_orphan": false,
+        "redispatch": false,
+        "safe_action": "EXECUTION_RECOVERY",
+        "state": "RUN_CORRELATED",
+        "status": "EXECUTION_RECOVERY_RECORDED",
+        "triggers": 1
+      },
+      "audit": {
+        "creates": 0,
+        "issuing_precedes_trigger_command": true,
+        "mention_triggers": 0,
+        "ok": true,
+        "ownership_bindings": 0,
+        "status_triggers": 0,
+        "triggers": 1
+      },
+      "case": "provider_quota_execution_recovery",
+      "evidence_digest": "sha256:0e07ba3ad339e91fa287408bf0abdd9d958f5e5f91549018819671a50322232d",
+      "expected": {
+        "classification": "PROVIDER_QUOTA_FAILURE",
+        "dispatch_orphan": false,
+        "redispatch": false,
+        "safe_action": "EXECUTION_RECOVERY",
+        "state": "RUN_CORRELATED",
+        "status": "EXECUTION_RECOVERY_RECORDED",
+        "triggers": 1
+      },
+      "fixture": "FIX-REVIEW",
+      "issued_commands": [
+        [
+          "multica",
+          "issue",
+          "rerun",
+          "a11e0000-0000-4000-8000-000000000005",
+          "--output",
+          "json"
+        ],
+        [
+          "multica",
+          "issue",
+          "runs",
+          "a11e0000-0000-4000-8000-000000000005",
+          "--output",
+          "json"
+        ]
+      ],
+      "live_mutations": 0,
+      "passed": true,
+      "write_commands": [
+        [
+          "multica",
+          "issue",
+          "rerun",
+          "a11e0000-0000-4000-8000-000000000005",
+          "--output",
+          "json"
+        ]
+      ]
+    },
+    "publish_pre_trigger_kill_resume": {
+      "actual": {
+        "classification": "POST_PUBLISH_PRE_TRIGGER",
+        "resume_status": "RUN_CORRELATED",
+        "safe_action": "RESUME_ISSUE",
+        "side_effects_on_classification": 0,
+        "state": "RUN_CORRELATED",
+        "triggers": 1
+      },
+      "audit": {
+        "creates": 0,
+        "issuing_precedes_trigger_command": true,
+        "mention_triggers": 0,
+        "ok": true,
+        "ownership_bindings": 0,
+        "status_triggers": 0,
+        "triggers": 1
+      },
+      "case": "publish_pre_trigger_kill_resume",
+      "evidence_digest": "sha256:dd3e268372004a914ccfdb90ab40f023080d054e49c23a35195bbc21ffa6afa4",
+      "expected": {
+        "classification": "POST_PUBLISH_PRE_TRIGGER",
+        "safe_action": "RESUME_ISSUE",
+        "side_effects_on_classification": 0,
+        "state": "RUN_CORRELATED",
+        "triggers": 1
+      },
+      "fixture": "FIX-REVIEW",
+      "issued_commands": [
+        [
+          "multica",
+          "issue",
+          "rerun",
+          "a11e0000-0000-4000-8000-000000000005",
+          "--output",
+          "json"
+        ],
+        [
+          "multica",
+          "issue",
+          "runs",
+          "a11e0000-0000-4000-8000-000000000005",
+          "--output",
+          "json"
+        ]
+      ],
+      "live_mutations": 0,
+      "passed": true,
+      "write_commands": [
+        [
+          "multica",
+          "issue",
+          "rerun",
+          "a11e0000-0000-4000-8000-000000000005",
+          "--output",
+          "json"
+        ]
+      ]
+    },
+    "stale_lease_recovery": {
+      "actual": {
+        "active_holder": "writer-b",
+        "expired_previous": true,
+        "first_outcome": "claim",
+        "lease_active": true,
+        "recovery_outcome": "claim"
+      },
+      "audit": {
+        "creates": 0,
+        "issuing_precedes_trigger_command": true,
+        "mention_triggers": 0,
+        "ok": true,
+        "ownership_bindings": 0,
+        "status_triggers": 0,
+        "triggers": 0
+      },
+      "case": "stale_lease_recovery",
+      "evidence_digest": "sha256:5586e4e79afd4e27b03caf640e6b87171374627112cd9381bbb635e270b8486f",
+      "expected": {
+        "active_holder": "writer-b",
+        "expired_previous": true,
+        "first_outcome": "claim",
+        "recovery_outcome": "claim"
+      },
+      "fixture": null,
+      "issued_commands": [],
+      "live_mutations": 0,
+      "passed": true,
+      "write_commands": []
+    },
+    "two_reconciler_race": {
+      "actual": {
+        "second_claim_refused": "lease_held",
+        "second_transition_refused": "lease_not_held",
+        "state": "INTENT_RECORDED",
+        "winner_count": 1
+      },
+      "audit": {
+        "creates": 0,
+        "issuing_precedes_trigger_command": true,
+        "mention_triggers": 0,
+        "ok": true,
+        "ownership_bindings": 0,
+        "status_triggers": 0,
+        "triggers": 0
+      },
+      "case": "two_reconciler_race",
+      "evidence_digest": "sha256:8cbf4b0d3c070ec3e32288fdfeff49beac75ec76a2e670ce00eec4b2ad02d6f1",
+      "expected": {
+        "second_claim_refused": "lease_held",
+        "second_transition_refused": "lease_not_held",
+        "winner_count": 1
+      },
+      "fixture": null,
+      "issued_commands": [],
+      "live_mutations": 0,
+      "passed": true,
+      "write_commands": []
+    },
+    "wrong_target_run_refused": {
+      "actual": {
+        "result_status": "BLOCKED",
+        "state": "BLOCKED",
+        "triggers": 1
+      },
+      "audit": {
+        "creates": 0,
+        "issuing_precedes_trigger_command": true,
+        "mention_triggers": 0,
+        "ok": true,
+        "ownership_bindings": 0,
+        "status_triggers": 0,
+        "triggers": 1
+      },
+      "case": "wrong_target_run_refused",
+      "evidence_digest": "sha256:53acdb78a1b94fc8655636e0b2a07282e7386b66fe8bd9f8cdae06fe8f870eef",
+      "expected": {
+        "result_status": "BLOCKED",
+        "state": "BLOCKED",
+        "triggers": 1
+      },
+      "fixture": "FIX-REVIEW",
+      "issued_commands": [
+        [
+          "multica",
+          "issue",
+          "rerun",
+          "a11e0000-0000-4000-8000-000000000005",
+          "--output",
+          "json"
+        ],
+        [
+          "multica",
+          "issue",
+          "runs",
+          "a11e0000-0000-4000-8000-000000000005",
+          "--output",
+          "json"
+        ]
+      ],
+      "live_mutations": 0,
+      "passed": true,
+      "write_commands": [
+        [
+          "multica",
+          "issue",
+          "rerun",
+          "a11e0000-0000-4000-8000-000000000005",
+          "--output",
+          "json"
+        ]
+      ]
+    },
+    "yzt_77_fixture_replay": {
+      "actual": {
+        "audit_ok": true,
+        "correlated": true,
+        "live_mutations": 0,
+        "ownership_binding": null,
+        "selected_trigger": "issue_rerun",
+        "state": "RUN_CORRELATED",
+        "triggers": 1
+      },
+      "audit": null,
+      "case": "yzt_77_fixture_replay",
+      "evidence_digest": "sha256:892b1dd8fcdda2dbdf493c757d3c4ab08a9a1b6fd009e2a3c18124035891d210",
+      "expected": {
+        "audit_ok": true,
+        "correlated": true,
+        "live_mutations": 0,
+        "selected_trigger": "issue_rerun",
+        "state": "RUN_CORRELATED",
+        "triggers": 1
+      },
+      "fixture": "YZT-77",
+      "issued_commands": [],
+      "live_mutations": 0,
+      "passed": true,
+      "write_commands": [
+        "multica issue rerun 01a08c2e-596c-78df-8865-d00d10fdad9c --output json"
+      ]
+    },
+    "yzt_78_fixture_replay": {
+      "actual": {
+        "audit_ok": true,
+        "correlated": true,
+        "live_mutations": 0,
+        "ownership_binding": "issue_assign_no_start",
+        "selected_trigger": "issue_rerun",
+        "state": "RUN_CORRELATED",
+        "triggers": 1
+      },
+      "audit": null,
+      "case": "yzt_78_fixture_replay",
+      "evidence_digest": "sha256:b24d2dc99c5eeda06a13b137384d1a49bdb6be6dac04cd0003d22a7aaeac76f9",
+      "expected": {
+        "audit_ok": true,
+        "correlated": true,
+        "live_mutations": 0,
+        "selected_trigger": "issue_rerun",
+        "state": "RUN_CORRELATED",
+        "triggers": 1
+      },
+      "fixture": "YZT-78",
+      "issued_commands": [],
+      "live_mutations": 0,
+      "passed": true,
+      "write_commands": [
+        "multica issue assign 01a08ddd-b6b2-75e1-9de5-2145e18e2165 --to-id 1303827b-73d1-4d71-a461-00b93e4b4418 --no-start --output json",
+        "multica issue rerun 01a08ddd-b6b2-75e1-9de5-2145e18e2165 --output json"
+      ]
+    }
+  },
+  "findings": {
+    "capture_cognition": {
+      "actual": {
+        "process_now": false,
+        "wake_context_engineer": false,
+        "writes": 1
+      },
+      "case": "capture_cognition",
+      "evidence_digest": "sha256:f5dd1969e6bbdbc920884add02de52b045ebe2be5c7c7dd07e51409c777d82a4",
+      "expected": {
+        "process_now": false,
+        "wake_context_engineer": false,
+        "writes": 1
+      },
+      "passed": true
+    },
+    "capture_external_raw": {
+      "actual": {
+        "process_now": false,
+        "wake_context_engineer": false,
+        "writes": 1
+      },
+      "case": "capture_external_raw",
+      "classification_values": {
+        "authority_eligible": false,
+        "promotion_allowed": false
+      },
+      "evidence_digest": "sha256:131254fd94843508dff881b0e435249a654ef2d802b575ff52fdfcd0850a5b64",
+      "expected": {
+        "process_now": false,
+        "wake_context_engineer": false,
+        "writes": 1
+      },
+      "passed": true,
+      "stored_verification": "unverified"
+    },
+    "capture_local_defect": {
+      "actual": {
+        "canonical_write": false,
+        "context_engineer_woken": false,
+        "direct_trigger": false,
+        "process_now": false,
+        "wake_context_engineer": false,
+        "writes": 1
+      },
+      "case": "capture_local_defect",
+      "evidence_digest": "sha256:ed038576e3a45e607d2e193b33c72bc7a2b4bed3c9fc182a915871606f1ce3be",
+      "expected": {
+        "canonical_write": false,
+        "context_engineer_woken": false,
+        "direct_trigger": false,
+        "process_now": false,
+        "wake_context_engineer": false,
+        "writes": 1
+      },
+      "passed": true
+    },
+    "challenge_context_gap_resolved": {
+      "actual": {
+        "action": "CONTINUE",
+        "context_engineer_woken": false,
+        "direct_trigger": false,
+        "status": "RESOLVED"
+      },
+      "case": "challenge_context_gap_resolved",
+      "evidence_digest": "sha256:ea556ec865a9d7a4983bf13c3c13b4f972fc4619aaf576d83b7bbe21a19b9d01",
+      "expected": {
+        "action": "CONTINUE",
+        "context_engineer_woken": false,
+        "direct_trigger": false,
+        "status": "RESOLVED"
+      },
+      "passed": true
+    },
+    "challenge_unresolved_material_proposal_only": {
+      "actual": {
+        "context_engineer_woken": false,
+        "direct_trigger": false,
+        "status": "UNRESOLVED_MATERIAL"
+      },
+      "case": "challenge_unresolved_material_proposal_only",
+      "evidence_digest": "sha256:dcb92b2beeabb1a2c799a0376ccfc8e422eeca3033820a3e821918bda1a59ada",
+      "expected": {
+        "context_engineer_woken": false,
+        "direct_trigger": false,
+        "status": "UNRESOLVED_MATERIAL"
+      },
+      "passed": true,
+      "proposal": {
+        "addressed_to": "engineering-lead",
+        "recommended_target": "context-engineer",
+        "requires_lead_owned_safe_dispatch": true,
+        "trigger_emitted": false
+      }
+    },
+    "design_challenge_returned_to_lead": {
+      "actual": {
+        "classification": "DESIGN_CHALLENGE",
+        "direct_trigger": false,
+        "lead_decision_target": "solution-architect",
+        "route": "lead_decision"
+      },
+      "case": "design_challenge_returned_to_lead",
+      "evidence_digest": "sha256:b5f0ed1ce58a5649579dd857190820a3d292a0dec87cbdaca0cb4d75ff4c9044",
+      "expected": {
+        "classification": "DESIGN_CHALLENGE",
+        "direct_trigger": false,
+        "lead_decision_target": "solution-architect",
+        "route": "lead_decision"
+      },
+      "passed": true
+    },
+    "design_deviation_recorded": {
+      "actual": {
+        "classification": "DESIGN_DEVIATION",
+        "direct_trigger": false,
+        "lead_decision_target": "solution-architect",
+        "route": "lead_decision"
+      },
+      "case": "design_deviation_recorded",
+      "evidence_digest": "sha256:cb2208761e0ef6dcdf0b6f3c52ef1e97de01762b8c91d2875b6298a4efb46bfd",
+      "expected": {
+        "classification": "DESIGN_DEVIATION",
+        "direct_trigger": false,
+        "lead_decision_target": "solution-architect",
+        "route": "lead_decision"
+      },
+      "passed": true
+    },
+    "drain_blocks_unaccounted": {
+      "actual": {
+        "concluded": false,
+        "status": "BLOCKED",
+        "task_closed_with_open_unaccounted_finding": true
+      },
+      "case": "drain_blocks_unaccounted",
+      "evidence_digest": "sha256:090611711857c8268cbbace6797aa37cbe5bd080964a92f2b854262f51a686e9",
+      "expected": {
+        "concluded": false,
+        "status": "BLOCKED",
+        "task_closed_with_open_unaccounted_finding": true
+      },
+      "passed": true
+    },
+    "drain_completes_and_replays": {
+      "actual": {
+        "concluded": true,
+        "status": "DRAINED",
+        "task_closed_with_open_unaccounted_finding": false,
+        "writes": 1
+      },
+      "case": "drain_completes_and_replays",
+      "evidence_digest": "sha256:759b0cb410481c50770b1fdf14043e4baf1db3acab28b97e63063085f25022cc",
+      "expected": {
+        "concluded": true,
+        "status": "DRAINED",
+        "task_closed_with_open_unaccounted_finding": false,
+        "writes": 1
+      },
+      "passed": true,
+      "replay_concluded": true,
+      "replay_writes": 0
+    },
+    "external_signal_evidence_only": {
+      "actual": {
+        "authority_eligible": false,
+        "classification": "EXTERNAL_INTELLIGENCE",
+        "direct_trigger": false,
+        "promotion_allowed": false,
+        "route": "evidence_pointer_only",
+        "truth_status": "evidence"
+      },
+      "case": "external_signal_evidence_only",
+      "evidence_digest": "sha256:c1f62f7c782b44825951c33c756d0e653bff6b9f4e93efe5107f63da44b7347d",
+      "expected": {
+        "authority_eligible": false,
+        "classification": "EXTERNAL_INTELLIGENCE",
+        "direct_trigger": false,
+        "promotion_allowed": false,
+        "route": "evidence_pointer_only",
+        "truth_status": "evidence"
+      },
+      "passed": true
+    },
+    "local_review_defect_stays_in_artifact": {
+      "actual": {
+        "classification": "DELIVERY_REVIEW_DEFECT",
+        "direct_trigger": false,
+        "local_artifact": true,
+        "route": "keep_in_artifact",
+        "runtime_finding": false
+      },
+      "case": "local_review_defect_stays_in_artifact",
+      "evidence_digest": "sha256:0ff9869883e31d4010cfa423f7d9bb599b8113cb9ffa1ce7181aeb8f15e73095",
+      "expected": {
+        "classification": "DELIVERY_REVIEW_DEFECT",
+        "direct_trigger": false,
+        "local_artifact": true,
+        "route": "keep_in_artifact",
+        "runtime_finding": false
+      },
+      "passed": true
+    },
+    "prepare_clear_no_wake": {
+      "actual": {
+        "canonical_write": false,
+        "context_engineer_woken": false,
+        "direct_trigger": false,
+        "ready_allowed": true,
+        "status": "CLEAR"
+      },
+      "case": "prepare_clear_no_wake",
+      "evidence_digest": "sha256:36980975c6fee1ebb96c3b6d4317cdd8ad6887cba9ef11368dd86f814fd86d79",
+      "expected": {
+        "canonical_write": false,
+        "context_engineer_woken": false,
+        "direct_trigger": false,
+        "ready_allowed": true,
+        "status": "CLEAR"
+      },
+      "passed": true
+    },
+    "prepare_material_finding_blocks": {
+      "actual": {
+        "canonical_write": false,
+        "context_engineer_woken": false,
+        "direct_trigger": false,
+        "ready_allowed": false,
+        "status": "BLOCKED"
+      },
+      "case": "prepare_material_finding_blocks",
+      "escalation": {
+        "addressed_to": "engineering-lead",
+        "recommended_target": "context-engineer",
+        "required": true,
+        "trigger_emitted": false
+      },
+      "evidence_digest": "sha256:ff9a3bf6c6c252de0b08f3f55590f2096944f855ed493d5e98a536d3346178d0",
+      "expected": {
+        "canonical_write": false,
+        "context_engineer_woken": false,
+        "direct_trigger": false,
+        "ready_allowed": false,
+        "status": "BLOCKED"
+      },
+      "passed": true,
+      "selection_includes_finding": [
+        "FIND-WIMG-U11-000011"
+      ]
+    },
+    "product_challenge_returned_to_lead": {
+      "actual": {
+        "classification": "PRODUCT_CONTEXT_CHALLENGE",
+        "direct_trigger": false,
+        "lead_decision_target": "context-engineer",
+        "route": "lead_decision"
+      },
+      "case": "product_challenge_returned_to_lead",
+      "evidence_digest": "sha256:093016d78d3e7bf65e68ab2962d71c9367b15a7f40306943955a20ffb3497e31",
+      "expected": {
+        "classification": "PRODUCT_CONTEXT_CHALLENGE",
+        "direct_trigger": false,
+        "lead_decision_target": "context-engineer",
+        "route": "lead_decision"
+      },
+      "passed": true
+    },
+    "review_cognition_becomes_finding": {
+      "actual": {
+        "classification": "DELIVERY_REVIEW_DEFECT",
+        "direct_trigger": false,
+        "route": "runtime_boundary_processing",
+        "runtime_finding": true
+      },
+      "case": "review_cognition_becomes_finding",
+      "evidence_digest": "sha256:fd15202bbb7c5ebb2bcda8768daedc4cfa8555a78acdcb1e06b6ecec7e2bab79",
+      "expected": {
+        "classification": "DELIVERY_REVIEW_DEFECT",
+        "direct_trigger": false,
+        "route": "runtime_boundary_processing",
+        "runtime_finding": true
+      },
+      "passed": true
+    }
+  },
+  "stage": {
+    "exit_check_correlated_target_ok": {
+      "case": "exit_check_correlated_target_ok",
+      "evidence_digest": "sha256:c14754df113d752a729b538d61d758ea31590bda87140a2612507736b61f718c",
+      "ok": true,
+      "passed": true,
+      "violations": []
+    },
+    "exit_check_due_target_blocked": {
+      "case": "exit_check_due_target_blocked",
+      "evidence_digest": "sha256:34b91ab3a378c61479c40e71fa39b6e9a9447c9209d30bcf3d52c87be8ba1f39",
+      "ok": false,
+      "passed": true,
+      "violations": [
+        {
+          "detail": "no durable dispatch intent and no parked claim",
+          "intent_id": null,
+          "issue_id": "a11e0000-0000-4000-8000-000000000006",
+          "violation": "DUE_TARGET_UNTRACKED"
+        }
+      ]
+    },
+    "exit_check_underspecified_parked_blocked": {
+      "case": "exit_check_underspecified_parked_blocked",
+      "evidence_digest": "sha256:badbe442e81b9e81045bbae39ba1541cb59b588ebac50456234261fdd9517754",
+      "ok": false,
+      "parked_missing": [
+        "dependency",
+        "wake_boundary"
+      ],
+      "passed": true,
+      "violations": [
+        {
+          "intent_id": null,
+          "issue_id": "a11e0000-0000-4000-8000-000000000006",
+          "missing": [
+            "dependency",
+            "wake_boundary"
+          ],
+          "violation": "PARKED_TARGET_UNDERSPECIFIED"
+        }
+      ]
+    },
+    "parent_wake_failure_recovery": {
+      "active_lead_decision": "WAKE_REPAIR_REQUIRED",
+      "case": "parent_wake_failure_recovery",
+      "combined_with_trigger": true,
+      "delivered_then_decision": "NO_NEW_WAKE",
+      "evidence_digest": "sha256:ee01e50899381b59557a4f837136fbedd1b087f32f19db2195ef5ca9e7fd4bdd",
+      "exhausted_decision": "WAKE_EXHAUSTED",
+      "first_decision": "WAKE_ONE",
+      "passed": true,
+      "triggers": 1,
+      "wake_records": 3
+    },
+    "stage_completion_wake_idempotent": {
+      "case": "stage_completion_wake_idempotent",
+      "decision": "NO_NEW_WAKE",
+      "duplicate_lead_stage_activation": 0,
+      "evidence_digest": "sha256:d3d71b3695496886da17236a54e1bc0284e3e62099701ca2feede491179c47ca",
+      "passed": true,
+      "wake_count": 1
+    }
+  },
+  "topology": {
+    "R0": {
+      "artifact_ready": {
+        "blocks_handoff": false,
+        "case": "r0_minimal_ready",
+        "checks": {
+          "authoritative_version_resolved": true,
+          "expected_artifact_type_present": true,
+          "required_semantics_present": true,
+          "stale": false,
+          "status_allowed_for_target_role": true,
+          "superseded": false,
+          "upstream_refs_resolvable": true
+        },
+        "dependency_digest": "sha256:dd78579413f087956bf5d14a173d81184a1249d8a4312236be991b3ab389b5fe",
+        "evidence_digest": "sha256:7811e588be08e20e8d63341c4c32be617c523b219e21fbf05138121fcf3ee571",
+        "failure_codes": [],
+        "review_level": "R0",
+        "status": "ARTIFACT_READY",
+        "target_role": "engineering-lead"
+      },
+      "delivery_review_artifacts_created": 0,
+      "evidence_digest": "sha256:bd484573f2fdc48ab048002ee66f7dda96e9c14c907969ef2eadc3600795d1ba",
+      "lead_mediated": true,
+      "level": "R0",
+      "qa_artifacts_created": 0,
+      "qa_guard": {
+        "code": "R0_QA_NOT_ALLOWED",
+        "level": "R0",
+        "ok": false,
+        "target_role": "qa"
+      },
+      "requires_delivery_review": false,
+      "requires_qa": false,
+      "review_guard": {
+        "code": "R0_REVIEW_NOT_ALLOWED",
+        "level": "R0",
+        "ok": false,
+        "target_role": "delivery-reviewer"
+      },
+      "routing_ok": true,
+      "routing_plan": {
+        "review_level": "R0"
+      },
+      "triggers_created": 0
+    },
+    "R1": {
+      "evidence_digest": "sha256:791943d548d81369234e21c579c4205180fd7ced6e600e5919e443976c76e911",
+      "lead_mediated": true,
+      "level": "R1",
+      "qa_guard": {
+        "code": "R1_QA_NOT_ALLOWED",
+        "level": "R1",
+        "ok": false,
+        "target_role": "qa"
+      },
+      "requires_delivery_review": true,
+      "requires_qa": false,
+      "review_dispatch": {
+        "artifact_revision": "sha256:9c2857ae252e1916ef79a4816dfb57c05a6f32ec1b97f31419cdfddfd9e83bfc",
+        "commands": 2,
+        "correlated": true,
+        "level": "R1",
+        "package_digest": "sha256:96cf5546265e9b3adadf263443094f1a2e19fb24006b19065f238b2f9482d3eb",
+        "ready_status": "ARTIFACT_READY",
+        "review_envelope_valid": true,
+        "reviewed_artifact_exact": [
+          "ART-WIMG-031",
+          "aaa111"
+        ],
+        "run_id": "b11e0000-0000-4000-8000-000000000105",
+        "triggers": 1,
+        "verdict": "APPROVE"
+      },
+      "review_guard": {
+        "code": "ROUTE_ALLOWED",
+        "level": "R1",
+        "ok": true,
+        "target_role": "delivery-reviewer"
+      },
+      "routing_ok": true,
+      "routing_plan": {
+        "review_input": {
+          "artifact_id": "ART-WIMG-031",
+          "artifact_type": "implementation",
+          "version": "aaa111"
+        },
+        "review_level": "R1"
+      },
+      "triggers_created": 0
+    },
+    "R2": {
+      "evidence_digest": "sha256:592a1570a7cf63bcc740f2152ba643f3c997094cc645fed9a1fd9e63014025f6",
+      "lead_mediated": true,
+      "level": "R2",
+      "qa_dispatch": {
+        "correlated": true,
+        "qa_envelope_valid": true,
+        "run_id": "b11e0000-0000-4000-8000-000000000106",
+        "triggers": 1,
+        "validated_against": [
+          [
+            "PE-WIMG-004",
+            "4"
+          ],
+          [
+            "SOL-WIMG-017",
+            "3"
+          ],
+          [
+            "ART-WIMG-031",
+            "aaa111"
+          ],
+          [
+            "REV-WIMG-008",
+            "1"
+          ]
+        ],
+        "verdict": "PASS"
+      },
+      "qa_guard": {
+        "code": "ROUTE_ALLOWED",
+        "level": "R2",
+        "ok": true,
+        "target_role": "qa"
+      },
+      "qa_ready": {
+        "blocks_handoff": false,
+        "case": "r2_qa_baselines_ready",
+        "checks": {
+          "authoritative_version_resolved": true,
+          "expected_artifact_type_present": true,
+          "required_semantics_present": true,
+          "stale": false,
+          "status_allowed_for_target_role": true,
+          "superseded": false,
+          "upstream_refs_resolvable": true
+        },
+        "dependency_digest": "sha256:d7922d0373a599515bff8954fa4c03bfe2bfbfa0243e5e5658963fb0b14a7ae4",
+        "evidence_digest": "sha256:d9dd5bcc72ac617d6c8d53952b445bdd8718e5e3628831db55860164929802d5",
+        "failure_codes": [],
+        "review_level": "R2",
+        "status": "ARTIFACT_READY",
+        "target_role": "qa"
+      },
+      "requires_delivery_review": true,
+      "requires_qa": true,
+      "review_dispatch": {
+        "artifact_revision": "sha256:9c2857ae252e1916ef79a4816dfb57c05a6f32ec1b97f31419cdfddfd9e83bfc",
+        "commands": 2,
+        "correlated": true,
+        "level": "R2",
+        "package_digest": "sha256:96cf5546265e9b3adadf263443094f1a2e19fb24006b19065f238b2f9482d3eb",
+        "ready_status": "ARTIFACT_READY",
+        "review_envelope_valid": true,
+        "reviewed_artifact_exact": [
+          "ART-WIMG-031",
+          "aaa111"
+        ],
+        "run_id": "b11e0000-0000-4000-8000-000000000105",
+        "triggers": 1,
+        "verdict": "APPROVE"
+      },
+      "review_guard": {
+        "code": "ROUTE_ALLOWED",
+        "level": "R2",
+        "ok": true,
+        "target_role": "delivery-reviewer"
+      },
+      "routing_ok": true,
+      "routing_plan": {
+        "qa_baselines": [
+          {
+            "artifact_id": "PE-WIMG-004",
+            "artifact_type": "product_expectation",
+            "version": "4"
+          },
+          {
+            "artifact_id": "SOL-WIMG-017",
+            "artifact_type": "design_baseline",
+            "version": "3"
+          },
+          {
+            "artifact_id": "ART-WIMG-031",
+            "artifact_type": "implementation",
+            "version": "aaa111"
+          },
+          {
+            "artifact_id": "REV-WIMG-008",
+            "artifact_type": "delivery_review",
+            "version": "1"
+          }
+        ],
+        "review_input": {
+          "artifact_id": "ART-WIMG-031",
+          "artifact_type": "implementation",
+          "version": "aaa111"
+        },
+        "review_level": "R2"
+      },
+      "triggers_created": 0
+    }
+  }
+}

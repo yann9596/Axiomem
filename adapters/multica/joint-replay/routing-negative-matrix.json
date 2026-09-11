@@ -1,0 +1,72 @@
+[
+  {
+    "case": "r0_with_delivery_review",
+    "evidence_digest": "sha256:18796602ad79e191cf629682d9f8bfe79bd5baac163bebaf5ce168c64be90989",
+    "ok": false,
+    "triggers_created": 0,
+    "violation_codes": [
+      "ROUTING_MISMATCH"
+    ]
+  },
+  {
+    "case": "r0_with_qa",
+    "evidence_digest": "sha256:4b321259c4fd49a092b2e14d39ebd597d99017460ef72f53002dd64f7a860cbb",
+    "ok": false,
+    "triggers_created": 0,
+    "violation_codes": [
+      "ROUTING_MISMATCH"
+    ]
+  },
+  {
+    "case": "r1_without_exact_review_input",
+    "evidence_digest": "sha256:f908cb178d2984307c037b0f8fe93c87ac2ab5b647abb836288863725be6f6aa",
+    "ok": false,
+    "triggers_created": 0,
+    "violation_codes": [
+      "R1_EXACT_REVIEW_INPUT_REQUIRED"
+    ]
+  },
+  {
+    "case": "r1_producer_auto_trigger",
+    "evidence_digest": "sha256:b49b3e0413ffd6648a1b80527347e2bda8bde7bef676954e04f927334ee0f932",
+    "ok": false,
+    "triggers_created": 0,
+    "violation_codes": [
+      "AUTO_TRIGGER_FORBIDDEN",
+      "R1_EXACT_REVIEW_INPUT_REQUIRED",
+      "ROUTING_MISMATCH"
+    ]
+  },
+  {
+    "case": "r1_delivery_reviewer_auto_trigger_qa",
+    "evidence_digest": "sha256:681d8ec65b1ee444295c5a2b9520714361220247a70920794e8fcc64469a84a6",
+    "ok": false,
+    "triggers_created": 0,
+    "violation_codes": [
+      "AUTO_TRIGGER_FORBIDDEN",
+      "R1_EXACT_REVIEW_INPUT_REQUIRED",
+      "ROUTING_MISMATCH"
+    ]
+  },
+  {
+    "case": "r2_without_exact_qa_baselines",
+    "evidence_digest": "sha256:c4851c16775dd235649c8f33419295fc2d2568ac66b0a97010888cb694cd9e56",
+    "ok": false,
+    "triggers_created": 0,
+    "violation_codes": [
+      "R1_EXACT_REVIEW_INPUT_REQUIRED",
+      "R2_EXACT_QA_BASELINES_REQUIRED"
+    ]
+  },
+  {
+    "case": "r2_trigger_created_flag",
+    "evidence_digest": "sha256:102fc86a771f0201816a393987ae7a3b691509e7afc90a082e3d4466abbeec2a",
+    "ok": false,
+    "triggers_created": 0,
+    "violation_codes": [
+      "R1_EXACT_REVIEW_INPUT_REQUIRED",
+      "R2_EXACT_QA_BASELINES_REQUIRED",
+      "TRIGGER_CREATED"
+    ]
+  }
+]
