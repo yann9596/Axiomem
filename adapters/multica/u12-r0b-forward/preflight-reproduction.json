@@ -1,0 +1,140 @@
+{
+  "contract": "U12_R0_PREFLIGHT_DECISION.md raw sha256 3acb66e3be54e9c00bf7c8f819b8970175d3a14984e3422f500220ae2106a2a9",
+  "generated_at": "2026-09-11T07:57:05Z",
+  "isolation": "FakeCli + temporary JSONL ledgers inside the workdir; no live Multica call, no production-ledger access, no Canonical write",
+  "kind": "u12_r0b_forward_preflight_reproduction",
+  "module_digests_lf": {
+    "tools/tests/test_u12_r0_binding.py": "sha256:cb187740701f12d681de170454d473e0139bce54783654d16e8a1774ad6740f9",
+    "tools/u12_r0_binding.py": "sha256:8a9b75628f1263004ab214c96733d1b775399cdd6ffe5208fdaf4c0ea5abbc05"
+  },
+  "rows": [
+    {
+      "arm": "TRIGGER_READY",
+      "artifact_reads_at_arm": 7,
+      "artifact_reads_at_trigger": 7,
+      "authority_reads_at_arm": 1,
+      "authority_reads_at_trigger": 1,
+      "case": "all_subjects_unchanged_and_ready",
+      "preflight_events": [
+        "ARM",
+        "TRIGGER"
+      ],
+      "reruns": 1,
+      "run_id": "RUN-1",
+      "trigger": "RUN_CORRELATED"
+    },
+    {
+      "artifact_reads_after_change": 3,
+      "case": "changed_artifact_reader_after_arm",
+      "commands_after_change": [
+        [
+          "issue",
+          "get"
+        ],
+        [
+          "issue",
+          "comment"
+        ],
+        [
+          "issue",
+          "timeline"
+        ],
+        [
+          "issue",
+          "runs"
+        ],
+        [
+          "issue",
+          "get"
+        ]
+      ],
+      "reason": "R0B_MATERIAL_STALE",
+      "reruns": 0,
+      "trigger": "REFRESH_REQUIRED"
+    },
+    {
+      "arm": "REFRESH_REQUIRED",
+      "case": "changed_artifact_reader_before_arm",
+      "reason": "R0B_MATERIAL_STALE",
+      "reruns": 0
+    },
+    {
+      "artifact_reads_after_reconstruction": 3,
+      "case": "changed_artifact_reader_reconstructed_factory",
+      "reason": "R0B_MATERIAL_STALE",
+      "recover_action": "RESUME_TRIGGER",
+      "recover_performed": false,
+      "reruns": 0,
+      "trigger": "REFRESH_REQUIRED"
+    },
+    {
+      "arm": "REFRESH_REQUIRED",
+      "case": "published_note_body_edited_revision_held",
+      "reason": "R0B_MATERIAL_STALE",
+      "reruns": 0
+    },
+    {
+      "arm": "BLOCKED",
+      "case": "published_note_missing_revision_held",
+      "reason": "R0B_MATERIAL_UNAVAILABLE",
+      "reruns": 0
+    },
+    {
+      "arm": "REFRESH_REQUIRED",
+      "case": "issue_description_changed_revision_held",
+      "issue_revision": 3,
+      "reason": "R0B_MATERIAL_STALE",
+      "reruns": 0
+    },
+    {
+      "arm": "REFRESH_REQUIRED",
+      "case": "only_issue_revision_incremented",
+      "reason": "ISSUE_REVISION_DRIFT",
+      "reruns": 0
+    },
+    {
+      "arm": "REFRESH_REQUIRED",
+      "case": "role_profile_revision_changed",
+      "reason": "R0B_MATERIAL_STALE",
+      "reruns": 0
+    },
+    {
+      "arm": "REFRESH_REQUIRED",
+      "case": "authority_manifest_superseded",
+      "reason": "R0B_MATERIAL_STALE",
+      "reruns": 0
+    },
+    {
+      "arm": "REFRESH_REQUIRED",
+      "case": "relevant_blocking_finding",
+      "detail": "SELF_CHECK on bound E is not READY/USE_EXISTING: status=BLOCKED action=ESCALATE reasons=['package_not_ready']",
+      "reason": "R0B_MATERIAL_STALE",
+      "reruns": 0
+    },
+    {
+      "arm": "BLOCKED",
+      "case": "no_authority_source_resolvable",
+      "reason": "R0B_PREFLIGHT_INPUT_MISSING",
+      "reruns": 0
+    },
+    {
+      "case": "caller_fabricated_snapshot",
+      "outcomes": [
+        {
+          "plan_and_arm": "REFUSED"
+        },
+        {
+          "issue_trigger": "REFUSED"
+        },
+        {
+          "resume": "REFUSED"
+        }
+      ],
+      "reruns": 0,
+      "state": "HANDOFF_PUBLISHED"
+    }
+  ],
+  "schema_version": "U12-R0B/1.0",
+  "task": "YZT-84",
+  "verdict": "ALL_REQUIRED_ROWS_TYPED_STOP_OR_CORRELATED"
+}

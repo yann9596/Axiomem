@@ -1,0 +1,155 @@
+{
+  "kind": "u12_r0b_forward_preflight_acceptance_matrix",
+  "schema_version": "U12-R0B/1.0",
+  "task": "YZT-84",
+  "contract": {
+    "path": "U12_R0_PREFLIGHT_DECISION.md",
+    "attachment_id": "01a08f61-3983-7c39-bdc6-42aa6893c2ee",
+    "raw_sha256": "sha256:3acb66e3be54e9c00bf7c8f819b8970175d3a14984e3422f500220ae2106a2a9",
+    "verified_before_use": true
+  },
+  "isolation": "FakeCli runners and temporary JSONL ledgers inside the workdir; no live Multica call, no production-ledger write, no Canonical write",
+  "counts": {
+    "method": "actual FakeCli command rows counted per test; artifact/authority reader invocations counted per entrypoint; not side_effects labels",
+    "focused_module": "78/78 OK",
+    "strict_receipt_regression": "40/40 OK",
+    "reproduction_script": "adapters/multica/u12-r0b-forward/preflight-reproduction.json"
+  },
+  "rows": [
+    {
+      "required": "All current subjects unchanged and READY -> exactly one strict rerun, one correlated run; fresh source/note/context readers observed at arm AND trigger",
+      "evidence": [
+        "test_full_lifecycle_binds_observed_revision_and_one_rerun (artifact reads 7 at arm and 7 at trigger; authority reads 1 and 1; comment/timeline/runs reads at both; r0b_preflight events ARM,TRIGGER)",
+        "preflight-reproduction.json row all_subjects_unchanged_and_ready (TRIGGER_READY -> RUN_CORRELATED, reruns=1)"
+      ],
+      "observed": "PASS"
+    },
+    {
+      "required": "Pinned bytes changed/missing; reader raises; no root/reader -> zero reruns; changed REFRESH_REQUIRED, unavailable BLOCKED",
+      "evidence": [
+        "test_changed_artifact_bytes_after_arm_zero_reruns (REFRESH_REQUIRED/R0B_MATERIAL_STALE, reruns=0, reader invoked at trigger)",
+        "test_changed_artifact_bytes_before_arm_zero_reruns (REFRESH_REQUIRED, reruns=0)",
+        "test_artifact_reader_error_is_blocked (BLOCKED/R0B_MATERIAL_UNAVAILABLE)",
+        "test_missing_artifact_root_and_reader_is_blocked (BLOCKED)",
+        "preflight-reproduction.json rows changed_artifact_reader_after_arm, changed_artifact_reader_before_arm"
+      ],
+      "observed": "PASS"
+    },
+    {
+      "required": "Old commit still intact, authoritative manifest supersedes/revokes it -> zero reruns, REFRESH_REQUIRED; no implicit adoption of replacement",
+      "evidence": [
+        "test_superseded_authority_record_is_refused (changed current authority digest vs bound fcf63534 entry -> REFRESH_REQUIRED, reruns=0)",
+        "test_revoked_authority_disposition_is_refused (disposition=SUPERSEDED -> REFRESH_REQUIRED)",
+        "preflight-reproduction.json row authority_manifest_superseded"
+      ],
+      "observed": "PASS"
+    },
+    {
+      "required": "Cannot resolve current authority/manifest exact subject -> zero reruns, BLOCKED with missing fact",
+      "evidence": [
+        "test_no_authority_source_is_blocked (BLOCKED/R0B_PREFLIGHT_INPUT_MISSING)",
+        "test_authority_reader_failure_is_blocked (BLOCKED/R0B_MATERIAL_UNAVAILABLE)",
+        "test_fabricated_authority_evidence_cannot_bypass (fabricated digest -> REFRESH_REQUIRED, reruns=0)",
+        "test_authority_path_must_be_bound_in_creation_spec (creation spec without the bound authority path is refused)",
+        "preflight-reproduction.json rows no_authority_source_resolvable, caller_fabricated_snapshot"
+      ],
+      "observed": "PASS"
+    },
+    {
+      "required": "Note edited/deleted/duplicate/wrong E/author/thread; truncated evidence -> zero reruns, typed stop",
+      "evidence": [
+        "test_note_body_edit_with_held_revision_is_refused (REFRESH_REQUIRED, reruns=0)",
+        "test_missing_note_is_blocked (BLOCKED, reruns=0)",
+        "test_duplicate_note_is_blocked (BLOCKED, reruns=0)",
+        "existing publication predicate tests test_edited_note_fails_closed, test_duplicate_identical_note_fails_closed, test_missing_source_run_fails_closed, test_truncated_comment_evidence_is_incomplete, test_truncated_timeline_evidence_is_incomplete, test_truncated_run_evidence_is_incomplete",
+        "preflight-reproduction.json rows published_note_body_edited_revision_held, published_note_missing_revision_held"
+      ],
+      "observed": "PASS"
+    },
+    {
+      "required": "Description/selected decision/project/role mapping/profile/memory/registry drift with issue revision unchanged -> zero reruns; frozen fingerprint/built_from and role checks independently exercised",
+      "evidence": [
+        "test_issue_description_change_with_held_revision_is_refused (fresh request fingerprint -> REFRESH_REQUIRED)",
+        "test_issue_projection_change_against_bound_request_is_refused (bound request, drifted issue -> REFRESH_REQUIRED)",
+        "test_project_and_decision_selection_drift_are_refused (project mapping, selected decision refs)",
+        "test_role_profile_revision_drift_is_refused",
+        "test_memory_and_registry_revision_drift_are_refused",
+        "preflight-reproduction.json rows issue_description_changed_revision_held, role_profile_revision_changed"
+      ],
+      "observed": "PASS"
+    },
+    {
+      "required": "Relevant blocking Finding or SELF_CHECK non-READY -> zero reruns; no empty-findings bypass",
+      "evidence": [
+        "test_blocking_finding_is_refused_without_empty_findings_bypass (gate BLOCKED/ESCALATE observed in detail, REFRESH_REQUIRED, reruns=0)",
+        "test_missing_finding_source_is_blocked (BLOCKED/R0B_PREFLIGHT_INPUT_MISSING; no forced empty list)",
+        "wiring_proof check preflight_findings_not_forced_empty (findings= value is not a literal empty list)",
+        "preflight-reproduction.json row relevant_blocking_finding"
+      ],
+      "observed": "PASS"
+    },
+    {
+      "required": "Only incidental revision changes -> existing REFRESH_REQUIRED / ISSUE_REVISION_DRIFT, zero reruns",
+      "evidence": [
+        "test_incidental_revision_only_keeps_issue_revision_drift (reason ISSUE_REVISION_DRIFT, reruns=0)",
+        "preflight-reproduction.json row only_issue_revision_incremented"
+      ],
+      "observed": "PASS"
+    },
+    {
+      "required": "Issue moves during collection; unexpected run; intent CAS/lease conflict -> zero new reruns; no automatic retry",
+      "evidence": [
+        "test_issue_moves_during_collection_is_blocked (revision moved between collection and re-read -> BLOCKED, reruns=0)",
+        "test_unexpected_run_is_refused (target already carries a run -> REFRESH_REQUIRED, reruns=0)",
+        "test_competing_lease_refuses_before_any_external_call (LeaseHeldError before any command)",
+        "test_two_workers_never_duplicate_the_create (single create)",
+        "test_repeated_stop_calls_stay_zero_call (repeat stop is replay, zero new commands)"
+      ],
+      "observed": "PASS"
+    },
+    {
+      "required": "Caller supplies fabricated snapshot/ready booleans -> cannot bypass public preflight; zero reruns",
+      "evidence": [
+        "test_caller_supplied_snapshots_cannot_bypass_preflight (plan_and_arm, issue_trigger and inherited resume all R0BDowngradeRefused; reruns=0; state HANDOFF_PUBLISHED)",
+        "wiring_proof checks snapshot_arming_refused, snapshot_trigger_refused",
+        "preflight-reproduction.json row caller_fabricated_snapshot"
+      ],
+      "observed": "PASS"
+    },
+    {
+      "required": "Pre-issuance resume after material mutation -> recover itself performs no trigger; resumed trigger fails closed",
+      "evidence": [
+        "test_reconstructed_factory_resume_recollects_and_fails_closed (recover RESUME_TRIGGER performed=false; reconstructed factory trigger -> REFRESH_REQUIRED, reruns=0)",
+        "test_classification_at_every_boundary (resume instructions performed=false at every boundary)",
+        "preflight-reproduction.json row changed_artifact_reader_reconstructed_factory"
+      ],
+      "observed": "PASS"
+    },
+    {
+      "required": "Crash before durable attempt; crash after durable attempt; malformed/lost receipt; concurrent workers -> fresh checks before any first attempt; after attempt read-only/ambiguity only; total native attempts <= 1",
+      "evidence": [
+        "test_uncertain_publication_then_read_only_confirmation (single comment add; read-only recovery)",
+        "test_attempt_without_visible_note_stays_blocked (single attempt retained)",
+        "test_malformed_rerun_receipt_is_trigger_ambiguous_and_never_retried (reruns=1; re-entry is read-only replay)",
+        "test_trigger_issuing_reentry_is_read_only (reason R0B_TRIGGER_ALREADY_ISSUED; zero new commands)",
+        "test_issued_states_never_recheck_or_retrigger (RUN_CORRELATED replay; zero new commands)",
+        "test_no_ownership_attempt_allows_one_authorized_call, test_ownership_attempt_without_proof_stops"
+      ],
+      "observed": "PASS"
+    },
+    {
+      "required": "Frozen predecessor/Core/strict manifests -> existing immutability and strict tests pass; unavailable production-ledger check explicitly reported, never manufactured PASS",
+      "evidence": [
+        "test_imported_implementations_are_byte_unchanged_vs_base_commit (git diff vs fcf63534 over frozen paths empty)",
+        "test_accepted_predecessor_pins_reproduce, test_artifact_dependency_digest_matches_accepted_pins, test_strict_gate_wiring_and_version_unchanged",
+        "test_isolated_tests_do_not_touch_the_production_ledger (readable in this runtime: 622 bytes, tip sha256:c9683898... accepted and unchanged; NOT skipped)",
+        "git diff --name-only 6d08621 over predecessor paths: empty; only tools/u12_r0_binding.py and tools/tests/test_u12_r0_binding.py modified"
+      ],
+      "observed": "PASS"
+    }
+  ],
+  "skips": {
+    "count": 0,
+    "note": "No test in the focused module skipped in this runtime; the production-ledger readability assertion executed and passed. Live runtime input readiness (live authority reader root, live Finding source, live runner) is NOT proven by these isolated fixtures and remains a Lead decision with the operator inputs in OPERATOR_INSTRUCTIONS.md."
+  }
+}
