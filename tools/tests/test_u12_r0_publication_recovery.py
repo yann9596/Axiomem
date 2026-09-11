@@ -1288,8 +1288,11 @@ class PostRecoveryLifecycleTests(unittest.TestCase):
         fx = self.fx
         armed = fx.arm()
         self.assertEqual(armed["status"], o2.S_TRIGGER_READY)
-        self.assertEqual(armed["plan"]["ready_note_id"],
-                         fx.note_comment["id"])
+        self.assertEqual(
+            fx.store.get(fx.intent_id)["fields"]["note_comment_id"],
+            fx.note_comment["id"])
+        self.assertEqual(armed["plan"]["expect"]["issue_revision"],
+                         fx.cli.issues[TARGET_ID]["revision"])
 
 
 if __name__ == "__main__":
