@@ -1,0 +1,73 @@
+{
+  "acl_apply": {
+    "argv": [
+      "icacls",
+      "D:\\AI\\multica-state\\web-imagegen\\dispatch\\backups\\ledger.jsonl.20260911T042323Z.bak",
+      "/inheritance:r",
+      "/grant:r",
+      "*S-1-5-18:R",
+      "*S-1-5-32-544:R",
+      "*S-1-5-21-4036709569-2582891157-3975988056-500:R"
+    ],
+    "exit": 0,
+    "stderr": "",
+    "stdout": "processed file: D:\\AI\\multica-state\\web-imagegen\\dispatch\\backups\\ledger.jsonl.20260911T042323Z.bak\nSuccessfully processed 1 files; Failed processing 0 files"
+  },
+  "acl_entries": [
+    {
+      "inheritance": "None",
+      "inherited": false,
+      "propagation": "None",
+      "rights": 1179785,
+      "rights_name": "Read, Synchronize",
+      "sid": "S-1-5-18",
+      "type": "Allow"
+    },
+    {
+      "inheritance": "None",
+      "inherited": false,
+      "propagation": "None",
+      "rights": 1179785,
+      "rights_name": "Read, Synchronize",
+      "sid": "S-1-5-32-544",
+      "type": "Allow"
+    },
+    {
+      "inheritance": "None",
+      "inherited": false,
+      "propagation": "None",
+      "rights": 1179785,
+      "rights_name": "Read, Synchronize",
+      "sid": "S-1-5-21-4036709569-2582891157-3975988056-500",
+      "type": "Allow"
+    }
+  ],
+  "acl_immutable_ok": true,
+  "acl_sddl": "O:BAG:S-1-5-21-4036709569-2582891157-3975988056-513D:PAI(A;;FR;;;SY)(A;;FR;;;BA)(A;;FR;;;LA)",
+  "acl_violations": [],
+  "backup_bytes": 622,
+  "backup_digest": "sha256:c96838987bd362b263c177ba670e193f2cdcdf02e1694f896667ab57920c3412",
+  "backup_path": "D:\\AI\\multica-state\\web-imagegen\\dispatch\\backups\\ledger.jsonl.20260911T042323Z.bak",
+  "backup_timestamp_utc": "20260911T042323Z",
+  "kind": "u12_p0_backup_restore_evidence",
+  "ok": true,
+  "production_ledger_overwritten": false,
+  "production_tip_digest_after": "sha256:c96838987bd362b263c177ba670e193f2cdcdf02e1694f896667ab57920c3412",
+  "production_tip_digest_at_start": "sha256:c96838987bd362b263c177ba670e193f2cdcdf02e1694f896667ab57920c3412",
+  "readonly_attribute": {
+    "exit": 0,
+    "readonly": true
+  },
+  "restore_digest": "sha256:c96838987bd362b263c177ba670e193f2cdcdf02e1694f896667ab57920c3412",
+  "restore_digest_matches_backup": true,
+  "restore_digest_matches_source": true,
+  "restore_integrity": {
+    "audit_ok": true,
+    "legacy_reader_ok": true,
+    "partial_or_corrupt_records": 0,
+    "total_records": 1
+  },
+  "restore_validation_path": "D:\\AI\\multica-state\\web-imagegen\\preflight\\u12-p0\\restore-validation\\20260911T042323Z\\ledger.restored.jsonl",
+  "schema_version": "U12-P0/1.0",
+  "source_tip_digest": "sha256:c96838987bd362b263c177ba670e193f2cdcdf02e1694f896667ab57920c3412"
+}

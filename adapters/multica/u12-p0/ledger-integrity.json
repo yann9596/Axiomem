@@ -1,0 +1,33 @@
+{
+  "audit": {
+    "command_counts": {},
+    "creates": 0,
+    "issuance": {},
+    "mention_argument_hits": [],
+    "mention_triggers": 0,
+    "ok": true,
+    "ownership_bindings": 0,
+    "status_triggers": 0,
+    "triggers": 0,
+    "unexpected_write_classes": []
+  },
+  "audit_ok": true,
+  "bytes": 622,
+  "created": {
+    "acl_base": true,
+    "ledger": true,
+    "state_root": true
+  },
+  "exists": true,
+  "generated_at": "2026-09-11T04:23:21Z",
+  "ignored_records": 1,
+  "intent_records": 0,
+  "kind": "u12_p0_ledger_integrity",
+  "ledger": "D:\\AI\\multica-state\\web-imagegen\\dispatch\\ledger.jsonl",
+  "legacy_reader_error": null,
+  "legacy_reader_ok": true,
+  "partial_or_corrupt_records": 0,
+  "schema_version": "U12-P0/1.0",
+  "tip_digest": "sha256:c96838987bd362b263c177ba670e193f2cdcdf02e1694f896667ab57920c3412",
+  "total_records": 1
+}

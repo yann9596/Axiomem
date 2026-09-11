@@ -1,0 +1,69 @@
+{
+  "command": [
+    "multica",
+    "issue",
+    "runs",
+    "01a08e97-0cc9-7668-b6a7-d970db75e5f5",
+    "--output",
+    "json"
+  ],
+  "correlation": {
+    "candidate_runs_for_owner": 1,
+    "correlated_run_created_after_handoff": true,
+    "correlated_run_id": "01a08eaa-07ae-7471-ad92-cf6738a89f86",
+    "executed_by_agent": "fa7d16a7-2dae-4994-80b8-7435b3fcca47",
+    "live_canary_runs_created": 0,
+    "preexisting_run_ids": [
+      "01a08ea2-e92b-7cf2-86bc-da155ea2fe2f"
+    ],
+    "second_trigger_issued": false
+  },
+  "exit": 0,
+  "handoff_publication": {
+    "comment_id": "01a08ea9-b91e-7cf2-9dd8-a4ceeef5b03a",
+    "published_at": "2026-09-11T04:11:22Z",
+    "type": "note_non_trigger"
+  },
+  "issue": "01a08e97-0cc9-7668-b6a7-d970db75e5f5",
+  "kind": "u12_p0_run_correlation_capture",
+  "run_count": 2,
+  "runs": [
+    {
+      "agent_id": "fa7d16a7-2dae-4994-80b8-7435b3fcca47",
+      "attribution_evidence": {
+        "kind": "issue_assignment",
+        "ref_id": "01a08e97-0cc9-7668-b6a7-d970db75e5f5"
+      },
+      "attribution_source": "delegation",
+      "completed_at": null,
+      "created_at": "2026-09-11T04:11:42Z",
+      "delegated_from_task_id": "01a08e93-0a26-797b-b4a1-80a61640d110",
+      "id": "01a08eaa-07ae-7471-ad92-cf6738a89f86",
+      "kind": "direct",
+      "started_at": "2026-09-11T04:11:43Z",
+      "status": "running",
+      "trigger_comment_id": null
+    },
+    {
+      "agent_id": "24f04aba-7da9-4371-bf89-685d7505a411",
+      "attribution_evidence": {
+        "kind": "comment",
+        "ref_id": "01a08ea2-e8cd-7849-bd19-982fe51f513a"
+      },
+      "attribution_source": "direct_human",
+      "completed_at": "2026-09-11T04:12:27Z",
+      "created_at": "2026-09-11T04:03:56Z",
+      "delegated_from_task_id": null,
+      "id": "01a08ea2-e92b-7cf2-86bc-da155ea2fe2f",
+      "kind": "comment",
+      "started_at": "2026-09-11T04:03:58Z",
+      "status": "completed",
+      "trigger_comment_id": "01a08ea2-e8cd-7849-bd19-982fe51f513a"
+    }
+  ],
+  "schema_version": "U12-P0/1.0",
+  "stderr": "",
+  "stderr_empty": true,
+  "stdout_digest_lf": "sha256:2384c220b7713675eb07a1b5486f75d792e939d255defcd43dca18aa0f0f82d7",
+  "stdout_digest_raw": "sha256:2384c220b7713675eb07a1b5486f75d792e939d255defcd43dca18aa0f0f82d7"
+}

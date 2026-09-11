@@ -1,0 +1,209 @@
+{
+  "acl_apply": {
+    "argv": [
+      "icacls",
+      "D:\\AI\\multica-state",
+      "/inheritance:r",
+      "/grant:r",
+      "*S-1-5-18:(OI)(CI)F",
+      "*S-1-5-32-544:(OI)(CI)F",
+      "*S-1-5-21-4036709569-2582891157-3975988056-500:(OI)(CI)M"
+    ],
+    "exit": 0,
+    "stderr": "",
+    "stdout": "processed file: D:\\AI\\multica-state\nSuccessfully processed 1 files; Failed processing 0 files"
+  },
+  "acl_evidence_digest": "sha256:7d8b1664d7107afd4a963ad525717c0b6e19830d62527ba0beeaf58d75a58c8b",
+  "generated_at": "2026-09-11T04:23:21Z",
+  "kind": "u12_p0_acl_evidence",
+  "least_privilege_verified": true,
+  "paths": {
+    "acl_base": {
+      "entries": [
+        {
+          "inheritance": "ContainerInherit, ObjectInherit",
+          "inherited": false,
+          "propagation": "None",
+          "rights": 2032127,
+          "rights_name": "FullControl",
+          "sid": "S-1-5-18",
+          "type": "Allow"
+        },
+        {
+          "inheritance": "ContainerInherit, ObjectInherit",
+          "inherited": false,
+          "propagation": "None",
+          "rights": 2032127,
+          "rights_name": "FullControl",
+          "sid": "S-1-5-32-544",
+          "type": "Allow"
+        },
+        {
+          "inheritance": "ContainerInherit, ObjectInherit",
+          "inherited": false,
+          "propagation": "None",
+          "rights": 1245631,
+          "rights_name": "Modify, Synchronize",
+          "sid": "S-1-5-21-4036709569-2582891157-3975988056-500",
+          "type": "Allow"
+        }
+      ],
+      "exists": true,
+      "least_privilege_ok": true,
+      "owner_sid": "S-1-5-32-544",
+      "path": "D:\\AI\\multica-state",
+      "sddl": "O:BAG:S-1-5-21-4036709569-2582891157-3975988056-513D:PAI(A;OICI;FA;;;SY)(A;OICI;FA;;;BA)(A;OICI;0x1301bf;;;LA)",
+      "violations": []
+    },
+    "dispatch": {
+      "entries": [
+        {
+          "inheritance": "ContainerInherit, ObjectInherit",
+          "inherited": true,
+          "propagation": "None",
+          "rights": 1245631,
+          "rights_name": "Modify, Synchronize",
+          "sid": "S-1-5-21-4036709569-2582891157-3975988056-500",
+          "type": "Allow"
+        },
+        {
+          "inheritance": "ContainerInherit, ObjectInherit",
+          "inherited": true,
+          "propagation": "None",
+          "rights": 2032127,
+          "rights_name": "FullControl",
+          "sid": "S-1-5-32-544",
+          "type": "Allow"
+        },
+        {
+          "inheritance": "ContainerInherit, ObjectInherit",
+          "inherited": true,
+          "propagation": "None",
+          "rights": 2032127,
+          "rights_name": "FullControl",
+          "sid": "S-1-5-18",
+          "type": "Allow"
+        }
+      ],
+      "exists": true,
+      "least_privilege_ok": true,
+      "owner_sid": "S-1-5-32-544",
+      "path": "D:\\AI\\multica-state\\web-imagegen\\dispatch",
+      "sddl": "O:BAG:S-1-5-21-4036709569-2582891157-3975988056-513D:AI(A;OICIID;0x1301bf;;;LA)(A;OICIID;FA;;;BA)(A;OICIID;FA;;;SY)",
+      "violations": []
+    },
+    "ledger": {
+      "entries": [
+        {
+          "inheritance": "None",
+          "inherited": true,
+          "propagation": "None",
+          "rights": 1245631,
+          "rights_name": "Modify, Synchronize",
+          "sid": "S-1-5-21-4036709569-2582891157-3975988056-500",
+          "type": "Allow"
+        },
+        {
+          "inheritance": "None",
+          "inherited": true,
+          "propagation": "None",
+          "rights": 2032127,
+          "rights_name": "FullControl",
+          "sid": "S-1-5-32-544",
+          "type": "Allow"
+        },
+        {
+          "inheritance": "None",
+          "inherited": true,
+          "propagation": "None",
+          "rights": 2032127,
+          "rights_name": "FullControl",
+          "sid": "S-1-5-18",
+          "type": "Allow"
+        }
+      ],
+      "exists": true,
+      "least_privilege_ok": true,
+      "owner_sid": "S-1-5-32-544",
+      "path": "D:\\AI\\multica-state\\web-imagegen\\dispatch\\ledger.jsonl",
+      "sddl": "O:BAG:S-1-5-21-4036709569-2582891157-3975988056-513D:AI(A;ID;0x1301bf;;;LA)(A;ID;FA;;;BA)(A;ID;FA;;;SY)",
+      "violations": []
+    },
+    "lock": {
+      "entries": [
+        {
+          "inheritance": "None",
+          "inherited": true,
+          "propagation": "None",
+          "rights": 1245631,
+          "rights_name": "Modify, Synchronize",
+          "sid": "S-1-5-21-4036709569-2582891157-3975988056-500",
+          "type": "Allow"
+        },
+        {
+          "inheritance": "None",
+          "inherited": true,
+          "propagation": "None",
+          "rights": 2032127,
+          "rights_name": "FullControl",
+          "sid": "S-1-5-32-544",
+          "type": "Allow"
+        },
+        {
+          "inheritance": "None",
+          "inherited": true,
+          "propagation": "None",
+          "rights": 2032127,
+          "rights_name": "FullControl",
+          "sid": "S-1-5-18",
+          "type": "Allow"
+        }
+      ],
+      "exists": true,
+      "least_privilege_ok": true,
+      "owner_sid": "S-1-5-32-544",
+      "path": "D:\\AI\\multica-state\\web-imagegen\\dispatch\\ledger.jsonl.lock",
+      "sddl": "O:BAG:S-1-5-21-4036709569-2582891157-3975988056-513D:AI(A;ID;0x1301bf;;;LA)(A;ID;FA;;;BA)(A;ID;FA;;;SY)",
+      "violations": []
+    },
+    "state_root": {
+      "entries": [
+        {
+          "inheritance": "ContainerInherit, ObjectInherit",
+          "inherited": true,
+          "propagation": "None",
+          "rights": 1245631,
+          "rights_name": "Modify, Synchronize",
+          "sid": "S-1-5-21-4036709569-2582891157-3975988056-500",
+          "type": "Allow"
+        },
+        {
+          "inheritance": "ContainerInherit, ObjectInherit",
+          "inherited": true,
+          "propagation": "None",
+          "rights": 2032127,
+          "rights_name": "FullControl",
+          "sid": "S-1-5-32-544",
+          "type": "Allow"
+        },
+        {
+          "inheritance": "ContainerInherit, ObjectInherit",
+          "inherited": true,
+          "propagation": "None",
+          "rights": 2032127,
+          "rights_name": "FullControl",
+          "sid": "S-1-5-18",
+          "type": "Allow"
+        }
+      ],
+      "exists": true,
+      "least_privilege_ok": true,
+      "owner_sid": "S-1-5-32-544",
+      "path": "D:\\AI\\multica-state\\web-imagegen",
+      "sddl": "O:BAG:S-1-5-21-4036709569-2582891157-3975988056-513D:AI(A;OICIID;0x1301bf;;;LA)(A;OICIID;FA;;;BA)(A;OICIID;FA;;;SY)",
+      "violations": []
+    }
+  },
+  "runtime_user_sid": "S-1-5-21-4036709569-2582891157-3975988056-500",
+  "schema_version": "U12-P0/1.0"
+}

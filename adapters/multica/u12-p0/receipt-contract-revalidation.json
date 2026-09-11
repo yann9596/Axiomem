@@ -1,0 +1,106 @@
+{
+  "accepted_shapes": {
+    "one_element_list": {
+      "accepted": true,
+      "run_id": "run-1"
+    },
+    "runs_list": {
+      "accepted": true,
+      "run_id": "run-1"
+    },
+    "single_run_object": {
+      "accepted": true,
+      "run_id": "run-1"
+    }
+  },
+  "captures": {
+    "rerun_help": {
+      "argv": [
+        "multica",
+        "issue",
+        "rerun",
+        "--help"
+      ],
+      "exit": 0,
+      "stdout_digest_lf": "sha256:2ecedb76dd1a445f1f1171fc6a230c53320af7b194580f6255bb1f55357c9a48"
+    },
+    "runs_help": {
+      "argv": [
+        "multica",
+        "issue",
+        "runs",
+        "--help"
+      ],
+      "exit": 0,
+      "stdout_digest_lf": "sha256:bb5ef1a914cccc20dda7e3dd60334c5995f77dc53e91286ec0220f6907a1196f"
+    },
+    "version": {
+      "argv": [
+        "multica",
+        "version",
+        "--output",
+        "json"
+      ],
+      "exit": 0,
+      "stdout_digest_lf": "sha256:5d883502cc52cebccbc59784e499db2ec3839d503b52cee0bf1a81aeaeabda72"
+    }
+  },
+  "cli_version": {
+    "arch": "amd64",
+    "commit": "5fde73278",
+    "date": "2026-09-09T10:12:46Z",
+    "go": "go1.26.8",
+    "os": "windows",
+    "version": "v0.4.42"
+  },
+  "correlation_requires_trusted_listing": true,
+  "digests_match": {
+    "rerun_help": true,
+    "runs_help": true,
+    "version": true
+  },
+  "documented_shapes_accepted": true,
+  "drift": false,
+  "extra_accepted_wrapper_shape": {
+    "accepted": true,
+    "run_id": "run-1"
+  },
+  "idempotency_claimed": false,
+  "kind": "u12_p0_receipt_contract_revalidation",
+  "live_triggers_issued": 0,
+  "pins": {
+    "rerun_help": "sha256:2ecedb76dd1a445f1f1171fc6a230c53320af7b194580f6255bb1f55357c9a48",
+    "runs_help": "sha256:bb5ef1a914cccc20dda7e3dd60334c5995f77dc53e91286ec0220f6907a1196f",
+    "version": "sha256:5d883502cc52cebccbc59784e499db2ec3839d503b52cee0bf1a81aeaeabda72"
+  },
+  "receipt_alone_counts_as_delivery": false,
+  "refused_all": true,
+  "refused_shapes": {
+    "empty_list": {
+      "accepted": false,
+      "code": "trigger_receipt_ambiguous"
+    },
+    "missing_field": {
+      "accepted": false,
+      "code": "trigger_receipt_ambiguous"
+    },
+    "non_json": {
+      "accepted": false,
+      "code": "trigger_receipt_ambiguous"
+    },
+    "runs_empty": {
+      "accepted": false,
+      "code": "trigger_receipt_ambiguous"
+    },
+    "runs_two": {
+      "accepted": false,
+      "code": "trigger_receipt_ambiguous"
+    },
+    "two_runs": {
+      "accepted": false,
+      "code": "trigger_receipt_ambiguous"
+    }
+  },
+  "schema_version": "U12-P0/1.0",
+  "trigger_issued_during_revalidation": false
+}

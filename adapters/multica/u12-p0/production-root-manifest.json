@@ -1,0 +1,155 @@
+{
+  "acl": {
+    "acl_evidence_digest": "sha256:7d8b1664d7107afd4a963ad525717c0b6e19830d62527ba0beeaf58d75a58c8b",
+    "evidence_file": "acl-evidence.json",
+    "least_privilege_verified": true
+  },
+  "authorization": "Human approval comment 01a08e93-0a1a-7074-9dda-912d1237bf56; Lead U12 decision comment 01a08e89-22ec-7db7-a581-0c62f30db538",
+  "backup_restore": {
+    "backup_created": true,
+    "backup_digest": "sha256:c96838987bd362b263c177ba670e193f2cdcdf02e1694f896667ab57920c3412",
+    "backup_path": "D:\\AI\\multica-state\\web-imagegen\\dispatch\\backups\\ledger.jsonl.20260911T042323Z.bak",
+    "evidence_file": "backup-restore-evidence.json",
+    "immutable_acl_ok": true,
+    "isolated_restore_verified": true,
+    "production_ledger_overwritten": false
+  },
+  "base_commit": "6439bd429af0aa9ec4b95d838643bd8b633ed053",
+  "boundary": {
+    "forbidden_tree_overlap": {},
+    "forbidden_trees_checked": [
+      "D:\\AI\\projects\\opencode-web-imagegen",
+      "D:\\AI\\multica-memory\\memory",
+      "D:\\AI\\multica-memory\\index",
+      "D:\\AI\\multica-memory",
+      "D:\\AI\\worktrees\\multica-memory-yzt-42",
+      "D:\\AI\\worktrees\\multica-memory-yzt-43",
+      "D:\\AI\\worktrees\\multica-memory-yzt-45",
+      "D:\\AI\\worktrees\\multica-memory-yzt-47",
+      "D:\\AI\\worktrees\\multica-memory-yzt-49",
+      "D:\\AI\\worktrees\\multica-memory-yzt-51",
+      "D:\\AI\\worktrees\\multica-memory-yzt-53",
+      "D:\\AI\\worktrees\\multica-memory-yzt-54",
+      "D:\\AI\\worktrees\\multica-memory-yzt-55",
+      "D:\\AI\\worktrees\\multica-memory-yzt-56",
+      "D:\\AI\\worktrees\\multica-memory-yzt-57",
+      "D:\\AI\\worktrees\\multica-memory-yzt-58",
+      "D:\\AI\\worktrees\\multica-memory-yzt-59",
+      "D:\\AI\\worktrees\\multica-memory-yzt-60",
+      "D:\\AI\\worktrees\\multica-memory-yzt-61",
+      "D:\\AI\\worktrees\\multica-memory-yzt-62",
+      "D:\\AI\\worktrees\\multica-memory-yzt-63",
+      "D:\\AI\\worktrees\\multica-memory-yzt-64",
+      "D:\\AI\\worktrees\\multica-memory-yzt-65",
+      "D:\\AI\\worktrees\\multica-memory-yzt-68-u01",
+      "D:\\AI\\worktrees\\multica-memory-yzt-68-u01b",
+      "D:\\AI\\worktrees\\multica-memory-yzt-69-u02",
+      "D:\\AI\\worktrees\\multica-memory-yzt-70-u03",
+      "D:\\AI\\worktrees\\multica-memory-yzt-71-u10",
+      "D:\\AI\\worktrees\\multica-memory-yzt-72-u04",
+      "D:\\AI\\worktrees\\multica-memory-yzt-73-u05",
+      "D:\\AI\\worktrees\\multica-memory-yzt-74-u06",
+      "D:\\AI\\worktrees\\multica-memory-yzt-75-u07",
+      "D:\\AI\\worktrees\\multica-memory-yzt-76-u08",
+      "D:\\AI\\worktrees\\multica-memory-yzt-77-u09",
+      "D:\\AI\\worktrees\\multica-memory-yzt-79-o2",
+      "D:\\AI\\worktrees\\multica-memory-yzt-80-u11",
+      "D:\\AI\\worktrees\\multica-memory-yzt-81-u12p0"
+    ],
+    "reparse_points": [],
+    "unexpected_preexisting_state": false
+  },
+  "branch": "yzt-81-u12-p0-production-ledger",
+  "capability": {
+    "all_passed": true,
+    "evidence_file": "capability-proof.json",
+    "observations": "6/6",
+    "production_ledger_untouched": true,
+    "production_root_selected": true,
+    "workdir": "D:\\AI\\multica-state\\web-imagegen\\preflight\\u12-p0\\capability-proof"
+  },
+  "completion_evidence": {
+    "absolute_root_capability": "6/6",
+    "acl_verified_least_privilege": true,
+    "backup_created_and_isolated_restore_verified": true,
+    "canonical_or_product_writes": 0,
+    "live_05_or_06_activation": 0,
+    "live_canary_runs_created": 0,
+    "o3_or_autonomous_wake_added": false,
+    "outside_all_forbidden_trees": true,
+    "partial_or_corrupt_records": 0,
+    "production_ledger_path_exact": true,
+    "r0_canary_authorized": false,
+    "receipt_contract_bounded": true,
+    "unexpected_preexisting_state": false
+  },
+  "evidence_files": {
+    "acl-evidence.json": "sha256:3ef13ba7c771676b84f38a1a052ece674261b6a65b42c22532463ac50494f257",
+    "backup-restore-evidence.json": "sha256:71588a1b2fb6ff472f6574a36bef72d39e25fadf3e693b0ece42be4e248e4fa0",
+    "capability-proof.json": "sha256:b5dc153622421f2bf50cd3d65baac88409f96a0d3c02e19d6a4dc362715dc92a",
+    "ledger-integrity.json": "sha256:97cd7016b96acfe42b4ed30d088c1ef35a81c93776513c15080017f8d4eda5f1",
+    "path-validation.json": "sha256:147929c1038c7a023de35b45b2e8b80574eb9f161ba03eeea6f59bc0ade85115",
+    "proposed-r0-canary-plan.json": "sha256:0b88856d9e9969d1d9357b3da7a114f34089e7b0247794c412dcb0e1a7febc7a",
+    "receipt-contract-revalidation.json": "sha256:335903ae65111d99750bd172ec5f97c32b999abfd6a6b8eb4f4c57199ef498cb",
+    "u11-o2-pin-verification.json": "sha256:d64f9fd456522c5f9f8883bd29dd9bfdeb33554ed8ffe8a456483da19671c96a"
+  },
+  "generated_at": "2026-09-11T04:23:21Z",
+  "kind": "u12_p0_production_root_manifest",
+  "ledger": {
+    "audit_ok": true,
+    "evidence_file": "ledger-integrity.json",
+    "intent_records": 0,
+    "legacy_reader_ok": true,
+    "partial_or_corrupt_records": 0,
+    "path": "D:\\AI\\multica-state\\web-imagegen\\dispatch\\ledger.jsonl",
+    "tip_digest": "sha256:c96838987bd362b263c177ba670e193f2cdcdf02e1694f896667ab57920c3412",
+    "total_records": 1
+  },
+  "manifest_digest": "sha256:78f6a4566d40963672e724824cd715a96a9f7f1ccb339d0c09025b60c795ee7b",
+  "production_root": {
+    "approved_exact": "D:\\AI\\multica-state\\web-imagegen",
+    "ledger_approved_exact": "D:\\AI\\multica-state\\web-imagegen\\dispatch\\ledger.jsonl",
+    "ledger_normalized": "D:\\AI\\multica-state\\web-imagegen\\dispatch\\ledger.jsonl",
+    "normalized": "D:\\AI\\multica-state\\web-imagegen",
+    "production_ledger_path_exact": true,
+    "runtime_user": "WIN-LID1C2K07NC\\Administrator",
+    "runtime_user_sid": "S-1-5-21-4036709569-2582891157-3975988056-500",
+    "volume": "D:"
+  },
+  "r0_canary_authorized": false,
+  "receipt_contract": {
+    "cli_version": "v0.4.42",
+    "digests_match": {
+      "rerun_help": true,
+      "runs_help": true,
+      "version": true
+    },
+    "documented_shapes_accepted": true,
+    "drift": false,
+    "evidence_file": "receipt-contract-revalidation.json",
+    "refused_all": true,
+    "trigger_issued": false
+  },
+  "schema_version": "U12-P0/1.0",
+  "task": "YZT-81",
+  "u11_o2_pins": {
+    "accepted_inputs_all_match": true,
+    "documentation_discrepancies": [
+      {
+        "blocking": false,
+        "detail": "O2 report digest row for its own new test file is not reproducible from any committed blob; the runtime pins and bundle digests all reproduce. No history rewrite proposed.",
+        "evidence": {
+          "actual_lf": "sha256:78fb99d40ad22ffcf45a087314901e26df5c1d502b038404728c4f1672283665",
+          "blocking": false,
+          "finding": "U12-P0-F1",
+          "match": false,
+          "path": "tools/tests/test_handoff_intent.py",
+          "recorded_in_o2_report": "sha256:649580b22055202280a670889e0a8d5ec5b93a51d2a90ce8dc094d268502923d"
+        },
+        "id": "U12-P0-F1",
+        "severity": "low/documentation"
+      }
+    ],
+    "evidence_file": "u11-o2-pin-verification.json"
+  }
+}
