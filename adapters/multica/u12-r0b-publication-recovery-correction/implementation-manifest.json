@@ -1,0 +1,87 @@
+{
+  "acceptance_matrix": {
+    "file": "adapters/multica/u12-r0b-publication-recovery-correction/publication-recovery-correction-acceptance-matrix.json",
+    "note": "generated through public operations on isolated ledgers; intent ids/markers are per-run nonces, so a rerun reproduces the row shape and verdict, not identical bytes",
+    "rows_passed": 10,
+    "rows_total": 10,
+    "verdict": "ALL_PUBLICATION_RECOVERY_CORRECTION_ROWS_PASS"
+  },
+  "approved_exception": {
+    "correcting_decision_ref": "multica://comment/01a09048-1fcd-7ca6-ae75-ad07bb5f0ffd",
+    "design_digest": "sha256:0df4cec9a7cfb26a2b9146806280a2dcae4924f6cdb29190560ab17db32c8997",
+    "design_ref": "attachment/01a08ffa-604f-70c3-a03e-0d166505fa3d",
+    "human_approval_ref": "multica://comment/01a09003-f830-79ac-b022-c7aaf2cf4039",
+    "lead_boundary_ref": "multica://comment/01a08ffb-fb18-7135-bc19-c17297426127",
+    "scope": "publication transport repair + one proof-bearing recovery commit for DI-e5e2b856f6b7cd36 + execution-identity migration + resolved source activation/authority and shared semantic proof verification"
+  },
+  "base_commit": "ac1e5b4",
+  "branch": "yzt-84-u12-r0b-forward-adapter",
+  "code_commit": "2665180",
+  "contract_version": "U12-R0B/1.1",
+  "digest_convention": "every listed digest is the LF-normalized SHA256 of the committed blob at evidence_commit; verify with git show <commit>:<path> and normalize CRLF to LF before hashing",
+  "evidence_commit": "0cd44ed",
+  "files": {
+    "adapters/multica/u12-r0b-publication-recovery-correction/OPERATOR_INSTRUCTIONS.md": "sha256:71efe6efadaa66128c6fd83610a3540e9089cf444f523a27d782f69d304b0420",
+    "adapters/multica/u12-r0b-publication-recovery-correction/U12_R0B_PUBLICATION_RECOVERY_CORRECTION_REPORT.md": "sha256:bf9426dce883b751e071c466e169a479b48d469a66dff91ddd81abe862be19f5",
+    "adapters/multica/u12-r0b-publication-recovery-correction/accepted-execution-example.json": "sha256:bd2c70e39c1d793be6d86e8ccf1821551224985e59bdc074dfdfd0db72d83749",
+    "adapters/multica/u12-r0b-publication-recovery-correction/generate_examples.py": "sha256:9319cdb6335e9ae04525ea7ae0d1a3a116deaa48df495fb9895ed5b8828be677",
+    "adapters/multica/u12-r0b-publication-recovery-correction/publication-recovery-correction-acceptance-matrix.json": "sha256:0d678706cfff14e038e765b0964892a6a45a548252c4b609469487ae8af15225",
+    "adapters/multica/u12-r0b-publication-recovery-correction/publication-recovery-decision-example.json": "sha256:892621ba6174eb0f06ec8ab8f8efc76821340893a7b2b65b98c731a4af8ee293",
+    "adapters/multica/u12-r0b-publication-recovery-correction/reproduce_publication_recovery_correction.py": "sha256:7a52c5376e64140264c7b5a635144b145d5e00a4577fe1c90cfcb4d140468756",
+    "tools/tests/test_u12_r0_binding.py": "sha256:eb2f82a3e0e292f188a4eb0206b54ac9d34b884d61e85a8a10102ebe87ba899e",
+    "tools/tests/test_u12_r0_create_recovery.py": "sha256:4f7dfc1ab4db61dc5d741bfa0a019ede908643dee758baebfdc6c1c70d7577e1",
+    "tools/tests/test_u12_r0_publication_recovery.py": "sha256:ea13ef577fc6508b7152141857ae3e37a3f44f0cddb53f4033826adb2c34d3e4",
+    "tools/u12_r0_binding.py": "sha256:cc25465db5f48f4125a78781af05eef43ca62fec1d71db0ec4328bf9877d72a8"
+  },
+  "kind": "u12_r0b_publication_recovery_correction_manifest",
+  "predecessor": {
+    "adapter_digest": "sha256:40ccf07dd088d6a4077213714deef45c83f46116478ccc462c203ef7f07641fa",
+    "commit": "da99c112093ea576a449a1f3c8ce355652805a40"
+  },
+  "preservation": {
+    "canonical_memory": "not written",
+    "production_ledger": "not opened or written by this implementation turn",
+    "untouched_evidence_folders": [
+      "adapters/multica/u12-r0bi",
+      "adapters/multica/u12-r0b-forward",
+      "adapters/multica/u12-r0b-recovery",
+      "adapters/multica/u12-r0b-recovery-evidence",
+      "adapters/multica/u12-r0b-publication-transport",
+      "adapters/multica/u12-p0r"
+    ]
+  },
+  "previous_adapter": {
+    "accepted_for_live_recovery": false,
+    "adapter_digest": "sha256:37877f694c61ee13a098c2686f7a08cf55bfe40d95772f6e8cbee939e4991b56",
+    "commit": "ac1e5b423cd3e065505304107997902d32d2a661",
+    "role": "preserved history; its reader refuses every v1.1 decision/proof/commit record"
+  },
+  "recovery": {
+    "decision_schema": "u12-r0b-publication-recovery-decision/1.1",
+    "migration_schema": "u12-r0b-publication-execution-migration/1.1",
+    "native_capability": "none (read-only platform access plus bounded evidence/commit/lease records)",
+    "old_reader_fence": "the ac1e5b4 reader refuses the v1.1 payloads; the v1.1 loader refuses the frozen v1.0 payloads",
+    "op_record": "publication_recovery_commit_v1",
+    "operation": "recover_blocked_publication",
+    "proof_schema": "u12-r0b-publication-recovery-proof/1.1",
+    "source_activation": "unique Lead-authored parent activation resolved through the authenticated CLI; attachments re-hashed; request rebuilt from the fresh target body plus accepted explicit decisions; approval authority content pinned",
+    "transition": "BLOCKED revision 4 -> HANDOFF_PUBLISHED revision 5 (single fsync commit record)",
+    "writer_reducer_validation": "validate_publication_recovery_commit_record shared by writer and fold reducer; validate_publication_recovery_semantics re-derives every predicate from the persisted raw responses for writer, reducer and replay"
+  },
+  "task": "YZT-84",
+  "tests": {
+    "create_recovery_suite": "63/63 OK",
+    "frozen_lifecycle_suite": "78/78 OK",
+    "full_tools_tests": "1273 run / 3 failures-or-errors (2 errors + 1 failure), all pre-classified P0R genesis pin drift in test_u12_p0r_evidence.py (frozen bundle deliberately not rewritten)",
+    "handoff_intent_suite": "118/118 OK",
+    "handoff_note_suite": "84/84 OK",
+    "new_publication_recovery_module": "62/62 OK",
+    "preflight_suite": "21/21 OK",
+    "recovery_evidence_suite": "35/35 OK",
+    "strict_receipt_suite": "40/40 OK"
+  },
+  "worker_source_subject_unchanged": {
+    "adapter_digest": "sha256:8a9b75628f1263004ab214c96733d1b775399cdd6ffe5208fdaf4c0ea5abbc05",
+    "commit": "b49630b881170f7e6f40ffe61a82687492b99792"
+  }
+}
