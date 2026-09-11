@@ -306,7 +306,7 @@ def cached_context(key, request):
             store = o2.DurableIntentStore(Path(tmp) / "ledger.jsonl")
             factory = u12.build_r0b_factory(store, runner=FakeCli())
             _CACHE[key] = factory.build_context_package(
-                request, clock=lambda: CLOCK)
+                request, clock=lambda: CLOCK, findings=[])
     return copy.deepcopy(_CACHE[key])
 
 
@@ -460,7 +460,9 @@ def real_readiness_manifest():
 
 class LifecycleHarness:
     def __init__(self, tmp: Path, *, bump=True, blob_reader=None,
-                 authority_reader="default"):
+                 authority_reader="default", findings_source=None,
+                 require_findings_source=False,
+                 findings_baseline_observation=None):
         self.cli = FakeCli(bump_revision_on_comment=bump)
         self.store = o2.DurableIntentStore(tmp / "ledger.jsonl")
         self.artifact_reads: list = []
@@ -482,7 +484,9 @@ class LifecycleHarness:
                                                 self.authority_reads)
         self.factory = u12.build_r0b_factory(
             self.store, runner=self.cli, artifact_blob_reader=counting_reader,
-            authority_reader=authority)
+            authority_reader=authority, findings_source=findings_source,
+            require_findings_source=require_findings_source,
+            findings_baseline_observation=findings_baseline_observation)
         self.spec, self.intent_id = make_spec()
 
     def record(self):
@@ -1657,8 +1661,8 @@ class ImmutabilityTests(unittest.TestCase):
         paths = [
             "tools/chandoff_dispatch.py", "tools/chandoff_adapter.py",
             "tools/chandoff.py", "tools/u12_strict_receipt.py",
-            "tools/chandoff_plan.py", "tools/chandoff_compose.py",
-            "tools/chandoff_finalize.py", "tools/chandoff_selfcheck.py",
+            "tools/chandoff_compose.py",
+            "tools/chandoff_finalize.py",
             "schemas", "adapters/multica/u12-p0r",
             "adapters/multica/u12-p0",
         ]
@@ -1674,7 +1678,9 @@ class ImmutabilityTests(unittest.TestCase):
         self.assertEqual(proc.stdout.strip(), "")
         # The approved YZT-84 publication-recovery exception changes exactly
         # the two dependency files it opens (the O2 store/fold increment and
-        # the note publisher's exact-transport send); nothing else.
+        # the note publisher's exact-transport send). The approved YZT-88
+        # findings-source-binding exception adds the strict reader and opens
+        # the T01 PLAN / SELF_CHECK orchestration seams; nothing else.
         proc = subprocess.run(
             ["git", "-C", root, "diff", "--name-only", self.BASE_COMMIT,
              "--", "tools"], capture_output=True, text=True)
@@ -1684,10 +1690,19 @@ class ImmutabilityTests(unittest.TestCase):
             changed_tools <= {
                 "tools/chandoff_intent.py", "tools/chandoff_note.py",
                 "tools/u12_r0_binding.py", "tools/u12_preflight.py",
+                "tools/chandoff_plan.py", "tools/chandoff_selfcheck.py",
+                "tools/chandoff_findings_source.py",
+                "tools/chandoff_assignment.py", "tools/chandoff_mention.py",
+                "tools/context_cli.py",
                 "tools/tests/test_u12_r0_binding.py",
                 "tools/tests/test_u12_r0_create_recovery.py",
                 "tools/tests/test_u12_r0_recovery_evidence.py",
-                "tools/tests/test_u12_r0_publication_recovery.py"},
+                "tools/tests/test_u12_r0_publication_recovery.py",
+                "tools/tests/test_handoff_skill.py",
+                "tools/tests/test_handoff_artifact_readiness.py",
+                "tools/tests/test_handoff_findings_source.py",
+                "tools/tests/test_handoff_finding.py",
+                "tools/tests/findings_fixture.py"},
             f"unexpected changed tools files: {sorted(changed_tools)}")
 
     def test_adapter_has_no_production_ledger_reference(self):
@@ -1695,6 +1710,80 @@ class ImmutabilityTests(unittest.TestCase):
         self.assertNotIn("multica-state", source)
         self.assertNotIn(r"ledger.jsonl", source.replace(
             "unused-r0b-probe-ledger.jsonl", ""))
+
+
+class FindingsSourceBindingR0Tests(unittest.TestCase):
+    """YZT-88 R0 integration: bound source, conflict refusal, ARM->TRIGGER drift.
+
+    Uses a simulation-only in-memory source; no live root and no production
+    ledger is touched. The production CLI builds a BoundFindingsSource from
+    the verified binding instead.
+    """
+
+    def setUp(self):
+        self.tmp = tempfile.TemporaryDirectory()
+        self.addCleanup(self.tmp.cleanup)
+        self.source = u12.cfs.SyntheticFindingsSource([])
+        self.h = LifecycleHarness(Path(self.tmp.name),
+                                  findings_source=self.source,
+                                  require_findings_source=True)
+
+    def _arm_bound(self, **overrides):
+        kwargs = {"actor": DISPATCHER,
+                  "current_request": self.h.current_request()}
+        kwargs.update(overrides)
+        return self.h.factory.arm(self.h.intent_id, **kwargs)
+
+    def _trigger_bound(self, **overrides):
+        kwargs = {"actor": DISPATCHER,
+                  "current_request": self.h.current_request()}
+        kwargs.update(overrides)
+        return self.h.factory.trigger(self.h.intent_id, **kwargs)
+
+    def test_bound_source_arms_and_triggers_once(self):
+        self.h.to_prepared()
+        self.assertEqual(self.h.publish()["status"], o2.S_HANDOFF_PUBLISHED)
+        armed = self._arm_bound()
+        self.assertEqual(armed["status"], o2.S_TRIGGER_READY, armed)
+        events = [e["data"] for e in self.h.store.get(
+            self.h.intent_id)["events"] if e.get("name") == u12.E_PREFLIGHT]
+        self.assertEqual(events[0]["checkpoint"], "ARM")
+        self.assertTrue(events[0]["findings_observation_digest"])
+        triggered = self._trigger_bound()
+        self.assertEqual(triggered["status"], o2.S_RUN_CORRELATED, triggered)
+        self.assertEqual(len(self.h.cli.commands_of(["issue", "rerun"])), 1)
+
+    def test_naked_findings_list_refused_when_source_configured(self):
+        self.h.to_prepared()
+        self.assertEqual(self.h.publish()["status"], o2.S_HANDOFF_PUBLISHED)
+        result = self.h.factory.arm(
+            self.h.intent_id, actor=DISPATCHER,
+            current_request=self.h.current_request(), current_findings=[])
+        self.assertEqual(result["status"], o2.S_BLOCKED, result)
+        self.assertEqual(self.h.cli.commands_of(["issue", "rerun"]), [])
+
+    def test_source_drift_after_arm_blocks_trigger(self):
+        self.h.to_prepared()
+        self.assertEqual(self.h.publish()["status"], o2.S_HANDOFF_PUBLISHED)
+        self.assertEqual(self._arm_bound()["status"], o2.S_TRIGGER_READY)
+        self.source.records.append({
+            "finding_id": "FIND-TEST-DRIFT-000001", "status": "open",
+            "task_id": TARGET_IDENTIFIER, "project_id": "web-imagegen",
+            "intent": "observation", "verification": "verified",
+            "discovered_by": u12.EXECUTION_ROLE})
+        result = self._trigger_bound()
+        self.assertEqual(result["status"], o2.S_REFRESH_REQUIRED, result)
+        self.assertEqual(result.get("reason"), u12.REASON_MATERIAL_STALE)
+        self.assertEqual(self.h.cli.commands_of(["issue", "rerun"]), [])
+
+    def test_required_source_without_one_fails_publication_predicate(self):
+        nested = Path(self.tmp.name) / "nosrc"
+        nested.mkdir()
+        h = LifecycleHarness(nested, require_findings_source=True)
+        h.to_prepared()
+        published = h.publish()
+        self.assertEqual(published["status"], o2.S_BLOCKED, published)
+        self.assertEqual(h.cli.commands_of(["issue", "rerun"]), [])
 
 
 class ProductionLedgerNonWriteTests(unittest.TestCase):

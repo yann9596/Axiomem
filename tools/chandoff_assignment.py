@@ -41,6 +41,7 @@ import chandoff_adapter as adapter  # noqa: E402
 import chandoff_compose as compose  # noqa: E402
 import chandoff_dispatch as dispatch  # noqa: E402
 import chandoff_finalize as finalize  # noqa: E402
+from chandoff_findings_source import FindingsSourceRefusal  # noqa: E402
 import chandoff_note as note  # noqa: E402
 import chandoff_plan as plan  # noqa: E402
 import chandoff_selfcheck as selfcheck  # noqa: E402
@@ -72,6 +73,13 @@ PINNED_BINDING_PLAN = (
     "sha256:7f83bfd523e2c0da3cd0dac4568869f3c9937e2d3ae6c0dc66b9853094a27c22")
 PINNED_SKILL_BUNDLE = (
     "sha256:7f861c320c115b328fb45db7356573ae449a5e443ac08b3572a764c79934fce9")
+# YZT-88 versions the U04 skill bundle forward: the design opens the skill
+# pipeline script with the verified Findings source-binding flags. The
+# historical accepted pin above is preserved as history; the forward pin is
+# the only bundle accepted by this candidate until Lead acceptance.
+FORWARD_SKILL_BUNDLE = (
+    "sha256:1a2645771e38def5f44dc809bce991ca18ca7c9ef36777611e9b88726c018bc2")
+ACCEPTED_SKILL_BUNDLES = (FORWARD_SKILL_BUNDLE,)
 
 STATES = (
     "INIT", "ISSUE_CREATED", "ISSUE_UPDATED", "TARGET_BOUND",
@@ -440,10 +448,10 @@ def u05_mapping(bundle_dir=None, *, require_pins: bool | None = None) -> dict:
             raise U05BundleError(
                 "U04 SKILL.md digest drifted from the accepted pin",
                 expected=PINNED_SKILL_MD, found=skill["skill_md_digest"])
-        if skill["bundle_digest"] != PINNED_SKILL_BUNDLE:
+        if skill["bundle_digest"] not in ACCEPTED_SKILL_BUNDLES:
             raise U05BundleError(
                 "U04 skill bundle digest drifted from the accepted pin",
-                expected=PINNED_SKILL_BUNDLE, found=skill["bundle_digest"])
+                expected=ACCEPTED_SKILL_BUNDLES[0], found=skill["bundle_digest"])
     if invalidation.get("old_05_package_accepted") is True \
             or invalidation.get("feature_reviewer_activation") not in (0, None):
         raise U05BundleError("U05 package-invalidation accepts old 05")
@@ -599,7 +607,8 @@ class AssignmentHandoff:
                  recorder, ledger, compose_fn: Callable, clock: Callable,
                  bundle_dir=None, finding_store=None, world: dict | None,
                  policy: dict | None, workdir: Path, executable: str,
-                 crash_at: str | None = None, resume: dict | None = None):
+                 crash_at: str | None = None, resume: dict | None = None,
+                 findings_source=None):
         self.spec = validated
         self.target_role_spec = target_role_spec
         self.recorder = recorder
@@ -613,6 +622,9 @@ class AssignmentHandoff:
         self.executable = executable
         self.crash_at = crash_at
         self.resume = resume or {}
+        self.findings_source = findings_source
+        self._prepare_observation = None
+        self._self_check_observation = None
 
         self.dispatch_cli = dispatch.DispatchCli(
             executable, runner=recorder, workdir=workdir)
@@ -967,6 +979,37 @@ class AssignmentHandoff:
         return self._compose_and_finalize(plan_result["plan"], request)
 
     def _plan(self, request: dict) -> dict:
+        if self.findings_source is not None:
+            if self.world.get("findings") is not None or \
+                    self.finding_store is not None:
+                raise _Stop(
+                    INVALID_INPUT,
+                    "a verified Findings source binding cannot be combined "
+                    "with world.findings or a legacy finding_store; inputs "
+                    "are mutually exclusive")
+            try:
+                result = plan.prepare_handoff_plan(
+                    request,
+                    findings_source=self.findings_source,
+                    source_boundary="PREPARE",
+                    source_observer_run_id=self.recorder.transaction_id,
+                    docs=self.world.get("docs"),
+                    registry=self.world.get("registry"),
+                    checkpoints=self.world.get("checkpoints"),
+                )
+            except FindingsSourceRefusal as exc:
+                raise _Stop(
+                    PREPARE_BLOCKED,
+                    f"the verified Findings source refused the PREPARE read "
+                    f"[{exc.code}]: {exc.message}",
+                    escalation=_escalation("engineering-lead-or-squad",
+                                           "findings_source_unbound",
+                                           code=exc.code)) from None
+            except Exception as exc:
+                raise _Stop(PREPARE_FAILED, "T01 PLAN failed",
+                            extra={"error": _bounded_reason(exc)}) from None
+            self._prepare_observation = result.get("findings_observation")
+            return result
         try:
             return plan.prepare_handoff_plan(
                 request,
@@ -1352,13 +1395,34 @@ class AssignmentHandoff:
             "package_ref": envelope["package_id"],
         }
         try:
-            trace = selfcheck.self_check_with_trace(
-                request, packages=[envelope],
-                registry=self.world.get("registry"),
-                current=self._current(),
-                findings=self.world.get("findings"),
-                finding_store=self.finding_store,
-            )
+            if self.findings_source is not None:
+                if self.world.get("findings") is not None or \
+                        self.finding_store is not None:
+                    raise _Stop(
+                        INVALID_INPUT,
+                        "a verified Findings source binding cannot be "
+                        "combined with world.findings or a legacy "
+                        "finding_store")
+                trace = selfcheck.self_check_with_trace(
+                    request, packages=[envelope],
+                    registry=self.world.get("registry"),
+                    current=self._current(),
+                    findings_source=self.findings_source,
+                    findings_prior_observation=self._prepare_observation,
+                    source_observer_run_id=self.recorder.transaction_id,
+                )
+                self._self_check_observation = trace.get(
+                    "findings_observation")
+            else:
+                trace = selfcheck.self_check_with_trace(
+                    request, packages=[envelope],
+                    registry=self.world.get("registry"),
+                    current=self._current(),
+                    findings=self.world.get("findings"),
+                    finding_store=self.finding_store,
+                )
+        except _Stop:
+            raise
         except Exception as exc:
             raise _Stop(PREPARE_FAILED, "T04 self_check failed",
                         extra={"error": _bounded_reason(exc)}) from None
@@ -1479,6 +1543,17 @@ class AssignmentHandoff:
                 "count": len((self.artifact_binding or {}).get("requirements") or []),
             } if self.artifact_binding else None),
             "pins": dict(self.u05_pins) if self.u05_pins else None,
+            "findings_source": ({
+                "mode": "bound",
+                "source_id": getattr(self.findings_source, "source_id", None),
+                "binding_digest": getattr(self.findings_source,
+                                         "binding_digest", None),
+                "prepare_snapshot_digest":
+                    (self._prepare_observation or {}).get("snapshot_digest"),
+                "self_check_snapshot_digest":
+                    (getattr(self, "_self_check_observation", None) or {})
+                    .get("snapshot_digest"),
+            } if self.findings_source is not None else None),
             "transitions": self.machine.transitions,
             "compose_fn_source": "injected",
             "guarantees": dict(GUARANTEES),
@@ -1594,7 +1669,8 @@ def run_assignment_handoff(spec, *, caller_role: str, target_role_spec: str,
                            world: dict | None = None,
                            workdir=None, executable: str = "multica",
                            crash_at: str | None = None,
-                           resume: dict | None = None) -> dict:
+                           resume: dict | None = None,
+                           findings_source=None) -> dict:
     """Run one assignment-handoff transaction (simulation default).
 
     Idempotency: a recorded COMPLETED result for this transaction_id is
@@ -1642,7 +1718,7 @@ def run_assignment_handoff(spec, *, caller_role: str, target_role_spec: str,
         recorder=recorder, ledger=ledger, compose_fn=compose_fn, clock=clock,
         bundle_dir=bundle_dir, finding_store=finding_store, world=world,
         policy=policy, workdir=workdir, executable=executable,
-        crash_at=crash_at, resume=resume)
+        crash_at=crash_at, resume=resume, findings_source=findings_source)
     try:
         return handoff.run()
     except CrashSimulated as crash:

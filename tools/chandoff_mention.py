@@ -81,6 +81,7 @@ import chandoff_assignment as asm  # noqa: E402
 import chandoff_compose as compose  # noqa: E402
 import chandoff_dispatch as dispatch  # noqa: E402
 import chandoff_finalize as finalize  # noqa: E402
+from chandoff_findings_source import FindingsSourceRefusal  # noqa: E402
 import chandoff_note as note  # noqa: E402
 import chandoff_plan as plan  # noqa: E402
 import chandoff_selfcheck as selfcheck  # noqa: E402
@@ -971,7 +972,8 @@ class MentionHandoff:
                  ledger, compose_fn: Callable, clock: Callable,
                  bundle_dir=None, finding_store=None, world: dict | None,
                  policy: dict | None, workdir: Path, executable: str,
-                 crash_at: str | None = None, resume: dict | None = None):
+                 crash_at: str | None = None, resume: dict | None = None,
+                 findings_source=None):
         self.spec = validated
         self.target_role_spec = target_role_spec
         self.recorder = recorder
@@ -985,6 +987,9 @@ class MentionHandoff:
         self.executable = executable
         self.crash_at = crash_at
         self.resume = resume or {}
+        self.findings_source = findings_source
+        self._prepare_observation = None
+        self._self_check_observation = None
 
         self.dispatch_cli = dispatch.DispatchCli(
             executable, runner=recorder, workdir=workdir)
@@ -1376,6 +1381,37 @@ class MentionHandoff:
         return self._last_request
 
     def _plan(self, request: dict) -> dict:
+        if self.findings_source is not None:
+            if self.world.get("findings") is not None or \
+                    self.finding_store is not None:
+                raise _Stop(
+                    INVALID_INPUT,
+                    "a verified Findings source binding cannot be combined "
+                    "with world.findings or a legacy finding_store; inputs "
+                    "are mutually exclusive")
+            try:
+                result = plan.prepare_handoff_plan(
+                    request,
+                    findings_source=self.findings_source,
+                    source_boundary="PREPARE",
+                    source_observer_run_id=self.recorder.transaction_id,
+                    docs=self.world.get("docs"),
+                    registry=self.world.get("registry"),
+                    checkpoints=self.world.get("checkpoints"),
+                )
+            except FindingsSourceRefusal as exc:
+                raise _Stop(
+                    PREPARE_BLOCKED,
+                    f"the verified Findings source refused the PREPARE read "
+                    f"[{exc.code}]: {exc.message}",
+                    escalation=_escalation("engineering-lead-or-squad",
+                                           "findings_source_unbound",
+                                           code=exc.code)) from None
+            except Exception as exc:
+                raise _Stop(PREPARE_FAILED, "T01 PLAN failed",
+                            extra={"error": _bounded_reason(exc)}) from None
+            self._prepare_observation = result.get("findings_observation")
+            return result
         try:
             return plan.prepare_handoff_plan(
                 request,
@@ -1991,13 +2027,34 @@ class MentionHandoff:
             "package_ref": envelope["package_id"],
         }
         try:
-            trace = selfcheck.self_check_with_trace(
-                request, packages=[envelope],
-                registry=self.world.get("registry"),
-                current=self._current(),
-                findings=self.world.get("findings"),
-                finding_store=self.finding_store,
-            )
+            if self.findings_source is not None:
+                if self.world.get("findings") is not None or \
+                        self.finding_store is not None:
+                    raise _Stop(
+                        INVALID_INPUT,
+                        "a verified Findings source binding cannot be "
+                        "combined with world.findings or a legacy "
+                        "finding_store")
+                trace = selfcheck.self_check_with_trace(
+                    request, packages=[envelope],
+                    registry=self.world.get("registry"),
+                    current=self._current(),
+                    findings_source=self.findings_source,
+                    findings_prior_observation=self._prepare_observation,
+                    source_observer_run_id=self.recorder.transaction_id,
+                )
+                self._self_check_observation = trace.get(
+                    "findings_observation")
+            else:
+                trace = selfcheck.self_check_with_trace(
+                    request, packages=[envelope],
+                    registry=self.world.get("registry"),
+                    current=self._current(),
+                    findings=self.world.get("findings"),
+                    finding_store=self.finding_store,
+                )
+        except _Stop:
+            raise
         except Exception as exc:
             raise _Stop(PREPARE_FAILED, "T04 self_check failed",
                         extra={"error": _bounded_reason(exc)}) from None
@@ -2141,6 +2198,17 @@ class MentionHandoff:
                 "count": len((self.artifact_binding or {}).get("requirements") or []),
             } if self.artifact_binding else None),
             "pins": dict(self.u05_pins) if self.u05_pins else None,
+            "findings_source": ({
+                "mode": "bound",
+                "source_id": getattr(self.findings_source, "source_id", None),
+                "binding_digest": getattr(self.findings_source,
+                                         "binding_digest", None),
+                "prepare_snapshot_digest":
+                    (self._prepare_observation or {}).get("snapshot_digest"),
+                "self_check_snapshot_digest":
+                    (self._self_check_observation or {})
+                    .get("snapshot_digest"),
+            } if self.findings_source is not None else None),
             "known_run_ids": sorted(self.known_run_ids),
             "transitions": (self.machine.transitions
                             if self.machine is not None else ["INIT"]),
@@ -2322,7 +2390,8 @@ def run_mention_handoff(spec, *, caller_role: str, target_role_spec: str,
                         mention_evidence=None, run_evidence=None,
                         stage: str = PHASE_FULL,
                         crash_at: str | None = None,
-                        resume: dict | None = None) -> dict:
+                        resume: dict | None = None,
+                        findings_source=None) -> dict:
     """Run one mention-handoff transaction (simulation default).
 
     stage:
@@ -2406,7 +2475,7 @@ def run_mention_handoff(spec, *, caller_role: str, target_role_spec: str,
         recorder=recorder, ledger=ledger, compose_fn=compose_fn,
         clock=clock, bundle_dir=bundle_dir, finding_store=finding_store,
         world=world, policy=policy, workdir=workdir, executable=executable,
-        crash_at=crash_at, resume=resume)
+        crash_at=crash_at, resume=resume, findings_source=findings_source)
     ready_result = None
     if ready_already_staged:
         # The ready stage already ran for this id: never re-publish or
@@ -2457,7 +2526,8 @@ def run_execute_stage(ledger: dispatch.TransactionLedger, transaction_id: str,
                       mention_evidence, run_evidence, bundle_dir=None,
                       finding_store=None, world: dict | None = None,
                       policy: dict | None = None, workdir=None,
-                      clock: Callable = now_iso) -> dict:
+                      clock: Callable = now_iso,
+                      findings_source=None) -> dict:
     """Execute the staged mention handoff after the current agent emitted
     its one native mention. Revalidates everything from the ledger."""
     prior = _recorded_result(transaction_id, ledger)
@@ -2507,7 +2577,7 @@ def run_execute_stage(ledger: dispatch.TransactionLedger, transaction_id: str,
         compose_fn=_no_compose, clock=clock, bundle_dir=bundle_dir,
         finding_store=finding_store, world=world, policy=policy,
         workdir=Path(workdir) if workdir is not None else Path.cwd(),
-        executable=executable)
+        executable=executable, findings_source=findings_source)
     release = getattr(runner, "on_mention_authorized", None)
     if callable(release):
         release(prior)

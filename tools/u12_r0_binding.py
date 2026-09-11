@@ -82,6 +82,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 import chandoff as chandoff  # noqa: E402
 import chandoff_dispatch as dispatch  # noqa: E402
 import chandoff_finalize as finalize  # noqa: E402
+import chandoff_findings_source as cfs  # noqa: E402
 import chandoff_intent as o2  # noqa: E402
 import chandoff_note as note  # noqa: E402
 import chandoff_plan as plan  # noqa: E402
@@ -1478,6 +1479,11 @@ def r0b_creation_context(creation_context: dict, spec: dict, *,
         creation_context.get("decision_comment_ids") or [])
     validated["result"] = result
     validated["request"] = request
+    observation = creation_context.get("findings_observation")
+    if isinstance(observation, dict):
+        validated["findings_observation"] = observation
+        validated["findings_observation_digest"] = \
+            observation.get("snapshot_digest")
     return validated
 
 
@@ -1495,6 +1501,11 @@ def r0b_execution_context(execution_context: dict, spec: dict, *,
     validated["target_task_ref"] = target_ref
     validated["result"] = result
     validated["request"] = request
+    observation = execution_context.get("findings_observation")
+    if isinstance(observation, dict):
+        validated["findings_observation"] = observation
+        validated["findings_observation_digest"] = \
+            observation.get("snapshot_digest")
     return validated
 
 
@@ -4196,12 +4207,67 @@ def preflight_request_check(data, current_request) -> dict:
             "request_digest": digest(current_request)}
 
 
-def preflight_self_check(data, current_request, current_findings) -> dict:
+def preflight_self_check(data, current_request, current_findings=None, *,
+                         findings_source=None, findings_prior_observation=None,
+                         findings_prior_digest: str | None = None,
+                         boundary: str = "R0_PREFLIGHT") -> dict:
     """Run the frozen SELF_CHECK on bound E with the current Finding source.
 
-    The adapter never substitutes an empty findings list for a missing live
-    source; absent or malformed findings are a typed stop.
+    A verified `findings_source` is read freshly at this boundary and its
+    observation is bound to the request/E; a caller-supplied list is the
+    deprecated simulation seam. The adapter never substitutes an empty
+    findings list for a missing live source; absent or malformed findings
+    are a typed stop.
     """
+    if findings_source is not None and current_findings is not None:
+        raise PreflightRefusal(
+            o2.S_BLOCKED, REASON_MATERIAL_UNAVAILABLE,
+            "a verified Findings source and a naked caller findings list are "
+            "mutually exclusive", subject="findings")
+    findings_observation = None
+    if findings_source is not None:
+        execution = data.get("execution_context") or {}
+        try:
+            snapshot = findings_source.read(
+                boundary=boundary,
+                task_ref=current_request.get("task_ref")
+                if isinstance(current_request, dict) else None,
+                role=((current_request.get("target") or {}).get("role")
+                      if isinstance(current_request, dict) else None),
+                request_digest=digest(current_request)
+                if isinstance(current_request, dict) else None,
+                task_fingerprint=(execution.get("built_from") or {})
+                .get("task_fingerprint"),
+                envelope_digest=execution.get("envelope_digest"),
+                prior_observation=(findings_prior_observation
+                                   or execution.get("findings_observation")
+                                   or (data.get("findings_baseline")
+                                       if isinstance(data, dict) else None)))
+        except cfs.FindingsSourceRefusal as exc:
+            state = (o2.S_REFRESH_REQUIRED
+                     if exc.code == "findings_source_changed"
+                     else o2.S_BLOCKED)
+            reason = (REASON_MATERIAL_STALE
+                      if exc.code == "findings_source_changed"
+                      else REASON_MATERIAL_UNAVAILABLE)
+            raise PreflightRefusal(
+                state, reason,
+                f"the bound Findings source refused the read [{exc.code}]: "
+                f"{exc.message}", subject="findings",
+                findings_source_code=exc.code) from None
+        current_findings = snapshot["records"]
+        findings_observation = snapshot["observation"]
+        if findings_prior_digest is not None and \
+                findings_observation.get("snapshot_digest") != \
+                findings_prior_digest:
+            raise PreflightRefusal(
+                o2.S_REFRESH_REQUIRED, REASON_MATERIAL_STALE,
+                "the Findings store changed since the recorded ARM preflight; "
+                "whole-store drift stops before issuance",
+                subject="findings",
+                expected_snapshot_digest=findings_prior_digest,
+                actual_snapshot_digest=findings_observation.get(
+                    "snapshot_digest"))
     if current_findings is None:
         raise PreflightRefusal(
             o2.S_BLOCKED, REASON_PREFLIGHT_INPUT_MISSING,
@@ -4243,9 +4309,14 @@ def preflight_self_check(data, current_request, current_findings) -> dict:
             o2.S_REFRESH_REQUIRED, REASON_MATERIAL_STALE,
             "SELF_CHECK resolved a different package than bound E",
             subject="context")
-    return {"status": status, "action": action,
-            "reasons": list(check.get("reasons") or []),
-            "package_id": check.get("package_id")}
+    out = {"status": status, "action": action,
+           "reasons": list(check.get("reasons") or []),
+           "package_id": check.get("package_id")}
+    if findings_observation is not None:
+        out["findings_observation"] = findings_observation
+        out["findings_observation_digest"] = findings_observation.get(
+            "snapshot_digest")
+    return out
 
 
 def preflight_note_check(data, evidence) -> dict:
@@ -4407,7 +4478,9 @@ class R0BForwardFactory(strict.CanaryOrchestrator):
                  executable: str = "multica", clock=None, workdir=None,
                  ttl_seconds: int = 300, artifact_blob_reader=None,
                  artifact_root=None, authority_reader=None,
-                 execution_blob_resolver=None):
+                 execution_blob_resolver=None, findings_source=None,
+                 require_findings_source: bool = False,
+                 findings_baseline_observation=None):
         super().__init__(store, runner=runner, executable=executable,
                          clock=clock, workdir=workdir,
                          ttl_seconds=ttl_seconds)
@@ -4419,6 +4492,9 @@ class R0BForwardFactory(strict.CanaryOrchestrator):
         self.artifact_blob_reader = artifact_blob_reader
         self.artifact_root = artifact_root
         self.authority_reader = authority_reader
+        self.findings_source = findings_source
+        self.require_findings_source = bool(require_findings_source)
+        self.findings_baseline_observation = findings_baseline_observation
         if execution_blob_resolver is None:
             self.execution_blob_resolver = _git_blob_reader(ROOT)
             self.execution_resolver_kind = EXECUTION_RESOLVER_GIT
@@ -4505,9 +4581,10 @@ class R0BForwardFactory(strict.CanaryOrchestrator):
 
         Reads only: current issue/comments/timeline/runs, pinned artifact
         blobs, the current authority record, a fresh target-derived request
-        and the current Finding source, the exact bound note and the issue
-        projection. Raises `PreflightRefusal`; it never mutates external
-        state and never issues a native call.
+        and the current Findings source (verified binding when configured),
+        the exact bound note and the issue projection. Raises
+        `PreflightRefusal`; it never mutates external state and never issues
+        a native call.
         """
         if checkpoint not in ("ARM", "TRIGGER"):
             raise R0BValidationRefused("unknown preflight checkpoint",
@@ -4550,7 +4627,33 @@ class R0BForwardFactory(strict.CanaryOrchestrator):
         authority = validate_authority_evidence(
             self._resolve_authority(authority_evidence), data=data)
         request = preflight_request_check(data, current_request)
-        check = preflight_self_check(data, current_request, current_findings)
+        if self.findings_source is not None and current_findings is not None:
+            raise PreflightRefusal(
+                o2.S_BLOCKED, REASON_MATERIAL_UNAVAILABLE,
+                "a verified Findings source and a naked caller findings list "
+                "are mutually exclusive", subject="findings")
+        if self.findings_source is None and self.require_findings_source:
+            raise PreflightRefusal(
+                o2.S_BLOCKED, REASON_PREFLIGHT_INPUT_MISSING,
+                "this factory requires a verified Findings source binding; "
+                "the naked caller findings list is not production authority",
+                subject="findings")
+        arm_findings_digest = None
+        if checkpoint == "TRIGGER":
+            current_intent = self.store.get(intent_id)
+            arm_events = [
+                e for e in (current_intent.get("events") or [])
+                if e.get("name") == E_PREFLIGHT
+                and (e.get("data") or {}).get("checkpoint") == "ARM"]
+            if arm_events:
+                arm_findings_digest = (arm_events[-1].get("data") or {}).get(
+                    "findings_observation_digest")
+        check = preflight_self_check(
+            data, current_request, current_findings,
+            findings_source=self.findings_source,
+            findings_prior_observation=self.findings_baseline_observation,
+            findings_prior_digest=arm_findings_digest,
+            boundary=f"R0_{checkpoint}")
         note_proof = preflight_note_check(data, evidence)
         issue_proof = preflight_issue_check(data, issue)
         if evidence["runs"]:
@@ -4569,6 +4672,9 @@ class R0BForwardFactory(strict.CanaryOrchestrator):
             "authority": authority,
             "request": request,
             "self_check": check,
+            "findings_observation": check.get("findings_observation"),
+            "findings_observation_digest":
+                check.get("findings_observation_digest"),
             "note": note_proof,
             "issue_proof": issue_proof,
         }
@@ -4588,6 +4694,8 @@ class R0BForwardFactory(strict.CanaryOrchestrator):
                 "fingerprint": bundle["request"]["fingerprint"],
                 "self_check": dict(bundle["self_check"],
                                    reasons=bundle["self_check"]["reasons"][:8]),
+                "findings_observation_digest":
+                    bundle.get("findings_observation_digest"),
                 "note": bundle["note"],
                 "issue_projection_digest":
                     bundle["issue_proof"]["projection_digest"],
@@ -6900,20 +7008,41 @@ class R0BForwardFactory(strict.CanaryOrchestrator):
     def _self_check_ok(self, data: dict) -> bool:
         """Publication-predicate SELF_CHECK over the bound E, no writes.
 
-        This is the YZT-83 publication acceptance predicate, which runs
-        before any arming; the mandatory arm/trigger preflight runs the
-        frozen SELF_CHECK separately against the fresh request and the
-        current Finding source instead of substituting an empty list.
+        With a configured verified Findings source this reads the source
+        freshly at the publication-confirmation boundary, checks whole-store
+        drift against the bound observation, and runs SELF_CHECK over the
+        detached records. Without a configured source the legacy default
+        runtime store is scanned; the publication predicate never fabricates
+        an empty findings list, and a factory that requires a binding without
+        one fails closed here.
         """
         execution = data.get("execution_context") or {}
         request = execution.get("request")
         envelope = execution.get("result")
         if not isinstance(request, dict) or not isinstance(envelope, dict):
             return False
+        kwargs = {}
+        if self.findings_source is not None:
+            try:
+                snapshot = self.findings_source.read(
+                    boundary="R0_PUBLICATION_CONFIRMATION",
+                    task_ref=request.get("task_ref"),
+                    role=(request.get("target") or {}).get("role"),
+                    request_digest=digest(request),
+                    task_fingerprint=(execution.get("built_from") or {})
+                    .get("task_fingerprint"),
+                    envelope_digest=execution.get("envelope_digest"),
+                    prior_observation=(execution.get("findings_observation")
+                                       or self.findings_baseline_observation))
+            except cfs.FindingsSourceRefusal:
+                return False
+            kwargs["findings"] = snapshot["records"]
+        elif self.require_findings_source:
+            return False
         try:
             check = selfcheck.self_check(
                 self_check_request_from_prepare(request),
-                packages=[envelope], findings=[])
+                packages=[envelope], **kwargs)
         except (o2.IntentError, ValueError):
             return False
         return check.get("status") == "READY" and \
@@ -8138,7 +8267,11 @@ class R0BForwardFactory(strict.CanaryOrchestrator):
                 "the freshly read target body plus the accepted explicit "
                 "decisions do not reproduce the accepted E request; a stale "
                 "or edited target refuses", subject="source_activation")
-        check = preflight_self_check(data, reconstructed, current_findings)
+        check = preflight_self_check(
+            data, reconstructed, current_findings,
+            findings_source=self.findings_source,
+            findings_prior_observation=self.findings_baseline_observation,
+            boundary="R0_PUBLICATION_RECOVERY")
         preflight_request_check(data, reconstructed)
         creation = data.get("creation_context") or {}
         target = data.get("target_binding") or {}
@@ -8544,10 +8677,39 @@ class R0BForwardFactory(strict.CanaryOrchestrator):
 
     # -- package construction (frozen pipeline) -----------------------------
     def build_context_package(self, request: dict, *, clock=None,
-                              findings=None) -> dict:
-        """Build one real READY package through T01->T02->T03 and SELF_CHECK."""
-        plan_env = plan.prepare_handoff_plan(
-            request, findings=[] if findings is None else findings)
+                              findings=None, findings_source=None) -> dict:
+        """Build one real READY package through T01->T02->T03 and SELF_CHECK.
+
+        Exactly one explicit Findings input is mandatory: a verified source
+        read freshly at the PREPARE boundary (the observation is carried into
+        the E binding) or an explicit simulation list. A missing source is
+        never substituted with an empty list.
+        """
+        if findings_source is not None and findings is not None:
+            raise R0BValidationRefused(
+                "findings_source and a naked findings list are mutually "
+                "exclusive")
+        observation = None
+        if findings_source is not None:
+            try:
+                snapshot = findings_source.read(
+                    boundary="PREPARE",
+                    task_ref=request.get("task_ref"),
+                    role=(request.get("target") or {}).get("role"),
+                    request_digest=digest(request),
+                    task_fingerprint=chandoff.fingerprint_from_request(request),
+                    prior_observation=self.findings_baseline_observation)
+            except cfs.FindingsSourceRefusal as exc:
+                raise R0BValidationRefused(
+                    f"the verified Findings source refused the PREPARE read "
+                    f"[{exc.code}]: {exc.message}") from None
+            findings = snapshot["records"]
+            observation = snapshot["observation"]
+        elif findings is None:
+            raise R0BValidationRefused(
+                "build_context_package requires an explicit Findings source "
+                "or simulation list; a missing source is never an empty store")
+        plan_env = plan.prepare_handoff_plan(request, findings=findings)
         if plan_env.get("status") != "PLAN_READY":
             raise R0BValidationRefused(
                 "PLAN did not reach PLAN_READY", status=plan_env.get("status"))
@@ -8566,10 +8728,11 @@ class R0BForwardFactory(strict.CanaryOrchestrator):
                 status=result.get("status"), errors=result.get("errors"))
         sc_request = self_check_request_from_prepare(request)
         check = selfcheck.self_check(sc_request, packages=[result],
-                                     findings=[])
+                                     findings=findings)
         if check.get("status") != "READY":
             raise R0BValidationRefused("SELF_CHECK is not READY", check=check)
-        return {"result": result, "request": request, "self_check": check}
+        return {"result": result, "request": request, "self_check": check,
+                "findings_observation": observation}
 
 
 # One shared classifier for the live collection and the pure proof recheck,
@@ -8717,6 +8880,19 @@ def _recovery_transitions(factory) -> bool:
     return states == {"o2.S_TARGET_BOUND"}
 
 
+def _empty_findings_literals(tree) -> list:
+    """Line numbers of any `findings=[]` keyword literal (forbidden callers)."""
+    out = []
+    for sub in ast.walk(tree):
+        if not isinstance(sub, ast.Call):
+            continue
+        for kw in sub.keywords:
+            if kw.arg == "findings" and isinstance(kw.value, ast.List) \
+                    and not kw.value.elts:
+                out.append(sub.lineno)
+    return out
+
+
 def wiring_proof(source=None, module_path=None) -> dict:
     """Static proof of factory-only execution and strict-only triggering."""
     path = Path(module_path) if module_path else Path(__file__).resolve()
@@ -8737,8 +8913,9 @@ def wiring_proof(source=None, module_path=None) -> dict:
     findings_kwarg_is_live = bool(preflight_fn) and any(
         isinstance(sub, ast.Call)
         and getattr(sub.func, "attr", None) == "self_check"
-        and any(kw.arg == "findings"
-                and not isinstance(kw.value, ast.List)
+        and any((kw.arg == "findings"
+                 and not isinstance(kw.value, ast.List))
+                or kw.arg == "findings_source"
                 for kw in sub.keywords)
         for sub in ast.walk(preflight_fn))
     checks = {
@@ -8780,6 +8957,19 @@ def wiring_proof(source=None, module_path=None) -> dict:
             _method(factory, "_preflight_materials"),
             "preflight_note_check"),
         "preflight_findings_not_forced_empty": findings_kwarg_is_live,
+        "no_forced_empty_findings_literal": not _empty_findings_literals(tree),
+        "findings_source_binding_supported": (
+            "chandoff_findings_source" in text
+            and functions.get("preflight_self_check") is not None
+            and "findings_source" in _unparse(
+                functions.get("preflight_self_check"))
+            and "findings_source" in _unparse(
+                _method(factory, "build_context_package"))),
+        "publication_predicate_findings_bound": (
+            "R0_PUBLICATION_CONFIRMATION" in _unparse(
+                _method(factory, "_self_check_ok"))
+            and "findings_source" in _unparse(
+                _method(factory, "_self_check_ok"))),
         "preflight_diagnostic_event": (
             "E_PREFLIGHT" in text and "r0b_preflight" in text),
         "authority_reader_binding_present": (
@@ -9087,25 +9277,76 @@ def cmd_recover_blocked_publication(args) -> int:
     """Operator entrypoint: one approved proof-bearing publication recovery.
 
     Read-only platform reads plus the bounded evidence event and the single
-    versioned commit record. The exact Lead disposition, the accepted
-    execution-migration identities and the current Finding source are
-    mandatory; no note resend, create, assign, status, rerun or trigger is
-    reachable from this path.
+    versioned commit record. A verified Findings source binding (and its
+    captured authority record) is mandatory; the deprecated naked
+    `--findings-file` list is refused. The exact Lead disposition and the
+    accepted execution-migration identities are mandatory; no note resend,
+    create, assign, status, rerun or trigger is reachable from this path.
     """
+    binding_path = getattr(args, "findings_source_binding_file", None)
+    authority_path = getattr(args, "findings_authority_file", None)
+    legacy_findings = (_load_json(args.findings_file)
+                       if getattr(args, "findings_file", None) else None)
+    source = None
+    baseline = None
+    if not binding_path:
+        print(json.dumps({
+            "ok": False, "code": "findings_source_unbound",
+            "message": ("publication recovery requires "
+                        "--findings-source-binding-file and "
+                        "--findings-authority-file; the naked --findings-file "
+                        "list is not production Findings authority")},
+            ensure_ascii=False, indent=2, sort_keys=True))
+        return 2
+    if not authority_path:
+        print(json.dumps({
+            "ok": False, "code": "findings_source_unbound",
+            "message": "--findings-authority-file is required with the binding"},
+            ensure_ascii=False, indent=2, sort_keys=True))
+        return 2
+    if legacy_findings is not None:
+        print(json.dumps({
+            "ok": False, "code": "findings_source_ambiguous",
+            "message": ("--findings-file cannot be combined with a verified "
+                        "source binding; inputs are mutually exclusive")},
+            ensure_ascii=False, indent=2, sort_keys=True))
+        return 2
+
+    def resolver(_authority, _path=authority_path):
+        doc, _digest, _size = cfs.load_json_strict_file(
+            _path, "findings authority capture")
+        return doc
+
+    try:
+        source = cfs.source_from_binding_file(binding_path, resolver=resolver)
+    except cfs.FindingsSourceRefusal as exc:
+        print(json.dumps({"ok": False, **exc.as_dict()},
+                         ensure_ascii=False, indent=2, sort_keys=True))
+        return 2
+    evidence_path = getattr(args, "findings_evidence_file", None)
+    if evidence_path:
+        try:
+            baseline = cfs.observation_from_file(evidence_path)
+        except cfs.FindingsSourceRefusal as exc:
+            print(json.dumps({"ok": False, **exc.as_dict()},
+                             ensure_ascii=False, indent=2, sort_keys=True))
+            return 2
+
     store = o2.DurableIntentStore(args.ledger)
     factory = build_r0b_factory(
         store, runner=_probe_runner, executable=args.executable,
         artifact_root=args.artifact_root or str(ROOT),
         authority_reader=ReadinessManifestAuthorityReader(
-            args.authority_root or args.artifact_root or str(ROOT)))
+            args.authority_root or args.artifact_root or str(ROOT)),
+        findings_source=source, require_findings_source=True,
+        findings_baseline_observation=baseline)
     decision = _load_json(args.decision_file)
     accepted = _load_json(args.accepted_execution_file)
-    findings = _load_json(args.findings_file) if args.findings_file else None
     try:
         result = factory.recover_blocked_publication(
             args.intent_id, decision=decision,
             accepted_execution=accepted, actor=args.actor,
-            current_findings=findings)
+            current_findings=None)
     except o2.IntentError as exc:
         print(json.dumps({"ok": False, "code": getattr(exc, "code", None),
                           "message": exc.message,
@@ -9271,8 +9512,17 @@ def build_parser() -> argparse.ArgumentParser:
                         help="accepted execution-migration identities "
                              "(must equal decision.execution_migration)")
     pubrec.add_argument("--findings-file", default=None,
-                        help="current Finding source (required; the adapter "
-                             "never forces an empty list)")
+                        help="DEPRECATED naked finding list; refused in favor "
+                             "of --findings-source-binding-file")
+    pubrec.add_argument("--findings-source-binding-file", default=None,
+                        help="verified findings-source-binding/1 JSON "
+                             "(required for a production recovery)")
+    pubrec.add_argument("--findings-authority-file", default=None,
+                        help="captured authoritative disposition JSON whose "
+                             "content digest the binding verifies (required)")
+    pubrec.add_argument("--findings-evidence-file", default=None,
+                        help="optional prior boundary observation used as the "
+                             "drift baseline")
     pubrec.add_argument("--actor", required=True)
     pubrec.add_argument("--artifact-root", default=None)
     pubrec.add_argument("--authority-root", default=None)

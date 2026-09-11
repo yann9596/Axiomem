@@ -31,11 +31,13 @@ _spec.loader.exec_module(pipeline)
 sys.dont_write_bytecode = False
 
 sys.path.insert(0, str(TOOLS))
+sys.path.insert(0, str(Path(__file__).resolve().parent))
 
 import cartifact as ac  # noqa: E402
 import chandoff  # noqa: E402
 import chandoff_compose as compose  # noqa: E402
 import chandoff_plan as plan  # noqa: E402
+import findings_fixture  # noqa: E402
 from schema_mini import Schema, load_schema_file  # noqa: E402
 
 ISSUE_FILE = FIXTURES / "issue_get_yzt58.json"
@@ -81,6 +83,8 @@ def ns(**kwargs) -> argparse.Namespace:
     kwargs.setdefault("artifact_store_file", None)
     kwargs.setdefault("artifact_requirements_file", None)
     kwargs.setdefault("artifact_review_level", None)
+    for key, value in findings_fixture.findings_args().items():
+        kwargs.setdefault(key, value)
     return argparse.Namespace(**kwargs)
 
 
@@ -98,6 +102,10 @@ def prepare_ns(out_dir=None, **over) -> argparse.Namespace:
 
 def finalize_ns(plan_file, result_file, request_file, out_dir=None,
                 repairs_used=0, **over) -> argparse.Namespace:
+    if out_dir is not None and "findings_evidence_file" not in over:
+        candidate = Path(out_dir) / "findings-observation.json"
+        if candidate.is_file():
+            over["findings_evidence_file"] = str(candidate)
     return ns(plan_file=str(plan_file), result_file=str(result_file),
               request_file=str(request_file), repairs_used=repairs_used,
               out_dir=out_dir, **over)

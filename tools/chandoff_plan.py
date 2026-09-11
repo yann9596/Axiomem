@@ -31,6 +31,7 @@ from cbuild import (  # noqa: E402
     _checkpoint_entries, _negative_dominates, anchor_digest, collect_conflicts,
     resolve_scope,
 )
+from chandoff_findings_source import FindingsSourceRefusal  # noqa: E402
 from cdata import checkpoint_docs, load_all_docs, load_role_profile  # noqa: E402
 from chandoff import (  # noqa: E402
     canonical_json, checkpoint_candidate_id, compute_built_from,
@@ -123,17 +124,75 @@ class MemoryFindingStore:
 
 
 class RuntimeFindingStore:
-    """Loads open Findings from the runtime task workspace. Does not wake anyone."""
+    """Loads open Findings from the runtime task workspace. Does not wake anyone.
 
-    def __init__(self, root: Path | None = None):
+    The store is a legacy file transport. Its implicit root (the code checkout
+    that happens to be running) is never production authority: strict mode
+    refuses a missing/unreadable root instead of fabricating an empty store,
+    and `assert_explicit_root` refuses the implicit default for bound paths.
+    """
+
+    def __init__(self, root: Path | None = None, *, strict: bool = False):
+        self.implicit_root = root is None
         self.root = Path(root) if root else (RUNTIME / "findings")
+        self.strict = strict
+
+    def assert_explicit_root(self) -> None:
+        if self.implicit_root:
+            raise FindingsSourceRefusal(
+                "findings_source_unbound",
+                "the implicit runtime root cannot establish production "
+                "Findings authority; bind an explicit verified source "
+                "instead of the code-root default")
+
+    def _refuse(self, code: str, message: str, **details):
+        if self.strict:
+            raise FindingsSourceRefusal(code, message, **details)
+        return None
 
     def load_open(self) -> list:
         if not self.root.exists():
-            return []
+            refusal = self._refuse(
+                "findings_source_missing",
+                "the runtime Findings root does not exist; an absent source "
+                "is never an empty store", detail=str(self.root))
+            if refusal is None:
+                return []
+        if not self.root.is_dir():
+            refusal = self._refuse(
+                "findings_source_unreadable",
+                "the runtime Findings root is not a directory",
+                detail=str(self.root))
+            if refusal is None:
+                return []
+        try:
+            names = sorted(self.root.glob("FIND-*.json"))
+        except OSError as exc:
+            refusal = self._refuse(
+                "findings_source_unreadable",
+                f"the runtime Findings root cannot be enumerated: "
+                f"{type(exc).__name__}: {exc}", detail=str(self.root))
+            if refusal is None:
+                return []
         out = []
-        for path in sorted(self.root.glob("FIND-*.json")):
-            doc = json.loads(path.read_text(encoding="utf-8"))
+        seen = {}
+        for path in names:
+            try:
+                doc = json.loads(path.read_text(encoding="utf-8"))
+            except (OSError, ValueError) as exc:
+                if self.strict:
+                    raise FindingsSourceRefusal(
+                        "findings_source_invalid",
+                        f"finding file cannot be parsed strictly: {path.name}",
+                        detail=f"{type(exc).__name__}: {exc}") from None
+                raise
+            fid = doc.get("finding_id")
+            if fid in seen:
+                raise FindingsSourceRefusal(
+                    "findings_source_invalid",
+                    "duplicate finding_id in the runtime store",
+                    detail=f"{fid} ({seen[fid]}, {path.name})")
+            seen[fid] = path.name
             if doc.get("status") == "open":
                 out.append(doc)
         return out
@@ -333,23 +392,37 @@ def capture_finding(finding: dict, store=None) -> dict:
 
 
 def finding_gate(request: dict, task_scope: dict, *, findings: list | None = None,
-                 store=None, mutator=None, boundary: str = "handoff") -> dict:
-    """Internal FINDING_GATE. boundary=handoff for T01; other boundaries stay T02+."""
+                 store=None, mutator=None, boundary: str = "handoff",
+                 diagnostics: bool = False) -> dict:
+    """Internal FINDING_GATE. boundary=handoff for T01; other boundaries stay T02+.
+
+    `diagnostics=True` (bound complete-store input) adds per-record exclusion
+    accounting and the considered-open count; the legacy caller-filtered list
+    path keeps its historical byte-identical output.
+    """
     mutator = mutator or NoCanonicalWriteMutator()
     store = store or MemoryFindingStore(findings or [])
     open_findings = findings if findings is not None else store.load_open()
     task_ref = request["task_ref"]
     task_tokens = _task_tokens(request)
     relevant, processed, remaining, blocked = [], [], [], []
+    exclusions: list = []
     canonical_changed = False
-    for finding in sorted(open_findings, key=lambda f: f.get("finding_id") or ""):
+    considered = sorted(open_findings, key=lambda f: f.get("finding_id") or "")
+    for finding in considered:
+        fid = finding.get("finding_id")
         if finding.get("status") != "open":
+            exclusions.append({"finding_id": fid, "reason": "not_open"})
             continue
         if not _task_associated(finding, task_ref):
+            exclusions.append({"finding_id": fid,
+                               "reason": "task_not_associated"})
             continue
         if not scope_allows(_finding_as_doc(finding), task_scope):
+            exclusions.append({"finding_id": fid, "reason": "scope_excluded"})
             continue
         if not _relevant_to_target(finding, request, task_scope, task_tokens):
+            exclusions.append({"finding_id": fid, "reason": "not_relevant"})
             continue
         relevant.append(copy.deepcopy(finding))
         material = _is_material(finding, task_tokens)
@@ -383,7 +456,7 @@ def finding_gate(request: dict, task_scope: dict, *, findings: list | None = Non
             reason = "evidence_conflict"
         elif first.get("disposition") in {"create_rule", "issue_escalation"}:
             reason = "authority_gap"
-        return {
+        out = {
             "status": "BLOCKED",
             "boundary": boundary,
             "relevant_open_findings": relevant,
@@ -394,8 +467,12 @@ def finding_gate(request: dict, task_scope: dict, *, findings: list | None = Non
             "escalation": {"required": True, "reason": reason},
             "context_engineer_woken": False,
         }
+        if diagnostics:
+            out["exclusions"] = exclusions
+            out["considered_open_count"] = len(considered)
+        return out
     status = "REFRESH_REQUIRED" if canonical_changed else "CLEAR"
-    return {
+    out = {
         "status": status,
         "boundary": boundary,
         "relevant_open_findings": relevant,
@@ -406,6 +483,10 @@ def finding_gate(request: dict, task_scope: dict, *, findings: list | None = Non
         "escalation": {"required": False},
         "context_engineer_woken": False,
     }
+    if diagnostics:
+        out["exclusions"] = exclusions
+        out["considered_open_count"] = len(considered)
+    return out
 
 
 def resolve_handoff_scope(request: dict, registry: dict | None = None) -> dict:
@@ -610,11 +691,53 @@ def _authority_ok(rule: dict, evidence) -> bool:
     return bool(report.get("valid"))
 
 
+def request_digest(request: dict) -> str:
+    return "sha256:" + hashlib.sha256(
+        canonical_json(request).encode("utf-8")).hexdigest()
+
+
+def _source_refusal_envelope(compat: dict, reason: str, message: str,
+                             *, refusal=None, revision=None) -> dict:
+    """Typed orchestrator BLOCKED for an unbound/ambiguous/changed source.
+
+    Frozen status/reason vocabulary is unchanged: the typed internal code
+    lives in `escalation.reason` and `findings_source_refusal` diagnostics.
+    """
+    out = {
+        "status": "BLOCKED",
+        "plan": None,
+        "llm_called": False,
+        "scope_pollution": 0,
+        "compatibility_check": compat,
+        "finding_gate": None,
+        "findings_observation": None,
+        "escalation": {"required": True, "reason": reason},
+        "source_refusal_message": message,
+        "context_engineer_woken": False,
+    }
+    if refusal is not None:
+        out["findings_source_refusal"] = refusal
+    if revision is not None:
+        out["memory_revision_before_gate"] = revision
+        out["memory_revision_after_gate"] = revision
+    return out
+
+
 def prepare_handoff_plan(request: dict, *, findings: list | None = None,
                          store=None, mutator=None, docs: list | None = None,
                          registry: dict | None = None, checkpoints: list | None = None,
-                         revision_fn=None) -> dict:
-    """Build a schema-valid context_plan or BLOCKED. Never calls a model."""
+                         revision_fn=None, findings_source=None,
+                         source_boundary: str = "PREPARE",
+                         source_join: dict | None = None,
+                         source_prior_observation: dict | None = None,
+                         source_observer_run_id: str | None = None) -> dict:
+    """Build a schema-valid context_plan or BLOCKED. Never calls a model.
+
+    `findings_source` is the preferred production input: a verified strict
+    source object read freshly at this boundary. It is mutually exclusive
+    with the legacy in-memory `findings` list and the legacy `store` seam;
+    conflicting inputs are refused instead of silently preferring one.
+    """
     compat = compatibility_check()
     if not compat["ok"]:
         return {
@@ -629,6 +752,15 @@ def prepare_handoff_plan(request: dict, *, findings: list | None = None,
     errors = _validate("context-handoff/prepare-handoff-request.schema.json", request)
     if errors:
         raise ValueError("invalid prepare_handoff_request: " + "; ".join(errors[:8]))
+
+    if findings_source is not None and (findings is not None or store is not None):
+        conflicting = [name for name, value in (
+            ("findings list", findings), ("legacy store", store))
+            if value is not None]
+        return _source_refusal_envelope(
+            compat, "findings_source_ambiguous",
+            "a verified Findings source cannot be combined with "
+            + " / ".join(conflicting) + "; inputs are mutually exclusive")
 
     revision_before = (revision_fn or memory_revision)()
     registry = load_registry(registry)
@@ -652,13 +784,38 @@ def prepare_handoff_plan(request: dict, *, findings: list | None = None,
     policy = policy_of(profile)
     limit = int((request.get("options") or {}).get("limit") or 8)
 
-    gate_store = store if store is not None else MemoryFindingStore(findings or [])
-    if findings is None and store is None:
-        gate_store = RuntimeFindingStore()
-    gate = finding_gate(
-        request, task_scope, findings=findings, store=gate_store,
-        mutator=mutator or NoCanonicalWriteMutator(), boundary="handoff",
-    )
+    findings_observation = None
+    if findings_source is not None:
+        join = dict(source_join or {})
+        try:
+            snapshot = findings_source.read(
+                boundary=source_boundary,
+                observer_run_id=source_observer_run_id,
+                task_ref=request["task_ref"], role=role,
+                request_digest=request_digest(request),
+                task_fingerprint=fingerprint_from_request(request),
+                prior_observation=source_prior_observation,
+                **join)
+        except FindingsSourceRefusal as exc:
+            return _source_refusal_envelope(
+                compat, exc.code, exc.message, refusal=exc.as_dict(),
+                revision=revision_before)
+        findings_observation = snapshot["observation"]
+        gate_store = MemoryFindingStore(snapshot["records"])
+        gate = finding_gate(
+            request, task_scope, findings=None, store=gate_store,
+            mutator=mutator or NoCanonicalWriteMutator(), boundary="handoff",
+            diagnostics=True,
+        )
+        gate["detached"] = True
+    else:
+        gate_store = store if store is not None else MemoryFindingStore(findings or [])
+        if findings is None and store is None:
+            gate_store = RuntimeFindingStore()
+        gate = finding_gate(
+            request, task_scope, findings=findings, store=gate_store,
+            mutator=mutator or NoCanonicalWriteMutator(), boundary="handoff",
+        )
     if gate["status"] == "BLOCKED":
         return {
             "status": "BLOCKED",
@@ -667,6 +824,7 @@ def prepare_handoff_plan(request: dict, *, findings: list | None = None,
             "scope_pollution": 0,
             "compatibility_check": compat,
             "finding_gate": gate,
+            "findings_observation": findings_observation,
             "escalation": gate["escalation"],
             "memory_revision_before_gate": revision_before,
             "memory_revision_after_gate": (revision_fn or memory_revision)(),
@@ -942,6 +1100,7 @@ def prepare_handoff_plan(request: dict, *, findings: list | None = None,
         },
         "context_engineer_woken": False,
         "case_trigger": case_trigger,
+        "findings_observation": findings_observation,
     }
 
 

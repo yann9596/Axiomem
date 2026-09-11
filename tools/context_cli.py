@@ -59,6 +59,14 @@ def main() -> int:
     ph = sub.add_parser("prepare-handoff-plan",
                         help="T01 deterministic context_plan (no model call)")
     ph.add_argument("--request-file", required=True)
+    ph.add_argument("--findings-source-binding-file", default=None,
+                    help="verified findings-source-binding/1 JSON; when "
+                         "present the strict bound Findings source is used")
+    ph.add_argument("--findings-authority-file", default=None,
+                    help="captured authority record for the binding")
+    ph.add_argument("--findings-evidence-file", default=None,
+                    help="prior boundary observation (optional drift "
+                         "baseline)")
 
     sc = sub.add_parser("semantic-compose",
                         help="T02 bounded semantic compose validation (no model call)")
@@ -112,7 +120,28 @@ def main() -> int:
         if args.command == "prepare-handoff-plan":
             import chandoff_plan
             request = json.loads(Path(args.request_file).read_text(encoding="utf-8"))
-            result = chandoff_plan.prepare_handoff_plan(request)
+            source = None
+            prior = None
+            if getattr(args, "findings_source_binding_file", None):
+                import chandoff_findings_source as cfs
+                if not args.findings_authority_file:
+                    raise ValueError(
+                        "--findings-authority-file is required with the "
+                        "findings source binding")
+
+                def resolver(_authority, _path=args.findings_authority_file):
+                    doc, _digest, _size = cfs.load_json_strict_file(
+                        _path, "findings authority capture")
+                    return doc
+
+                source = cfs.source_from_binding_file(
+                    args.findings_source_binding_file, resolver=resolver)
+                if getattr(args, "findings_evidence_file", None):
+                    prior = cfs.observation_from_file(
+                        args.findings_evidence_file)
+            result = chandoff_plan.prepare_handoff_plan(
+                request, findings_source=source,
+                source_prior_observation=prior)
             print(json.dumps(result, ensure_ascii=False, indent=2))
             return 0 if result.get("status") == "PLAN_READY" else 2
         if args.command == "semantic-compose":

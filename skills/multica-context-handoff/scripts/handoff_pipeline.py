@@ -121,6 +121,7 @@ def _tools(root: Path):
         import chandoff_adapter  # noqa: F401
         import chandoff_compose  # noqa: F401
         import chandoff_finalize  # noqa: F401
+        import chandoff_findings_source  # noqa: F401
         import chandoff_note  # noqa: F401
         import chandoff_plan  # noqa: F401
         import chandoff_selfcheck  # noqa: F401
@@ -129,6 +130,7 @@ def _tools(root: Path):
             "adapter": sys.modules["chandoff_adapter"],
             "compose": sys.modules["chandoff_compose"],
             "finalize": sys.modules["chandoff_finalize"],
+            "findings_source": sys.modules["chandoff_findings_source"],
             "note": sys.modules["chandoff_note"],
             "plan": sys.modules["chandoff_plan"],
             "selfcheck": sys.modules["chandoff_selfcheck"],
@@ -211,6 +213,77 @@ def _artifact_inputs(args, *, target_role: str, package: dict | None = None):
 
 
 # ---------------------------------------------------------------------------
+# Findings source binding: production stages require a verified source
+# binding plus the prior boundary observation. There is no implicit source
+# flag default and no fabricated empty list.
+# ---------------------------------------------------------------------------
+
+def _findings_binding_files(args, stage: str) -> tuple:
+    binding = getattr(args, "findings_source_binding_file", None)
+    authority = getattr(args, "findings_authority_file", None)
+    if not binding:
+        raise PipelineError(
+            "findings_source_unbound",
+            f"{stage} requires --findings-source-binding-file; a missing "
+            "Findings binding is refused (never an empty store)")
+    if not authority:
+        raise PipelineError(
+            "findings_source_unbound",
+            f"{stage} requires --findings-authority-file (the captured "
+            "authoritative disposition the binding digest verifies)")
+    return binding, authority
+
+
+def _load_findings_source(args, tools, *, project_id, stage: str):
+    binding, authority = _findings_binding_files(args, stage)
+    cfs = tools["findings_source"]
+
+    def resolver(_authority, _path=authority):
+        doc, _digest, _size = cfs.load_json_strict_file(
+            _path, "findings authority capture")
+        return doc
+
+    try:
+        return cfs.source_from_binding_file(
+            binding, resolver=resolver, project_id=project_id,
+            expected_commit=getattr(args, "findings_source_expect_commit", None),
+            expected_adapter_digest=getattr(
+                args, "findings_source_expect_adapter_digest", None))
+    except cfs.FindingsSourceRefusal as exc:
+        raise PipelineError(exc.code, exc.message, **exc.details) from None
+
+
+def _findings_evidence(args, tools, stage: str) -> dict:
+    path = getattr(args, "findings_evidence_file", None)
+    if not path:
+        raise PipelineError(
+            "findings_source_unbound",
+            f"{stage} requires --findings-evidence-file (the prior boundary "
+            "observation); the source join is never guessed")
+    cfs = tools["findings_source"]
+    try:
+        return cfs.observation_from_file(path)
+    except cfs.FindingsSourceRefusal as exc:
+        raise PipelineError(exc.code, exc.message, **exc.details) from None
+
+
+def _findings_report(observation: dict | None) -> dict | None:
+    if not observation:
+        return None
+    return {
+        "source_id": observation.get("source_id"),
+        "boundary": observation.get("boundary"),
+        "resolved_root": observation.get("resolved_root"),
+        "snapshot_digest": observation.get("snapshot_digest"),
+        "total_records": observation.get("total_records"),
+        "open_count": observation.get("open_count"),
+        "open_ids": list(observation.get("open_ids") or []),
+        "simulation": bool(observation.get("simulation")),
+        "binding_digest": observation.get("binding_digest"),
+    }
+
+
+# ---------------------------------------------------------------------------
 # PREPARE_HANDOFF: T05 snapshot -> T01 PLAN.
 # ---------------------------------------------------------------------------
 
@@ -249,12 +322,27 @@ def run_prepare(args, *, adapter_fn: Callable | None = None,
     request = envelope["request"]
     _json_write(out / "request.json", request)
 
+    try:
+        source = _load_findings_source(
+            args, tools, project_id=(request.get("project") or {}).get("project_id"),
+            stage="prepare")
+    except PipelineError as exc:
+        payload = _bounded_error("plan", exc)
+        payload["status"] = "findings_source_unbound"
+        payload["artifacts"] = {"dir": str(out)}
+        return payload, BOUNDED_EXIT
+
     plan_fn = plan_fn or tools["plan"].prepare_handoff_plan
     try:
-        plan_result = plan_fn(request)
+        plan_result = plan_fn(
+            request, findings_source=source,
+            source_observer_run_id=getattr(args, "observer_run_id", None))
     except Exception as exc:
         return _bounded_error("plan", exc), BOUNDED_EXIT
     _json_write(out / "plan-envelope.json", plan_result)
+    observation = plan_result.get("findings_observation")
+    if observation is not None:
+        _json_write(out / "findings-observation.json", observation)
 
     if plan_result.get("status") != "PLAN_READY":
         gate = plan_result.get("finding_gate") or {}
@@ -272,6 +360,8 @@ def run_prepare(args, *, adapter_fn: Callable | None = None,
                     {"finding_id": f.get("finding_id"), "reason": f.get("reason")}
                     for f in (gate.get("blocked_findings") or [])],
             },
+            "findings_source": _findings_report(observation),
+            "findings_source_refusal": plan_result.get("findings_source_refusal"),
             "artifacts": {"dir": str(out)},
             "guarantees": dict(GUARANTEES),
         }, BLOCKED_EXIT
@@ -290,10 +380,13 @@ def run_prepare(args, *, adapter_fn: Callable | None = None,
         "built_from": plan_result.get("built_from"),
         "escalation": plan_result.get("escalation") or {"required": False},
         "context_engineer_woken": bool(plan_result.get("context_engineer_woken")),
+        "findings_source": _findings_report(observation),
         "artifacts": {
             "dir": str(out),
             "request": str(out / "request.json"),
             "plan_envelope": str(out / "plan-envelope.json"),
+            "findings_observation": (str(out / "findings-observation.json")
+                                     if observation is not None else None),
         },
         "next": ("compose a frozen semantic_compose_result over the PLAN "
                  "candidates only, then run the finalize command"),
@@ -305,6 +398,28 @@ def run_prepare(args, *, adapter_fn: Callable | None = None,
 # Compose validation (T02) + FINALIZE (T03), with the one-repair bound.
 # ---------------------------------------------------------------------------
 
+def _digest_doc(doc) -> str:
+    return "sha256:" + hashlib.sha256(
+        json.dumps(doc, ensure_ascii=False, sort_keys=True,
+                   separators=(",", ":")).encode("utf-8")).hexdigest()
+
+
+def _findings_stage_error(stage: str, exc) -> tuple:
+    if hasattr(exc, "as_dict"):
+        err = exc.as_dict()
+        payload = {"ok": False, "stage": stage, "error": err,
+                   "findings_source_refusal": err,
+                   "guarantees": dict(GUARANTEES)}
+        return payload, BOUNDED_EXIT
+    payload = _bounded_error(stage, exc)
+    if getattr(exc, "code", None) in (
+            "findings_source_missing", "findings_source_unreadable",
+            "findings_source_invalid", "findings_source_ambiguous",
+            "findings_source_unbound", "findings_source_changed"):
+        payload["findings_source_refusal"] = exc.envelope()
+    return payload, BOUNDED_EXIT
+
+
 def run_finalize(args, *, compose_fn: Callable | None = None,
                  finalize_fn: Callable | None = None) -> tuple[dict, int]:
     root = resolve_repo_root(args.repo)
@@ -313,6 +428,22 @@ def run_finalize(args, *, compose_fn: Callable | None = None,
     plan_input = _json_read(args.plan_file)
     proposed = _json_read(args.result_file)
     request = _json_read(args.request_file)
+
+    try:
+        source = _load_findings_source(
+            args, tools, project_id=(request.get("project") or {}).get("project_id"),
+            stage="finalize")
+        evidence = _findings_evidence(args, tools, "finalize")
+        pre = source.read(
+            boundary="FINALIZE",
+            task_ref=request.get("task_ref"),
+            role=(request.get("target") or {}).get("role"),
+            request_digest=tools["plan"].request_digest(request),
+            task_fingerprint=tools["plan"].fingerprint_from_request(request),
+            prior_observation=evidence)
+    except Exception as exc:  # bounded refusal on the source boundary
+        return _findings_stage_error("findings", exc)
+    _json_write(out / "findings-observation-finalize.json", pre["observation"])
 
     compose_fn = compose_fn or tools["compose"].compose_semantic
     validation = compose_fn(plan_input, proposed)
@@ -368,6 +499,27 @@ def run_finalize(args, *, compose_fn: Callable | None = None,
 
     _json_write(out / "result.json", result)
 
+    try:
+        confirmed = source.read(
+            boundary="FINALIZE_CONFIRM",
+            task_ref=result.get("task_ref"),
+            role=result.get("role"),
+            request_digest=tools["plan"].request_digest(request),
+            task_fingerprint=(result.get("built_from") or {}).get("task_fingerprint"),
+            envelope_digest=_digest_doc(result),
+            prior_observation=pre["observation"])
+    except Exception as exc:
+        payload, code = _findings_stage_error("findings", exc)
+        payload["status"] = status
+        payload["t03_status"] = status
+        payload["publish"] = {"publishable": False, "normal_ready": False,
+                              "blocked_by": "FINDINGS_SOURCE_CHANGED"}
+        payload["artifacts"] = {"dir": str(out),
+                                "result": str(out / "result.json")}
+        return payload, code
+    _json_write(out / "findings-observation.json", confirmed["observation"])
+    findings_block = _findings_report(confirmed["observation"])
+
     package = result.get("package") or {}
     gaps = sorted(set((package.get("blocked_by") or []) +
                       [c.get("id") for c in (package.get("open_conflicts") or [])
@@ -400,10 +552,12 @@ def run_finalize(args, *, compose_fn: Callable | None = None,
         "gaps": gaps,
         "escalation": result.get("escalation") or {"required": False},
         "publish": publish,
+        "findings_source": findings_block,
         "artifacts": {
             "dir": str(out),
             "result": str(out / "result.json"),
             "compose_validation": str(out / "compose-validation.json"),
+            "findings_observation": str(out / "findings-observation.json"),
         },
         "guarantees": dict(GUARANTEES),
     }
@@ -520,12 +674,33 @@ def run_selfcheck(args, *, selfcheck_fn: Callable | None = None,
         payload["artifacts"] = {"dir": str(out)}
         return payload, BOUNDED_EXIT
 
+    if finding_store is not None:
+        # Explicit simulation seam: the caller injected an in-memory store and
+        # the payload records that mode; the production binding is not read.
+        source, evidence = None, None
+        findings_mode = "legacy_injected_store"
+    else:
+        try:
+            source = _load_findings_source(args, tools, project_id=None,
+                                           stage="selfcheck")
+            evidence = _findings_evidence(args, tools, "selfcheck")
+        except Exception as exc:
+            return _findings_stage_error("findings", exc)
+        findings_mode = "bound"
+
     selfcheck_fn = selfcheck_fn or tools["selfcheck"].self_check_with_trace
     trace = selfcheck_fn(request, packages=packages or None,
-                         store_dir=args.store, finding_store=finding_store)
+                         store_dir=args.store, finding_store=finding_store,
+                         findings_source=source,
+                         findings_prior_observation=evidence,
+                         source_observer_run_id=getattr(args, "observer_run_id",
+                                                        None))
     result = trace["result"]
     _json_write(out / "self-check-request.json", request)
     _json_write(out / "self-check-result.json", result)
+    if trace.get("findings_observation") is not None:
+        _json_write(out / "findings-observation.json",
+                    trace["findings_observation"])
 
     status = result["status"]
     work = {
@@ -546,6 +721,9 @@ def run_selfcheck(args, *, selfcheck_fn: Callable | None = None,
         "consequential_work": work,
         "context_engineer_woken": bool(trace.get("context_engineer_woken")),
         "scope_pollution_from_findings": trace.get("scope_pollution_from_findings"),
+        "findings_source": _findings_report(trace.get("findings_observation")),
+        "findings_source_refusal": trace.get("findings_source_refusal"),
+        "findings_source_mode": findings_mode,
         "artifacts": {
             "dir": str(out),
             "result": str(out / "self-check-result.json"),
@@ -687,6 +865,22 @@ def run_publish(args, *, note_cli_factory: Callable | None = None) -> tuple[dict
                 "guarantees": dict(GUARANTEES),
             }, BOUNDED_EXIT
 
+    try:
+        source = _load_findings_source(
+            args, tools,
+            project_id=((envelope.get("package") or {}).get("scope") or {})
+            .get("project_id"),
+            stage="publish")
+        evidence = _findings_evidence(args, tools, "publish")
+        pre_publish = source.read(
+            boundary="PRE_PUBLISH",
+            task_ref=envelope.get("task_ref"), role=envelope.get("role"),
+            envelope_digest=_digest_doc(envelope),
+            prior_observation=evidence)
+    except Exception as exc:
+        return _findings_stage_error("findings", exc)
+    findings_block = _findings_report(pre_publish["observation"])
+
     cli = note_cli_factory() if note_cli_factory \
         else tools["note"].NoteCli(executable=args.executable)
     if args.dry_run:
@@ -696,7 +890,9 @@ def run_publish(args, *, note_cli_factory: Callable | None = None) -> tuple[dict
         return {
             "ok": True, "stage": "publish", "dry_run": True,
             "body_sha256": hashlib.sha256(body.encode("utf-8")).hexdigest(),
-            "record": record, "guarantees": dict(GUARANTEES),
+            "record": record,
+            "findings_source": findings_block,
+            "guarantees": dict(GUARANTEES),
         }, READY_EXIT
     try:
         result = tools["note"].publish_handoff(
@@ -705,7 +901,33 @@ def run_publish(args, *, note_cli_factory: Callable | None = None) -> tuple[dict
             prepared_at=args.prepared_at, cli=cli)
     except Exception as exc:
         return _bounded_error("publish", exc), BOUNDED_EXIT
-    return result, READY_EXIT
+    try:
+        confirmed = source.read(
+            boundary="PUBLICATION_CONFIRMATION",
+            task_ref=envelope.get("task_ref"), role=envelope.get("role"),
+            envelope_digest=_digest_doc(envelope),
+            prior_observation=pre_publish["observation"])
+    except Exception as exc:
+        return {
+            "ok": False,
+            "stage": "publish",
+            "error": {
+                "code": "findings_source_changed_after_send",
+                "message": ("the outstanding single publication was sent; the "
+                            "post-send Findings confirmation failed. The "
+                            "receipt is preserved and no second note is ever "
+                            "issued"),
+            },
+            "publication": result,
+            "findings_source_pre_publish": findings_block,
+            "findings_source_refusal": (exc.as_dict()
+                                        if hasattr(exc, "as_dict")
+                                        else str(exc)[:240]),
+            "guarantees": dict(GUARANTEES),
+        }, BOUNDED_EXIT
+    out = dict(result) if isinstance(result, dict) else {"result": result}
+    out["findings_source"] = _findings_report(confirmed["observation"])
+    return out, READY_EXIT
 
 
 # ---------------------------------------------------------------------------
@@ -732,6 +954,26 @@ def _add_artifact_args(p: argparse.ArgumentParser) -> None:
                    help="optional R0/R1/R2 for the Artifact Contract ready-check")
 
 
+def _add_findings_args(p: argparse.ArgumentParser) -> None:
+    p.add_argument("--findings-source-binding-file", default=None,
+                   help="verified findings-source-binding/1 JSON "
+                        "(required on every production stage)")
+    p.add_argument("--findings-authority-file", default=None,
+                   help="captured authoritative disposition JSON whose "
+                        "content digest the binding verifies (required)")
+    p.add_argument("--findings-evidence-file", default=None,
+                   help="prior boundary findings-source-observation/1 JSON "
+                        "(required for finalize/selfcheck/publish)")
+    p.add_argument("--findings-source-expect-commit", default=None,
+                   help="optional full commit the binding runtime pin must "
+                        "match")
+    p.add_argument("--findings-source-expect-adapter-digest", default=None,
+                   help="optional sha256 the binding runtime adapter pin "
+                        "must match")
+    p.add_argument("--observer-run-id", default=None,
+                   help="observer run identity recorded in the observation")
+
+
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
         description="multica-context-handoff deterministic pipeline driver")
@@ -756,6 +998,7 @@ def build_parser() -> argparse.ArgumentParser:
     _add_repo_arg(prep)
     _add_out_arg(prep)
     _add_artifact_args(prep)
+    _add_findings_args(prep)
 
     fin = sub.add_parser("finalize", help="T02 compose validation + T03 FINALIZE")
     fin.add_argument("--plan-file", required=True)
@@ -767,6 +1010,7 @@ def build_parser() -> argparse.ArgumentParser:
     _add_repo_arg(fin)
     _add_out_arg(fin)
     _add_artifact_args(fin)
+    _add_findings_args(fin)
 
     chk = sub.add_parser("selfcheck", help="T06 discovery + T04 SELF_CHECK")
     chk.add_argument("--issue", default=None)
@@ -783,6 +1027,7 @@ def build_parser() -> argparse.ArgumentParser:
     _add_repo_arg(chk)
     _add_out_arg(chk)
     _add_artifact_args(chk)
+    _add_findings_args(chk)
 
     pub = sub.add_parser("publish", help="T06 /note publication (authorized)")
     pub.add_argument("--issue", required=True)
@@ -797,6 +1042,7 @@ def build_parser() -> argparse.ArgumentParser:
                      help="explicit caller authorization for this publication")
     _add_repo_arg(pub)
     _add_artifact_args(pub)
+    _add_findings_args(pub)
 
     return parser
 

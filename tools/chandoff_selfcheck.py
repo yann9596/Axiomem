@@ -67,6 +67,7 @@ package_id).
 from __future__ import annotations
 
 import argparse
+import hashlib
 import json
 import sys
 from pathlib import Path
@@ -74,6 +75,7 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 import chandoff  # noqa: E402
 import chandoff_plan as plan  # noqa: E402  (T01 internal Finding Gate, reused)
+from chandoff_findings_source import FindingsSourceRefusal  # noqa: E402
 from cutil import RUNTIME, TEAM  # noqa: E402
 from yaml_mini import parse_yaml  # noqa: E402
 
@@ -439,14 +441,31 @@ def _gate_store(findings: list | None, finding_store):
 
 def run_current_role_finding_gate(request: dict, task_scope: dict, *,
                                   findings: list | None = None,
-                                  finding_store=None, mutator=None) -> dict:
+                                  finding_store=None, mutator=None,
+                                  findings_source=None,
+                                  source_prior_observation=None) -> dict:
     """Internal FINDING_GATE(boundary=current_role) via the T01 gate.
 
     Reuses T01's task association, strict Scope filter, deterministic
     relevance narrowing, verification/classification/retention policy and
     injected store/mutator seam verbatim. No policy is copied and none is
-    weakened.
+    weakened. A verified `findings_source` is read freshly at this boundary
+    and the gate runs over the detached records (never the live store).
     """
+    if findings_source is not None and (findings is not None or
+                                        finding_store is not None):
+        raise ValueError(
+            "conflicting findings inputs: a verified findings_source cannot "
+            "be combined with a findings list or a legacy finding_store")
+    if findings_source is not None:
+        snapshot = findings_source.read(
+            boundary=GATE_BOUNDARY,
+            task_ref=request.get("task_ref"), role=request.get("role"),
+            prior_observation=source_prior_observation)
+        return plan.finding_gate(
+            internal_gate_request(request), task_scope,
+            findings=None, store=plan.MemoryFindingStore(snapshot["records"]),
+            mutator=mutator, boundary=GATE_BOUNDARY, diagnostics=True)
     return plan.finding_gate(
         internal_gate_request(request), task_scope,
         findings=findings, store=_gate_store(findings, finding_store),
@@ -462,9 +481,31 @@ def finding_pollution(gate: dict | None, task_scope: dict | None) -> int:
         if plan._pollutes(plan._finding_as_doc(f), task_scope))
 
 
+def _digest_json(obj) -> str:
+    return "sha256:" + hashlib.sha256(
+        chandoff.canonical_json(obj).encode("utf-8")).hexdigest()
+
+
+def _source_refusal_result(envelope: dict, exc: FindingsSourceRefusal) -> tuple:
+    """Map a typed source refusal to the frozen vocabulary plus diagnostics.
+
+    Source-invalid/unbound/missing is BLOCKED/ESCALATE (package_not_ready);
+    detected drift is REFRESH_REQUIRED/REFRESH with the existing
+    `package_stale` reason. The precise internal code stays in the trace.
+    """
+    drift = exc.code == "findings_source_changed"
+    status = "REFRESH_REQUIRED" if drift else "BLOCKED"
+    action = "REFRESH" if drift else "ESCALATE"
+    reasons = ["package_stale"] if drift else ["package_not_ready"]
+    return _emit(envelope, status, action, reasons), drift
+
+
 def self_check_with_trace(request: dict, *, packages=None, store_dir=None,
                           registry=None, current=None, findings=None,
-                          finding_store=None, mutator=None) -> dict:
+                          finding_store=None, mutator=None,
+                          findings_source=None,
+                          findings_prior_observation=None,
+                          source_observer_run_id=None) -> dict:
     """self_check plus the non-schema Finding-Gate trace (diagnostics only).
 
     The frozen public result never carries finding diagnostics; they live
@@ -472,7 +513,16 @@ def self_check_with_trace(request: dict, *, packages=None, store_dir=None,
     per supplement §7.1/§19: find current Package -> validate task/role/
     scope/status/fingerprint/revisions -> scan task-associated open
     Findings -> FINDING_GATE(boundary=current_role) -> map final result.
+
+    A verified `findings_source` is read independently at this boundary and
+    must join the same task/role/request/envelope; conflicting legacy list
+    or store injections are refused instead of silently preferred.
     """
+    if findings_source is not None and (findings is not None or
+                                        finding_store is not None):
+        raise ValueError(
+            "conflicting findings inputs: a verified findings_source cannot "
+            "be combined with a findings list or a legacy finding_store")
     errors = _validate(REQUEST_SCHEMA, request)
     if errors:
         raise ValueError("invalid self_check_request: " + "; ".join(errors[:8]))
@@ -486,6 +536,8 @@ def self_check_with_trace(request: dict, *, packages=None, store_dir=None,
             "finding_gate": None,
             "gate_ran": False,
             "verified_scope": None,
+            "findings_observation": None,
+            "findings_source_refusal": None,
             "context_engineer_woken": False,
             "scope_pollution_from_findings": 0,
         }
@@ -495,10 +547,42 @@ def self_check_with_trace(request: dict, *, packages=None, store_dir=None,
             and _registry_ok(scope, _load_registry(registry))):
         verified_scope = scope
     gate = None
+    findings_observation = None
+    findings_source_refusal = None
     if verified_scope is not None:
-        gate = run_current_role_finding_gate(
-            request, verified_scope, findings=findings,
-            finding_store=finding_store, mutator=mutator)
+        if findings_source is not None:
+            try:
+                snapshot = findings_source.read(
+                    boundary=GATE_BOUNDARY,
+                    observer_run_id=source_observer_run_id,
+                    task_ref=request.get("task_ref"),
+                    role=request.get("role"),
+                    request_digest=_digest_json(request),
+                    task_fingerprint=current_fingerprint(request, verified_scope),
+                    envelope_digest=_digest_json(envelope),
+                    prior_observation=findings_prior_observation)
+            except FindingsSourceRefusal as exc:
+                result, _drift = _source_refusal_result(envelope, exc)
+                return {
+                    "result": result,
+                    "finding_gate": None,
+                    "gate_ran": False,
+                    "verified_scope": verified_scope,
+                    "findings_observation": None,
+                    "findings_source_refusal": exc.as_dict(),
+                    "context_engineer_woken": False,
+                    "scope_pollution_from_findings": 0,
+                }
+            findings_observation = snapshot["observation"]
+            gate = plan.finding_gate(
+                internal_gate_request(request), verified_scope,
+                findings=None,
+                store=plan.MemoryFindingStore(snapshot["records"]),
+                mutator=mutator, boundary=GATE_BOUNDARY, diagnostics=True)
+        else:
+            gate = run_current_role_finding_gate(
+                request, verified_scope, findings=findings,
+                finding_store=finding_store, mutator=mutator)
     result = check_package(request, envelope, registry=registry,
                            current=current, gate=gate)
     return {
@@ -506,18 +590,24 @@ def self_check_with_trace(request: dict, *, packages=None, store_dir=None,
         "finding_gate": gate,
         "gate_ran": gate is not None,
         "verified_scope": verified_scope,
+        "findings_observation": findings_observation,
+        "findings_source_refusal": findings_source_refusal,
         "context_engineer_woken": bool((gate or {}).get("context_engineer_woken")),
         "scope_pollution_from_findings": finding_pollution(gate, verified_scope),
     }
 
 
 def self_check(request: dict, *, packages=None, store_dir=None, registry=None,
-               current=None, findings=None, finding_store=None, mutator=None) -> dict:
+               current=None, findings=None, finding_store=None, mutator=None,
+               findings_source=None, findings_prior_observation=None,
+               source_observer_run_id=None) -> dict:
     """Native API entry: frozen request in, frozen result out. No LLM, no writes."""
     return self_check_with_trace(
         request, packages=packages, store_dir=store_dir, registry=registry,
         current=current, findings=findings, finding_store=finding_store,
-        mutator=mutator)["result"]
+        mutator=mutator, findings_source=findings_source,
+        findings_prior_observation=findings_prior_observation,
+        source_observer_run_id=source_observer_run_id)["result"]
 
 
 def main() -> int:

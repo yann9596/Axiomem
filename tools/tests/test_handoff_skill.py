@@ -31,11 +31,13 @@ _spec.loader.exec_module(pipeline)
 sys.dont_write_bytecode = False
 
 sys.path.insert(0, str(TOOLS))
+sys.path.insert(0, str(Path(__file__).resolve().parent))
 
 import chandoff_compose as compose  # noqa: E402
 import chandoff_finalize as finalize  # noqa: E402
 import chandoff_note as note  # noqa: E402
 import chandoff_plan as plan  # noqa: E402
+import findings_fixture  # noqa: E402
 from cdata import load_all_docs  # noqa: E402
 
 FIXTURES = TOOLS / "fixtures" / "adapter"
@@ -56,6 +58,8 @@ ADD_RESPONSE = {
 def ns(**kwargs) -> argparse.Namespace:
     kwargs.setdefault("repo", str(REPO))
     kwargs.setdefault("executable", "multica")
+    for key, value in findings_fixture.findings_args().items():
+        kwargs.setdefault(key, value)
     return argparse.Namespace(**kwargs)
 
 
@@ -73,9 +77,14 @@ def prepare_ns(out_dir=None, **over) -> argparse.Namespace:
 
 def finalize_ns(plan_file, result_file, request_file, out_dir=None,
                 repairs_used=0) -> argparse.Namespace:
+    over = {}
+    if out_dir is not None:
+        candidate = Path(out_dir) / "findings-observation.json"
+        if candidate.is_file():
+            over["findings_evidence_file"] = str(candidate)
     return ns(plan_file=str(plan_file), result_file=str(result_file),
               request_file=str(request_file), repairs_used=repairs_used,
-              out_dir=out_dir)
+              out_dir=out_dir, **over)
 
 
 def selfcheck_ns(out_dir=None, **over) -> argparse.Namespace:
@@ -115,7 +124,7 @@ def material_finding(task_ref: str = TASK_REF) -> dict:
 
 
 def blocked_plan_fn():
-    def _plan(request):
+    def _plan(request, findings_source=None, source_observer_run_id=None):
         finding = material_finding(request["task_ref"])
         return plan.prepare_handoff_plan(
             request, findings=[copy.deepcopy(finding)],
