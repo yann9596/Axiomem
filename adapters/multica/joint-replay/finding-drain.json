@@ -1,0 +1,55 @@
+{
+  "deferred_finding_count": 4,
+  "drain_decision_owner": "engineering-lead",
+  "evidence_digest": "sha256:c62b9ac6e647f5f18630a9d27f34c8a58b5d49b2f9e215f2315c4b868489b5cd",
+  "kind": "u11_finding_drain_record",
+  "note": "U11 supplies joint-replay evidence for the finding deferred to U11_JOINT_REPLAY; the drain disposition stays a Lead-owned decision and no gate was silently closed",
+  "rows": [
+    {
+      "classification": "CONTEXT_AUTHORITY_CONFLICT",
+      "disposition": "DEFERRED_GATE",
+      "finding_id": "FIND-WIMG-U08-000001",
+      "gate": "PRE_U12_PIN_GATE",
+      "material": true,
+      "owner": "engineering-lead",
+      "redesign_performed": false,
+      "u11_coverage": "gate remains with its owner"
+    },
+    {
+      "classification": "CONTEXT_AUTHORITY_CONFLICT",
+      "disposition": "DEFERRED_GATE",
+      "finding_id": "FIND-WIMG-U08-000002",
+      "gate": "PRE_U12_PIN_GATE",
+      "material": false,
+      "owner": "engineering-lead",
+      "redesign_performed": false,
+      "u11_coverage": "gate remains with its owner"
+    },
+    {
+      "classification": "TASK_COGNITION",
+      "disposition": "DEFERRED_GATE",
+      "finding_id": "FIND-WIMG-U08-000003",
+      "gate": "U12_ENABLEMENT",
+      "material": false,
+      "owner": "engineering-lead",
+      "redesign_performed": false,
+      "u11_coverage": "gate remains with its owner"
+    },
+    {
+      "classification": "TASK_COGNITION",
+      "disposition": "DEFERRED_GATE",
+      "finding_id": "FIND-WIMG-U08-000004",
+      "gate": "U11_JOINT_REPLAY",
+      "material": false,
+      "owner": "engineering-lead",
+      "redesign_performed": false,
+      "u11_coverage": "closed_source_guard_replay"
+    }
+  ],
+  "schema_version": "U11/1.0",
+  "u11_coverage_evidence": {
+    "FIND-WIMG-U08-000004": "sha256:55c509aa45dae54ad22b4e43d67cccedb61eb6d5157942d94413f6b1d7fa9e10"
+  },
+  "unaccounted_findings": 0,
+  "unaccounted_open_findings": []
+}

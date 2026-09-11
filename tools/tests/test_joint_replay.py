@@ -509,6 +509,28 @@ class StageWakeTests(unittest.TestCase):
         self.assertEqual(row["duplicate_lead_stage_activation"], 0)
 
 
+class ClosedSourceGuardTests(unittest.TestCase):
+    def test_closed_source_is_never_resumed_and_reactivation_is_detected(self):
+        guard = run_all()["closed_source_guard"]
+        self.assertTrue(guard["passed"])
+        self.assertFalse(guard["actual"]["resume_ok"])
+        self.assertEqual(guard["actual"]["resume_terminal_status"],
+                         "ROUTE_CONFLICT")
+        self.assertEqual(guard["actual"]["native_calls"], 0)
+        self.assertTrue(guard["actual"]["reactivation_detected"])
+        self.assertFalse(guard["actual"]["control_flags_reactivation"])
+
+    def test_u11_deferred_finding_has_joint_replay_coverage(self):
+        drain = run_all()["finding_drain"]
+        self.assertEqual(drain["unaccounted_findings"], 0)
+        self.assertEqual(drain["unaccounted_open_findings"], [])
+        covered = {row["finding_id"]: row["u11_coverage"]
+                   for row in drain["rows"]}
+        self.assertEqual(covered.get("FIND-WIMG-U08-000004"),
+                         "closed_source_guard_replay")
+        self.assertEqual(drain["drain_decision_owner"], "engineering-lead")
+
+
 class FinalGateTests(unittest.TestCase):
     def test_matrix_reports_every_parent_gate(self):
         final = matrix()
@@ -534,6 +556,8 @@ class FinalGateTests(unittest.TestCase):
         self.assertEqual(final["replay_integrity"]["finding_failures"], [])
         self.assertEqual(final["replay_integrity"]["stage_failures"], [])
         self.assertEqual(final["replay_integrity"]["topology_failures"], [])
+        self.assertTrue(final["replay_integrity"]["closed_source_guard_ok"])
+        self.assertFalse(final["replay_integrity"]["finding_drain_unaccounted"])
 
     def test_o2_recovery_matrix_all_pass(self):
         result = run_all()

@@ -1,7 +1,7 @@
 {
   "all_pass": true,
   "counters_zero": true,
-  "evidence_digest": "sha256:4128057b99d5819ef96897c7ce300c98c2fbc6946852281076ce770913ec4f4b",
+  "evidence_digest": "sha256:5154381fdb725cbbb13a54c15285eb7d9d092a6bc19a92b6abf86e1eb1afb695",
   "kind": "u11_final_gate_matrix",
   "o2_safety_gate": [
     {
@@ -298,7 +298,9 @@
   "replay_integrity": {
     "artifact_failures": [],
     "capability_ok": true,
+    "closed_source_guard_ok": true,
     "dispatch_failures": [],
+    "finding_drain_unaccounted": [],
     "finding_failures": [],
     "retired_identity_ok": true,
     "routing_negative_ok": true,

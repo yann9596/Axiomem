@@ -1769,6 +1769,114 @@ def stage_wake_replays() -> dict:
 
 
 # ---------------------------------------------------------------------------
+# Closed-source execution guard (U08 Finding 4, deferred to U11)
+# ---------------------------------------------------------------------------
+def closed_source_guard_replay() -> dict:
+    """Replay the U08 closed-source guard end-to-end in simulation.
+
+    A source transaction closed by a fallback is never resumed
+    (`resume_source_route` refuses before any native call) and any later
+    source-route reactivation is detected by `cross_route_audit_v2` as
+    `closed_source_route_reactivated`. No live call is attempted.
+    """
+    import chandoff_fallback as fallback
+
+    source = "tx-u11-src-closed"
+    ledger = dispatch.TransactionLedger()
+    ledger.append({"kind": "cross_route_closure",
+                   "transaction_id": "tx-u11-fb-0001",
+                   "closed_transaction_id": source,
+                   "closure": "NO_TRIGGER_TERMINAL"})
+
+    class GuardRunner:
+        def __init__(self):
+            self.issued = []
+
+        def __call__(self, argv):
+            self.issued.append([str(token) for token in argv])
+            raise AssertionError(
+                "closed-source guard attempted a native call")
+
+    runner = GuardRunner()
+    resumed = fallback.resume_source_route(
+        {}, caller_role="engineering-lead",
+        target_role_spec="software-engineer", runner=runner, ledger=ledger,
+        compose_fn=None, source_transaction_id=source)
+    control = fallback.cross_route_audit_v2(ledger.records)
+    control_reasons = sorted({c.get("reason") for c in control["conflicts"]})
+    ledger.append({"kind": "mention_outcome", "transaction_id": source,
+                   "outcome": "confirmed", "mention_comment_id": "c-u11-0001"})
+    detected = fallback.cross_route_audit_v2(ledger.records)
+    detected_reasons = sorted({c.get("reason") for c in detected["conflicts"]})
+    expected = {
+        "resume_ok": False,
+        "resume_terminal_status": "ROUTE_CONFLICT",
+        "native_calls": 0,
+        "reactivation_detected": True,
+        "control_flags_reactivation": False,
+    }
+    actual = {
+        "resume_ok": resumed["ok"],
+        "resume_terminal_status": resumed["terminal_status"],
+        "native_calls": len(runner.issued),
+        "reactivation_detected":
+            "closed_source_route_reactivated" in detected_reasons,
+        "control_flags_reactivation":
+            "closed_source_route_reactivated" in control_reasons,
+    }
+    row = {
+        "case": "closed_source_route_guard",
+        "finding_ref": "FIND-WIMG-U08-000004",
+        "expected": expected,
+        "actual": actual,
+        "passed": all(actual[k] == v for k, v in expected.items()),
+        "stop_reason": resumed.get("stop_reason"),
+        "control_conflict_reasons": control_reasons,
+        "detected_conflict_reasons": detected_reasons,
+        "live_mutations": 0,
+        "evidence_digest": digest({"case": "closed_source_route_guard",
+                                   "expected": expected, "actual": actual}),
+    }
+    return row
+
+
+def finding_drain_record(guard: dict | None = None) -> dict:
+    guard = guard or closed_source_guard_replay()
+    dispositions = u09.u08_finding_dispositions()
+    rows = []
+    for row in dispositions["rows"]:
+        rows.append({
+            "finding_id": row["finding_id"],
+            "classification": row["classification"],
+            "material": row["material"],
+            "disposition": row["disposition"],
+            "gate": row["gate"],
+            "owner": row["owner"],
+            "u11_coverage": ("closed_source_guard_replay"
+                             if row["finding_id"] == "FIND-WIMG-U08-000004"
+                             else "gate remains with its owner"),
+            "redesign_performed": row.get("redesign_performed", False),
+        })
+    record = {
+        "schema_version": LAYER_VERSION,
+        "kind": "u11_finding_drain_record",
+        "deferred_finding_count": len(rows),
+        "rows": rows,
+        "unaccounted_open_findings": dispositions["unaccounted_open_findings"],
+        "unaccounted_findings": 0,
+        "u11_coverage_evidence": {
+            "FIND-WIMG-U08-000004": guard["evidence_digest"]},
+        "drain_decision_owner": "engineering-lead",
+        "note": "U11 supplies joint-replay evidence for the finding deferred "
+                "to U11_JOINT_REPLAY; the drain disposition stays a "
+                "Lead-owned decision and no gate was silently closed",
+    }
+    record["evidence_digest"] = digest({k: v for k, v in record.items()
+                                        if k != "evidence_digest"})
+    return record
+
+
+# ---------------------------------------------------------------------------
 # Cross-process capability proof (caller-supplied absolute ledger root)
 # ---------------------------------------------------------------------------
 def capability_case(root: Path) -> dict:
@@ -2050,6 +2158,8 @@ def final_gate_matrix(*, capability: dict | None = None) -> dict:
     topology = topology_replays()
     artifacts = artifact_replays()
     routing_negative = routing_negative_replay()
+    guard = closed_source_guard_replay()
+    drain = finding_drain_record(guard)
 
     def d(case, table=dispatch_rows):
         return table[case]["evidence_digest"]
@@ -2213,6 +2323,9 @@ def final_gate_matrix(*, capability: dict | None = None) -> dict:
                                  if not row.get("passed")),
         "retired_identity_ok": retired["all_ok"],
         "routing_negative_ok": all(not row["ok"] for row in routing_negative),
+        "closed_source_guard_ok": bool(guard["passed"]),
+        "finding_drain_unaccounted":
+            drain["unaccounted_open_findings"],
         "capability_ok": (capability["all_passed"] if capability is not None
                           else None),
     }
@@ -2223,6 +2336,8 @@ def final_gate_matrix(*, capability: dict | None = None) -> dict:
                     and not replay_integrity["stage_failures"]
                     and replay_integrity["retired_identity_ok"]
                     and replay_integrity["routing_negative_ok"]
+                    and replay_integrity["closed_source_guard_ok"]
+                    and not replay_integrity["finding_drain_unaccounted"]
                     and replay_integrity["capability_ok"] is not False)
     all_pass = (all(row["status"] == "PASS" for row in rows + o2_rows)
                 and integrity_ok)
@@ -2475,6 +2590,7 @@ def run_all(capability_root: str | None = None) -> dict:
     with tempfile.TemporaryDirectory() as tmp:
         root = Path(capability_root) if capability_root else Path(tmp) / "cap"
         capability = capability_case(root)
+    guard = closed_source_guard_replay()
     result = {
         "schema_version": LAYER_VERSION,
         "kind": "u11_joint_replay_result",
@@ -2483,6 +2599,8 @@ def run_all(capability_root: str | None = None) -> dict:
         "artifacts": artifact_replays(),
         "findings": finding_replays(),
         "stage": stage_wake_replays(),
+        "closed_source_guard": guard,
+        "finding_drain": finding_drain_record(guard),
         "retired_identity": retired_identity_replay(),
         "routing_negative": routing_negative_replay(),
         "capability": capability,
@@ -2541,6 +2659,10 @@ def evidence_bundle(out_dir, *, generated_at: str = CLOCK) -> dict:
         "rerun-receipt-contract.json", result["rerun_receipt_contract"])
     files["artifact-set.json"] = write_json(
         "artifact-set.json", artifact_set_manifest())
+    files["closed-source-guard.json"] = write_json(
+        "closed-source-guard.json", result["closed_source_guard"])
+    files["finding-drain.json"] = write_json(
+        "finding-drain.json", result["finding_drain"])
     files["replays.json"] = write_json("replays.json", {
         "dispatch": result["dispatch"],
         "topology": result["topology"],

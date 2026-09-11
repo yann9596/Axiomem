@@ -1,0 +1,29 @@
+{
+  "actual": {
+    "control_flags_reactivation": false,
+    "native_calls": 0,
+    "reactivation_detected": true,
+    "resume_ok": false,
+    "resume_terminal_status": "ROUTE_CONFLICT"
+  },
+  "case": "closed_source_route_guard",
+  "control_conflict_reasons": [
+    "closure_without_supersession"
+  ],
+  "detected_conflict_reasons": [
+    "closed_source_route_reactivated",
+    "closure_without_supersession"
+  ],
+  "evidence_digest": "sha256:55c509aa45dae54ad22b4e43d67cccedb61eb6d5157942d94413f6b1d7fa9e10",
+  "expected": {
+    "control_flags_reactivation": false,
+    "native_calls": 0,
+    "reactivation_detected": true,
+    "resume_ok": false,
+    "resume_terminal_status": "ROUTE_CONFLICT"
+  },
+  "finding_ref": "FIND-WIMG-U08-000004",
+  "live_mutations": 0,
+  "passed": true,
+  "stop_reason": "the source transaction was closed as a non-trigger terminal by a fallback; it is never resumed"
+}
