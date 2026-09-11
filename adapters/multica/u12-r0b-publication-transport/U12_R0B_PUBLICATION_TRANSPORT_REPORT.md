@@ -136,12 +136,13 @@ the standalone matrix
 - New focused module `tools/tests/test_u12_r0_publication_recovery.py`:
   **45/45 OK** (historical shape, transport, refusals, migration fences,
   crash/replay, lease/tail/conflict, post-recovery lifecycle).
-- Full `tools/tests`: **1256 run / 4 failures-or-errors**, all four in
-  `test_u12_p0r_evidence.py` and all the pre-classified pre-incident P0R
-  genesis pin drift (accepted 622-byte genesis / 37,860-byte-era pins vs the
-  live 1,814,836-byte production ledger tip `sha256:4c7d431b…`, which is the
-  Lead's own publication-observation digest). The frozen P0R bundle is
-  deliberately **not** rewritten; no false global green is claimed.
+- Full `tools/tests`: **1256 run / 3 failures-or-errors** (2 errors + 1
+  failure), all in `test_u12_p0r_evidence.py` and all the pre-classified
+  pre-incident P0R genesis pin drift (accepted 622-byte genesis / 37,860-byte-era
+  pins vs the live 1,814,836-byte production ledger tip
+  `sha256:4c7d431b…`, which is the Lead's own publication-observation digest).
+  The frozen P0R bundle is deliberately **not** rewritten; no false global
+  green is claimed.
 - Adapter `self-check` wiring proof: all checks true (extended with the
   publication transport/recovery invariants).
 - Acceptance matrix: **13/13 rows pass** through public operations on the
