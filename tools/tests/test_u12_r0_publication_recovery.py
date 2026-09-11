@@ -1057,9 +1057,16 @@ class RecoveryRefusalTests(unittest.TestCase):
 
     def test_second_complete_read_drift_refuses(self):
         fx = self.fx
+        prefix = ["issue", "comment", "list", TARGET_ID]
+        before = sum(1 for row in fx.cli.commands if row[1:5] == prefix)
 
         def mutate(cli):
-            if cli.comment_list_count == 2:
+            core = cli.commands[-1][1:]
+            if core[:4] != prefix:
+                return
+            target_reads = [row for row in cli.commands
+                            if row[1:5] == prefix]
+            if len(target_reads) - before == 2:
                 append_comment(cli, "race", comment_id="CMT-RACE")
 
         fx.cli.comment_list_count = 0
@@ -1250,6 +1257,390 @@ class MigrationFenceTests(unittest.TestCase):
         with self.assertRaises(u12.R0BValidationRefused):
             u12.validate_publication_recovery_commit_record(
                 commits[0], intent)
+
+
+# ---------------------------------------------------------------------------
+# 5b. source activation, authority content and semantic-rehash correction
+# ---------------------------------------------------------------------------
+class SourceActivationCorrectionTests(unittest.TestCase):
+    """The two independent Lead counterexamples and the rehash matrix.
+
+    Both counterexamples are re-run in their corrected form and every attack is
+    exercised through the helper, the actual writer, the reducer and the
+    replay path: recomputed attacker-controlled digests must never turn
+    invalid evidence into recovery authority.
+    """
+
+    def setUp(self):
+        self.tmp = tempfile.TemporaryDirectory()
+        self.addCleanup(self.tmp.cleanup)
+        self.fx = PublicationRecoveryFixture(Path(self.tmp.name))
+        # the fixture itself published the historical incident note once
+        self.comment_adds_before = len(
+            self.fx.cli.commands_of(["issue", "comment", "add"]))
+
+    # -- shared helpers -----------------------------------------------------
+    def _assert_every_path_refuses(self, mutate):
+        fx = self.fx
+        record, _bundle, decision = fx.prepare_commit()
+        proof = record["publication_recovery_proof"]
+        mutate(proof)
+        proof["proof_digest"] = u12.digest(
+            {k: v for k, v in proof.items() if k != "proof_digest"})
+        intent = fx.store.get(fx.intent_id)
+        data = fx.binding()
+        with self.assertRaises(u12.R0BValidationRefused, msg="helper"):
+            u12.validate_publication_recovery_proof(
+                proof, intent=intent, data=data, applying=True)
+        with self.assertRaises(u12.R0BValidationRefused, msg="writer"):
+            u12.validate_publication_recovery_commit_record(record, intent)
+        with self.assertRaises(o2.LedgerCorruptionError, msg="reducer"):
+            u12.fold_publication_recovery_commit(
+                record, intent, {fx.intent_id: intent})
+        # the valid record still commits once, then the replay path refuses
+        # the same tampered proof from the committed record
+        committed = fx.recover()
+        self.assertEqual(committed["status"], o2.S_HANDOFF_PUBLISHED)
+        replay_intent = fx.store.get(fx.intent_id)
+        replay_data = copy.deepcopy(fx.binding())
+        mutate(replay_data["publication_recovery_proof"])
+        replay_data["publication_recovery_proof"]["proof_digest"] = u12.digest(
+            {k: v for k, v in replay_data["publication_recovery_proof"].items()
+             if k != "proof_digest"})
+        with self.assertRaises(u12.R0BValidationRefused, msg="replay"):
+            fx.factory._replay_publication_recovery(
+                replay_intent, replay_data, decision, DISPATCHER)
+
+    def _assert_recovery_refused(self, result, reason=None):
+        self.assertEqual(result["status"], o2.S_BLOCKED)
+        self.assertEqual(result["outcome"], "RECOVERY_REFUSED")
+        if reason is not None:
+            self.assertEqual(result["reason"], reason)
+        intent = self.fx.store.get(self.fx.intent_id)
+        self.assertEqual(intent["state"], o2.S_BLOCKED)
+        self.assertEqual(intent["revision"], 4)
+        self.assertEqual(
+            [r for r in self.fx.store.read_records()
+             if r.get("op") == u12.PUBLICATION_RECOVERY_OP], [])
+        self.assertEqual(
+            len(self.fx.cli.commands_of(["issue", "comment", "add"])),
+            self.comment_adds_before)
+
+    # -- counterexample 1: the actual source activation is resolved ---------
+    def test_nonexistent_source_activation_refuses_without_commit(self):
+        """Lead counterexample 1, corrected: nonexistent ids + zero digest."""
+        fx = self.fx
+        decision = fx.decision()
+        decision["source_activation"] = {
+            "parent_issue_id": PARENT_ID,
+            "comment_id": "00000000-0000-7000-8000-000000000001",
+            "author_id": u12.LEAD_AGENT_ID,
+            "author_type": "agent",
+            "comment_content_raw_digest": "sha256:" + "0" * 64,
+            "resolution_attachment_id":
+                "00000000-0000-7000-8000-000000000002",
+            "resolution_raw_digest": "sha256:" + "0" * 64,
+            "request_attachment_id":
+                "00000000-0000-7000-8000-000000000003",
+            "request_raw_digest": "sha256:" + "1" * 64,
+            "package_id": fx.execution_package_id,
+            "envelope_digest": fx.envelope_digest,
+            "task_fingerprint": fx.task_fingerprint,
+        }
+        decision["decision_digest"] = u12.digest(
+            {k: v for k, v in decision.items() if k != "decision_digest"})
+        result = fx.recover(decision=decision)
+        self._assert_recovery_refused(
+            result, u12.REASON_PUBLICATION_PROVENANCE)
+        # the corrected path actually read the parent activation record
+        parent_reads = [
+            row for row in fx.cli.commands
+            if row[1:5] == ["issue", "comment", "list", PARENT_ID]]
+        self.assertEqual(len(parent_reads), 1)
+        self.assertEqual(fx.cli.commands_of(["attachment", "download"]), [])
+
+    def test_legacy_v1_0_activation_shape_still_refuses(self):
+        """The literal Lead counterexample payload (old shape + zero digest)."""
+        fx = self.fx
+        decision = fx.decision()
+        decision["source_activation"] = {
+            "comment_id": "00000000-0000-7000-8000-000000000001",
+            "resolution_digest": "sha256:" + "0" * 64,
+            "attachment_id": "00000000-0000-7000-8000-000000000002",
+        }
+        decision["decision_digest"] = u12.digest(
+            {k: v for k, v in decision.items() if k != "decision_digest"})
+        with self.assertRaises(u12.R0BValidationRefused):
+            fx.recover(decision=decision)
+        intent = fx.store.get(fx.intent_id)
+        self.assertEqual(intent["state"], o2.S_BLOCKED)
+        self.assertEqual(intent["revision"], 4)
+        self.assertEqual(fx.cli.commands_of(["issue", "comment", "add"]), [])
+
+    def test_false_attachment_digest_refuses_after_real_download(self):
+        fx = self.fx
+        decision = fx.decision()
+        decision["source_activation"]["resolution_raw_digest"] = \
+            "sha256:" + "f" * 64
+        decision["decision_digest"] = u12.digest(
+            {k: v for k, v in decision.items() if k != "decision_digest"})
+        result = fx.recover(decision=decision)
+        self._assert_recovery_refused(
+            result, u12.REASON_PUBLICATION_PROVENANCE)
+        # the actual attachment bytes were retrieved and hashed
+        self.assertEqual(
+            len(fx.cli.commands_of(["attachment", "download"])), 2)
+
+    def test_missing_duplicate_or_edited_activation_refuses(self):
+        def remove(cli):
+            cli.comments[PARENT_ID].pop(0)
+
+        def duplicate(cli):
+            cli.comments[PARENT_ID].insert(
+                1, copy.deepcopy(cli.comments[PARENT_ID][0]))
+
+        def edit_content(cli):
+            cli.comments[PARENT_ID][0]["content"] += "x"
+
+        def wrong_author(cli):
+            cli.comments[PARENT_ID][0]["author_id"] = TARGET_AGENT
+
+        def wrong_type(cli):
+            cli.comments[PARENT_ID][0]["author_type"] = "member"
+
+        for name, mutate in (("missing", remove), ("duplicate", duplicate),
+                             ("edited", edit_content),
+                             ("wrong_author", wrong_author),
+                             ("wrong_type", wrong_type)):
+            tmp = tempfile.TemporaryDirectory()
+            self.addCleanup(tmp.cleanup)
+            case = PublicationRecoveryFixture(Path(tmp.name))
+            mutate(case.cli)
+            result = case.recover()
+            self.assertEqual(result["status"], o2.S_BLOCKED, name)
+            self.assertEqual(result["outcome"], "RECOVERY_REFUSED", name)
+            self.assertEqual(case.store.get(case.intent_id)["revision"], 4,
+                             name)
+
+    def test_authority_content_mismatch_refuses(self):
+        fx = self.fx
+        rows = fx.cli.comments[PARENT_ID]
+        human = next(row for row in rows if row["id"] ==
+                     u12.PUBLICATION_RECOVERY_HUMAN_APPROVAL_COMMENT_ID)
+        lead = next(row for row in rows if row["id"] ==
+                    u12.PUBLICATION_RECOVERY_LEAD_APPROVAL_COMMENT_ID)
+        saved_human = human["content"]
+        saved_lead_author = lead["author_id"]
+        try:
+            human["content"] = saved_human + "同意"
+            result = fx.recover()
+            self._assert_recovery_refused(result)
+        finally:
+            human["content"] = saved_human
+        try:
+            lead["author_id"] = TARGET_AGENT
+            result = fx.recover()
+            self._assert_recovery_refused(result)
+        finally:
+            lead["author_id"] = saved_lead_author
+
+    def test_substituted_attached_request_refuses(self):
+        fx = self.fx
+        request = json.loads(fx.request_text)
+        request["task_snapshot"]["title"] = "substituted request"
+        new_text = json.dumps(request, ensure_ascii=False, sort_keys=True,
+                              indent=2) + "\n"
+        fx.cli.add_attachment(fx.request_attachment_id, "request.json",
+                              new_text)
+        decision = fx.decision()
+        decision["source_activation"]["request_raw_digest"] = \
+            u12._sha256_utf8(new_text)
+        decision["decision_digest"] = u12.digest(
+            {k: v for k, v in decision.items() if k != "decision_digest"})
+        result = fx.recover(decision=decision)
+        self._assert_recovery_refused(result)
+
+    def test_stale_target_body_never_reproduces_the_request(self):
+        fx = self.fx
+        stale = {"title": "stale title",
+                 "description": fx.cli.issues[TARGET_ID]["description"],
+                 "identifier": TARGET_IDENTIFIER}
+        reconstructed = u12.reconstruct_request_from_fresh_snapshot(
+            stale, json.loads(fx.request_text))
+        self.assertNotEqual(
+            u12.canonical_json(reconstructed),
+            u12.canonical_json(json.loads(fx.request_text)))
+        fx.cli.issues[TARGET_ID]["title"] = "stale title"
+        result = fx.recover()
+        self._assert_recovery_refused(result)
+
+    # -- counterexample 2: pure semantic proof re-derivation ----------------
+    def test_rehashed_nonempty_runs_refused_on_every_path(self):
+        """Lead counterexample 2: runs tampered and local digests recomputed."""
+
+        def mutate(proof):
+            proof["observations"]["runs"] = [
+                {"id": "unexpected-terminal-run", "status": "completed"}]
+            proof["observations"]["digests"]["runs"] = u12.digest(
+                proof["observations"]["runs"])
+
+        self._assert_every_path_refuses(mutate)
+
+    def test_raw_response_projection_mismatch_refused(self):
+        def mutate(proof):
+            fabricated = u12.comment_record({
+                "id": "CMT-FABRICATED", "revision": 1,
+                "created_at": CLOCK, "updated_at": CLOCK, "parent_id": None,
+                "author_id": PUBLISHER_AGENT, "author_type": "agent",
+                "source_task_id": PUBLISHER_RUN, "resolved_at": None,
+                "content": "fabricated comment"})
+            proof["observations"]["comments"] = \
+                proof["observations"]["comments"] + [fabricated]
+            proof["observations"]["digests"]["comments"] = u12.digest(
+                proof["observations"]["comments"])
+
+        self._assert_every_path_refuses(mutate)
+
+    def test_shared_command_relabelled_as_read_refused(self):
+        def mutate(proof):
+            records = proof["shared_history"]["records"]
+            target = next(
+                item for item in records
+                if item["classification"] == u12.CLS_PUBLICATION_COMMAND)
+            target["classification"] = u12.CLS_READ_COMMAND
+            target["reason"] = "recognized read command"
+            proof["shared_history"]["classification_digest"] = \
+                u12.publication_history_digest(proof["shared_history"])
+
+        self._assert_every_path_refuses(mutate)
+
+    def test_deep_rehash_without_the_note_refused(self):
+        note_id = self.fx.note_comment["id"]
+
+        def mutate(proof):
+            for index in (4, 8):
+                entry = proof["observations"]["raw_responses"][index]
+                rows = [row for row in json.loads(entry["stdout"])
+                        if row.get("id") != note_id]
+                entry["stdout"] = json.dumps(rows, ensure_ascii=False)
+                entry["stdout_digest"] = u12._sha256_utf8(entry["stdout"])
+            proof["observations"]["comments"] = [
+                u12.comment_record(row) for row in json.loads(
+                    proof["observations"]["raw_responses"][4]["stdout"])]
+            proof["observations"]["digests"]["comments"] = u12.digest(
+                proof["observations"]["comments"])
+            proof["observations"]["digests"]["raw_responses"] = u12.digest(
+                proof["observations"]["raw_responses"])
+
+        self._assert_every_path_refuses(mutate)
+
+    def test_rehashed_issue_and_timeline_observations_refused(self):
+        def mutate_issue(proof):
+            entry = proof["observations"]["raw_responses"][3]
+            issue = json.loads(entry["stdout"])
+            issue["title"] = "changed title"
+            entry["stdout"] = json.dumps(issue, ensure_ascii=False)
+            entry["stdout_digest"] = u12._sha256_utf8(entry["stdout"])
+            proof["observations"]["target_issue"] = issue
+            proof["observations"]["digests"]["target_issue"] = u12.digest(issue)
+            proof["observations"]["digests"]["raw_responses"] = u12.digest(
+                proof["observations"]["raw_responses"])
+
+        self._assert_every_path_refuses(mutate_issue)
+
+        def mutate_timeline(proof):
+            for index in (5, 9):
+                entry = proof["observations"]["raw_responses"][index]
+                rows = json.loads(entry["stdout"])
+                rows = rows + [{"id": "ACT-FABRICATED", "action": "unknown",
+                                "created_at": CLOCK}]
+                entry["stdout"] = json.dumps(rows, ensure_ascii=False)
+                entry["stdout_digest"] = u12._sha256_utf8(entry["stdout"])
+            proof["observations"]["activities"] = json.loads(
+                proof["observations"]["raw_responses"][5]["stdout"])
+            proof["observations"]["digests"]["activities"] = u12.digest(
+                proof["observations"]["activities"])
+            proof["observations"]["digests"]["raw_responses"] = u12.digest(
+                proof["observations"]["raw_responses"])
+
+        self._assert_every_path_refuses(mutate_timeline)
+
+    def test_proof_content_absence_edits_and_cross_intent_refuse(self):
+        fx = self.fx
+        record, _bundle, _decision = fx.prepare_commit()
+        intent = fx.store.get(fx.intent_id)
+        data = fx.binding()
+        proof = record["publication_recovery_proof"]
+        for name, mutate in (
+                ("absence", lambda item: item.pop("source_activation")),
+                ("authority_edit", lambda item: item[
+                    "authority_approvals"]["human"].__setitem__(
+                    "content_raw_digest", "sha256:" + "0" * 64)),
+                ("cross_intent", lambda item: item.__setitem__(
+                    "intent_id", "DI-" + "0" * 16)),
+                ("old_schema", lambda item: item.__setitem__(
+                    "schema", u12.PUBLICATION_RECOVERY_PROOF_SCHEMA_V1_0))):
+            candidate = copy.deepcopy(proof)
+            mutate(candidate)
+            candidate["proof_digest"] = u12.digest(
+                {k: v for k, v in candidate.items()
+                 if k != "proof_digest"})
+            with self.assertRaises(u12.R0BValidationRefused, msg=name):
+                u12.validate_publication_recovery_proof(
+                    candidate, intent=intent, data=data, applying=True)
+
+    def test_old_reader_refuses_the_corrected_payloads(self):
+        fx = self.fx
+        record, _bundle, decision = fx.prepare_commit()
+        intent = fx.store.get(fx.intent_id)
+        old = self._load_previous_adapter()
+        try:
+            with self.assertRaises((u12.R0BError, o2.IntentError)):
+                old.validate_publication_recovery_decision(
+                    copy.deepcopy(decision))
+            with self.assertRaises((u12.R0BError, o2.IntentError)):
+                old.validate_publication_recovery_proof(
+                    copy.deepcopy(record["publication_recovery_proof"]),
+                    intent=intent, data=fx.binding(), applying=True)
+            with self.assertRaises((u12.R0BError, o2.IntentError,
+                                    o2.LedgerCorruptionError)):
+                old.fold_publication_recovery_commit(
+                    copy.deepcopy(record), intent, {fx.intent_id: intent})
+            # the new loader refuses the frozen v1.0 decision schema
+            legacy = copy.deepcopy(decision)
+            legacy["schema"] = u12.PUBLICATION_RECOVERY_DECISION_SCHEMA_V1_0
+            legacy["decision_digest"] = u12.digest(
+                {k: v for k, v in legacy.items() if k != "decision_digest"})
+            with self.assertRaises(u12.R0BValidationRefused):
+                u12.validate_publication_recovery_decision(legacy)
+        finally:
+            o2.register_extension_op(
+                u12.PUBLICATION_RECOVERY_OP,
+                u12.fold_publication_recovery_commit)
+
+    @staticmethod
+    def _load_previous_adapter():
+        proc = subprocess.run(
+            ["git", "-C", str(TOOLS.parent), "show",
+             f"{u12.PREVIOUS_PUBLICATION_ADAPTER_COMMIT}:"
+             "tools/u12_r0_binding.py"], capture_output=True)
+        if proc.returncode != 0 or not proc.stdout:
+            raise AssertionError("the ac1e5b4 adapter blob is unavailable")
+        digest = "sha256:" + hashlib.sha256(
+            proc.stdout.replace(b"\r\n", b"\n")).hexdigest()
+        if digest != u12.PREVIOUS_PUBLICATION_ADAPTER_DIGEST:
+            raise AssertionError(
+                f"ac1e5b4 blob digest {digest} does not match the preserved "
+                f"pin {u12.PREVIOUS_PUBLICATION_ADAPTER_DIGEST}")
+        holder = Path(tempfile.mkdtemp(prefix="u12-r0b-previous-"))
+        path = holder / "u12_r0_binding_previous.py"
+        path.write_bytes(proc.stdout)
+        spec = importlib.util.spec_from_file_location(
+            "u12_r0_binding_previous", path)
+        module = importlib.util.module_from_spec(spec)
+        sys.modules[spec.name] = module
+        spec.loader.exec_module(module)
+        return module
 
 
 # ---------------------------------------------------------------------------
