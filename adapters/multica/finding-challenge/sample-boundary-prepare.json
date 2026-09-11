@@ -1,0 +1,115 @@
+{
+  "binding": null,
+  "blocked_findings": [
+    "FIND-WIMG-U09-000003"
+  ],
+  "boundary": "PREPARE_HANDOFF",
+  "canonical_changed": false,
+  "canonical_write": false,
+  "context_engineer_woken": false,
+  "direct_trigger": false,
+  "escalation": {
+    "proposal": {
+      "addressed_to": "engineering-lead",
+      "affected": {
+        "artifact_or_context_refs": [
+          "FIND-WIMG-U09-000003"
+        ],
+        "package_id": null,
+        "task_ref": "multica://issue/YZT-77"
+      },
+      "attempted_processing": {
+        "blocked_findings": [
+          "FIND-WIMG-U09-000003"
+        ],
+        "boundary": "PREPARE_HANDOFF",
+        "gate_status": "BLOCKED",
+        "reason": "evidence_conflict"
+      },
+      "boundary": "PREPARE_HANDOFF",
+      "canonical_write": false,
+      "classification": "CONTEXT_AUTHORITY_CONFLICT",
+      "context_engineer_woken": false,
+      "dispatch": {
+        "assignment_emitted": false,
+        "requires_lead_owned_safe_dispatch": true,
+        "status_write_emitted": false,
+        "trigger_emitted": false
+      },
+      "evidence": {
+        "digest": "sha256:17b7103643b911e3c8c0c198e7147398d27555213d09649136c2797d5445baa3",
+        "refs": [
+          "repo://multica-memory/team-context/rules/RULE-WIMG-000001.yaml"
+        ]
+      },
+      "kind": "escalation_proposal",
+      "proposal_id": "ESC-U09-60bc3c6aa9a19f6b",
+      "reason_code": "evidence_conflict",
+      "recommended_target": "context-engineer",
+      "schema_version": "U09-escalation-proposal/2.2"
+    },
+    "reason": "evidence_conflict",
+    "recommended_target": "context-engineer",
+    "required": true
+  },
+  "gate": {
+    "blocked_findings": [
+      {
+        "disposition": "issue_escalation",
+        "finding_id": "FIND-WIMG-U09-000003",
+        "intent": "context_challenge",
+        "reason": "canonical_write_not_safe_in_plan_builder",
+        "verification": "conflicted"
+      }
+    ],
+    "boundary": "handoff",
+    "canonical_changed": false,
+    "context_engineer_woken": false,
+    "escalation": {
+      "reason": "evidence_conflict",
+      "required": true
+    },
+    "processed_findings": [],
+    "relevant_open_findings": [
+      {
+        "created_at": "2026-09-11T00:00:00Z",
+        "discovered_by": "software-engineer",
+        "finding_id": "FIND-WIMG-U09-000003",
+        "intent": "context_challenge",
+        "kind": "finding",
+        "project_id": "web-imagegen",
+        "schema_version": "1.1",
+        "source_refs": [
+          "repo://multica-memory/team-context/rules/RULE-WIMG-000001.yaml"
+        ],
+        "status": "open",
+        "summary": "Context authority conflict: two rules disagree on provider scope",
+        "task_id": "multica://issue/YZT-77",
+        "verification": "conflicted"
+      }
+    ],
+    "remaining_nonblocking_findings": [],
+    "status": "BLOCKED"
+  },
+  "kind": "finding_processing_result",
+  "llm_called": false,
+  "processed_findings": [],
+  "ready_allowed": false,
+  "reason_codes": [
+    "UNRESOLVED_MATERIAL_FINDING"
+  ],
+  "remaining_nonblocking_findings": [],
+  "schema_version": "U09-finding-processing/2.2",
+  "selection": [
+    {
+      "digest": "sha256:7fda76bda17d1c2e58dd4ddacddca00bfca63edf4e1f43fa6e1a3b6152ecfdc4",
+      "finding_id": "FIND-WIMG-U09-000003",
+      "intent": "context_challenge",
+      "verification": "conflicted"
+    }
+  ],
+  "selection_digest": "sha256:f5e2948e621f0390734d513b41c6c4a1c1f38f5803b42f2ae91c2fc1dbdcf259",
+  "status": "BLOCKED",
+  "store_digest_after": "sha256:4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+  "store_digest_before": "sha256:4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+}

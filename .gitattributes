@@ -31,3 +31,6 @@ adapters/multica/assignment-handoff/** -text
 adapters/multica/mention-handoff/** -text
 # YZT-76: byte-stability for U08 fallback evidence hashed in the U08 report.
 adapters/multica/assignment-fallback/** -text
+# YZT-77: byte-stability for U09 Finding/Challenge evidence (deterministic
+# bundle regeneration is asserted byte-for-byte in the focused tests).
+adapters/multica/finding-challenge/** -text

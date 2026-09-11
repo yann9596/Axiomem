@@ -1,0 +1,20 @@
+{
+  "boundaries": [
+    "SELF_CHECK",
+    "PREPARE_HANDOFF",
+    "TASK_COMPLETION",
+    "CHALLENGE_CONTEXT"
+  ],
+  "classification_count": 9,
+  "kind": "u09_capabilities",
+  "layer": "U09/2.2",
+  "live_mutations": 0,
+  "reuses": [
+    "T01 FINDING_GATE",
+    "T04B current-role integration",
+    "V1 memory_challenge signal shape",
+    "U06-U08 shared transaction ledger",
+    "U10 artifact dependency digest"
+  ],
+  "schema_version": "U09-capabilities/2.2"
+}

@@ -1,0 +1,87 @@
+{
+  "kind": "finding_challenge_decision_table",
+  "rows": [
+    {
+      "classification": "IMPLEMENTATION_DEFECT",
+      "direct_trigger": false,
+      "lead_decision_target": "software-engineer",
+      "owner_role": "software-engineer",
+      "requires_lead": true,
+      "route": "keep_in_artifact",
+      "wakes_context_engineer": false
+    },
+    {
+      "classification": "DELIVERY_REVIEW_DEFECT",
+      "direct_trigger": false,
+      "lead_decision_target": "software-engineer",
+      "owner_role": "software-engineer",
+      "requires_lead": true,
+      "route": "keep_in_artifact",
+      "wakes_context_engineer": false
+    },
+    {
+      "classification": "QA_DEFECT",
+      "direct_trigger": false,
+      "lead_decision_target": "software-engineer",
+      "owner_role": "software-engineer",
+      "requires_lead": true,
+      "route": "keep_in_artifact",
+      "wakes_context_engineer": false
+    },
+    {
+      "classification": "TASK_COGNITION",
+      "direct_trigger": false,
+      "lead_decision_target": "context-engineer",
+      "owner_role": "context-engineer",
+      "requires_lead": true,
+      "route": "runtime_boundary_processing",
+      "wakes_context_engineer": false
+    },
+    {
+      "classification": "CONTEXT_AUTHORITY_CONFLICT",
+      "direct_trigger": false,
+      "lead_decision_target": "context-engineer",
+      "owner_role": "context-engineer",
+      "requires_lead": true,
+      "route": "runtime_boundary_processing",
+      "wakes_context_engineer": false
+    },
+    {
+      "classification": "PRODUCT_CONTEXT_CHALLENGE",
+      "direct_trigger": false,
+      "lead_decision_target": "context-engineer",
+      "owner_role": "context-engineer",
+      "requires_lead": true,
+      "route": "lead_decision",
+      "wakes_context_engineer": false
+    },
+    {
+      "classification": "DESIGN_CHALLENGE",
+      "direct_trigger": false,
+      "lead_decision_target": "solution-architect",
+      "owner_role": "solution-architect",
+      "requires_lead": true,
+      "route": "lead_decision",
+      "wakes_context_engineer": false
+    },
+    {
+      "classification": "DESIGN_DEVIATION",
+      "direct_trigger": false,
+      "lead_decision_target": "solution-architect",
+      "owner_role": "solution-architect",
+      "requires_lead": true,
+      "route": "lead_decision",
+      "wakes_context_engineer": false
+    },
+    {
+      "classification": "EXTERNAL_INTELLIGENCE",
+      "direct_trigger": false,
+      "lead_decision_target": "context-engineer",
+      "owner_role": "context-engineer",
+      "requires_lead": true,
+      "route": "evidence_pointer_only",
+      "wakes_context_engineer": false
+    }
+  ],
+  "schema_version": "U09-decision-table/2.2"
+}

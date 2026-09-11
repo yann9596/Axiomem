@@ -1,0 +1,75 @@
+{
+  "action": "CONTINUE",
+  "binding": {
+    "artifact_dependency_digest": "sha256:4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+    "artifact_ready": null,
+    "artifact_requirements": [],
+    "kind": "revision_binding",
+    "memory_revision": "sha256:30b51dea6d6f2a09b3ec25d283d207f8705d4198206664e33049ef6285138561",
+    "package_id": "CTX-software-engineer-0123456789abcdef",
+    "registry_revision": "sha256:a08e20ebea57bf830c605e8c9cc87950bc3781350d1d0c22c01e83e994684edb",
+    "role": "software-engineer",
+    "role_profile_revision": "sha256:7b3bdf5249dba6e1aeec1f29180b89c51985b04a6ab10a9aaaf5da596361531f",
+    "schema_version": "U09-revision-binding/2.2",
+    "task_ref": "multica://issue/YZT-77"
+  },
+  "canonical_write": false,
+  "challenge_id": "CHAL-U09-ea8054ced8fcc17f",
+  "context_engineer_woken": false,
+  "direct_trigger": false,
+  "dispatch": {
+    "assignment_emitted": false,
+    "role_hop": false,
+    "status_write_emitted": false,
+    "trigger_emitted": false
+  },
+  "escalation": {
+    "required": false
+  },
+  "gate": {
+    "blocked_findings": [],
+    "boundary": "current_role",
+    "canonical_changed": false,
+    "context_engineer_woken": false,
+    "escalation": {
+      "required": false
+    },
+    "processed_findings": [],
+    "relevant_open_findings": [],
+    "remaining_nonblocking_findings": [],
+    "status": "CLEAR"
+  },
+  "kind": "challenge_revalidation_result",
+  "llm_called": false,
+  "reason_codes": [],
+  "revalidated_against": {
+    "memory_revision": "sha256:30b51dea6d6f2a09b3ec25d283d207f8705d4198206664e33049ef6285138561",
+    "package_id": "CTX-software-engineer-0123456789abcdef",
+    "registry_revision": "sha256:a08e20ebea57bf830c605e8c9cc87950bc3781350d1d0c22c01e83e994684edb",
+    "role_profile_revision": "sha256:7b3bdf5249dba6e1aeec1f29180b89c51985b04a6ab10a9aaaf5da596361531f",
+    "target_digest": "CTX-software-engineer-0123456789abcdef"
+  },
+  "role": "delivery-reviewer",
+  "schema_version": "U09-challenge-revalidation/2.2",
+  "status": "RESOLVED",
+  "target": {
+    "digest": null,
+    "kind": "package",
+    "ref": "CTX-software-engineer-0123456789abcdef",
+    "version": null
+  },
+  "task_ref": "multica://issue/YZT-77",
+  "v1_signal": {
+    "captured_at": "2026-09-11T00:00:00Z",
+    "content_hash": "CTX-software-engineer-0123456789abcdef",
+    "id": "challenge-u09-6713f1b6716fbdb7",
+    "kind": "external_signal",
+    "locator": "CTX-software-engineer-0123456789abcdef",
+    "notes": "U09 challenge_context result; no canonical unit was modified",
+    "observed_at": "2026-09-11T00:00:00Z",
+    "reliability": "disputed",
+    "schema_version": "1.0",
+    "source_type": "memory_challenge",
+    "summary": "Ordinary context gap revalidation"
+  }
+}

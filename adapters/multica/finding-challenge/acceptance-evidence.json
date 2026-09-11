@@ -1,0 +1,35 @@
+{
+  "boundaries": {
+    "challenge_context_targeted_revalidation": true,
+    "handoff_ready_hides_material_finding": false,
+    "prepare_handoff_target_role_gate": true,
+    "self_check_current_role_gate": true,
+    "task_completion_finding_drain": true
+  },
+  "capture": {
+    "canonical_write_default": false,
+    "process_now_default": false,
+    "report_finding_is_capture_only": true,
+    "wake_context_engineer_default": false
+  },
+  "classification": {
+    "grok_raw_truth_to_project": false,
+    "reusable_cognition_is_runtime_finding": true,
+    "review_qa_local_defect_is_not_automatic_runtime_finding": true
+  },
+  "kind": "u09_acceptance_evidence",
+  "routing": {
+    "direct_nonlead_02_03_04_trigger": false,
+    "ordinary_finding_wakes_02": false,
+    "product_design_implementation_routes_classified": true,
+    "unresolved_material_exception_requires_lead": true
+  },
+  "safety": {
+    "canonical_writes": 0,
+    "frozen_t00_amended": false,
+    "live_mutations_or_triggers": 0,
+    "product_repo_changes": 0,
+    "upstream_pins_preserved": true
+  },
+  "schema_version": "U09-acceptance-evidence/2.2"
+}

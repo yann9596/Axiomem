@@ -1,0 +1,80 @@
+{
+  "counts": {
+    "adapted": 3,
+    "deferred": 2,
+    "invalid": 6,
+    "retained": 6
+  },
+  "kind": "finding_challenge_historical_inventory",
+  "rows": [
+    {
+      "decision": "retained",
+      "item": "REPORT_FINDING capture-only ingest"
+    },
+    {
+      "decision": "retained",
+      "item": "Finding.open lifecycle"
+    },
+    {
+      "decision": "retained",
+      "item": "T01 internal FINDING_GATE"
+    },
+    {
+      "decision": "retained",
+      "item": "T04B current-role integration"
+    },
+    {
+      "decision": "retained",
+      "item": "V1 challenge signal shape (`source_type: memory_challenge`)"
+    },
+    {
+      "decision": "retained",
+      "item": "deterministic dispositions and replay idempotence"
+    },
+    {
+      "decision": "adapted",
+      "item": "task-scoped drain at completion"
+    },
+    {
+      "decision": "adapted",
+      "item": "package/context/artifact revision binding"
+    },
+    {
+      "decision": "adapted",
+      "item": "escalation to 02 on material exception"
+    },
+    {
+      "decision": "invalid",
+      "item": "Grok raw output as project truth"
+    },
+    {
+      "decision": "invalid",
+      "item": "ordinary Finding waking 02"
+    },
+    {
+      "decision": "invalid",
+      "item": "producer/reviewer/QA direct 02 trigger"
+    },
+    {
+      "decision": "invalid",
+      "item": "local Review/QA defect as automatic Runtime Finding"
+    },
+    {
+      "decision": "invalid",
+      "item": "free-form operator routing of Findings"
+    },
+    {
+      "decision": "invalid",
+      "item": "second Finding lifecycle/store"
+    },
+    {
+      "decision": "deferred",
+      "item": "U11 joint replay"
+    },
+    {
+      "decision": "deferred",
+      "item": "U12 live enablement"
+    }
+  ],
+  "schema_version": "U09-historical-inventory/2.2"
+}

@@ -1,0 +1,31 @@
+{
+  "canonical_write": false,
+  "concluded": true,
+  "context_engineer_woken": false,
+  "direct_trigger": false,
+  "drain_id": "DRAIN-U09-3a0398062d500062",
+  "invalid_decisions": [],
+  "kind": "task_drain_result",
+  "replayed": false,
+  "rows": [
+    {
+      "already_processed": false,
+      "classification": "TASK_COGNITION",
+      "disposition": "DEFERRED_GATE",
+      "evidence_ref": "repo://multica-memory/team-context/checkpoint.yaml",
+      "finding_id": "FIND-WIMG-U09-000001",
+      "frozen_disposition": "carry_to_checkpoint",
+      "gate": "CHECKPOINT",
+      "note": null,
+      "owner": "engineering-lead"
+    }
+  ],
+  "schema_version": "U09-task-drain/2.2",
+  "status": "DRAINED",
+  "store_digest_after": "sha256:4cb81f093dd41fba2f17dc237d9323623ed2b7c229d9ed848b3b889fd4d7441e",
+  "store_digest_before": "sha256:3b282f993b364f3da2955540404ee3f7484be534c7cf8f49cfbcb687fac96fcb",
+  "task_closed_with_open_unaccounted_finding": false,
+  "task_ref": "multica://issue/YZT-77",
+  "unaccounted_open_findings": [],
+  "writes": 1
+}

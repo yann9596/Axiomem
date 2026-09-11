@@ -1,0 +1,42 @@
+{
+  "canonical_writes": 0,
+  "command_audit": {
+    "assignment_trigger": {
+      "argv_ok": false,
+      "count": 0
+    },
+    "command_counts": {},
+    "comment_publish": {
+      "count": 0
+    },
+    "issue_create": {
+      "count": 0,
+      "unassigned_argv_ok": false
+    },
+    "issue_update": {
+      "count": 0,
+      "non_trigger_argv_ok": true
+    },
+    "mention_hits": [],
+    "ok": true,
+    "unexpected_write_classes": []
+  },
+  "context_engineer_wakes": 0,
+  "generated_at": "2026-09-11T00:00:00Z",
+  "kind": "finding_side_effect_audit",
+  "live_triggers": 0,
+  "live_writes": 0,
+  "ok": true,
+  "product_repo_changes": 0,
+  "real_assignments": 0,
+  "schema_version": "U09-finding-audit/2.2",
+  "status_writes": 0,
+  "trigger_records": 0,
+  "typed_records": {
+    "challenge_revalidation": 1,
+    "finding_capture": 1,
+    "finding_drain": 1,
+    "finding_processing": 2
+  },
+  "user_visible_triggers": 0
+}

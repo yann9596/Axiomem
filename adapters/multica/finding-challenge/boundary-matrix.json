@@ -1,0 +1,42 @@
+{
+  "kind": "finding_boundary_matrix",
+  "rows": [
+    {
+      "blocked": "BLOCKED + Lead-addressed escalation proposal",
+      "boundary": "SELF_CHECK",
+      "clear": "CLEAR / continue",
+      "engine": "T04B current-role integration over T01 FINDING_GATE",
+      "refresh": "REFRESH_REQUIRED when processing changed Canonical state",
+      "selection": "current-role relevant open Findings",
+      "wakes_context_engineer_by_default": false
+    },
+    {
+      "blocked": "READY_REFUSED + Lead-addressed escalation proposal",
+      "boundary": "PREPARE_HANDOFF",
+      "clear": "CLEAR -> ready_allowed",
+      "engine": "T01 FINDING_GATE (boundary=handoff)",
+      "refresh": "post-prepare material change -> ready refused / refresh",
+      "selection": "target-role relevant open Findings",
+      "wakes_context_engineer_by_default": false
+    },
+    {
+      "blocked": "BLOCKED with unaccounted_open_findings listed",
+      "boundary": "TASK_COMPLETION",
+      "clear": "DRAINED only when zero unaccounted open Findings",
+      "engine": "drain_task_findings with explicit dispositions",
+      "refresh": "not applicable",
+      "selection": "every task-associated open Finding",
+      "wakes_context_engineer_by_default": false
+    },
+    {
+      "blocked": "UNRESOLVED_MATERIAL / RETURNED_TO_LEAD / STOPPED_ESCALATED -> proposal to Lead only",
+      "boundary": "CHALLENGE_CONTEXT",
+      "clear": "RESOLVED / continue",
+      "engine": "challenge_context targeted revalidation (+ T04B gate)",
+      "refresh": "revision drift or stale artifact -> REFRESH_REQUIRED",
+      "selection": "one exact package/context/artifact/evidence target",
+      "wakes_context_engineer_by_default": false
+    }
+  ],
+  "schema_version": "U09-boundary-matrix/2.2"
+}

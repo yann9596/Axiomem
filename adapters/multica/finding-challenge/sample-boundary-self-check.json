@@ -1,0 +1,82 @@
+{
+  "binding": null,
+  "blocked_findings": [],
+  "boundary": "SELF_CHECK",
+  "canonical_changed": false,
+  "canonical_write": false,
+  "context_engineer_woken": false,
+  "direct_trigger": false,
+  "escalation": {
+    "required": false
+  },
+  "gate": {
+    "blocked_findings": [],
+    "boundary": "current_role",
+    "canonical_changed": false,
+    "context_engineer_woken": false,
+    "escalation": {
+      "required": false
+    },
+    "processed_findings": [
+      {
+        "created_at": "2026-09-11T00:00:00Z",
+        "discovered_by": "software-engineer",
+        "disposition": "forget",
+        "disposition_note": "non_material_auto",
+        "finding_id": "FIND-WIMG-U09-000002",
+        "intent": "task_delivery",
+        "kind": "finding",
+        "project_id": "web-imagegen",
+        "schema_version": "1.1",
+        "source_refs": [
+          "repo://multica-memory/tools/chandoff_plan.py"
+        ],
+        "status": "processed",
+        "summary": "Local implementation defect: empty state on provider switch",
+        "task_id": "multica://issue/YZT-77",
+        "verification": "verified"
+      }
+    ],
+    "relevant_open_findings": [
+      {
+        "created_at": "2026-09-11T00:00:00Z",
+        "discovered_by": "software-engineer",
+        "finding_id": "FIND-WIMG-U09-000002",
+        "intent": "task_delivery",
+        "kind": "finding",
+        "project_id": "web-imagegen",
+        "schema_version": "1.1",
+        "source_refs": [
+          "repo://multica-memory/tools/chandoff_plan.py"
+        ],
+        "status": "open",
+        "summary": "Local implementation defect: empty state on provider switch",
+        "task_id": "multica://issue/YZT-77",
+        "verification": "verified"
+      }
+    ],
+    "remaining_nonblocking_findings": [],
+    "status": "CLEAR"
+  },
+  "kind": "finding_processing_result",
+  "llm_called": false,
+  "processed_findings": [
+    "FIND-WIMG-U09-000002"
+  ],
+  "ready_allowed": true,
+  "reason_codes": [],
+  "remaining_nonblocking_findings": [],
+  "schema_version": "U09-finding-processing/2.2",
+  "selection": [
+    {
+      "digest": "sha256:649e9e6aff77b26e374dfc884eb6cce251a9c11ae12d19d26951824b8e408856",
+      "finding_id": "FIND-WIMG-U09-000002",
+      "intent": "task_delivery",
+      "verification": "verified"
+    }
+  ],
+  "selection_digest": "sha256:1528ce76f6b8a97ecfb48fe78dcdbdf10e9c700c668bd8acdcd496e1629b511b",
+  "status": "CLEAR",
+  "store_digest_after": "sha256:4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+  "store_digest_before": "sha256:4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+}

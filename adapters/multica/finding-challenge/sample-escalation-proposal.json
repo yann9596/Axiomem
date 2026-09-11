@@ -1,0 +1,36 @@
+{
+  "addressed_to": "engineering-lead",
+  "affected": {
+    "artifact_or_context_refs": [
+      "FIND-WIMG-U09-000002"
+    ],
+    "package_id": "CTX-software-engineer-0123456789abcdef",
+    "task_ref": "multica://issue/YZT-77"
+  },
+  "attempted_processing": {
+    "boundary": "SELF_CHECK",
+    "exchange_round": 1,
+    "gate_status": "BLOCKED"
+  },
+  "boundary": "SELF_CHECK",
+  "canonical_write": false,
+  "classification": "CONTEXT_AUTHORITY_CONFLICT",
+  "context_engineer_woken": false,
+  "dispatch": {
+    "assignment_emitted": false,
+    "requires_lead_owned_safe_dispatch": true,
+    "status_write_emitted": false,
+    "trigger_emitted": false
+  },
+  "evidence": {
+    "digest": "sha256:789a89df97f1f5dd61b0cbb79095290ce82af5e8a10267de333b04abd56f18f6",
+    "refs": [
+      "repo://multica-memory/tools/chandoff_finding.py"
+    ]
+  },
+  "kind": "escalation_proposal",
+  "proposal_id": "ESC-U09-2e4b8579e9a80dc6",
+  "reason_code": "critical_context_review",
+  "recommended_target": "context-engineer",
+  "schema_version": "U09-escalation-proposal/2.2"
+}
