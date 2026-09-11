@@ -2383,7 +2383,7 @@ def validate_publication_recovery_proof(proof: dict, *, intent: dict,
     recovered_proof = data.get("recovery_proof") or {}
     recovered_decision = recovered_proof.get("decision") or {}
     if original["execution_binding_digest"] != digest(recovered_execution) or \
-            original["proof_digest"] != digest(recovered_proof) or \
+            original["proof_digest"] != recovered_proof.get("proof_digest") or \
             original["decision_digest"] != \
             recovered_decision.get("decision_digest"):
         raise R0BValidationRefused(
@@ -2732,8 +2732,11 @@ def validate_publication_recovery_commit_record(record: dict,
     proof = validate_publication_recovery_proof(
         record["publication_recovery_proof"], intent=intent, data=data,
         applying=True)
+    migration_data = dict(data)
+    migration_data["publication_recovery_proof"] = \
+        record["publication_recovery_proof"]
     migration = validate_publication_execution_migration(
-        intent, data, record["publication_execution_migration"],
+        intent, migration_data, record["publication_execution_migration"],
         applying=True)
     expected_migration = (proof.get("decision") or {}).get(
         "execution_migration") or {}
