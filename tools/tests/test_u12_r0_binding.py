@@ -307,7 +307,8 @@ def cached_context(key, request):
         with tempfile.TemporaryDirectory() as tmp:
             store = o2.DurableIntentStore(Path(tmp) / "ledger.jsonl")
             factory = u12.build_r0b_factory(
-                store, runner=FakeCli(), require_findings_source=False)
+                store, runner=u12.cfs.construct_simulation_entry(FakeCli()),
+                require_findings_source=False)
             _CACHE[key] = factory.build_context_package(
                 request, clock=lambda: CLOCK, findings=[])
     return copy.deepcopy(_CACHE[key])
@@ -486,7 +487,8 @@ class LifecycleHarness:
             authority = CountingAuthorityReader(authority,
                                                 self.authority_reads)
         self.factory = u12.build_r0b_factory(
-            self.store, runner=self.cli, artifact_blob_reader=counting_reader,
+            self.store, runner=u12.cfs.construct_simulation_entry(self.cli),
+            artifact_blob_reader=counting_reader,
             authority_reader=authority, findings_source=findings_source,
             require_findings_source=require_findings_source,
             findings_baseline_observation=findings_baseline_observation)
@@ -1182,7 +1184,7 @@ class RecoveryMatrixTests(unittest.TestCase):
         self.h.factory.create_target_once(self.h.intent_id, actor=DISPATCHER)
         other = u12.build_r0b_factory(
             o2.DurableIntentStore(Path(self.tmp.name) / "ledger.jsonl"),
-            runner=self.h.cli,
+            runner=u12.cfs.construct_simulation_entry(self.h.cli),
             artifact_blob_reader=u12._git_blob_reader(u12.ROOT),
             require_findings_source=False)
         replay = other.create_target_once(self.h.intent_id, actor="worker-b")
@@ -1306,7 +1308,7 @@ class PreflightRepairTests(unittest.TestCase):
         self.h.arm()
         other = u12.build_r0b_factory(
             o2.DurableIntentStore(Path(self.tmp.name) / "ledger.jsonl"),
-            runner=self.h.cli,
+            runner=u12.cfs.construct_simulation_entry(self.h.cli),
             artifact_blob_reader=u12._git_blob_reader(u12.ROOT),
             authority_reader=u12.ReadinessManifestAuthorityReader(),
             require_findings_source=False)

@@ -7,6 +7,7 @@ test_u12_p0r_evidence. Does not read D:/AI/multica-memory/runtime/v1.1/findings.
 """
 from __future__ import annotations
 
+import copy
 import json
 import sys
 import tempfile
@@ -28,10 +29,59 @@ import chandoff_mention as men  # noqa: E402
 import u12_r0_binding as u12  # noqa: E402
 from yzt66_v2_synthetic import (  # noqa: E402
     AUTHORITY_TEXT, PROJECT, ROLE, TASK_REF, SyntheticAuthorityCli,
-    build_v2_fixture, synthetic_open_finding,
+    build_v2_fixture, synthetic_blocking_finding, synthetic_open_finding,
 )
+from test_handoff_assignment import (  # noqa: E402
+    AGENT_SE, COMPOSE, CLOCK, FakeMultica, PARENT_UUID, base_spec,
+)
+from test_handoff_findings_source import build_envelope, sample_request  # noqa: E402
 
 SKILL = REPO / "skills" / "multica-context-handoff"
+CREATED_TASK_REF = "multica://issue/YZT-9001"
+
+
+class InertRecordingSpy:
+    """Class-instance spy. Never subprocesses. Test-only."""
+
+    def __init__(self):
+        self.calls = []
+
+    def __call__(self, argv):
+        self.calls.append(list(argv))
+        return 0, "{}", ""
+
+
+class MarkerMixedWrapper:
+    """Ordinary configuration bypass: markers + inner live callable."""
+
+    simulation_transport = True
+    explicit_simulation_entry = True
+
+    def __init__(self, inner):
+        self.inner = inner
+        self.runner = inner
+
+    def __call__(self, argv):
+        return self.inner(argv)
+
+
+def _bound_source(fx, binding, *, extra_task_refs=()):
+    trusted = copy.deepcopy(fx["trusted"]) if extra_task_refs else fx["trusted"]
+    bound = dict(binding)
+    if extra_task_refs:
+        allowed = copy.deepcopy(bound["allowed"])
+        for ref in extra_task_refs:
+            if ref not in allowed["task_refs"]:
+                allowed["task_refs"].append(ref)
+        bound["allowed"] = allowed
+        for entry in trusted["sources"].values():
+            for ref in extra_task_refs:
+                if ref not in entry["allowed"]["task_refs"]:
+                    entry["allowed"]["task_refs"].append(ref)
+    return cfs.BoundFindingsSource(
+        bound,
+        resolver=cfs.AuthenticatedCommentResolver(SyntheticAuthorityCli()),
+        project_id=PROJECT, trusted=trusted, require_trusted=True), trusted, bound
 
 
 class SameNameContentDriftTests(unittest.TestCase):
@@ -265,6 +315,90 @@ class ProductionSimulationBypassTests(unittest.TestCase):
         self.assertEqual(result["terminal_status"], asm.INVALID_INPUT)
         self.assertEqual(issued, [])
 
+    def test_legacy_fixture_marker_mixed_wrapper_zero_effects(self):
+        """YZT88-V2-C2-MIXED: booleans + markers + inner live → refuse."""
+        issued = []
+
+        def live_runner(argv):
+            issued.append(list(argv))
+            return 0, "{}", ""
+
+        mixed = MarkerMixedWrapper(live_runner)
+        self.assertFalse(cfs.is_simulation_transport(mixed))
+        result = asm.run_assignment_handoff(
+            {"title": "Mixed wrapper drill",
+             "description": "Markers plus inner live must not grant exemption.",
+             "project_id": PROJECT, "purpose": "implementation"},
+            caller_role="engineering-lead",
+            target_role_spec="software-engineer",
+            runner=mixed, ledger=dispatch.TransactionLedger(),
+            compose_fn=lambda *a, **k: None, transaction_id="tx-v2-mixed",
+            legacy_fixture=True)
+        self.assertEqual(result["terminal_status"], asm.INVALID_INPUT)
+        self.assertEqual(issued, [])
+        men_result = men.run_mention_handoff(
+            {"issue_id": "22222222-0000-0000-0000-000000000065",
+             "project_id": PROJECT, "purpose": "implementation"},
+            caller_role="engineering-lead",
+            target_role_spec="software-engineer",
+            runner=mixed, ledger=dispatch.TransactionLedger(),
+            compose_fn=lambda *a, **k: None, transaction_id="tx-v2-mixed-m",
+            legacy_fixture=True, stage="ready")
+        self.assertEqual(men_result["terminal_status"], men.INVALID_INPUT)
+        self.assertEqual(issued, [])
+
+        tmp = tempfile.TemporaryDirectory()
+        self.addCleanup(tmp.cleanup)
+        factory = u12.build_r0b_factory(
+            __import__("chandoff_intent", fromlist=["DurableIntentStore"])
+            .DurableIntentStore(Path(tmp.name) / "ledger.jsonl"),
+            runner=mixed, require_findings_source=False)
+        with self.assertRaises(cfs.FindingsSourceRefusal):
+            factory._gate_findings_effects("R0 trigger")
+        self.assertEqual(issued, [])
+
+    def test_simulation_entry_refuses_live_inner(self):
+        """YZT88-V2-C2-LIVEINNER: SimulationEntry cannot forward live argv."""
+        issued = []
+
+        def live_runner(argv):
+            issued.append(list(argv))
+            return 0, "{}", ""
+
+        with self.assertRaises(TypeError):
+            cfs.construct_simulation_entry(live_runner)
+        with self.assertRaises(TypeError):
+            cfs.construct_simulation_entry(MarkerMixedWrapper(live_runner))
+        self.assertEqual(issued, [])
+
+    def test_supported_simulation_entry_with_inert_spy(self):
+        """YZT88-V2-C2-POSITIVE: official fake-only wrap is the test helper."""
+        spy = InertRecordingSpy()
+        entry = cfs.construct_simulation_entry(spy)
+        self.assertTrue(cfs.is_simulation_transport(entry))
+        cfs.gate_effectful_findings(
+            source=None, runner=entry, require_source=False,
+            allow_legacy_fixture=True, what="supported test helper")
+        fake = FakeMultica()
+        result = asm.run_assignment_handoff(
+            base_spec(parent_issue_id=PARENT_UUID),
+            caller_role="engineering-lead",
+            target_role_spec="software-engineer",
+            runner=cfs.construct_simulation_entry(fake),
+            ledger=dispatch.TransactionLedger(),
+            compose_fn=COMPOSE, transaction_id="tx-v2-sim-ok",
+            clock=CLOCK, finding_store=__import__(
+                "chandoff_plan", fromlist=["MemoryFindingStore"]
+            ).MemoryFindingStore([]),
+            legacy_fixture=True)
+        self.assertTrue(result.get("ok"), result)
+        self.assertEqual(result["terminal_status"], "COMPLETED")
+        self.assertEqual(len(fake.assign_calls), 1)
+        self.assertEqual(fake.assign_calls[0][1], AGENT_SE)
+        body = fake.comments["11111111-2222-3333-4444-000000000001"][0]["content"]
+        self.assertEqual(body.split("\n")[0], "/note")
+        self.assertNotIn("mention://", body)
+
 
 class OfficialPublicationPathTests(unittest.TestCase):
     def test_skill_forbids_bare_t06_and_unbound_context_cli(self):
@@ -483,15 +617,8 @@ class SkillInstructionBindingTests(unittest.TestCase):
 
 
 class OfflineMainChainSmokeTests(unittest.TestCase):
-    def test_offline_pipeline_selfcheck_with_v2_fixture(self):
-        """YZT88-V2-SMOKE: offline pipeline selfcheck + trusted fixture.
-
-        LOCAL evidence only. Fake CLI, synthetic source, real selfcheck
-        implementation. Not daemon-managed target compliance.
-        """
+    def _pipeline(self):
         import importlib.util
-        import argparse
-        fx = build_v2_fixture()
         skill = SKILL / "scripts" / "handoff_pipeline.py"
         spec = importlib.util.spec_from_file_location(
             "handoff_pipeline_v2_smoke", skill)
@@ -499,16 +626,52 @@ class OfflineMainChainSmokeTests(unittest.TestCase):
         sys.dont_write_bytecode = True
         spec.loader.exec_module(pipeline)
         sys.dont_write_bytecode = False
+        return pipeline
+
+    def _selfcheck_ns(self, fx, *, binding_file, trusted_file, request,
+                      envelope, evidence, cli, out):
+        import argparse
+        request_file = Path(fx["dir"]) / "self-check-request.json"
+        request_file.write_text(json.dumps(request, ensure_ascii=False,
+                                           indent=2), encoding="utf-8")
+        envelope_file = Path(fx["dir"]) / "envelope.json"
+        envelope_file.write_text(json.dumps(envelope, ensure_ascii=False,
+                                            indent=2), encoding="utf-8")
+        evidence_file = Path(fx["dir"]) / "prepare-observation.json"
+        evidence_file.write_text(json.dumps(evidence, ensure_ascii=False,
+                                            indent=2), encoding="utf-8")
+        return argparse.Namespace(
+            repo=str(REPO), issue=None, task_ref=None, role=None,
+            request_file=str(request_file), request_from=None,
+            package_ref=None, envelope_file=[str(envelope_file)], store=None,
+            executable="multica", out_dir=str(out),
+            artifact_store_file=None, artifact_requirements_file=None,
+            artifact_review_level=None,
+            findings_source_binding_file=str(binding_file),
+            findings_authority_file=None, findings_authority_cli=cli,
+            findings_authority_capture_only=False,
+            findings_evidence_file=str(evidence_file),
+            findings_source_expect_commit=None,
+            findings_source_expect_adapter_digest=None,
+            observer_run_id="yzt88-v2-smoke",
+            findings_trusted_map_file=str(trusted_file))
+
+    def test_offline_pipeline_selfcheck_invocation_only(self):
+        """YZT88-V2-SMOKE: local invocation of bound selfcheck.
+
+        Proves the pipeline is callable against the V2 fixture. Does not
+        prove a successful prepared package, READY, publication, or a
+        single assignment. Matching-success and refusal cases are
+        separate tests.
+        """
+        fx = build_v2_fixture()
+        pipeline = self._pipeline()
         cli = SyntheticAuthorityCli()
         source = cfs.BoundFindingsSource(
             fx["open_binding"],
             resolver=cfs.AuthenticatedCommentResolver(cli),
             project_id=PROJECT, trusted=fx["trusted"], require_trusted=True)
         prepare = source.read(boundary="PREPARE", task_ref=TASK_REF, role=ROLE)
-        evidence = Path(fx["dir"]) / "prepare-observation.json"
-        evidence.write_text(json.dumps(prepare["observation"],
-                                       ensure_ascii=False, indent=2),
-                            encoding="utf-8")
         request = {
             "schema_version": "1.1",
             "kind": "self_check_request",
@@ -516,45 +679,187 @@ class OfflineMainChainSmokeTests(unittest.TestCase):
             "role": ROLE,
             "task_snapshot": {
                 "title": "SYNTHETIC V2 offline self-check",
-                "description": "SYNTHETIC. Local evidence only.",
+                "description": "SYNTHETIC. Local invocation only.",
                 "requirements": ["bound source"],
                 "acceptance_criteria": ["trusted map"],
                 "relevant_decisions": ["V2 supervised handoff"],
             },
         }
-        request_file = Path(fx["dir"]) / "self-check-request.json"
-        request_file.write_text(json.dumps(request, ensure_ascii=False,
-                                           indent=2), encoding="utf-8")
-        from test_handoff_findings_source import build_envelope, sample_request
         envelope = build_envelope(sample_request())
-        envelope_file = Path(fx["dir"]) / "envelope.json"
-        envelope_file.write_text(json.dumps(envelope, ensure_ascii=False,
-                                            indent=2), encoding="utf-8")
-        out = Path(fx["dir"]) / "out"
+        out = Path(fx["dir"]) / "out-invoke"
         out.mkdir()
-        ns = argparse.Namespace(
-            repo=str(REPO), issue=None, task_ref=None, role=None,
-            request_file=str(request_file), request_from=None,
-            package_ref=None, envelope_file=[str(envelope_file)], store=None,
-            executable="multica", out_dir=str(out),
-            artifact_store_file=None, artifact_requirements_file=None,
-            artifact_review_level=None,
-            findings_source_binding_file=str(fx["open_binding_file"]),
-            findings_authority_file=None, findings_authority_cli=cli,
-            findings_authority_capture_only=False,
-            findings_evidence_file=str(evidence),
-            findings_source_expect_commit=None,
-            findings_source_expect_adapter_digest=None,
-            observer_run_id="yzt88-v2-smoke",
-            findings_trusted_map_file=str(fx["trusted_map_file"]))
+        ns = self._selfcheck_ns(
+            fx, binding_file=fx["open_binding_file"],
+            trusted_file=fx["trusted_map_file"], request=request,
+            envelope=envelope, evidence=prepare["observation"],
+            cli=cli, out=out)
         payload, code = pipeline.run_selfcheck(ns)
         self.assertEqual(payload.get("findings_source_mode"), "bound", payload)
         self.assertEqual(payload.get("task_ref"), TASK_REF)
         self.assertEqual(payload.get("current_role"), ROLE)
         self.assertIn(payload.get("status"),
                       ("READY", "REFRESH_REQUIRED", "BLOCKED"))
-        # No live issue discovery; missing package is an allowed local stop.
+        self.assertIn(code, (0, 2, 3), payload)
         self.assertEqual(payload.get("guarantees", {}).get("canonical_writes"), 0)
+
+    def test_selected_path_ready_use_existing_one_assignment(self):
+        """YZT88-V2-SMOKE-READY: empty fixture, matching package, one assign.
+
+        Eligible success fixture is the empty store. Relevant open
+        conflicts are not suppressed to obtain READY.
+        """
+        fx = build_v2_fixture()
+        pipeline = self._pipeline()
+        cli = SyntheticAuthorityCli()
+        source = cfs.BoundFindingsSource(
+            fx["empty_binding"],
+            resolver=cfs.AuthenticatedCommentResolver(cli),
+            project_id=PROJECT, trusted=fx["trusted"], require_trusted=True)
+        prepare = source.read(boundary="PREPARE", task_ref=TASK_REF, role=ROLE)
+        self.assertEqual(prepare["observation"]["snapshot_digest"],
+                         fx["empty_snapshot_digest"])
+        self.assertEqual(prepare["open_ids"], [])
+        prepare_req = sample_request()
+        envelope = build_envelope(prepare_req, findings=[])
+        self.assertEqual(envelope["status"], "READY")
+        self.assertEqual(envelope["task_ref"], TASK_REF)
+        self.assertEqual(envelope["role"], ROLE)
+        check_req = {
+            "schema_version": "1.1",
+            "kind": "self_check_request",
+            "task_ref": prepare_req["task_ref"],
+            "role": prepare_req["target"]["role"],
+            "task_snapshot": prepare_req["task_snapshot"],
+        }
+        out = Path(fx["dir"]) / "out-ready"
+        out.mkdir()
+        ns = self._selfcheck_ns(
+            fx, binding_file=fx["empty_binding_file"],
+            trusted_file=fx["trusted_map_file"], request=check_req,
+            envelope=envelope, evidence=prepare["observation"],
+            cli=cli, out=out)
+        payload, code = pipeline.run_selfcheck(ns)
+        self.assertEqual(payload.get("status"), "READY", payload)
+        self.assertEqual(payload.get("action"), "USE_EXISTING", payload)
+        self.assertEqual(code, 0, payload)
+        self.assertEqual(payload.get("package_id"), envelope["package_id"])
+        self.assertEqual(payload.get("task_ref"), TASK_REF)
+        self.assertEqual(payload.get("current_role"), ROLE)
+        report = payload.get("findings_source") or {}
+        self.assertEqual(report.get("snapshot_digest"),
+                         fx["empty_snapshot_digest"], payload)
+        self.assertEqual(payload.get("guarantees", {}).get("canonical_writes"), 0)
+
+        bound, _, _ = _bound_source(
+            fx, fx["empty_binding"], extra_task_refs=(CREATED_TASK_REF,))
+        fake = FakeMultica()
+        result = asm.run_assignment_handoff(
+            base_spec(parent_issue_id=PARENT_UUID),
+            caller_role="engineering-lead",
+            target_role_spec="software-engineer",
+            runner=fake, ledger=dispatch.TransactionLedger(),
+            compose_fn=COMPOSE, transaction_id="tx-v2-ready",
+            clock=CLOCK, findings_source=bound, legacy_fixture=False)
+        self.assertTrue(result.get("ok"), result)
+        self.assertEqual(result["terminal_status"], "COMPLETED", result)
+        self.assertEqual(result.get("self_check", {}).get("status"), "READY",
+                         result)
+        self.assertEqual(len(fake.assign_calls), 1)
+        self.assertEqual(fake.assign_calls[0][1], AGENT_SE)
+        self.assertEqual(result["audit"]["command_counts"]
+                         .get("assignment_trigger"), 1)
+        self.assertEqual(result["audit"]["command_counts"]
+                         .get("comment_publish"), 1)
+        body = fake.comments["11111111-2222-3333-4444-000000000001"][0]["content"]
+        self.assertEqual(body.split("\n")[0], "/note")
+        self.assertNotIn("mention://", body)
+
+    def test_relevant_conflict_blocks_and_zero_assignment(self):
+        """YZT88-V2-SMOKE-BLOCK: material open Finding blocks, zero assign."""
+        fx = build_v2_fixture()
+        blocking = synthetic_blocking_finding(task_id="YZT-9001")
+        root = Path(fx["dir"]) / "blocking"
+        root.mkdir()
+        (root / f"{blocking['finding_id']}.json").write_text(
+            json.dumps(blocking, ensure_ascii=False, indent=2) + "\n",
+            encoding="utf-8", newline="\n")
+        binding = dict(fx["empty_binding"])
+        binding["root"] = str(root.resolve())
+        trusted = copy.deepcopy(fx["trusted"])
+        trusted["sources"][cfs.V2_SYNTHETIC_EMPTY_SOURCE_ID]["root"] = str(
+            root.resolve())
+        trusted["sources"][cfs.V2_SYNTHETIC_EMPTY_SOURCE_ID]["allowed"][
+            "task_refs"].append(CREATED_TASK_REF)
+        binding["allowed"] = copy.deepcopy(
+            trusted["sources"][cfs.V2_SYNTHETIC_EMPTY_SOURCE_ID]["allowed"])
+        source = cfs.BoundFindingsSource(
+            binding,
+            resolver=cfs.AuthenticatedCommentResolver(SyntheticAuthorityCli()),
+            project_id=PROJECT, trusted=trusted, require_trusted=True)
+        fake = FakeMultica()
+        result = asm.run_assignment_handoff(
+            base_spec(parent_issue_id=PARENT_UUID),
+            caller_role="engineering-lead",
+            target_role_spec="software-engineer",
+            runner=fake, ledger=dispatch.TransactionLedger(),
+            compose_fn=COMPOSE, transaction_id="tx-v2-block",
+            clock=CLOCK, findings_source=source, legacy_fixture=False)
+        self.assertEqual(result["terminal_status"], "PREPARE_BLOCKED", result)
+        self.assertEqual(len(fake.assign_calls), 0)
+        self.assertEqual(result["audit"]["command_counts"]
+                         .get("assignment_trigger", 0), 0)
+        self.assertEqual(result["audit"]["command_counts"]
+                         .get("comment_publish", 0), 0)
+
+    def test_stale_package_refused_zero_assignment(self):
+        """YZT88-V2-SMOKE-STALE: stale artifacts refuse, zero assign."""
+        fx = build_v2_fixture()
+        bound, _, _ = _bound_source(
+            fx, fx["empty_binding"], extra_task_refs=(CREATED_TASK_REF,))
+        fake = FakeMultica()
+        stale = [{
+            "artifact_type": "implementation",
+            "artifact_id": "ART-WIMG-031",
+            "version": "superseded-or-missing",
+            "required": True,
+        }]
+        spec = base_spec(parent_issue_id=PARENT_UUID,
+                         required_artifacts=stale,
+                         artifact_store_file=str(
+                             TOOLS / "fixtures" / "artifact-contract"
+                             / "store-chain.json"),
+                         review_level="R1")
+        result = asm.run_assignment_handoff(
+            spec, caller_role="engineering-lead",
+            target_role_spec="software-engineer",
+            runner=fake, ledger=dispatch.TransactionLedger(),
+            compose_fn=COMPOSE, transaction_id="tx-v2-stale",
+            clock=CLOCK, findings_source=bound, legacy_fixture=False)
+        self.assertEqual(result["terminal_status"], "PACKAGE_STALE", result)
+        self.assertEqual(len(fake.assign_calls), 0)
+        self.assertEqual(result["audit"]["command_counts"]
+                         .get("assignment_trigger", 0), 0)
+        self.assertEqual(result["audit"]["command_counts"]
+                         .get("comment_publish", 0), 0)
+
+    def test_missing_source_refused_zero_effects(self):
+        """YZT88-V2-SMOKE-MISSING: omitted binding → zero argv."""
+        issued = []
+
+        def runner(argv):
+            issued.append(list(argv))
+            return 0, "{}", ""
+
+        result = asm.run_assignment_handoff(
+            base_spec(parent_issue_id=PARENT_UUID),
+            caller_role="engineering-lead",
+            target_role_spec="software-engineer",
+            runner=runner, ledger=dispatch.TransactionLedger(),
+            compose_fn=COMPOSE, transaction_id="tx-v2-missing",
+            clock=CLOCK, findings_source=None, legacy_fixture=False)
+        self.assertEqual(result["terminal_status"], asm.INVALID_INPUT, result)
+        self.assertEqual(issued, [])
+        self.assertIn("binding", result.get("stop_reason", "").lower())
 
 
 V2_TEST_INVENTORY = {
@@ -570,6 +875,9 @@ V2_TEST_INVENTORY = {
     "YZT88-V2-C2-FORGERY-MEN": "fake attr on mention → zero argv",
     "YZT88-V2-C2-R0": "R0 factory no longer infers from markers",
     "YZT88-V2-C2-EXPLICIT": "legacy_fixture + live runner → refuse, zero argv",
+    "YZT88-V2-C2-MIXED": "legacy_fixture + markers + inner live → refuse, zero argv",
+    "YZT88-V2-C2-LIVEINNER": "SimulationEntry refuses live/mixed inner",
+    "YZT88-V2-C2-POSITIVE": "construct_simulation_entry(inert spy) is the test helper",
     "YZT88-V2-C3-SKILL": "official Skill routes through guarded pipeline",
     "YZT88-V2-C3-CONTEXTCLI": "context_cli self-check is not official",
     "YZT88-V2-C3-DUP": "known duplicate → replayed, zero argv",
@@ -582,7 +890,11 @@ V2_TEST_INVENTORY = {
     "YZT88-V2-C4-REVOKE": "revoked comment → unbound",
     "YZT88-V2-C5-INSTR": "instruction texts require bound self_check evidence",
     "YZT88-V2-C5-SELFCHECK": "T04 with binding records source observation",
-    "YZT88-V2-SMOKE": "offline pipeline selfcheck against V2 trusted fixture",
+    "YZT88-V2-SMOKE": "local bound selfcheck invocation (not a successful main chain)",
+    "YZT88-V2-SMOKE-READY": "empty fixture + matching package → READY/USE_EXISTING/exit 0 + one assign",
+    "YZT88-V2-SMOKE-BLOCK": "material open Finding → PREPARE_BLOCKED, zero assign/publish",
+    "YZT88-V2-SMOKE-STALE": "stale artifacts → PACKAGE_STALE, zero assign/publish",
+    "YZT88-V2-SMOKE-MISSING": "omitted binding → INVALID_INPUT, zero argv",
 }
 
 

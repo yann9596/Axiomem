@@ -42,8 +42,8 @@ import chandoff_compose as compose  # noqa: E402
 import chandoff_dispatch as dispatch  # noqa: E402
 import chandoff_finalize as finalize  # noqa: E402
 from chandoff_findings_source import (  # noqa: E402
-    FindingsSourceRefusal, gate_effectful_findings,
-    verify_worker_entry,
+    FindingsSourceRefusal, construct_simulation_entry,
+    gate_effectful_findings, verify_worker_entry,
 )
 import chandoff_note as note  # noqa: E402
 import chandoff_plan as plan  # noqa: E402
@@ -636,7 +636,7 @@ class AssignmentHandoff:
             else getattr(recorder, "inner", recorder)
         # Production never infers simulation from class names, fake
         # attributes, or inner wrappers. Tests pass legacy_fixture=True
-        # through construct_simulation_entry / explicit kwargs.
+        # only with construct_simulation_entry wrapping an inert spy.
         self.legacy_fixture = bool(legacy_fixture)
         self._prepare_observation = None
         self._self_check_observation = None
@@ -2106,8 +2106,8 @@ def main(argv=None) -> int:
     policy = json.loads(Path(args.policy_file).read_text(encoding="utf-8")) \
         if args.policy_file else None
     ledger = dispatch.TransactionLedger()
-    fixture_runner = dispatch.FixtureRunner(fixture_table)
-    fixture_runner.simulation_transport = True
+    fixture_runner = construct_simulation_entry(
+        dispatch.FixtureRunner(fixture_table))
     result = run_assignment_handoff(
         spec, caller_role=args.caller_role, target_role_spec=args.target_role,
         runner=fixture_runner, ledger=ledger,

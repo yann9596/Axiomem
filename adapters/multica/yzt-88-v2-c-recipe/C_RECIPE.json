@@ -1,0 +1,116 @@
+{
+  "schema": "yzt-88-v2-c-recipe/1",
+  "status": "offline_reproducible_candidate_not_deployed",
+  "source_id": "yzt66-v2-synthetic-findings",
+  "empty_source_id": "yzt66-v2-synthetic-findings-empty",
+  "project_id": "web-imagegen",
+  "project_note": "synthetic identity only; product repo is not read or written",
+  "task_ref": "multica://issue/YZT-88",
+  "role": "software-engineer",
+  "trusted_map_schema": "findings-trusted-source-map/1",
+  "fixture_builder": "tools/tests/yzt66_v2_synthetic.py:build_v2_fixture",
+  "do_not_deploy": [
+    "adapters/multica/agent-instructions/bundle.json",
+    "historical U11/O2 pins",
+    "DI-e5e2b856f6b7cd36"
+  ],
+  "skill_hashes": {
+    "skill_md_raw_bytes_sha256": "sha256:8a32aae929af446e23e785e4d5a3b1145ac6550ef363966559e6d5137dba0797",
+    "skill_md_lf_normalized_sha256": "sha256:a7326f93a63e1718fb8ed08ecdc7818726db02cca06eacfee9bffc377d1262dd",
+    "skill_md_read_text_utf8_sha256": "sha256:a7326f93a63e1718fb8ed08ecdc7818726db02cca06eacfee9bffc377d1262dd",
+    "pinned_skill_md_lf": "sha256:a7326f93a63e1718fb8ed08ecdc7818726db02cca06eacfee9bffc377d1262dd",
+    "historical_u04_skill_md": "sha256:f369cee40ada061364d91ef48a9cb7d467039931e922c1db18d85fe1d7e0638a",
+    "raw_contains_crlf": true,
+    "lf_equals_pinned": true,
+    "note": "Lead verified SKILL LF a7326f93… / raw 8a32aae9… are equivalent content under newline normalization. C must pin the LF digest used by digest_skill_dir/read_text when the working tree is LF, and record the raw blob hash separately."
+  },
+  "skill_bundle": {
+    "candidate_forward": "sha256:967b48443d5e47bdfe55aecacb92ca78fdd8f576e87602201513b6fc4633ecd6",
+    "historical_u04": "sha256:7f861c320c115b328fb45db7356573ae449a5e443ac08b3572a764c79934fce9",
+    "yzt88_261df9a": "sha256:1a2645771e38def5f44dc809bce991ca18ca7c9ef36777611e9b88726c018bc2",
+    "yzt88_d2b6299": "sha256:f54f0395410cb5ed9596a2e4366dd9375813127391cd4131613942d9f30533ff",
+    "digest_skill_dir_bundle": "sha256:967b48443d5e47bdfe55aecacb92ca78fdd8f576e87602201513b6fc4633ecd6",
+    "digest_skill_dir_skill_md": "sha256:a7326f93a63e1718fb8ed08ecdc7818726db02cca06eacfee9bffc377d1262dd"
+  },
+  "generated_candidates": {
+    "engineering-lead": {
+      "path": "candidates/engineering-lead.md",
+      "sha256": "sha256:807fae3fe99d34175f02a5faa5c71297de1f0fe251f1e2bf3f6192ff46514d74",
+      "bytes": 5542,
+      "fallback": false
+    },
+    "context-engineer": {
+      "path": "candidates/context-engineer.md",
+      "sha256": "sha256:56199a5743288a6d377fee655277004f26cb9bf27c428447f6a4f84fe92ab46c",
+      "bytes": 5644,
+      "fallback": false
+    },
+    "solution-architect": {
+      "path": "candidates/solution-architect.md",
+      "sha256": "sha256:4d52dc06329ccb49ab090ac431423cc2b3b0451bd3daba5b1687b4902ad74a84",
+      "bytes": 4157,
+      "fallback": false
+    },
+    "software-engineer": {
+      "path": "candidates/software-engineer.md",
+      "sha256": "sha256:8b740e746166c0dd645f5f918c2039425535a797a086af3c63ffe3e89e074de2",
+      "bytes": 4162,
+      "fallback": false
+    },
+    "delivery-reviewer": {
+      "path": "candidates/delivery-reviewer.md",
+      "sha256": "sha256:1ceed012ac8eeb973977fbb1b788f015988791720be30ea91e461d28a34ad881",
+      "bytes": 6541,
+      "fallback": false
+    },
+    "qa": {
+      "path": "candidates/qa.md",
+      "sha256": "sha256:a88ea810a2fc1351db46b3facac5e481bbb1a777ec8a5667f08903ab795afd73",
+      "bytes": 4871,
+      "fallback": false
+    }
+  },
+  "generation_errors": {},
+  "runtime_dependencies": {
+    "python": "3.12+",
+    "cwd": "tools/",
+    "offline": true,
+    "no_production_findings_root": true,
+    "no_production_ledger": true,
+    "no_live_multica_subprocess": true,
+    "fake_authority": "tools/tests/yzt66_v2_synthetic.py:SyntheticAuthorityCli",
+    "fake_cli": "tools/tests/test_handoff_assignment.py:FakeMultica"
+  },
+  "exact_commands": {
+    "v2_unique": "python tests/test_yzt88_v2_corrections.py -v",
+    "targeted_affected": "python -m unittest tests.test_handoff_findings_source tests.test_handoff_skill tests.test_handoff_assignment tests.test_handoff_mention tests.test_yzt88_v2_corrections tests.test_handoff_adapter tests.test_handoff_artifact_readiness tests.test_u12_r0_binding.FindingsSourceBindingR0Tests",
+    "pipeline_selfcheck_shape": "python skills/multica-context-handoff/scripts/handoff_pipeline.py selfcheck --repo <repo> --request-file <self_check_request.json> --envelope-file <matching_prepare_envelope.json> --findings-source-binding-file <empty-or-bound.json> --findings-trusted-map-file <trusted-map.json> --findings-evidence-file <prepare-observation.json> --out-dir <out>",
+    "anticipated_success": {
+      "status": "READY",
+      "action": "USE_EXISTING",
+      "exit_code": 0,
+      "source_id": "yzt66-v2-synthetic-findings-empty",
+      "assignment_effects": 1,
+      "publication": "non-trigger /note CONTEXT_HANDOFF"
+    }
+  },
+  "binding": {
+    "source_id": "yzt66-v2-synthetic-findings",
+    "empty_source_id": "yzt66-v2-synthetic-findings-empty",
+    "project_id": "web-imagegen",
+    "root": "run-local temp from build_v2_fixture; never D:/AI/multica-memory/runtime/v1.1/findings",
+    "allowed_task_refs": [
+      "multica://issue/YZT-88"
+    ],
+    "allowed_roles": [
+      "software-engineer"
+    ],
+    "layout": "flat-finding-json-v1"
+  },
+  "live_c_smoke": {
+    "owner": "engineering-lead",
+    "not_executed_here": true,
+    "cap": "one basic attempt plus at most one targeted adapter/config fix-and-retest",
+    "platform_smoke_budget": "unused"
+  }
+}

@@ -21,6 +21,7 @@ sys.path.insert(0, str(TOOLS))
 import chandoff_assignment as asm  # noqa: E402
 import chandoff_compose as compose  # noqa: E402
 import chandoff_dispatch as dispatch  # noqa: E402
+import chandoff_findings_source as cfs  # noqa: E402
 import chandoff_mention as men  # noqa: E402
 import chandoff_selfcheck as selfcheck  # noqa: E402
 
@@ -272,6 +273,13 @@ class FakeMultica:
 UNSET = object()
 
 
+def sim_runner(runner):
+    """Official fake-only test wrap. Production constructors cannot select this."""
+    if isinstance(runner, cfs.SimulationEntry):
+        return runner
+    return cfs.construct_simulation_entry(runner)
+
+
 def run_tx(fake=None, *, spec=None, caller="solution-architect",
            target="software-engineer", tx="tx-u07-0001", ledger=None,
            policy=None, world=None, finding_store=None, bundle_dir=None,
@@ -287,7 +295,8 @@ def run_tx(fake=None, *, spec=None, caller="solution-architect",
     if run_ev is UNSET:
         run_ev = run_evidence(tx, agent_id=TARGET_AGENTS.get(target, AGENT_SE))
     result = men.run_mention_handoff(
-        spec, caller_role=caller, target_role_spec=target, runner=fake,
+        spec, caller_role=caller, target_role_spec=target,
+        runner=sim_runner(fake),
         ledger=ledger, compose_fn=COMPOSE, transaction_id=tx,
         policy=policy, clock=CLOCK, finding_store=finding_store or fake_store(),
         world=world, bundle_dir=bundle_dir, stage=stage,
@@ -843,7 +852,7 @@ class StageSemanticsTests(unittest.TestCase):
                              tx="tx-helper")
         self.assertEqual(ready["terminal_status"], "MENTION_READY")
         done = men.run_execute_stage(
-            ledger, "tx-helper", runner=fake,
+            ledger, "tx-helper", runner=sim_runner(fake),
             mention_evidence=mention_evidence(
                 "tx-helper", author=AGENT_SA),
             run_evidence=run_evidence("tx-helper"),
@@ -1492,7 +1501,7 @@ class U07RecoveryTests(unittest.TestCase):
         self.assertEqual(classified["boundary"], "pre_publish")
         recovered = men.recover_mention_handoff(
             base_spec(), caller_role="solution-architect",
-            target_role_spec="software-engineer", runner=fake,
+            target_role_spec="software-engineer", runner=sim_runner(fake),
             ledger=ledger, compose_fn=COMPOSE, transaction_id="tx-crash-pre",
             clock=CLOCK, finding_store=fake_store(), stage="ready",
             legacy_fixture=True)
@@ -1509,7 +1518,7 @@ class U07RecoveryTests(unittest.TestCase):
         self.assertEqual(classified["boundary"], "post_publish_pre_mention")
         recovered = men.recover_mention_handoff(
             base_spec(), caller_role="solution-architect",
-            target_role_spec="software-engineer", runner=fake,
+            target_role_spec="software-engineer", runner=sim_runner(fake),
             ledger=ledger, compose_fn=COMPOSE, transaction_id="tx-crash-post",
             clock=CLOCK, finding_store=fake_store(), stage="ready",
             legacy_fixture=True)
@@ -1525,7 +1534,7 @@ class U07RecoveryTests(unittest.TestCase):
         self.assertEqual(classified["next"], "await_native_mention")
         recovered = men.recover_mention_handoff(
             base_spec(), caller_role="solution-architect",
-            target_role_spec="software-engineer", runner=fake,
+            target_role_spec="software-engineer", runner=sim_runner(fake),
             ledger=ledger, compose_fn=COMPOSE, transaction_id="tx-maybe",
             clock=CLOCK, finding_store=fake_store(), legacy_fixture=True)
         self.assertEqual(recovered["terminal_status"], "MENTION_READY")
@@ -1556,7 +1565,7 @@ class U07RecoveryTests(unittest.TestCase):
         self.assertEqual(classified["next"], "continue_correlation")
         recovered = men.recover_mention_handoff(
             base_spec(), caller_role="solution-architect",
-            target_role_spec="software-engineer", runner=fake,
+            target_role_spec="software-engineer", runner=sim_runner(fake),
             ledger=ledger, compose_fn=COMPOSE, transaction_id="tx-conf",
             clock=CLOCK, finding_store=fake_store(), legacy_fixture=True)
         self.assertEqual(recovered["terminal_status"],
@@ -1587,7 +1596,7 @@ class U07RecoveryTests(unittest.TestCase):
         self.assertEqual(classified["next"], "stop")
         recovered = men.recover_mention_handoff(
             base_spec(), caller_role="solution-architect",
-            target_role_spec="software-engineer", runner=fake,
+            target_role_spec="software-engineer", runner=sim_runner(fake),
             ledger=ledger, compose_fn=COMPOSE, transaction_id="tx-mention-crash",
             clock=CLOCK, finding_store=fake_store(), legacy_fixture=True)
         self.assertEqual(recovered["terminal_status"],

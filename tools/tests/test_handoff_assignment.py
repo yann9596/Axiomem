@@ -22,6 +22,7 @@ sys.path.insert(0, str(TOOLS))
 import chandoff_assignment as asm  # noqa: E402
 import chandoff_compose as compose  # noqa: E402
 import chandoff_dispatch as dispatch  # noqa: E402
+import chandoff_findings_source as cfs  # noqa: E402
 import chandoff_instructions as instr  # noqa: E402
 import chandoff_note as note  # noqa: E402
 import chandoff_selfcheck as selfcheck  # noqa: E402
@@ -261,6 +262,13 @@ class FakeMultica:
         return 2, "", "unexpected command"
 
 
+def sim_runner(runner):
+    """Official fake-only test wrap. Production constructors cannot select this."""
+    if isinstance(runner, cfs.SimulationEntry):
+        return runner
+    return cfs.construct_simulation_entry(runner)
+
+
 def run_tx(fake=None, *, spec=None, caller="engineering-lead",
            target="software-engineer", tx="tx-u06-0001", parent=PARENT_UUID,
            ledger=None, policy=None, world=None, finding_store=None,
@@ -271,7 +279,8 @@ def run_tx(fake=None, *, spec=None, caller="engineering-lead",
     ledger = ledger if ledger is not None else dispatch.TransactionLedger()
     fake = fake if fake is not None else FakeMultica()
     result = asm.run_assignment_handoff(
-        spec, caller_role=caller, target_role_spec=target, runner=fake,
+        spec, caller_role=caller, target_role_spec=target,
+        runner=sim_runner(fake),
         ledger=ledger, compose_fn=COMPOSE, transaction_id=tx,
         policy=policy, clock=CLOCK, finding_store=finding_store or fake_store(),
         world=world, bundle_dir=bundle_dir, crash_at=crash_at, resume=resume,
@@ -991,7 +1000,7 @@ class RecoveryTests(unittest.TestCase):
             base_spec(parent_issue_id=PARENT_UUID),
             caller_role="engineering-lead",
             target_role_spec="software-engineer",
-            runner=fake, ledger=ledger, compose_fn=COMPOSE,
+            runner=sim_runner(fake), ledger=ledger, compose_fn=COMPOSE,
             transaction_id="tx-crash-pre", clock=CLOCK,
             finding_store=fake_store(), legacy_fixture=True)
         self.assertTrue(recovered["ok"], recovered)
@@ -1009,7 +1018,7 @@ class RecoveryTests(unittest.TestCase):
             base_spec(parent_issue_id=PARENT_UUID),
             caller_role="engineering-lead",
             target_role_spec="software-engineer",
-            runner=fake, ledger=ledger, compose_fn=COMPOSE,
+            runner=sim_runner(fake), ledger=ledger, compose_fn=COMPOSE,
             transaction_id="tx-crash-pub", clock=CLOCK,
             finding_store=fake_store(), legacy_fixture=True)
         self.assertTrue(recovered["ok"], recovered)
@@ -1029,7 +1038,7 @@ class RecoveryTests(unittest.TestCase):
             base_spec(parent_issue_id=PARENT_UUID),
             caller_role="engineering-lead",
             target_role_spec="software-engineer",
-            runner=fake, ledger=ledger, compose_fn=COMPOSE,
+            runner=sim_runner(fake), ledger=ledger, compose_fn=COMPOSE,
             transaction_id="tx-crash-trig", clock=CLOCK,
             finding_store=fake_store(), legacy_fixture=True)
         self.assertEqual(recovered["terminal_status"],
@@ -1044,7 +1053,7 @@ class RecoveryTests(unittest.TestCase):
             base_spec(parent_issue_id=PARENT_UUID),
             caller_role="engineering-lead",
             target_role_spec="software-engineer",
-            runner=fake, ledger=ledger, compose_fn=COMPOSE,
+            runner=sim_runner(fake), ledger=ledger, compose_fn=COMPOSE,
             transaction_id="tx-crash-done", clock=CLOCK,
             finding_store=fake_store(), legacy_fixture=True)
         self.assertTrue(recovered.get("replayed"))

@@ -52,6 +52,25 @@ def synthetic_open_finding():
     }
 
 
+def synthetic_blocking_finding(*, task_id=TASK_ID):
+    """Material unresolved Finding. Distinct from the visible observation."""
+    return {
+        "schema_version": "1.1",
+        "kind": "finding",
+        "finding_id": "FIND-WIMG-YZT66-000002",
+        "project_id": PROJECT,
+        "task_id": task_id,
+        "summary": "SYNTHETIC unresolved durable candidate on the handoff task",
+        "detail": "SYNTHETIC blocking conflict. Do not auto-process.",
+        "intent": "durable_candidate",
+        "source_refs": ["repo://web-imagegen@main/README.md"],
+        "discovered_by": ROLE,
+        "status": "open",
+        "verification": "unverified",
+        "created_at": "2026-09-12T00:00:00Z",
+    }
+
+
 def _write_json(path: Path, doc) -> Path:
     path.parent.mkdir(parents=True, exist_ok=True)
     path.write_text(json.dumps(doc, ensure_ascii=False, indent=2) + "\n",

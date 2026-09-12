@@ -22,7 +22,9 @@ explicit in-memory fixtures never need a live root; they are marked
 from __future__ import annotations
 
 import copy
+import functools
 import hashlib
+import inspect
 import json
 import os
 import sys
@@ -378,22 +380,38 @@ def validate_binding(binding, *, project_id: str | None = None,
 
 
 class SimulationEntry:
-    """Independently constructed simulation entry with fake transport.
+    """Fake-only test constructor. Does not wrap live runners.
 
     Production constructors never infer simulation from class names, fake
-    attributes, or inner wrappers. Tests that need omitted-binding fixture
-    mode must wrap the runner with this constructor (or pass an explicit
-    `legacy_fixture=True` / `require_findings_source=False` flag).
+    attributes, or inner/runner wrappers. Official production construction
+    cannot select this path. Tests that need omitted-binding fixture mode
+    must wrap an inert recording spy with `construct_simulation_entry` and
+    pass `legacy_fixture=True` / `require_findings_source=False` explicitly.
+
+    Inner must be a class-instance spy (for example `FixtureRunner` or an
+    in-memory fake). Functions, partials, and mixed wrappers whose
+    inner/runner is a live callable are refused so this object cannot
+    forward arbitrary live argv.
     """
 
-    explicit_simulation_entry = True
-    simulation_transport = True
-
     def __init__(self, inner):
+        if isinstance(inner, SimulationEntry):
+            inner = inner.inner
+        if not _is_inert_recording_spy(inner):
+            raise TypeError(
+                "SimulationEntry only wraps an inert recording spy "
+                "(a class-instance fake such as FixtureRunner); it does "
+                "not forward arbitrary live runners")
         self.inner = inner
 
     def __call__(self, argv):
         return self.inner(argv)
+
+    def __getattr__(self, name):
+        # Forward spy helpers (e.g. FakeMultica.on_mention_authorized).
+        # This is not a production exemption: is_simulation_transport is
+        # isinstance-only.
+        return getattr(self.inner, name)
 
 
 def construct_simulation_entry(inner) -> SimulationEntry:
@@ -403,29 +421,58 @@ def construct_simulation_entry(inner) -> SimulationEntry:
     return SimulationEntry(inner)
 
 
-def is_simulation_transport(runner) -> bool:
-    """True when the runner (or a wrapper) opts into fake/fixture effects.
+def _is_function_like(obj) -> bool:
+    if obj is None:
+        return False
+    if inspect.isfunction(obj) or inspect.ismethod(obj) or inspect.isbuiltin(obj):
+        return True
+    if isinstance(obj, functools.partial):
+        return True
+    return type(obj).__name__ in (
+        "function", "method", "builtin_function_or_method", "partial")
 
-    Production constructors must not call this to auto-enable omitted
-    binding. The helper remains for the explicit-legacy-fixture gate:
-    `legacy_fixture=True` still cannot issue live effects through a
-    non-simulation transport.
+
+def _nested_transport(obj):
+    if obj is None:
+        return None
+    for attr in ("inner", "runner"):
+        nxt = getattr(obj, attr, None)
+        if nxt is not None and nxt is not obj:
+            return nxt
+    return None
+
+
+def _is_inert_recording_spy(obj) -> bool:
+    """True for class-instance spies that do not nest a live callable.
+
+    Hostile same-privilege objects that subprocess inside `__call__`
+    without a nested inner are out of scope (not a capability platform).
     """
-    current = runner
+    current = obj
     seen: set[int] = set()
     while current is not None and id(current) not in seen:
         seen.add(id(current))
-        if getattr(current, "explicit_simulation_entry", False) is True:
-            return True
-        if getattr(current, "simulation_transport", False) is True:
-            return True
-        if type(current).__name__ == "FixtureRunner":
-            return True
-        nxt = getattr(current, "inner", None)
+        if isinstance(current, SimulationEntry):
+            current = current.inner
+            continue
+        if _is_function_like(current) or isinstance(current, type):
+            return False
+        nxt = _nested_transport(current)
         if nxt is None:
-            nxt = getattr(current, "runner", None)
-        current = nxt if nxt is not current else None
+            return True
+        current = nxt
     return False
+
+
+def is_simulation_transport(runner) -> bool:
+    """True only for the independent SimulationEntry test constructor.
+
+    `simulation_transport`, `explicit_simulation_entry`, class name
+    `FixtureRunner`, and inner/runner traversal are not exemptions.
+    `legacy_fixture=True` still cannot issue live effects unless the
+    runner is this fake-only entry.
+    """
+    return isinstance(runner, SimulationEntry)
 
 
 def resolver_kind(resolver) -> str | None:
@@ -519,7 +566,9 @@ def gate_effectful_findings(*, source, runner, require_source: bool,
     """Refuse omitted/capture-only sources before publication or trigger.
 
     A legacy fixture is allowed only when explicitly requested AND the
-    runner is a simulation transport that cannot reach the live platform.
+    runner is a `SimulationEntry` (fake-only test constructor). Marker
+    attributes, class names, and mixed inner/runner wrappers are not
+    enough.
     """
     sim = is_simulation_transport(runner)
     if source is None:

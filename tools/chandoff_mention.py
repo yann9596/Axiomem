@@ -82,8 +82,8 @@ import chandoff_compose as compose  # noqa: E402
 import chandoff_dispatch as dispatch  # noqa: E402
 import chandoff_finalize as finalize  # noqa: E402
 from chandoff_findings_source import (  # noqa: E402
-    FindingsSourceRefusal, gate_effectful_findings,
-    verify_worker_entry,
+    FindingsSourceRefusal, construct_simulation_entry,
+    gate_effectful_findings, verify_worker_entry,
 )
 import chandoff_note as note  # noqa: E402
 import chandoff_plan as plan  # noqa: E402
@@ -996,7 +996,7 @@ class MentionHandoff:
             else getattr(recorder, "inner", recorder)
         # Production never infers simulation from class names, fake
         # attributes, or inner wrappers. Tests pass legacy_fixture=True
-        # through construct_simulation_entry / explicit kwargs.
+        # only with construct_simulation_entry wrapping an inert spy.
         self.legacy_fixture = bool(legacy_fixture)
         self._prepare_observation = None
         self._self_check_observation = None
@@ -3030,8 +3030,8 @@ def main(argv=None) -> int:
         run_evidence = json.loads(
             Path(args.run_evidence_file).read_text(encoding="utf-8")) \
             if args.run_evidence_file else None
-        fixture = dispatch.FixtureRunner(fixture_table)
-        fixture.simulation_transport = True
+        fixture = construct_simulation_entry(
+            dispatch.FixtureRunner(fixture_table))
         result = run_execute_stage(
             ledger, args.transaction_id, runner=fixture,
             executable=args.executable,
@@ -3055,8 +3055,8 @@ def main(argv=None) -> int:
 
     ledger = dispatch.TransactionLedger()
     stage = PHASE_READY if args.command == "ready" else PHASE_FULL
-    fixture_runner = dispatch.FixtureRunner(fixture_table)
-    fixture_runner.simulation_transport = True
+    fixture_runner = construct_simulation_entry(
+        dispatch.FixtureRunner(fixture_table))
     result = run_mention_handoff(
         spec, caller_role=args.caller_role,
         target_role_spec=args.target_role,
