@@ -18,7 +18,6 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[3]
 BINDING = ROOT / "adapters" / "multica" / "role-bindings" / "role-bindings.v2.json"
-ROSTER = ROOT / "adapters" / "multica" / "role-bindings" / "platform-roster-2026-09-10.json"
 PROFILES = ROOT / "team-context" / "roles"
 MEMORY_CORE_DIRS = ["team-context", "project-context", "memory", "chains", "sources", "schemas"]
 NATIVE_API_DIRS = ["schemas/context-handoff"]
@@ -38,7 +37,17 @@ def main() -> int:
     failures: list[str] = []
 
     binding = json.loads(BINDING.read_text(encoding="utf-8"))
-    roster = json.loads(ROSTER.read_text(encoding="utf-8"))
+    roster_rel = binding.get("roster_evidence")
+    if not roster_rel:
+        failures.append("binding file has no roster_evidence pointer")
+        roster = {"agents": []}
+    else:
+        roster_path = ROOT / roster_rel
+        if not roster_path.is_file():
+            failures.append(f"roster_evidence not found: {roster_rel}")
+            roster = {"agents": []}
+        else:
+            roster = json.loads(roster_path.read_text(encoding="utf-8"))
     live = {a["agent_id"]: a for a in roster["agents"] if not a["archived"]}
 
     profile_roles = {p.stem for p in PROFILES.glob("*.yaml")}
@@ -70,9 +79,17 @@ def main() -> int:
                 f"roster={live[aid]['name']!r}"
             )
 
+    historical = binding.get("historical_identities") or []
+    for h in historical:
+        hid = h.get("agent_id")
+        if hid in agent_ids:
+            failures.append(f"historical identity {hid} also present in active bindings")
+        if h.get("status") != "retired_no_alias":
+            failures.append(f"historical identity {hid} status must be retired_no_alias")
+
     uuids = [b["agent_id"] for b in bindings] + [
         a["agent_id"] for a in binding.get("non_team_agents") or []
-    ]
+    ] + [h["agent_id"] for h in historical]
     for rel in MEMORY_CORE_DIRS + NATIVE_API_DIRS:
         base = ROOT / rel
         if not base.is_dir():

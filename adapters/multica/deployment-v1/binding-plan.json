@@ -37,23 +37,25 @@
     "skill_md_lf": "sha256:a7326f93a63e1718fb8ed08ecdc7818726db02cca06eacfee9bffc377d1262dd",
     "bundle_digest": "sha256:967b48443d5e47bdfe55aecacb92ca78fdd8f576e87602201513b6fc4633ecd6",
     "workspace_skill_id": null,
-    "id_status": "not_in_catalog_enablement_placeholder_until_import",
+    "id_status": "unresolved_until_import",
+    "resolve_and_readback_required": "after import: multica skill list --output json -> match name multica-context-handoff -> record id -> multica skill get <id>; bind only a resolved, read-back id (never a placeholder)",
     "pre_d2": "optional bind to new 05 only",
-    "d3": "import then agent skills add to 01-04, 06, and new 05"
+    "d3": "import, resolve + read back id, then agent skills add to 01-04, 06, and new 05"
   },
   "capability_skills": {
     "delivery-review": {
       "repo_path": "skills/delivery-review/",
       "bundle_copy": "adapters/multica/deployment-v1/skills/delivery-review/SKILL.md",
-      "workspace_skill_id": null,
-      "id_status": "enablement_placeholder_until_pre_d2_import",
+      "workspace_skill_id": "98d6bf60-a8bd-4b03-96f6-f815308c932d",
+      "id_status": "resolved_live_readback_2026-09-12",
       "phase": "pre_d2_bootstrap"
     },
     "product-quality-gate": {
       "repo_path": "skills/product-quality-gate/",
       "bundle_copy": "adapters/multica/deployment-v1/skills/product-quality-gate/SKILL.md",
       "workspace_skill_id": null,
-      "id_status": "enablement_placeholder_until_d3_import",
+      "id_status": "unresolved_until_d3_import",
+      "resolve_and_readback_required": "after import: multica skill list --output json -> match name product-quality-gate -> record id -> multica skill get <id>; bind only a resolved, read-back id (never a placeholder)",
       "phase": "d3_full_apply"
     }
   },
@@ -66,36 +68,56 @@
     "parent-handoff-wake"
   ],
   "ops_pre_d2": [
-    {"op": "create_agent", "logical_role": "delivery-reviewer", "name": "05 Delivery Reviewer", "executor": "Lead/Human", "agent_id": null, "id_status": "pending_human_create"},
-    {"op": "agent_update_instructions", "agent_id": "NEW_05", "file": "after/delivery-reviewer.md"},
-    {"op": "skill_create_or_import", "skill_name": "delivery-review", "from": "skills/delivery-review/SKILL.md"},
-    {"op": "agent_skills_add", "agent_id": "NEW_05", "skill_name": "parent-handoff-wake", "skill_id": "aab482f9-b9ff-4b78-8394-1f13e2b319c0"},
-    {"op": "agent_skills_add", "agent_id": "NEW_05", "skill_name": "delivery-review", "skill_id": "pending_import"}
+    {"op": "create_agent", "logical_role": "delivery-reviewer", "name": "05 Delivery Reviewer", "executor": "Lead/Human", "agent_id": "edff0eba-eef8-4188-9780-a1402b2b67dd", "id_status": "created_and_live_read_back_2026-09-12"},
+    {"op": "agent_update_instructions", "agent_id": "edff0eba-eef8-4188-9780-a1402b2b67dd", "file": "after/delivery-reviewer.md"},
+    {"op": "skill_create_or_import", "skill_name": "delivery-review", "from": "skills/delivery-review/SKILL.md", "workspace_skill_id": "98d6bf60-a8bd-4b03-96f6-f815308c932d", "id_status": "resolved_live_readback_2026-09-12"},
+    {"op": "agent_skills_add", "agent_id": "edff0eba-eef8-4188-9780-a1402b2b67dd", "skill_name": "parent-handoff-wake", "skill_id": "aab482f9-b9ff-4b78-8394-1f13e2b319c0"},
+    {"op": "agent_skills_add", "agent_id": "edff0eba-eef8-4188-9780-a1402b2b67dd", "skill_name": "delivery-review", "skill_id": "98d6bf60-a8bd-4b03-96f6-f815308c932d"}
   ],
+  "ops_pre_d2_state": "pre-D2 bootstrap completed and live read back before D2 (new 05 edff0eba exists with delivery-review + parent-handoff-wake). Recorded here as resolved IDs; the ops list stays as the exact reference of what was executed.",
   "ops_d3": [
-    {"op": "skill_create_or_import", "skill_name": "multica-context-handoff", "from": "skills/multica-context-handoff/"},
-    {"op": "skill_create_or_import", "skill_name": "product-quality-gate", "from": "skills/product-quality-gate/SKILL.md"},
-    {"op": "agent_skills_add", "agent_role": "engineering-lead", "agent_id": "24f04aba-7da9-4371-bf89-685d7505a411", "skill_name": "multica-context-handoff"},
-    {"op": "agent_skills_add", "agent_role": "context-engineer", "agent_id": "8bc546ab-ffd8-4aa6-ad30-58583346c065", "skill_name": "multica-context-handoff", "note": "exception-path only; not a normal READY hop"},
-    {"op": "agent_skills_add", "agent_role": "solution-architect", "agent_id": "1303827b-73d1-4d71-a461-00b93e4b4418", "skill_name": "multica-context-handoff"},
-    {"op": "agent_skills_add", "agent_role": "software-engineer", "agent_id": "fa7d16a7-2dae-4994-80b8-7435b3fcca47", "skill_name": "multica-context-handoff"},
-    {"op": "agent_skills_add", "agent_role": "qa", "agent_id": "30ce43d4-97a7-42a8-ab3e-78df0d894702", "skill_name": "product-quality-gate"},
-    {"op": "agent_skills_add", "agent_role": "qa", "agent_id": "30ce43d4-97a7-42a8-ab3e-78df0d894702", "skill_name": "multica-context-handoff"},
+    {"op": "capture_before_full_text", "required": true, "first": true, "purpose": "F2 hard prerequisite: before any write, capture the complete non-sensitive before state and keep executable rollback material -- not only hashes", "capture_commands": [
+        "multica agent get <agent-id> --output json",
+        "multica agent skills list <agent-id> --output json",
+        "multica squad get ee895c79-ca0a-498b-abe9-5af537736a30 --output json",
+        "multica skill get <skill-id> --with-content"
+      ],
+      "capture_scope": "all affected agents (01, 02, 03, 04, 06, new 05, old 05), their full instruction text + ID + bindings, the squad full state, and the full content of delivery-review, product-quality-gate, milestone-quality-gate, multica-context-handoff",
+      "save_to": "isolated run workdir before-capture/ (raw capture files); missing capture => STOP before any write",
+      "use": "compute the after-state from the captured before set; recompute immediately before each write; drift => STOP and return to Lead"},
+    {"op": "skill_create_or_import", "skill_name": "multica-context-handoff", "from": "skills/multica-context-handoff/", "workspace_skill_id": null, "id_status": "unresolved_until_import", "resolve_and_readback_required": true},
+    {"op": "skill_create_or_import", "skill_name": "product-quality-gate", "from": "skills/product-quality-gate/SKILL.md", "workspace_skill_id": null, "id_status": "unresolved_until_import", "resolve_and_readback_required": true},
+    {"op": "agent_skills_add", "agent_role": "engineering-lead", "agent_id": "24f04aba-7da9-4371-bf89-685d7505a411", "skill_name": "multica-context-handoff", "skill_id": null, "id_status": "unresolved_until_import", "bind_after_resolve_and_readback": true},
+    {"op": "agent_skills_add", "agent_role": "context-engineer", "agent_id": "8bc546ab-ffd8-4aa6-ad30-58583346c065", "skill_name": "multica-context-handoff", "skill_id": null, "id_status": "unresolved_until_import", "bind_after_resolve_and_readback": true, "note": "exception-path only; not a normal READY hop"},
+    {"op": "agent_skills_add", "agent_role": "solution-architect", "agent_id": "1303827b-73d1-4d71-a461-00b93e4b4418", "skill_name": "multica-context-handoff", "skill_id": null, "id_status": "unresolved_until_import", "bind_after_resolve_and_readback": true},
+    {"op": "agent_skills_add", "agent_role": "software-engineer", "agent_id": "fa7d16a7-2dae-4994-80b8-7435b3fcca47", "skill_name": "multica-context-handoff", "skill_id": null, "id_status": "unresolved_until_import", "bind_after_resolve_and_readback": true},
+    {"op": "agent_skills_add", "agent_role": "qa", "agent_id": "30ce43d4-97a7-42a8-ab3e-78df0d894702", "skill_name": "product-quality-gate", "skill_id": null, "id_status": "unresolved_until_import", "bind_after_resolve_and_readback": true},
+    {"op": "agent_skills_add", "agent_role": "qa", "agent_id": "30ce43d4-97a7-42a8-ab3e-78df0d894702", "skill_name": "multica-context-handoff", "skill_id": null, "id_status": "unresolved_until_import", "bind_after_resolve_and_readback": true},
     {"op": "agent_update_instructions", "agent_id": "24f04aba-7da9-4371-bf89-685d7505a411", "file": "after/engineering-lead.md"},
     {"op": "agent_update_instructions", "agent_id": "8bc546ab-ffd8-4aa6-ad30-58583346c065", "file": "after/context-engineer.md"},
     {"op": "agent_update_instructions", "agent_id": "1303827b-73d1-4d71-a461-00b93e4b4418", "file": "after/solution-architect.md"},
     {"op": "agent_update_instructions", "agent_id": "fa7d16a7-2dae-4994-80b8-7435b3fcca47", "file": "after/software-engineer.md"},
     {"op": "agent_update_instructions", "agent_id": "30ce43d4-97a7-42a8-ab3e-78df0d894702", "file": "after/qa.md"},
     {"op": "squad_update_instructions", "squad_id": "ee895c79-ca0a-498b-abe9-5af537736a30", "file": "after/squad.md"},
-    {"op": "squad_member_add", "squad_id": "ee895c79-ca0a-498b-abe9-5af537736a30", "agent_id": "NEW_05", "role": "member"},
-    {"op": "logical_unbind", "agent_role": "qa", "agent_id": "30ce43d4-97a7-42a8-ab3e-78df0d894702", "skill_id": "29f68c43-0772-47a8-a860-d946a100c789", "skill_name": "milestone-quality-gate", "cli_status": "UNAVAILABLE: no agent skills remove; must not use replace-all set"},
+    {"op": "squad_member_add", "squad_id": "ee895c79-ca0a-498b-abe9-5af537736a30", "agent_id": "edff0eba-eef8-4188-9780-a1402b2b67dd", "role": "member"},
+    {"op": "qa_06_skill_set_exception", "agent_role": "qa", "agent_id": "30ce43d4-97a7-42a8-ab3e-78df0d894702", "plan_ref": "qa_06_binding_exception_plan", "status": "PLAN_ONLY: agent skills set is forbidden until the precise 06-only exception is granted in the centralized Human release confirmation", "do_not_execute_before_exception": true},
     {"op": "squad_member_remove_or_keep_history", "agent_id": "b6335f8e-8147-45f7-aac0-8079d85423b5", "action": "exit normal routing; keep history; do not rename into delivery-reviewer", "cli": "multica squad member remove ee895c79-ca0a-498b-abe9-5af537736a30 --member-id b6335f8e-8147-45f7-aac0-8079d85423b5 --type agent"}
   ],
   "new_05": {
     "logical_role": "delivery-reviewer",
     "live_create": "Lead/Human only; 04 does not create the agent",
-    "agent_id": null,
-    "id_status": "pending_human_create",
+    "agent_id": "edff0eba-eef8-4188-9780-a1402b2b67dd",
+    "id_status": "created_and_live_read_back_2026-09-12",
+    "live_readback": {
+      "observed_in_worker_before_capture": "2026-09-12 (YZT-73/deployment-v1-release-mapping worker run 01a095cf-079c-75f9-8ddf-70bb974ba6da)",
+      "name": "05 Delivery Reviewer",
+      "status": "idle",
+      "runtime_id": "edc6fd68-98b9-4167-9758-3fe17e3e2725",
+      "model": "opencode-go/deepseek-v4.1-flash",
+      "max_concurrent_tasks": 3,
+      "skills": ["delivery-review", "parent-handoff-wake"],
+      "note": "creation-time Lead observation (24277b62 / gpt-5.6-sol / max 1) differs from current live values; both observations are recorded as-is, nothing was changed or inferred, and D3 must capture the actual before state at write time"
+    },
     "do_not_reuse": {
       "agent_id": "b6335f8e-8147-45f7-aac0-8079d85423b5",
       "name": "05 Feature Reviewer",
@@ -108,5 +130,30 @@
   "old_05_after_d3": {
     "agent_id": "b6335f8e-8147-45f7-aac0-8079d85423b5",
     "action": "exit normal routing; keep history; do not rename into delivery-reviewer; do not reuse UUID"
+  },
+  "qa_06_binding_exception_plan": {
+    "status": "PLAN_ONLY_pending_human_exception",
+    "scope": "06 QA agent only",
+    "before_binding_set_observed": [
+      {"skill_id": "29f68c43-0772-47a8-a860-d946a100c789", "name": "milestone-quality-gate", "enabled": true},
+      {"skill_id": "aab482f9-b9ff-4b78-8394-1f13e2b319c0", "name": "parent-handoff-wake", "enabled": true}
+    ],
+    "after_binding_set_computed_from_latest_before": [
+      {"skill_id": "aab482f9-b9ff-4b78-8394-1f13e2b319c0", "name": "parent-handoff-wake", "enabled": true},
+      {"skill_id": null, "name": "multica-context-handoff", "id_status": "unresolved_until_import", "resolve_and_readback_required": true},
+      {"skill_id": null, "name": "product-quality-gate", "id_status": "unresolved_until_import", "resolve_and_readback_required": true}
+    ],
+    "method": "multica agent skills set 30ce43d4-97a7-42a8-ab3e-78df0d894702 --skill-ids <resolved after set>",
+    "requires": "a separate, explicit '06-only precise binding-set replacement exception' granted in the centralized Human release confirmation",
+    "drift_refusal": "re-capture 06 bindings immediately before set; if they differ from the captured before set, refuse and return to Lead",
+    "readback": "multica agent skills list 30ce43d4-97a7-42a8-ab3e-78df0d894702 --output json; compare with the computed after set",
+    "rollback": "multica agent skills set with the captured before set (parent-handoff-wake + milestone-quality-gate)",
+    "constraints": [
+      "set replaces all assignments; keep every unrelated valid binding",
+      "remove only milestone-quality-gate",
+      "do not delete the shared milestone-quality-gate skill object",
+      "no private API",
+      "agent skills set stays disabled until the exception is granted"
+    ]
   }
 }

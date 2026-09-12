@@ -1,7 +1,7 @@
 release_manifest:
   parent: YZT-66
   issue: YZT-73
-  attempt: YZT-73/deployment-v1-correction-1
+  attempt: YZT-73/deployment-v1-release-mapping
   supported_mode: supervised_manual_start_explicit_package
   main_before: "95c434d894c2a25d0b1f435c403d84950996cbfa"
   candidate_start: "58ba5d8d92fa82b07330e5aacd4e8b9fe1a9bbc8"
@@ -15,8 +15,10 @@ release_manifest:
   historical_d1_status: CHANGES_REQUIRED
   correction_bundle: "42ca7fce2314bf0522ae81e46025c63d99712366"
   correction_bundle_vs_main: "86 ahead (83 + historical D1 2 + this content commit)"
-  correction_pin_head: "this pin commit (SHA recorded in YZT-73 / YZT-66 comments after commit)"
-  review_target: "branch HEAD after this pin; content identity is correction_bundle 42ca7fce2314bf0522ae81e46025c63d99712366; never 58ba5d8; never 119812c"
+  correction_pin_head: "0150df8d1d9ce745826096a5a88fec770b78099f (D2-reviewed correction-1 pin; retained as history)"
+  d2_review_status: "APPROVE (candidate-level, YZT-95 comment 01a095b3); applies to 0150df8 / bundle 42ca7fc only, not to the release-mapping HEAD"
+  release_mapping_head: "this commit on yzt-73-d1-deployment-v1 (adapter/manifest mapping only; exact SHA recorded in the YZT-73 delivery comment)"
+  review_target: "branch HEAD after the release-mapping commit for the new 05 targeted review; historical content identity: D2-reviewed 0150df8 / bundle 42ca7fc; never 58ba5d8; never 119812c"
   historical_u05_bundle: "adapters/multica/agent-instructions/ (not a live apply input)"
   this_bundle: "adapters/multica/deployment-v1/"
   revision_map_ref: "adapters/multica/deployment-v1/revision-map.md"
@@ -31,13 +33,26 @@ release_manifest:
   validation_ref: "adapters/multica/deployment-v1/q1-q8-plan.md"
   new_05_bootstrap_ref: "adapters/multica/deployment-v1/new-05-bootstrap.md"
   findings_source_plan_ref: "adapters/multica/deployment-v1/findings-source-plan.md"
+  release_mapping_report_ref: "adapters/multica/deployment-v1/RELEASE_MAPPING_REPORT.md"
+  f1_after_state_scope:
+    after_state_hashes_file: "adapters/multica/deployment-v1/after-state-hashes.json"
+    scope: "bundle 42ca7fce2314bf0522ae81e46025c63d99712366 (historical); the five docs rewritten at pin HEAD 0150df8 are listed below and in after-state-hashes.json _scope"
+    note: "RELEASE_MANIFEST.yaml is itself one of the files rewritten at 0150df8 and is edited again by this release-mapping commit; its listed hash below is the 0150df8 value"
+    head_doc_hashes_f1:
+      D1_REPORT.md: {"bytes": 2716, "sha256": "sha256:d92167fb45661e1ec2554659b638d55691b4dd5e5418ed3737f778aef54c0b76"}
+      RELEASE_MANIFEST.yaml: {"bytes": 2893, "sha256": "sha256:f9a89c6d0cacf9238aa4aee2453eafe370aaa83c76dcd0c2fd562c48f4789390"}
+      commit-classification.md: {"bytes": 3087, "sha256": "sha256:49aa31707aa5647a091fae4e74b8a3c5229e785dc7698fd197564b84676f1a78"}
+      qa-baselines.md: {"bytes": 1417, "sha256": "sha256:1c466cc1f48406582da1536f828585ddd593d00b2ea7f9d5dc0d68eb1fa28bef"}
+      revision-map.md: {"bytes": 1816, "sha256": "sha256:5a65c1ac8482a44c3a150dcec743c2196fee694d144ecc4d226080ce2942aced"}
+  f2_before_capture_requirement_ref: "adapters/multica/deployment-v1/binding-plan.json ops_d3[0] capture_before_full_text"
   selfcheck:
     status: READY
     action: USE_EXISTING
-    package_id: CTX-software-engineer-ca95e5f1cce82f65
-    observer_run_id: 01a09521-7050-7b5e-b2e9-5aa218a020c7
+    package_id: CTX-software-engineer-9cbb0786b379b512
+    observer_run_id: 01a095cf-079c-75f9-8ddf-70bb974ba6da
     snapshot_digest: "sha256:a6737e1241ac75e409ffc4c7dd7942bbe222f566ff1e73dde2444cf0643af5fb"
-    binding_digest: "sha256:9af947535336fe54c6f027e111cba9aca351f409cc204e2b24d6ad3b89f30f7d"
+    binding_digest: "sha256:549dc076a6d688c746cad5a6c556180eba6ab53c0647b9dea9c2a86121449a9c"
     open_finding: FIND-WIMG-HO00-000001
     open_finding_task_associated: false
-    role_argv_note: "packaged self-check-request.json omitted role; worker added --role software-engineer"
+    argv_note: "bound selfcheck carried --role software-engineer + explicit envelope + binding/trusted-map/observation + artifact store/requirements/R1; one run only, exit 0"
+    previous_attempt_selfcheck_ref: "see D1_REPORT.md (correction-1 package CTX-software-engineer-ca95e5f1cce82f65, observer 01a09521-7050-7b5e-b2e9-5aa218a020c7)"

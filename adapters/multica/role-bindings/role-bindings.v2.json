@@ -4,6 +4,11 @@
   "authority_ref": "multica://issue/YZT-69",
   "generated_at": "2026-09-10T09:05:00Z",
   "generated_by": "U02/YZT-69 (02 Context Engineer)",
+  "adapter_revision": {
+    "updated_at": "2026-09-12T13:35:59Z",
+    "updated_by": "04 Software Engineer (YZT-73/deployment-v1-release-mapping)",
+    "scope": "minimal adapter-layer mapping correction only: delivery-reviewer now binds the distinct live 05 Delivery Reviewer UUID; the old Feature Reviewer UUID is kept as history, never as an alias. No Core/Canonical revision."
+  },
   "team_model": {
     "authority": "V2.2 Corrected six-role model (multica_team_v1_to_v2_change_plan_v2.2_corrected.md, attached to YZT-66) + Human runtime-integration supplement (multica_v2_1_artifact_handoff_review_qa_supplement_draft.md §20/§28)",
     "logical_roles": [
@@ -21,7 +26,7 @@
     "framework_bindings_only": "Multica agent UUIDs and other runtime bindings live in this adapter/configuration mapping only",
     "memory_core": "must contain zero agent UUIDs (team-context/, project-context/, memory/, schemas/)",
     "native_api": "must contain zero agent UUIDs (schemas/context-handoff/, tools/chandoff.py frozen contract vocabulary)",
-    "platform_cutover_note": "the 05 platform agent keeps UUID b6335f8e-8147-45f7-aac0-8079d85423b5; its display name, instructions and skill bindings are rebuilt by U05 and cut over by the workspace owner at enablement (U12); until then the platform display name remains '05 Feature Reviewer' (old-role-baseline presentation, not current role data)"
+    "platform_binding_note": "the delivery-reviewer logical role binds the distinct live agent edff0eba-eef8-4188-9780-a1402b2b67dd ('05 Delivery Reviewer', created and read back 2026-09-12). The old Feature Reviewer platform UUID b6335f8e-8147-45f7-aac0-8079d85423b5 is retained only as history (see historical_identities); it must never be reused, renamed, aliased, or routed as delivery-reviewer."
   },
   "bindings": [
     {
@@ -50,16 +55,25 @@
     },
     {
       "logical_role": "delivery-reviewer",
-      "agent_id": "b6335f8e-8147-45f7-aac0-8079d85423b5",
-      "agent_name": "05 Feature Reviewer",
-      "status": "active_repurposed",
-      "note": "existing 05 platform agent carries the delivery-reviewer logical identity from V2 on; platform-side rename/instructions cutover is U05/U12 scope"
+      "agent_id": "edff0eba-eef8-4188-9780-a1402b2b67dd",
+      "agent_name": "05 Delivery Reviewer",
+      "status": "active",
+      "note": "distinct live identity, live-read-back 2026-09-12; skills delivery-review (98d6bf60-a8bd-4b03-96f6-f815308c932d) + parent-handoff-wake (aab482f9-b9ff-4b78-8394-1f13e2b319c0). The old 05 UUID is history-only, not an alias."
     },
     {
       "logical_role": "qa",
       "agent_id": "30ce43d4-97a7-42a8-ab3e-78df0d894702",
       "agent_name": "06 QA",
       "status": "active"
+    }
+  ],
+  "historical_identities": [
+    {
+      "agent_id": "b6335f8e-8147-45f7-aac0-8079d85423b5",
+      "agent_name": "05 Feature Reviewer",
+      "former_logical_role": "feature-reviewer",
+      "status": "retired_no_alias",
+      "policy": "history only: must not resolve, activate, be rewritten, or route to delivery-reviewer; no UUID reuse"
     }
   ],
   "non_team_agents": [
@@ -69,5 +83,5 @@
       "reason": "workspace default system agent; not a team logical role"
     }
   ],
-  "roster_evidence": "adapters/multica/role-bindings/platform-roster-2026-09-10.json"
+  "roster_evidence": "adapters/multica/role-bindings/platform-roster-2026-09-12.json"
 }

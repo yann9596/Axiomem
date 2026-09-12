@@ -1,4 +1,5 @@
 {
+  "_scope": "bundle 42ca7fce2314bf0522ae81e46025c63d99712366 historical after-state (not the pin HEAD 0150df8 for the five rewritten docs: D1_REPORT.md, RELEASE_MANIFEST.yaml, commit-classification.md, qa-baselines.md, revision-map.md). Pin HEAD 0150df8 digests for those five are listed in RELEASE_MANIFEST.yaml f1_after_state_scope.head_doc_hashes_f1.",
   "after\\context-engineer.md": {
     "sha256": "sha256:a9c9b4dcb42f77002bd5d72b6936798acfbdd074c0b327154fc902129f698426",
     "bytes": 6840
