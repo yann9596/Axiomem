@@ -8,7 +8,7 @@ release_manifest:
   candidate_worktree_kept: "D:/AI/worktrees/multica-memory-yzt-88-u12fsb"
   isolated_branch: yzt-73-d1-deployment-v1
   isolated_worktree: "D:/AI/worktrees/multica-memory-yzt-73-d1"
-  release_candidate: "SET_AFTER_COMMIT"
+  release_candidate: "32d311896d8ebfcded704b5f30086c5d38e5c76d"
   historical_u05_bundle: "adapters/multica/agent-instructions/ (not a live apply input)"
   this_bundle: "adapters/multica/deployment-v1/"
   code_diff_and_dependencies_ref: "adapters/multica/deployment-v1/commit-classification.md"

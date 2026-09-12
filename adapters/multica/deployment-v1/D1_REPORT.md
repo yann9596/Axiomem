@@ -1,6 +1,6 @@
 # YZT-73 / D1 deployment-v1
 
-Verdict: **D1_CANDIDATE_READY_FOR_REVIEW**. Supervised manual-surface release candidate staged on isolated branch `yzt-73-d1-deployment-v1`. Original candidate `58ba5d8` / worktree `multica-memory-yzt-88-u12fsb` left untouched. No Memory main Merge. No live Agent/Squad/Skill apply. No new 05 live agent created.
+Verdict: **D1_CANDIDATE_READY_FOR_REVIEW**. Release candidate `32d311896d8ebfcded704b5f30086c5d38e5c76d` on isolated branch `yzt-73-d1-deployment-v1` (based on `58ba5d8`). Original candidate worktree `multica-memory-yzt-88-u12fsb` left untouched. No Memory main Merge. No live Agent/Squad/Skill apply. No new 05 live agent created.
 
 ## Selfcheck
 
