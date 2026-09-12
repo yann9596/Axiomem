@@ -434,7 +434,7 @@ class PublicationRecoveryFixture:
                      if authority_reader == "default" else authority_reader)
         self.factory = u12.build_r0b_factory(
             self.store, runner=self.cli, artifact_blob_reader=base_reader,
-            authority_reader=authority)
+            authority_reader=authority, require_findings_source=False)
         self.finding_source: list = []
         self._prepare_source_activation()
 
@@ -825,7 +825,8 @@ class FutureTransportTests(unittest.TestCase):
         self.factory = u12.build_r0b_factory(
             self.store, runner=self.cli,
             artifact_blob_reader=u12._git_blob_reader(u12.ROOT),
-            authority_reader=u12.ReadinessManifestAuthorityReader())
+            authority_reader=u12.ReadinessManifestAuthorityReader(),
+            require_findings_source=False)
         self.spec, self.intent_id = make_spec()
         context = creation_package()
         self.factory.record_creation_intent(
@@ -1083,7 +1084,8 @@ class RecoveryRefusalTests(unittest.TestCase):
         # a missing artifact reader is a typed material stop
         factory = u12.build_r0b_factory(
             fx.store, runner=fx.cli, artifact_blob_reader=None,
-            authority_reader=u12.ReadinessManifestAuthorityReader())
+            authority_reader=u12.ReadinessManifestAuthorityReader(),
+            require_findings_source=False)
         decision = fx.decision()
         result = factory.recover_blocked_publication(
             fx.intent_id, decision=decision,
@@ -1098,7 +1100,8 @@ class RecoveryRefusalTests(unittest.TestCase):
             fx.store, runner=fx.cli,
             artifact_blob_reader=u12._git_blob_reader(u12.ROOT),
             authority_reader=FixedAuthorityReader(
-                real_readiness_manifest(), disposition="SUPERSEDED"))
+                real_readiness_manifest(), disposition="SUPERSEDED"),
+            require_findings_source=False)
         result = fx.recover()
         assert_recovery_refused(
             self, fx, result, u12.REASON_MATERIAL_STALE)

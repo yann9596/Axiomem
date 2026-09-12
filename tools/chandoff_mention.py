@@ -82,7 +82,7 @@ import chandoff_compose as compose  # noqa: E402
 import chandoff_dispatch as dispatch  # noqa: E402
 import chandoff_finalize as finalize  # noqa: E402
 from chandoff_findings_source import (  # noqa: E402
-    FindingsSourceRefusal, gate_effectful_findings, is_simulation_transport,
+    FindingsSourceRefusal, gate_effectful_findings,
     verify_worker_entry,
 )
 import chandoff_note as note  # noqa: E402
@@ -994,8 +994,9 @@ class MentionHandoff:
         self.findings_source = findings_source
         self.effects_runner = effects_runner if effects_runner is not None \
             else getattr(recorder, "inner", recorder)
-        if legacy_fixture is None:
-            legacy_fixture = is_simulation_transport(self.effects_runner)
+        # Production never infers simulation from class names, fake
+        # attributes, or inner wrappers. Tests pass legacy_fixture=True
+        # through construct_simulation_entry / explicit kwargs.
         self.legacy_fixture = bool(legacy_fixture)
         self._prepare_observation = None
         self._self_check_observation = None
@@ -2537,8 +2538,7 @@ def run_mention_handoff(spec, *, caller_role: str, target_role_spec: str,
         clock=clock, bundle_dir=bundle_dir, finding_store=finding_store,
         world=world, policy=policy, workdir=workdir, executable=executable,
         crash_at=crash_at, resume=resume, findings_source=findings_source,
-        legacy_fixture=(is_simulation_transport(runner)
-                        if legacy_fixture is None else legacy_fixture),
+        legacy_fixture=False if legacy_fixture is None else legacy_fixture,
         effects_runner=runner)
     ready_result = None
     if ready_already_staged:
@@ -2643,8 +2643,7 @@ def run_execute_stage(ledger: dispatch.TransactionLedger, transaction_id: str,
         finding_store=finding_store, world=world, policy=policy,
         workdir=Path(workdir) if workdir is not None else Path.cwd(),
         executable=executable, findings_source=findings_source,
-        legacy_fixture=(is_simulation_transport(runner)
-                        if legacy_fixture is None else legacy_fixture),
+        legacy_fixture=False if legacy_fixture is None else legacy_fixture,
         effects_runner=runner)
     release = getattr(runner, "on_mention_authorized", None)
     if callable(release):
@@ -3036,7 +3035,8 @@ def main(argv=None) -> int:
         result = run_execute_stage(
             ledger, args.transaction_id, runner=fixture,
             executable=args.executable,
-            mention_evidence=mention_evidence, run_evidence=run_evidence)
+            mention_evidence=mention_evidence, run_evidence=run_evidence,
+            legacy_fixture=True)
         print(json.dumps({"result": result}, ensure_ascii=False, indent=2,
                          sort_keys=True))
         return 0 if result.get("ok") else 2
@@ -3066,7 +3066,7 @@ def main(argv=None) -> int:
         policy=policy, bundle_dir=args.bundle_dir,
         executable=args.executable,
         mention_evidence=mention_evidence, run_evidence=run_evidence,
-        stage=stage)
+        stage=stage, legacy_fixture=True)
     if args.ledger_file:
         ledger.save(args.ledger_file)
     print(json.dumps({"result": result,

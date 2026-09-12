@@ -4748,7 +4748,8 @@ class R0BForwardFactory(strict.CanaryOrchestrator):
             prior_observation=(self.findings_baseline_observation
                                or execution.get("findings_observation")),
             observer_run_id=intent_id,
-            allow_simulation=cfs.is_simulation_transport(self.effects_runner))
+            allow_simulation=not getattr(
+                self.findings_source, "is_production", True))
 
     def _refuse_preflight(self, intent_id: str, refusal: PreflightRefusal,
                           actor: str) -> dict:
@@ -8822,15 +8823,15 @@ def build_r0b_factory(store, *, runner, note_runner=None,
                       **kwargs) -> R0BForwardFactory:
     """The single factory entrypoint. No implicit live runner exists.
 
-    Omitted `require_findings_source` infers production (required) unless
-    the runner is an explicit simulation transport.
+    Omitted `require_findings_source` is production (required). Simulation
+    tests must pass require_findings_source=False explicitly; class names,
+    fake attributes, and inner wrappers never grant a production exemption.
     """
     if runner is None:
         raise o2.NotAuthorizedError(
             "the R0B factory requires an explicitly injected runner")
     if "require_findings_source" not in kwargs:
-        kwargs["require_findings_source"] = not cfs.is_simulation_transport(
-            runner)
+        kwargs["require_findings_source"] = True
     return R0BForwardFactory(store, runner=runner, note_runner=note_runner,
                              executable=executable, **kwargs)
 

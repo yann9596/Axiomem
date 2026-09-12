@@ -782,6 +782,7 @@ class EngineIntegrationTests(unittest.TestCase):
         ns.findings_source_expect_commit = None
         ns.findings_source_expect_adapter_digest = None
         ns.observer_run_id = None
+        ns.findings_trusted_map_file = None
         payload, code = pipeline.run_selfcheck(ns)
         self.assertEqual(code, pipeline.BOUNDED_EXIT)
         self.assertEqual(payload["error"]["code"], "findings_source_unbound")
@@ -862,6 +863,22 @@ class PipelinePublicationDriftTests(unittest.TestCase):
                                   role=ROLE)["observation"]
         self.evidence_file = write_json(self.base / "evidence.json",
                                         observation)
+        trusted = {
+            "schema": cfs.TRUSTED_SOURCE_SCHEMA,
+            "project_id": PROJECT,
+            "synthetic": True,
+            "marks": ["SYNTHETIC"],
+            "sources": {
+                "pipeline-drift": {
+                    "root": str(self.root),
+                    "allowed": {"task_refs": [TASK_REF], "roles": [ROLE]},
+                    "inventory": observation["inventory"],
+                    "snapshot_digest": observation["snapshot_digest"],
+                }
+            },
+        }
+        self.trusted_map_file = write_json(self.base / "trusted-map.json",
+                                           trusted)
         self.envelope = build_envelope(sample_request())
         self.result_file = write_json(self.base / "result.json",
                                       self.envelope)
@@ -883,7 +900,8 @@ class PipelinePublicationDriftTests(unittest.TestCase):
             findings_evidence_file=str(self.evidence_file),
             findings_source_expect_commit=RUNTIME["commit"],
             findings_source_expect_adapter_digest=RUNTIME["adapter_digest"],
-            observer_run_id="t88-observer")
+            observer_run_id="t88-observer",
+            findings_trusted_map_file=str(self.trusted_map_file))
         return ns
 
     def test_drift_before_send_blocks_publication_with_zero_writes(self):
@@ -1032,6 +1050,7 @@ class AuthenticatedAuthorityTests(unittest.TestCase):
         ns.findings_evidence_file = None
         ns.findings_source_expect_commit = None
         ns.findings_source_expect_adapter_digest = None
+        ns.findings_trusted_map_file = None
         with self.assertRaises(pipeline.PipelineError) as ctx:
             pipeline._load_findings_source(
                 ns, pipeline._tools(Path(ns.repo)),

@@ -993,7 +993,7 @@ class RecoveryTests(unittest.TestCase):
             target_role_spec="software-engineer",
             runner=fake, ledger=ledger, compose_fn=COMPOSE,
             transaction_id="tx-crash-pre", clock=CLOCK,
-            finding_store=fake_store())
+            finding_store=fake_store(), legacy_fixture=True)
         self.assertTrue(recovered["ok"], recovered)
         self.assertEqual(recovered["recovery"]["boundary"], "pre_publish")
         self.assertEqual(len(fake.assign_calls), 1)
@@ -1011,7 +1011,7 @@ class RecoveryTests(unittest.TestCase):
             target_role_spec="software-engineer",
             runner=fake, ledger=ledger, compose_fn=COMPOSE,
             transaction_id="tx-crash-pub", clock=CLOCK,
-            finding_store=fake_store())
+            finding_store=fake_store(), legacy_fixture=True)
         self.assertTrue(recovered["ok"], recovered)
         self.assertEqual(recovered["recovery"]["boundary"],
                          "post_publish_pre_trigger")
@@ -1031,7 +1031,7 @@ class RecoveryTests(unittest.TestCase):
             target_role_spec="software-engineer",
             runner=fake, ledger=ledger, compose_fn=COMPOSE,
             transaction_id="tx-crash-trig", clock=CLOCK,
-            finding_store=fake_store())
+            finding_store=fake_store(), legacy_fixture=True)
         self.assertEqual(recovered["terminal_status"],
                          "TRIGGER_CONFIRMATION_REQUIRED")
         self.assertEqual(len(fake.assign_calls), assigns_before)
@@ -1046,7 +1046,7 @@ class RecoveryTests(unittest.TestCase):
             target_role_spec="software-engineer",
             runner=fake, ledger=ledger, compose_fn=COMPOSE,
             transaction_id="tx-crash-done", clock=CLOCK,
-            finding_store=fake_store())
+            finding_store=fake_store(), legacy_fixture=True)
         self.assertTrue(recovered.get("replayed"))
         self.assertEqual(recovered["commands"], [])
         self.assertEqual(len(fake.assign_calls), assigns_before)

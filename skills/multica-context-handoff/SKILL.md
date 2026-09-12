@@ -94,3 +94,16 @@ command.
     `package_stale` → `REFRESH_REQUIRED`. Artifact Runtime owns
     `ARTIFACT_READY` / `ARTIFACT_NOT_READY`; T00/T04 retain `READY` /
     `REFRESH_REQUIRED` / `BLOCKED`. This skill only orchestrates.
+11. **First-work SELF_CHECK is the official collaboration self-check.** Before
+    consequential work, run this skill's pipeline `selfcheck` with an explicit
+    Findings source binding and the trusted source map. Record the inspectable
+    `task_ref`, current `role`, `project_id`, `package_id`, source/package
+    digests, and the raw command plus result. This is a collaboration
+    protocol, not an unbypassable platform worker gate. Existing trigger
+    helpers remain pre-dispatch checks.
+12. **Official publication is this pipeline `publish` (and bound assignment
+    orchestration).** Direct `chandoff_note.publish_handoff` (T06) remains an
+    internal callable and is unsupported for formal dispatch. Do not use
+    `tools/context_cli.py self-check` as an official alternative: that route
+    does not carry the Findings source binding. Do not recommend a bare T06
+    publish or a context_cli self-check without binding.

@@ -12,7 +12,12 @@ stays untouched and remains production until human Cutover.
   compat get|retrieve  old-call translation only (writes nothing)
   prepare-handoff-*    T01/T03 deterministic handoff PLAN / FINALIZE
   semantic-compose     T02 bounded semantic compose validation
-  self-check           T04 deterministic SELF_CHECK (READY/REFRESH/BLOCKED)
+  self-check           T04 deterministic SELF_CHECK (READY/REFRESH/BLOCKED).
+                       Internal callable only: unsupported for formal dispatch
+                       unless the same Findings source binding used by the
+                       skill pipeline is supplied. Official self-check is
+                       skills/multica-context-handoff/scripts/handoff_pipeline.py
+                       selfcheck with --findings-source-binding-file.
 """
 from __future__ import annotations
 

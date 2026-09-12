@@ -846,7 +846,8 @@ class StageSemanticsTests(unittest.TestCase):
             ledger, "tx-helper", runner=fake,
             mention_evidence=mention_evidence(
                 "tx-helper", author=AGENT_SA),
-            run_evidence=run_evidence("tx-helper"))
+            run_evidence=run_evidence("tx-helper"),
+            legacy_fixture=True)
         self.assertEqual(done["terminal_status"], "COMPLETED", done)
 
     def test_execute_without_staged_ready_is_refused(self):
@@ -1493,7 +1494,8 @@ class U07RecoveryTests(unittest.TestCase):
             base_spec(), caller_role="solution-architect",
             target_role_spec="software-engineer", runner=fake,
             ledger=ledger, compose_fn=COMPOSE, transaction_id="tx-crash-pre",
-            clock=CLOCK, finding_store=fake_store(), stage="ready")
+            clock=CLOCK, finding_store=fake_store(), stage="ready",
+            legacy_fixture=True)
         self.assertEqual(recovered["terminal_status"], "MENTION_READY",
                          recovered)
         self.assertEqual(len(fake.comment_add_calls), 1)
@@ -1509,7 +1511,8 @@ class U07RecoveryTests(unittest.TestCase):
             base_spec(), caller_role="solution-architect",
             target_role_spec="software-engineer", runner=fake,
             ledger=ledger, compose_fn=COMPOSE, transaction_id="tx-crash-post",
-            clock=CLOCK, finding_store=fake_store(), stage="ready")
+            clock=CLOCK, finding_store=fake_store(), stage="ready",
+            legacy_fixture=True)
         self.assertEqual(recovered["terminal_status"], "MENTION_READY",
                          recovered)
         self.assertEqual(len(fake.comment_add_calls), 1)
@@ -1524,7 +1527,7 @@ class U07RecoveryTests(unittest.TestCase):
             base_spec(), caller_role="solution-architect",
             target_role_spec="software-engineer", runner=fake,
             ledger=ledger, compose_fn=COMPOSE, transaction_id="tx-maybe",
-            clock=CLOCK, finding_store=fake_store())
+            clock=CLOCK, finding_store=fake_store(), legacy_fixture=True)
         self.assertEqual(recovered["terminal_status"], "MENTION_READY")
         self.assertEqual(recovered.get("commands"), [])
         self.assertEqual(len(fake.comment_add_calls), 1)
@@ -1555,7 +1558,7 @@ class U07RecoveryTests(unittest.TestCase):
             base_spec(), caller_role="solution-architect",
             target_role_spec="software-engineer", runner=fake,
             ledger=ledger, compose_fn=COMPOSE, transaction_id="tx-conf",
-            clock=CLOCK, finding_store=fake_store())
+            clock=CLOCK, finding_store=fake_store(), legacy_fixture=True)
         self.assertEqual(recovered["terminal_status"],
                          "RUN_CORRELATION_FAILED")
         self.assertEqual(len(fake.comment_add_calls), 1)
@@ -1586,7 +1589,7 @@ class U07RecoveryTests(unittest.TestCase):
             base_spec(), caller_role="solution-architect",
             target_role_spec="software-engineer", runner=fake,
             ledger=ledger, compose_fn=COMPOSE, transaction_id="tx-mention-crash",
-            clock=CLOCK, finding_store=fake_store())
+            clock=CLOCK, finding_store=fake_store(), legacy_fixture=True)
         self.assertEqual(recovered["terminal_status"],
                          "MENTION_CONFIRMATION_REQUIRED")
         self.assertEqual(len(fake.comment_add_calls), 1)

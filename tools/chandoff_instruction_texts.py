@@ -23,7 +23,7 @@ COMMON_PROTOCOL = """## Context Handoff / Artifact / Finding 协议
 
 RUN START — 在开始任何有实际后果的专业工作之前：
 
-1. 先对当前 Issue 与本角色执行 SELF_CHECK（通过共享 Skill `multica-context-handoff`）。SELF_CHECK 是 Run 内的开工门，不是平台级 pre-run 保证。
+1. 先对当前 Issue 与本角色执行 SELF_CHECK（通过共享 Skill `multica-context-handoff` 的 pipeline selfcheck，并携带显式 Findings source binding 与 trusted source map）。SELF_CHECK 是 Run 内的开工门，不是平台级 pre-run 保证。不得把裸 T06 发布或 `tools/context_cli.py self-check`（未传 source binding）当作正式入口。提交必须包含可核对的 task_ref、role、project_id、package_id、来源/包摘要以及实际命令与结果。
 2. READY → 按当前有效、角色范围的 Context Package 继续工作。
 3. REFRESH_REQUIRED → 走有界自刷新路径：对同一 task 与当前角色重新 PREPARE_HANDOFF，然后再次 SELF_CHECK；刷新通过前不开始有实际后果的工作。依赖 digest 变化、陈旧或被 supersede 的输入、或 `artifact_ready_check` 失败，均映射为 `package_stale` / REFRESH_REQUIRED；不得猜测 version，不得使用 latest / 当前代码 / 大概那个 build。
 4. BLOCKED → 停止受影响的有实际后果工作，通过现有 Issue/parent 协议升级。
@@ -264,6 +264,9 @@ COMMON_MARKERS = (
     "执行 SELF_CHECK",
     "有实际后果的专业工作",
     "SELF_CHECK 是 Run 内的开工门，不是平台级 pre-run 保证",
+    "显式 Findings source binding",
+    "不得把裸 T06 发布",
+    "context_cli.py self-check",
     "READY → 按当前有效、角色范围的 Context Package 继续工作",
     "REFRESH_REQUIRED",
     "有界自刷新路径",

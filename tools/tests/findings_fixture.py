@@ -10,6 +10,7 @@ simulation seam instead.
 """
 from __future__ import annotations
 
+import copy
 import hashlib
 import json
 import sys
@@ -110,12 +111,29 @@ def fixture() -> dict:
         expected_adapter_digest="sha256:" + "0" * 64)
     snapshot = source.read(boundary="PREPARE", task_ref=TASK_REF, role=ROLE)
     evidence_path = _write(base / "evidence.json", snapshot["observation"])
+    trusted = {
+        "schema": findings_source.TRUSTED_SOURCE_SCHEMA,
+        "project_id": PROJECT,
+        "synthetic": True,
+        "marks": ["SYNTHETIC"],
+        "sources": {
+            binding["source_id"]: {
+                "root": str(root),
+                "allowed": copy.deepcopy(binding["allowed"]),
+                "inventory": copy.deepcopy(snapshot["inventory"]),
+                "snapshot_digest": snapshot["snapshot_digest"],
+            }
+        },
+    }
+    trusted_path = _write(base / "trusted-map.json", trusted)
     _FIXTURE = {
         "dir": base,
         "root": root,
         "binding_file": binding_path,
         "authority_file": authority_path,
         "evidence_file": evidence_path,
+        "trusted_map_file": trusted_path,
+        "trusted": trusted,
         "binding": binding,
         "authority_cli": cli,
     }
@@ -133,4 +151,5 @@ def findings_args() -> dict:
         "findings_source_expect_commit": "0" * 40,
         "findings_source_expect_adapter_digest": "sha256:" + "0" * 64,
         "observer_run_id": "sim-observer-1",
+        "findings_trusted_map_file": str(f["trusted_map_file"]),
     }

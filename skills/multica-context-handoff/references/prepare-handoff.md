@@ -27,6 +27,8 @@ python <skill>/scripts/handoff_pipeline.py prepare \
   --repo <root> --out-dir <scratch> \
   --issue <issue-id> --target-role <role> --caller-role <your-role> \
   --purpose <purpose> --project-id <registry-project-id> \
+  --findings-source-binding-file <binding.json> \
+  --findings-trusted-map-file <trusted-map.json> \
   [--decision-comment <comment-id> ...] [--decision-marker <text> ...] \
   [--issue-file <captured.json>] [--thread-file <comment-id>=<captured.json>]
 ```
@@ -155,9 +157,16 @@ python <skill>/scripts/handoff_pipeline.py publish \
   --repo <root> \
   --issue <issue-id> --result-file <scratch>/result.json \
   --prepared-by <caller-agent-or-user-id> \
+  --findings-source-binding-file <binding.json> \
+  --findings-trusted-map-file <trusted-map.json> \
+  --findings-evidence-file <prior-observation.json> \
   [--parent <trigger-comment-id>] [--allow-partial] \
   --authorize-publish
 ```
+
+This pipeline `publish` is the only official T06 publication path. Direct
+`chandoff_note.publish_handoff` remains an internal callable and is
+unsupported for formal dispatch. Do not recommend a bare T06 write.
 
 Use `--dry-run` first when the caller wants to inspect the rendered `/note`
 record. The publisher re-validates the frozen envelope, refuses BLOCKED and

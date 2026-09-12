@@ -61,8 +61,14 @@ U04_COMMIT = "702cb9bb11120c154a216e66c6ed1d3d632d3b49"
 PINNED_ARTIFACT_CONTRACT = (
     "sha256:9c2857ae252e1916ef79a4816dfb57c05a6f32ec1b97f31419cdfddfd9e83bfc"
 )
-PINNED_SKILL_MD = (
+HISTORICAL_PINNED_SKILL_MD_U04 = (
     "sha256:f369cee40ada061364d91ef48a9cb7d467039931e922c1db18d85fe1d7e0638a"
+)
+# YZT-88 V2 candidate: first-work SELF_CHECK + official pipeline publication
+# guards. Historical U04 pin is preserved above; U05 bundle.json is not
+# rewritten in place.
+PINNED_SKILL_MD = (
+    "sha256:a7326f93a63e1718fb8ed08ecdc7818726db02cca06eacfee9bffc377d1262dd"
 )
 # Issue text also cites sha256:1df6a40c… as a U04 "skill integration digest".
 # That value is not a T08-style bundle digest of U04@702cb9b; U05 pins the

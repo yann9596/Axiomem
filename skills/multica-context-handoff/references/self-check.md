@@ -33,8 +33,18 @@ same normalized task snapshot the caller would send to PREPARE_HANDOFF.
 ```bash
 python <skill>/scripts/handoff_pipeline.py selfcheck \
   --repo <root> --out-dir <scratch> \
-  --issue <issue-id> --request-from <previous-request-envelope.json>
+  --issue <issue-id> --request-from <previous-request-envelope.json> \
+  --findings-source-binding-file <binding.json> \
+  --findings-trusted-map-file <trusted-map.json> \
+  --findings-evidence-file <prior-observation.json>
 ```
+
+Do not substitute `tools/context_cli.py self-check` or a direct T04 call
+without the same Findings source binding. Those remain internal callables
+and are unsupported for formal dispatch. The raw command, exit code, and
+JSON result (including `task_ref`, `role`, `package_id`, source/package
+digests) are the inspectable self-check evidence — a natural-language
+"I already checked" statement is not.
 
 (Offline variant: replace discovery with `--envelope-file <result.json>`;
 `--store <dir>` scans a runtime package store.)

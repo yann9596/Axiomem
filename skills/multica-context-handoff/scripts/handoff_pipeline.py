@@ -246,12 +246,20 @@ def _load_findings_source(args, tools, *, project_id, stage: str):
     binding = _findings_binding_files(args, stage)
     cfs = tools["findings_source"]
     resolver = _authority_resolver(args, tools, stage)
+    trusted_file = getattr(args, "findings_trusted_map_file", None)
+    if not trusted_file:
+        raise PipelineError(
+            "findings_source_unbound",
+            f"{stage} requires --findings-trusted-map-file; a source_id "
+            "string or comment digest is not ownership proof")
     try:
+        trusted = cfs.load_trusted_source_map(trusted_file)
         source = cfs.source_from_binding_file(
             binding, resolver=resolver, project_id=project_id,
             expected_commit=getattr(args, "findings_source_expect_commit", None),
             expected_adapter_digest=getattr(
-                args, "findings_source_expect_adapter_digest", None))
+                args, "findings_source_expect_adapter_digest", None),
+            trusted=trusted, require_trusted=True)
     except cfs.FindingsSourceRefusal as exc:
         raise PipelineError(exc.code, exc.message, **exc.details) from None
     if not getattr(source, "is_production", False):
@@ -985,6 +993,9 @@ def _add_findings_args(p: argparse.ArgumentParser) -> None:
                         "must match")
     p.add_argument("--observer-run-id", default=None,
                    help="observer run identity recorded in the observation")
+    p.add_argument("--findings-trusted-map-file", default=None,
+                   help="Lead-approved findings-trusted-source-map/1 JSON "
+                        "(required; caller-selected roots are refused)")
 
 
 def build_parser() -> argparse.ArgumentParser:

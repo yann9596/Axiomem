@@ -36,8 +36,11 @@ from schema_mini import Schema, load_schema_file  # noqa: E402
 BINDING_SCHEMA = "findings-source-binding/1"
 OBSERVATION_SCHEMA = "findings-source-observation/1"
 SNAPSHOT_SCHEMA = "findings-source-snapshot/1"
+TRUSTED_SOURCE_SCHEMA = "findings-trusted-source-map/1"
 LAYOUT_FLAT = "flat-finding-json-v1"
 LAYOUT_SYNTHETIC = "synthetic-in-memory-v1"
+V2_SYNTHETIC_SOURCE_ID = "yzt66-v2-synthetic-findings"
+V2_SYNTHETIC_EMPTY_SOURCE_ID = "yzt66-v2-synthetic-findings-empty"
 
 FINDING_FILE_RE = None  # set below (compiled lazily to keep import light)
 
@@ -198,7 +201,111 @@ def _reject_reparse_chain(root: Path) -> None:
                 detail=str(candidate))
 
 
-def validate_binding(binding, *, project_id: str | None = None) -> dict:
+def load_trusted_source_map(path_or_doc) -> dict:
+    """Load a Lead-approved source map. A source_id string is not proof."""
+    if isinstance(path_or_doc, dict):
+        doc = copy.deepcopy(path_or_doc)
+    else:
+        doc, _digest, _size = load_json_strict_file(
+            path_or_doc, "trusted findings source map")
+    _require(isinstance(doc, dict), "trusted source map must be a JSON object")
+    _require(doc.get("schema") == TRUSTED_SOURCE_SCHEMA,
+             f"trusted source map schema must be {TRUSTED_SOURCE_SCHEMA!r}",
+             found=doc.get("schema"))
+    sources = doc.get("sources")
+    _require(isinstance(sources, dict) and sources,
+             "trusted source map.sources must be a non-empty object")
+    pid = doc.get("project_id")
+    _require(isinstance(pid, str) and pid.strip(),
+             "trusted source map.project_id must be a non-blank string")
+    for source_id, entry in sources.items():
+        _require(isinstance(source_id, str) and source_id.strip(),
+                 "trusted source map source_id must be a non-blank string")
+        _require(isinstance(entry, dict),
+                 "trusted source map entry must be an object",
+                 source_id=source_id)
+        root = entry.get("root")
+        _require(isinstance(root, str) and root.strip(),
+                 "trusted source map entry.root must be a non-blank string",
+                 source_id=source_id)
+        root_path = Path(root)
+        _require(root_path.is_absolute(),
+                 "trusted source map entry.root must be an absolute path",
+                 source_id=source_id)
+        entry["root"] = str(root_path)
+        allowed = entry.get("allowed")
+        _require(isinstance(allowed, dict),
+                 "trusted source map entry.allowed must be an object",
+                 source_id=source_id)
+        for key in ("task_refs", "roles"):
+            values = allowed.get(key)
+            _require(isinstance(values, list) and values and
+                     all(isinstance(v, str) and v.strip() for v in values),
+                     f"trusted source map entry.allowed.{key} must be a "
+                     "non-empty string list", source_id=source_id)
+        if "snapshot_digest" in entry and entry["snapshot_digest"] is not None:
+            _require(_sha256_hex(entry.get("snapshot_digest")) is not None,
+                     "trusted source map snapshot_digest must be sha256",
+                     source_id=source_id)
+    return doc
+
+
+def verify_trusted_identity(binding: dict, trusted: dict | None, *,
+                            task_ref: str | None = None,
+                            role: str | None = None,
+                            boundary: str | None = None) -> dict:
+    """Bind Lead-approved source_id/root/project; refuse arbitrary roots."""
+    if trusted is None:
+        raise FindingsSourceRefusal(
+            "findings_source_unbound",
+            "a trusted source map is required; a source_id string or "
+            "comment digest is not ownership proof",
+            boundary=boundary)
+    if not isinstance(trusted, dict) or \
+            trusted.get("schema") != TRUSTED_SOURCE_SCHEMA:
+        raise FindingsSourceRefusal(
+            "findings_source_unbound",
+            "trusted source map is missing or has the wrong schema",
+            boundary=boundary)
+    sources = trusted.get("sources") or {}
+    source_id = binding.get("source_id")
+    entry = sources.get(source_id) if isinstance(source_id, str) else None
+    if not isinstance(entry, dict):
+        raise FindingsSourceRefusal(
+            "findings_source_unbound",
+            "binding source_id is not in the trusted source map",
+            boundary=boundary, detail=repr(source_id))
+    if binding.get("project_id") != trusted.get("project_id"):
+        raise FindingsSourceRefusal(
+            "findings_source_unbound",
+            "binding project does not match the trusted source map project",
+            boundary=boundary,
+            detail=f"{binding.get('project_id')!r} != "
+                   f"{trusted.get('project_id')!r}")
+    bound_root = Path(binding["root"])
+    mapped_root = Path(entry["root"])
+    if bound_root != mapped_root:
+        raise FindingsSourceRefusal(
+            "findings_source_unbound",
+            "caller-selected root is not the trusted mapped physical root",
+            boundary=boundary,
+            detail=f"{str(bound_root)!r} != {str(mapped_root)!r}")
+    allowed = entry.get("allowed") or {}
+    if task_ref is not None and task_ref not in allowed.get("task_refs", []):
+        raise FindingsSourceRefusal(
+            "findings_source_unbound",
+            "the trusted source map does not authorize this dispatch task",
+            boundary=boundary, detail=task_ref)
+    if role is not None and role not in allowed.get("roles", []):
+        raise FindingsSourceRefusal(
+            "findings_source_unbound",
+            "the trusted source map does not authorize this dispatch role",
+            boundary=boundary, detail=role)
+    return entry
+
+
+def validate_binding(binding, *, project_id: str | None = None,
+                     trusted=None, require_trusted: bool = False) -> dict:
     """Validate the binding document itself (no filesystem read yet)."""
     _require(isinstance(binding, dict), "binding must be a JSON object")
     unknown = sorted(set(binding) - BINDING_KEYS)
@@ -265,15 +372,51 @@ def validate_binding(binding, *, project_id: str | None = None) -> dict:
              "binding.runtime.adapter_digest must be an exact sha256 digest")
     out = copy.deepcopy(binding)
     out["root"] = str(root_path)
+    if require_trusted or trusted is not None:
+        verify_trusted_identity(out, trusted)
     return out
 
 
+class SimulationEntry:
+    """Independently constructed simulation entry with fake transport.
+
+    Production constructors never infer simulation from class names, fake
+    attributes, or inner wrappers. Tests that need omitted-binding fixture
+    mode must wrap the runner with this constructor (or pass an explicit
+    `legacy_fixture=True` / `require_findings_source=False` flag).
+    """
+
+    explicit_simulation_entry = True
+    simulation_transport = True
+
+    def __init__(self, inner):
+        self.inner = inner
+
+    def __call__(self, argv):
+        return self.inner(argv)
+
+
+def construct_simulation_entry(inner) -> SimulationEntry:
+    """The only supported way to build a simulation transport entry."""
+    if isinstance(inner, SimulationEntry):
+        return inner
+    return SimulationEntry(inner)
+
+
 def is_simulation_transport(runner) -> bool:
-    """True only when the runner (or a wrapper) opts into fake/fixture effects."""
+    """True when the runner (or a wrapper) opts into fake/fixture effects.
+
+    Production constructors must not call this to auto-enable omitted
+    binding. The helper remains for the explicit-legacy-fixture gate:
+    `legacy_fixture=True` still cannot issue live effects through a
+    non-simulation transport.
+    """
     current = runner
     seen: set[int] = set()
     while current is not None and id(current) not in seen:
         seen.add(id(current))
+        if getattr(current, "explicit_simulation_entry", False) is True:
+            return True
         if getattr(current, "simulation_transport", False) is True:
             return True
         if type(current).__name__ == "FixtureRunner":
@@ -656,6 +799,29 @@ def read_snapshot(root: Path, *, source_id: str,
             "the Findings inventory changed while it was being read",
             boundary=boundary,
             detail=f"{names} -> {after_names}")
+    after_digests = []
+    for name in after_names:
+        path = root_path / name
+        try:
+            data = reader.read_bytes(path)
+        except FindingsSourceRefusal:
+            raise
+        except OSError as exc:
+            raise FindingsSourceRefusal(
+                "findings_source_unreadable",
+                f"finding file cannot be re-read: {name}",
+                boundary=boundary,
+                detail=f"{type(exc).__name__}: {exc}") from None
+        after_digests.append((name, sha256_digest(data), len(data)))
+    before_digests = [(row["file"], row["sha256"], row["bytes"])
+                      for row in inventory]
+    if after_digests != before_digests:
+        raise FindingsSourceRefusal(
+            "findings_source_changed",
+            "a same-name Findings record changed while it was being read; "
+            "no automatic re-read to success is allowed",
+            boundary=boundary,
+            detail=f"{before_digests} -> {after_digests}")
     finished = clock()
     snapshot_digest = digest_obj({
         "schema": SNAPSHOT_SCHEMA,
@@ -740,7 +906,8 @@ def verify_observation(observation, *, binding: dict | None = None,
                        request_digest: str | None = None,
                        envelope_digest: str | None = None,
                        expected_snapshot_digest: str | None = None,
-                       boundary: str | None = None) -> list:
+                       boundary: str | None = None,
+                       trusted: dict | None = None) -> list:
     """Return the list of join problems; empty means the join verifies."""
     problems = []
     if not isinstance(observation, dict):
@@ -754,6 +921,17 @@ def verify_observation(observation, *, binding: dict | None = None,
             problems.append("observation source id")
         if observation.get("resolved_root") != binding.get("root"):
             problems.append("observation resolved root")
+        if observation.get("project_id") != binding.get("project_id"):
+            problems.append("observation project id")
+    if trusted is not None and isinstance(observation, dict):
+        try:
+            verify_trusted_identity(
+                {"source_id": observation.get("source_id"),
+                 "project_id": observation.get("project_id"),
+                 "root": observation.get("resolved_root")},
+                trusted, task_ref=task_ref, role=role, boundary=boundary)
+        except FindingsSourceRefusal as exc:
+            problems.append(exc.message)
     if boundary is not None and observation.get("boundary") != boundary:
         problems.append(f"observation boundary {observation.get('boundary')!r}")
     join = observation.get("join") or {}
@@ -784,8 +962,12 @@ class BoundFindingsSource:
                  project_id: str | None = None,
                  expected_commit: str | None = None,
                  expected_adapter_digest: str | None = None,
-                 clock=None):
-        self.binding = validate_binding(binding, project_id=project_id)
+                 clock=None, trusted=None, require_trusted: bool = False):
+        self.trusted = (load_trusted_source_map(trusted)
+                        if isinstance(trusted, (str, Path)) else trusted)
+        self.binding = validate_binding(
+            binding, project_id=project_id, trusted=self.trusted,
+            require_trusted=require_trusted)
         self.resolver = resolver
         self.reader = reader or FilesystemReader()
         self.expected_commit = expected_commit
@@ -834,10 +1016,26 @@ class BoundFindingsSource:
                        expected_commit=self.expected_commit,
                        expected_adapter_digest=self.expected_adapter_digest)
         self._check_allowed(task_ref=task_ref, role=role, boundary=boundary)
+        if self.trusted is not None:
+            verify_trusted_identity(
+                self.binding, self.trusted, task_ref=task_ref, role=role,
+                boundary=boundary)
         snapshot = read_snapshot(self.binding["root"],
                                  source_id=self.binding["source_id"],
                                  reader=self.reader, boundary=boundary,
                                  clock=self.clock)
+        if self.trusted is not None:
+            entry = (self.trusted.get("sources") or {}).get(
+                self.binding["source_id"]) or {}
+            expected = entry.get("snapshot_digest")
+            if expected and prior_observation is None and \
+                    snapshot["snapshot_digest"] != expected:
+                raise FindingsSourceRefusal(
+                    "findings_source_changed",
+                    "the Findings bytes do not match the trusted map "
+                    "inventory digest recorded for this source",
+                    boundary=boundary,
+                    detail=f"{snapshot['snapshot_digest']} != {expected}")
         join = {"task_ref": task_ref, "role": role,
                 "request_digest": request_digest,
                 "task_fingerprint": task_fingerprint,
@@ -857,8 +1055,9 @@ class BoundFindingsSource:
                 detail=f"{observation['snapshot_digest']} != "
                        f"{expected_snapshot_digest}")
         if prior_observation is not None:
-            problems = verify_observation(prior_observation,
-                                          task_ref=task_ref, role=role)
+            problems = verify_observation(
+                prior_observation, binding=self.binding,
+                task_ref=task_ref, role=role, trusted=self.trusted)
             if problems:
                 raise FindingsSourceRefusal(
                     "findings_source_changed",
@@ -979,13 +1178,15 @@ class SyntheticFindingsSource:
 
 def source_from_binding_file(path, *, resolver, project_id=None,
                              expected_commit=None, expected_adapter_digest=None,
-                             reader=None, clock=None) -> BoundFindingsSource:
+                             reader=None, clock=None, trusted=None,
+                             require_trusted: bool = False) -> BoundFindingsSource:
     binding, _digest, _size = load_json_strict_file(
         path, "findings source binding")
     return BoundFindingsSource(
         binding, resolver=resolver, reader=reader, project_id=project_id,
         expected_commit=expected_commit,
-        expected_adapter_digest=expected_adapter_digest, clock=clock)
+        expected_adapter_digest=expected_adapter_digest, clock=clock,
+        trusted=trusted, require_trusted=require_trusted)
 
 
 def observation_from_file(path) -> dict:

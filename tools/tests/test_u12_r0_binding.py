@@ -306,7 +306,8 @@ def cached_context(key, request):
     if key not in _CACHE:
         with tempfile.TemporaryDirectory() as tmp:
             store = o2.DurableIntentStore(Path(tmp) / "ledger.jsonl")
-            factory = u12.build_r0b_factory(store, runner=FakeCli())
+            factory = u12.build_r0b_factory(
+                store, runner=FakeCli(), require_findings_source=False)
             _CACHE[key] = factory.build_context_package(
                 request, clock=lambda: CLOCK, findings=[])
     return copy.deepcopy(_CACHE[key])
@@ -1182,7 +1183,8 @@ class RecoveryMatrixTests(unittest.TestCase):
         other = u12.build_r0b_factory(
             o2.DurableIntentStore(Path(self.tmp.name) / "ledger.jsonl"),
             runner=self.h.cli,
-            artifact_blob_reader=u12._git_blob_reader(u12.ROOT))
+            artifact_blob_reader=u12._git_blob_reader(u12.ROOT),
+            require_findings_source=False)
         replay = other.create_target_once(self.h.intent_id, actor="worker-b")
         self.assertTrue(replay["replayed"])
         self.assertEqual(replay["issue_id"], TARGET_ID)
@@ -1306,7 +1308,8 @@ class PreflightRepairTests(unittest.TestCase):
             o2.DurableIntentStore(Path(self.tmp.name) / "ledger.jsonl"),
             runner=self.h.cli,
             artifact_blob_reader=u12._git_blob_reader(u12.ROOT),
-            authority_reader=u12.ReadinessManifestAuthorityReader())
+            authority_reader=u12.ReadinessManifestAuthorityReader(),
+            require_findings_source=False)
         before = self.reruns()
         recovered = other.recover(self.h.intent_id, actor=DISPATCHER)
         self.assertEqual(recovered["action"], "RESUME_TRIGGER")

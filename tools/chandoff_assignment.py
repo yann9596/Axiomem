@@ -42,7 +42,7 @@ import chandoff_compose as compose  # noqa: E402
 import chandoff_dispatch as dispatch  # noqa: E402
 import chandoff_finalize as finalize  # noqa: E402
 from chandoff_findings_source import (  # noqa: E402
-    FindingsSourceRefusal, gate_effectful_findings, is_simulation_transport,
+    FindingsSourceRefusal, gate_effectful_findings,
     verify_worker_entry,
 )
 import chandoff_note as note  # noqa: E402
@@ -76,16 +76,17 @@ PINNED_BINDING_PLAN = (
     "sha256:7f83bfd523e2c0da3cd0dac4568869f3c9937e2d3ae6c0dc66b9853094a27c22")
 PINNED_SKILL_BUNDLE = (
     "sha256:7f861c320c115b328fb45db7356573ae449a5e443ac08b3572a764c79934fce9")
-# YZT-88 versions the U04 skill bundle forward: the design opens the skill
-# pipeline script with the verified Findings source-binding flags. The
-# historical accepted pin above is preserved as history. 261df9a forwarded
-# the bundle to 1a264577…; this correction re-forwards it because production
-# stages now re-read authority through authenticated CLI instead of a
-# capture file. The U05 bundle.json is still not edited in place.
+# YZT-88 versions the U04 skill bundle forward. Historical pins above are
+# preserved; U05 bundle.json is not rewritten. V2 forwards the bundle again
+# because Skill/Instructions now require pipeline selfcheck with an explicit
+# Findings source binding and forbid bare T06 / unbound context_cli as
+# official entries.
 YZT88_SKILL_BUNDLE_261DF9A = (
     "sha256:1a2645771e38def5f44dc809bce991ca18ca7c9ef36777611e9b88726c018bc2")
-FORWARD_SKILL_BUNDLE = (
+YZT88_SKILL_BUNDLE_D2B6299 = (
     "sha256:f54f0395410cb5ed9596a2e4366dd9375813127391cd4131613942d9f30533ff")
+FORWARD_SKILL_BUNDLE = (
+    "sha256:967b48443d5e47bdfe55aecacb92ca78fdd8f576e87602201513b6fc4633ecd6")
 ACCEPTED_SKILL_BUNDLES = (FORWARD_SKILL_BUNDLE,)
 
 STATES = (
@@ -633,8 +634,9 @@ class AssignmentHandoff:
         self.findings_source = findings_source
         self.effects_runner = effects_runner if effects_runner is not None \
             else getattr(recorder, "inner", recorder)
-        if legacy_fixture is None:
-            legacy_fixture = is_simulation_transport(self.effects_runner)
+        # Production never infers simulation from class names, fake
+        # attributes, or inner wrappers. Tests pass legacy_fixture=True
+        # through construct_simulation_entry / explicit kwargs.
         self.legacy_fixture = bool(legacy_fixture)
         self._prepare_observation = None
         self._self_check_observation = None
@@ -1776,7 +1778,7 @@ def run_assignment_handoff(spec, *, caller_role: str, target_role_spec: str,
         }
     workdir = Path(workdir) if workdir is not None else Path.cwd()
     if legacy_fixture is None:
-        legacy_fixture = is_simulation_transport(runner)
+        legacy_fixture = False
     recorder = dispatch.RecordingRunner(runner, ledger, executable=executable,
                                         transaction_id=transaction_id)
     handoff = AssignmentHandoff(

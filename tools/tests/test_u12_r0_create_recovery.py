@@ -260,7 +260,8 @@ class RecoveryFixture:
         self.factory = u12.build_r0b_factory(
             self.store, runner=self.cli, artifact_blob_reader=counting,
             authority_reader=authority,
-            execution_blob_resolver=proposed_execution_resolver)
+            execution_blob_resolver=proposed_execution_resolver,
+            require_findings_source=False)
         self.base_decision = self.decision()
 
     def _audit_pins(self) -> tuple:
@@ -493,7 +494,8 @@ class TransportProfileTests(unittest.TestCase):
         store = o2.DurableIntentStore(self.root / "prospective-ledger.jsonl")
         factory = u12.build_r0b_factory(
             store, runner=cli,
-            artifact_blob_reader=u12._git_blob_reader(u12.ROOT))
+            artifact_blob_reader=u12._git_blob_reader(u12.ROOT),
+            require_findings_source=False)
         spec, intent_id = make_spec()
         source = (leading + "\n\nIntent marker: " + spec["marker"] +
                   "\nIntent: " + intent_id + "\n")
@@ -535,7 +537,8 @@ class TransportProfileTests(unittest.TestCase):
         store = o2.DurableIntentStore(self.root / "legacy-ledger.jsonl")
         factory = u12.build_r0b_factory(
             store, runner=cli,
-            artifact_blob_reader=u12._git_blob_reader(u12.ROOT))
+            artifact_blob_reader=u12._git_blob_reader(u12.ROOT),
+            require_findings_source=False)
         spec, intent_id = make_spec()
         context = creation_package()
         factory.record_creation_intent(
@@ -554,7 +557,8 @@ class TransportProfileTests(unittest.TestCase):
     def test_unsupported_source_is_refused_before_persistence(self):
         cli = LiveShapeCli()
         store = o2.DurableIntentStore(self.root / "refused-ledger.jsonl")
-        factory = u12.build_r0b_factory(store, runner=cli)
+        factory = u12.build_r0b_factory(
+            store, runner=cli, require_findings_source=False)
         spec, intent_id = make_spec()
         spec.pop("body")
         spec.pop("body_digest")
@@ -577,7 +581,8 @@ class TransportProfileTests(unittest.TestCase):
         store = o2.DurableIntentStore(self.root / "mangled-ledger.jsonl")
         factory = u12.build_r0b_factory(
             store, runner=cli,
-            artifact_blob_reader=u12._git_blob_reader(u12.ROOT))
+            artifact_blob_reader=u12._git_blob_reader(u12.ROOT),
+            require_findings_source=False)
         spec, intent_id = make_spec()
         source = spec["body"]
         spec.pop("body")
@@ -1125,7 +1130,8 @@ class CrashReplayConcurrencyTests(unittest.TestCase):
                 store, runner=fx.cli,
                 artifact_blob_reader=u12._git_blob_reader(u12.ROOT),
                 authority_reader=u12.ReadinessManifestAuthorityReader(),
-                execution_blob_resolver=proposed_execution_resolver)
+                execution_blob_resolver=proposed_execution_resolver,
+                require_findings_source=False)
             try:
                 results[name] = factory.recover_created_target(
                     fx.intent_id, expected_target_id=TARGET_ID,

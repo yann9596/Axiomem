@@ -586,7 +586,8 @@ class ProofReconstructabilityTests(unittest.TestCase):
             self.fx.store, runner=self.fx.cli,
             artifact_blob_reader=u12._git_blob_reader(u12.ROOT),
             authority_reader=u12.ReadinessManifestAuthorityReader(),
-            execution_blob_resolver=proposed_execution_resolver)
+            execution_blob_resolver=proposed_execution_resolver,
+            require_findings_source=False)
         audit = factory.validate(self.fx.intent_id)
         self.assertEqual(audit["state"], o2.S_TARGET_BOUND)
         replay = factory.recover_created_target(
@@ -655,7 +656,8 @@ class ProofReconstructabilityTests(unittest.TestCase):
         with self.assertRaises(u12.R0BValidationRefused):
             u12.build_r0b_factory(
                 fx.store, runner=fx.cli,
-                execution_blob_resolver=lambda commit, path: b"changed"). \
+                execution_blob_resolver=lambda commit, path: b"changed",
+                require_findings_source=False). \
                 recover_created_target(
                     fx.intent_id, expected_target_id=TARGET_ID,
                     recovery_decision=fx.decision(), actor=DISPATCHER,
