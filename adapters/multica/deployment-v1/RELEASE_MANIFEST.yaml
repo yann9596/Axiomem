@@ -1,18 +1,27 @@
 release_manifest:
   parent: YZT-66
   issue: YZT-73
-  attempt: YZT-73/deployment-v1
+  attempt: YZT-73/deployment-v1-correction-1
   supported_mode: supervised_manual_start_explicit_package
   main_before: "95c434d894c2a25d0b1f435c403d84950996cbfa"
   candidate_start: "58ba5d8d92fa82b07330e5aacd4e8b9fe1a9bbc8"
+  candidate_vs_main: "0 dirty / 83 ahead"
   candidate_worktree_kept: "D:/AI/worktrees/multica-memory-yzt-88-u12fsb"
   isolated_branch: yzt-73-d1-deployment-v1
   isolated_worktree: "D:/AI/worktrees/multica-memory-yzt-73-d1"
-  release_candidate: "32d311896d8ebfcded704b5f30086c5d38e5c76d"
+  historical_d1_bundle: "32d311896d8ebfcded704b5f30086c5d38e5c76d"
+  historical_d1_pin_head: "119812c85d47bf086c2987f6e4bafd80d47ef0a4"
+  historical_d1_pin_vs_main: "0 dirty / 85 ahead (NOT 0/83)"
+  historical_d1_status: CHANGES_REQUIRED
+  correction_bundle: "FILL_AFTER_COMMIT"
+  correction_pin_head: "FILL_AFTER_COMMIT"
+  review_target: "correction_pin_head if present else correction_bundle; never 58ba5d8; never 119812c"
   historical_u05_bundle: "adapters/multica/agent-instructions/ (not a live apply input)"
   this_bundle: "adapters/multica/deployment-v1/"
+  revision_map_ref: "adapters/multica/deployment-v1/revision-map.md"
   code_diff_and_dependencies_ref: "adapters/multica/deployment-v1/commit-classification.md"
-  integration_action: "D3 only after D2 APPROVE and Human publish confirmation; Memory main Merge is not D1"
+  cli_operations_ref: "adapters/multica/deployment-v1/cli-operations.md"
+  integration_action: "pre-D2 bootstrap is Lead/Human only; D3 only after D2 APPROVE and Human publish confirmation; Memory main Merge is not D1"
   agent_changes_ref: "adapters/multica/deployment-v1/binding-plan.json"
   skill_contents_and_bindings_ref: "adapters/multica/deployment-v1/binding-plan.json"
   squad_and_role_mapping_ref: "adapters/multica/deployment-v1/live-before.json and after/squad.md"
@@ -24,9 +33,10 @@ release_manifest:
   selfcheck:
     status: READY
     action: USE_EXISTING
-    package_id: CTX-software-engineer-3e6d465301ac7eb0
-    observer_run_id: 01a094fb-c85b-71e4-8f24-3a78117b7ca9
+    package_id: CTX-software-engineer-ca95e5f1cce82f65
+    observer_run_id: 01a09521-7050-7b5e-b2e9-5aa218a020c7
     snapshot_digest: "sha256:a6737e1241ac75e409ffc4c7dd7942bbe222f566ff1e73dde2444cf0643af5fb"
-    binding_digest: "sha256:bd7adbf16cafd38b12b774b095e719dbe4c19ed2bd6ffedaa318fe623d9e788f"
+    binding_digest: "sha256:9af947535336fe54c6f027e111cba9aca351f409cc204e2b24d6ad3b89f30f7d"
     open_finding: FIND-WIMG-HO00-000001
     open_finding_task_associated: false
+    role_argv_note: "packaged self-check-request.json omitted role; worker added --role software-engineer"

@@ -1,25 +1,60 @@
 {
   "status": "staged_candidate_not_applied",
-  "activation": "D3 after D2 APPROVE and Human publish confirmation; D1 executes none of these",
   "never_replace_all_set": true,
+  "never_private_api": true,
+  "phases": {
+    "pre_d2_bootstrap": {
+      "when": "Lead/Human only, before D2 reviews this candidate. 04 does not execute.",
+      "purpose": "Create an independent 05 Delivery Reviewer that can review this exact D1 correction candidate. Not a six-role live cutover.",
+      "in_scope": [
+        "create new 05 agent with a new UUID",
+        "agent update --instructions from after/delivery-reviewer.md",
+        "import or skill create delivery-review from skills/delivery-review/SKILL.md",
+        "agent skills add parent-handoff-wake (existing id aab482f9-b9ff-4b78-8394-1f13e2b319c0) if missing",
+        "agent skills add delivery-review after import (id then known)",
+        "optional: bind shared handoff to the new 05 only if D2 SELF_CHECK requires it"
+      ],
+      "out_of_scope": [
+        "apply after-state to 01/02/03/04/06",
+        "squad instruction rewrite",
+        "add new 05 to business Squad routing",
+        "remove old 05 from Squad",
+        "QA skill swap",
+        "import/bind shared handoff to 01-04/06",
+        "Memory main Merge",
+        "live product writes"
+      ]
+    },
+    "d3_full_apply": {
+      "when": "only after D2 APPROVE and Human publish confirmation",
+      "purpose": "Apply the six-role after-state, shared skill, QA skill add, squad mapping, and retire old 05 from normal routing",
+      "blocked_until": "D2 APPROVE + Human publish confirmation"
+    }
+  },
   "shared_skill": {
     "name": "multica-context-handoff",
     "repo_path": "skills/multica-context-handoff/",
     "skill_md_lf": "sha256:a7326f93a63e1718fb8ed08ecdc7818726db02cca06eacfee9bffc377d1262dd",
     "bundle_digest": "sha256:967b48443d5e47bdfe55aecacb92ca78fdd8f576e87602201513b6fc4633ecd6",
     "workspace_skill_id": null,
-    "id_status": "not_in_catalog_enablement_placeholder_until_d3_import"
+    "id_status": "not_in_catalog_enablement_placeholder_until_import",
+    "pre_d2": "optional bind to new 05 only",
+    "d3": "import then agent skills add to 01-04, 06, and new 05"
   },
   "capability_skills": {
     "delivery-review": {
       "repo_path": "skills/delivery-review/",
+      "bundle_copy": "adapters/multica/deployment-v1/skills/delivery-review/SKILL.md",
       "workspace_skill_id": null,
-      "id_status": "enablement_placeholder_until_d3_import"
+      "id_status": "enablement_placeholder_until_pre_d2_import",
+      "phase": "pre_d2_bootstrap"
     },
     "product-quality-gate": {
       "repo_path": "skills/product-quality-gate/",
+      "bundle_copy": "adapters/multica/deployment-v1/skills/product-quality-gate/SKILL.md",
       "workspace_skill_id": null,
-      "id_status": "enablement_placeholder_until_d3_import"
+      "id_status": "enablement_placeholder_until_d3_import",
+      "phase": "d3_full_apply"
     }
   },
   "preserve": [
@@ -30,14 +65,31 @@
     "implementation-handoff",
     "parent-handoff-wake"
   ],
-  "ops": [
-    {"op": "add", "agent_role": "engineering-lead", "agent_id": "24f04aba-7da9-4371-bf89-685d7505a411", "skill_name": "multica-context-handoff"},
-    {"op": "add", "agent_role": "context-engineer", "agent_id": "8bc546ab-ffd8-4aa6-ad30-58583346c065", "skill_name": "multica-context-handoff", "note": "exception-path only; not a normal READY hop"},
-    {"op": "add", "agent_role": "solution-architect", "agent_id": "1303827b-73d1-4d71-a461-00b93e4b4418", "skill_name": "multica-context-handoff"},
-    {"op": "add", "agent_role": "software-engineer", "agent_id": "fa7d16a7-2dae-4994-80b8-7435b3fcca47", "skill_name": "multica-context-handoff"},
-    {"op": "remove", "agent_role": "qa", "agent_id": "30ce43d4-97a7-42a8-ab3e-78df0d894702", "skill_id": "29f68c43-0772-47a8-a860-d946a100c789", "skill_name": "milestone-quality-gate", "note": "logical remove; deployed CLI has add|set only — D3 must not use replace-all set"},
-    {"op": "add", "agent_role": "qa", "agent_id": "30ce43d4-97a7-42a8-ab3e-78df0d894702", "skill_name": "product-quality-gate"},
-    {"op": "add", "agent_role": "qa", "agent_id": "30ce43d4-97a7-42a8-ab3e-78df0d894702", "skill_name": "multica-context-handoff"}
+  "ops_pre_d2": [
+    {"op": "create_agent", "logical_role": "delivery-reviewer", "name": "05 Delivery Reviewer", "executor": "Lead/Human", "agent_id": null, "id_status": "pending_human_create"},
+    {"op": "agent_update_instructions", "agent_id": "NEW_05", "file": "after/delivery-reviewer.md"},
+    {"op": "skill_create_or_import", "skill_name": "delivery-review", "from": "skills/delivery-review/SKILL.md"},
+    {"op": "agent_skills_add", "agent_id": "NEW_05", "skill_name": "parent-handoff-wake", "skill_id": "aab482f9-b9ff-4b78-8394-1f13e2b319c0"},
+    {"op": "agent_skills_add", "agent_id": "NEW_05", "skill_name": "delivery-review", "skill_id": "pending_import"}
+  ],
+  "ops_d3": [
+    {"op": "skill_create_or_import", "skill_name": "multica-context-handoff", "from": "skills/multica-context-handoff/"},
+    {"op": "skill_create_or_import", "skill_name": "product-quality-gate", "from": "skills/product-quality-gate/SKILL.md"},
+    {"op": "agent_skills_add", "agent_role": "engineering-lead", "agent_id": "24f04aba-7da9-4371-bf89-685d7505a411", "skill_name": "multica-context-handoff"},
+    {"op": "agent_skills_add", "agent_role": "context-engineer", "agent_id": "8bc546ab-ffd8-4aa6-ad30-58583346c065", "skill_name": "multica-context-handoff", "note": "exception-path only; not a normal READY hop"},
+    {"op": "agent_skills_add", "agent_role": "solution-architect", "agent_id": "1303827b-73d1-4d71-a461-00b93e4b4418", "skill_name": "multica-context-handoff"},
+    {"op": "agent_skills_add", "agent_role": "software-engineer", "agent_id": "fa7d16a7-2dae-4994-80b8-7435b3fcca47", "skill_name": "multica-context-handoff"},
+    {"op": "agent_skills_add", "agent_role": "qa", "agent_id": "30ce43d4-97a7-42a8-ab3e-78df0d894702", "skill_name": "product-quality-gate"},
+    {"op": "agent_skills_add", "agent_role": "qa", "agent_id": "30ce43d4-97a7-42a8-ab3e-78df0d894702", "skill_name": "multica-context-handoff"},
+    {"op": "agent_update_instructions", "agent_id": "24f04aba-7da9-4371-bf89-685d7505a411", "file": "after/engineering-lead.md"},
+    {"op": "agent_update_instructions", "agent_id": "8bc546ab-ffd8-4aa6-ad30-58583346c065", "file": "after/context-engineer.md"},
+    {"op": "agent_update_instructions", "agent_id": "1303827b-73d1-4d71-a461-00b93e4b4418", "file": "after/solution-architect.md"},
+    {"op": "agent_update_instructions", "agent_id": "fa7d16a7-2dae-4994-80b8-7435b3fcca47", "file": "after/software-engineer.md"},
+    {"op": "agent_update_instructions", "agent_id": "30ce43d4-97a7-42a8-ab3e-78df0d894702", "file": "after/qa.md"},
+    {"op": "squad_update_instructions", "squad_id": "ee895c79-ca0a-498b-abe9-5af537736a30", "file": "after/squad.md"},
+    {"op": "squad_member_add", "squad_id": "ee895c79-ca0a-498b-abe9-5af537736a30", "agent_id": "NEW_05", "role": "member"},
+    {"op": "logical_unbind", "agent_role": "qa", "agent_id": "30ce43d4-97a7-42a8-ab3e-78df0d894702", "skill_id": "29f68c43-0772-47a8-a860-d946a100c789", "skill_name": "milestone-quality-gate", "cli_status": "UNAVAILABLE: no agent skills remove; must not use replace-all set"},
+    {"op": "squad_member_remove_or_keep_history", "agent_id": "b6335f8e-8147-45f7-aac0-8079d85423b5", "action": "exit normal routing; keep history; do not rename into delivery-reviewer", "cli": "multica squad member remove ee895c79-ca0a-498b-abe9-5af537736a30 --member-id b6335f8e-8147-45f7-aac0-8079d85423b5 --type agent"}
   ],
   "new_05": {
     "logical_role": "delivery-reviewer",
@@ -49,11 +101,12 @@
       "name": "05 Feature Reviewer",
       "skills": ["external-signal-research", "feature-correctness-review"]
     },
-    "planned_skills": ["parent-handoff-wake", "delivery-review", "multica-context-handoff"],
+    "planned_skills_pre_d2": ["parent-handoff-wake", "delivery-review"],
+    "planned_skills_d3_additional": ["multica-context-handoff"],
     "after_instructions": "after/delivery-reviewer.md"
   },
   "old_05_after_d3": {
     "agent_id": "b6335f8e-8147-45f7-aac0-8079d85423b5",
-    "action": "exit normal routing; keep history; do not rename into delivery-reviewer"
+    "action": "exit normal routing; keep history; do not rename into delivery-reviewer; do not reuse UUID"
   }
 }

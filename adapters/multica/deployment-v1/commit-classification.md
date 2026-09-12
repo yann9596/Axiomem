@@ -1,6 +1,16 @@
-# 83-commit classification (main `95c434d` → candidate `58ba5d8`)
+# Commit classification
 
-Count verified: `git rev-list --count 95c434d..58ba5d8` = **83**. Dirty files on the kept candidate worktree: **0**.
+## Counts (verified this attempt)
+
+| Range | Count | Dirty |
+| --- | --- | --- |
+| `95c434d..58ba5d8` (code start) | **83** | 0 on kept worktree `multica-memory-yzt-88-u12fsb` |
+| `95c434d..32d3118` (historical D1 bundle) | 84 | n/a |
+| `95c434d..119812c` (historical D1 pin HEAD) | **85** | 0 on `yzt-73-d1-deployment-v1` before correction-1 |
+| `58ba5d8..119812c` | 2 | D1 docs + pin |
+| `95c434d..<this correction HEAD>` | filled after commit | isolated branch only |
+
+Do not say the D1 branch is 0/83. That count belongs only to `58ba5d8`.
 
 These 83 commits are one continuous Context Handoff / V2.2 stack, not 83 defects. D1 does not cherry-pick them into 83 review tasks. D1 does not Merge Memory main.
 
@@ -30,12 +40,12 @@ These 83 commits are one continuous Context Handoff / V2.2 stack, not 83 defects
 
 - Live six-role/Squad/Skill apply (D3 after Human publish confirmation).
 - Memory main Merge.
-- Creating a live 05 agent (Lead/Human bootstrap only).
+- Creating a live 05 agent (Lead/Human bootstrap only; pre-D2, not this 04 run).
 - Migrating or emptying `D:\AI\multica-memory\runtime\v1.1\findings`.
 - Restoring T06 full discovery or automatic assignment as the ordinary start path.
 
 ## Integration recommendation
 
-**Integrate the whole 83-commit chain as the Memory candidate**, then add this D1 documentation commit on `yzt-73-d1-deployment-v1`. Do not squash away YZT-88 guards. Do not blind-merge to `main` in D1.
+**Integrate the whole 83-commit chain as the Memory candidate**, then keep D1 documentation commits on `yzt-73-d1-deployment-v1`. Do not squash away YZT-88 guards. Do not blind-merge to `main` in D1.
 
-`58ba5d8` is the code start. Any D1 artifact commit is a **new** release candidate SHA and must not be called `58ba5d8`.
+`58ba5d8` is the code start. Historical `119812c` is CHANGES_REQUIRED. The correction-1 commit is a **new** review target and must not be called `58ba5d8` or `119812c`.
