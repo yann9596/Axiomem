@@ -1,0 +1,32 @@
+release_manifest:
+  parent: YZT-66
+  issue: YZT-73
+  attempt: YZT-73/deployment-v1
+  supported_mode: supervised_manual_start_explicit_package
+  main_before: "95c434d894c2a25d0b1f435c403d84950996cbfa"
+  candidate_start: "58ba5d8d92fa82b07330e5aacd4e8b9fe1a9bbc8"
+  candidate_worktree_kept: "D:/AI/worktrees/multica-memory-yzt-88-u12fsb"
+  isolated_branch: yzt-73-d1-deployment-v1
+  isolated_worktree: "D:/AI/worktrees/multica-memory-yzt-73-d1"
+  release_candidate: "SET_AFTER_COMMIT"
+  historical_u05_bundle: "adapters/multica/agent-instructions/ (not a live apply input)"
+  this_bundle: "adapters/multica/deployment-v1/"
+  code_diff_and_dependencies_ref: "adapters/multica/deployment-v1/commit-classification.md"
+  integration_action: "D3 only after D2 APPROVE and Human publish confirmation; Memory main Merge is not D1"
+  agent_changes_ref: "adapters/multica/deployment-v1/binding-plan.json"
+  skill_contents_and_bindings_ref: "adapters/multica/deployment-v1/binding-plan.json"
+  squad_and_role_mapping_ref: "adapters/multica/deployment-v1/live-before.json and after/squad.md"
+  source_binding_scope: "selected approved project web-imagegen; no source-data cutover; root is Lead authority not checkout root"
+  acceptance_baselines_ref: "adapters/multica/deployment-v1/qa-baselines.md"
+  validation_ref: "adapters/multica/deployment-v1/q1-q8-plan.md"
+  new_05_bootstrap_ref: "adapters/multica/deployment-v1/new-05-bootstrap.md"
+  findings_source_plan_ref: "adapters/multica/deployment-v1/findings-source-plan.md"
+  selfcheck:
+    status: READY
+    action: USE_EXISTING
+    package_id: CTX-software-engineer-3e6d465301ac7eb0
+    observer_run_id: 01a094fb-c85b-71e4-8f24-3a78117b7ca9
+    snapshot_digest: "sha256:a6737e1241ac75e409ffc4c7dd7942bbe222f566ff1e73dde2444cf0643af5fb"
+    binding_digest: "sha256:bd7adbf16cafd38b12b774b095e719dbe4c19ed2bd6ffedaa318fe623d9e788f"
+    open_finding: FIND-WIMG-HO00-000001
+    open_finding_task_associated: false

@@ -1,0 +1,80 @@
+{
+  "captured_at": "2026-09-12T09:40:00Z",
+  "mode": "read_only",
+  "shared_handoff_skill_in_catalog": false,
+  "delivery_review_skill_in_catalog": false,
+  "product_quality_gate_skill_in_catalog": false,
+  "squad": {
+    "id": "ee895c79-ca0a-498b-abe9-5af537736a30",
+    "name": "Engineering Team",
+    "leader_id": "24f04aba-7da9-4371-bf89-685d7505a411",
+    "member_count": 6,
+    "instruction_sha256": "sha256:f9f8afae1421b459c720e3d4a7faa139ba442594c86ccd870c2804b96f63d649",
+    "live_05_member_role_label": "Feature Reviewer"
+  },
+  "agents": [
+    {
+      "logical_role": "engineering-lead",
+      "agent_id": "24f04aba-7da9-4371-bf89-685d7505a411",
+      "live_name": "01 Engineering Lead",
+      "instruction_sha256": "sha256:30ac23c94dc2c875c7d39a01c92c8400c20ffee34974c7793ae2aa6c1a32d3b7",
+      "skills": [
+        {"id": "647db182-b4fd-4f78-bc45-874b9f6e358c", "name": "adaptive-task-planning"},
+        {"id": "aab482f9-b9ff-4b78-8394-1f13e2b319c0", "name": "parent-handoff-wake"}
+      ]
+    },
+    {
+      "logical_role": "context-engineer",
+      "agent_id": "8bc546ab-ffd8-4aa6-ad30-58583346c065",
+      "live_name": "02 Context Engineer",
+      "instruction_sha256": "sha256:15ac35d9d56a127bd6b729ba56004ce5ce91790f8cb277d24487b69c18f0e5c6",
+      "skills": [
+        {"id": "6db4a1dc-4f6c-47be-8416-2fc8756c546a", "name": "canonical-memory-governance"},
+        {"id": "fe50d0ce-e57c-4991-bfde-bef2983aa00c", "name": "minimum-context-package"},
+        {"id": "aab482f9-b9ff-4b78-8394-1f13e2b319c0", "name": "parent-handoff-wake"}
+      ]
+    },
+    {
+      "logical_role": "solution-architect",
+      "agent_id": "1303827b-73d1-4d71-a461-00b93e4b4418",
+      "live_name": "03 Solution Architect",
+      "instruction_sha256": "sha256:8378c82b547c5be4339cafe742405f2570a909d8d94f6052fbcff5f254fe6194",
+      "skills": [
+        {"id": "368260ac-3702-468d-a21a-c90cc8a52bd1", "name": "solution-design-brief"},
+        {"id": "aab482f9-b9ff-4b78-8394-1f13e2b319c0", "name": "parent-handoff-wake"}
+      ]
+    },
+    {
+      "logical_role": "software-engineer",
+      "agent_id": "fa7d16a7-2dae-4994-80b8-7435b3fcca47",
+      "live_name": "04 Software Engineer",
+      "instruction_sha256": "sha256:44b9db9b26daaeacbcb23e30c6682a0d8b7231d35f02c7f91de0f6bcce8ab873",
+      "skills": [
+        {"id": "b68797d6-9459-43fd-92ce-d45cd82f3fbe", "name": "implementation-handoff"},
+        {"id": "aab482f9-b9ff-4b78-8394-1f13e2b319c0", "name": "parent-handoff-wake"}
+      ]
+    },
+    {
+      "logical_role": "feature-reviewer-live-baseline",
+      "agent_id": "b6335f8e-8147-45f7-aac0-8079d85423b5",
+      "live_name": "05 Feature Reviewer",
+      "note": "old-role baseline. Must not be renamed into delivery-reviewer. D3 retires it from normal routing after a new 05 exists.",
+      "instruction_sha256": "sha256:51cd0ddd07b7d8443a098e6586240dd191bfe3e67768fac31c80aea4a8ba744d",
+      "skills": [
+        {"id": "db4b6822-5b69-4958-b33b-7ecb3261f151", "name": "external-signal-research"},
+        {"id": "e964f7b1-3cb4-4bc7-902b-16c57e73cefe", "name": "feature-correctness-review"},
+        {"id": "aab482f9-b9ff-4b78-8394-1f13e2b319c0", "name": "parent-handoff-wake"}
+      ]
+    },
+    {
+      "logical_role": "qa",
+      "agent_id": "30ce43d4-97a7-42a8-ab3e-78df0d894702",
+      "live_name": "06 QA",
+      "instruction_sha256": "sha256:822867b9797195e53532b61543daac9265436ae5b9963da183679187c6de0625",
+      "skills": [
+        {"id": "29f68c43-0772-47a8-a860-d946a100c789", "name": "milestone-quality-gate"},
+        {"id": "aab482f9-b9ff-4b78-8394-1f13e2b319c0", "name": "parent-handoff-wake"}
+      ]
+    }
+  ]
+}
