@@ -8,7 +8,7 @@
 | `95c434d..32d3118` (historical D1 bundle) | 84 | n/a |
 | `95c434d..119812c` (historical D1 pin HEAD) | **85** | 0 on `yzt-73-d1-deployment-v1` before correction-1 |
 | `58ba5d8..119812c` | 2 | D1 docs + pin |
-| `95c434d..<this correction HEAD>` | filled after commit | isolated branch only |
+| `95c434d..42ca7fc` (correction-1 bundle) | **86** | isolated branch only |
 
 Do not say the D1 branch is 0/83. That count belongs only to `58ba5d8`.
 

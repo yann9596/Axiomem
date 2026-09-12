@@ -15,7 +15,7 @@ Supervised manual start; explicit package; bound SELF_CHECK; explicit Findings s
 - Memory main before: `95c434d` (0)
 - Code start: `58ba5d8` (0 dirty / 83 ahead of main)
 - Historical D1 pin: `119812c` (0 dirty / 85 ahead; CHANGES_REQUIRED)
-- This correction review target: see `RELEASE_MANIFEST.yaml` after commit; **not** `58ba5d8` / `119812c`
+- This correction bundle: `42ca7fc` (86 ahead of main); **not** `58ba5d8` / `119812c`
 - Skill content: shared handoff LF `sha256:a7326f93…`; delivery-review and product-quality-gate as patched in this commit
 - Six-role after-state files under `after/`
 - Live snapshot after D3 (not yet)

@@ -13,9 +13,10 @@ release_manifest:
   historical_d1_pin_head: "119812c85d47bf086c2987f6e4bafd80d47ef0a4"
   historical_d1_pin_vs_main: "0 dirty / 85 ahead (NOT 0/83)"
   historical_d1_status: CHANGES_REQUIRED
-  correction_bundle: "FILL_AFTER_COMMIT"
-  correction_pin_head: "FILL_AFTER_COMMIT"
-  review_target: "correction_pin_head if present else correction_bundle; never 58ba5d8; never 119812c"
+  correction_bundle: "42ca7fce2314bf0522ae81e46025c63d99712366"
+  correction_bundle_vs_main: "86 ahead (83 + historical D1 2 + this content commit)"
+  correction_pin_head: "this pin commit (SHA recorded in YZT-73 / YZT-66 comments after commit)"
+  review_target: "branch HEAD after this pin; content identity is correction_bundle 42ca7fce2314bf0522ae81e46025c63d99712366; never 58ba5d8; never 119812c"
   historical_u05_bundle: "adapters/multica/agent-instructions/ (not a live apply input)"
   this_bundle: "adapters/multica/deployment-v1/"
   revision_map_ref: "adapters/multica/deployment-v1/revision-map.md"
