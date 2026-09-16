@@ -109,7 +109,7 @@ command.
     publish or a context_cli self-check without binding.
 
 
-## TeachersApp1 parent-container handoff (2026-09-16 authorization)
+## Parent-container handoff within current project authorization
 
 The task identity and publication container are distinct. In Lead's current parent issue, publish the finalized child-task envelope as the ONE final non-trigger comment of that run; use the real trigger comment as --parent when available. The envelope task_ref stays the child. Only after confirmed publication does Lead perform one native assignment. No second summary/parent mention and no unverified SAFE_DISPATCH.
 
@@ -121,4 +121,3 @@ The single real authorization source can be reused only inside its declared scop
 
 For R1 non-code review, the artifact requirements document may carry explicit reviewed_artifact (artifact_type, artifact_id, exact version), also present as a required dependency. Without it, the legacy implementation requirement remains. Wrong owner, stale/superseded or unmatched subject fails. QA's full R2 baseline remains required. Keep this requirements document at finalize, publish and consumer selfcheck; omission fails closed for a non-code review.
 
-Evidence: parent-container discovery with fresh live YZT-114 task and real authority returned READY; wrong-task lookup rejected. This is transport-fixture evidence, not proof of live stage delivery. The integrated release must record a real canary separately. Historical U12 pins/reports and unused automated dispatch are not global application-development prerequisites.
