@@ -18,6 +18,11 @@ from pathlib import Path
 
 EVIDENCE_DEP = "artifact_dependency"
 EVIDENCE_SET = "artifact_dependency_set"
+EVIDENCE_SUBJECT = "artifact_review_subject"
+
+def subject_identity(value):
+    return {key: value.get(key) for key in ("artifact_type", "artifact_id", "version")} if value is not None else None
+
 PACKAGE_STALE = "package_stale"
 STORE_REQUIRED = "artifact_store_required"
 REQUIREMENTS_REQUIRED = "artifact_requirements_required"
@@ -59,6 +64,7 @@ def load_requirements_doc(path: str) -> dict:
             "requirements": raw["requirements"],
             "review_level": raw.get("review_level"),
             "target_role": raw.get("target_role"),
+            "reviewed_artifact": raw.get("reviewed_artifact"),
         }
     if raw.get("kind") == EVIDENCE_SET:
         return {"requirements": list(raw.get("dependencies") or [])}
@@ -72,7 +78,7 @@ def load_store(cartifact, path: str):
 
 
 def build_ready_request(target_role: str, requirements: list,
-                        review_level: str | None = None) -> dict:
+                        review_level: str | None = None, reviewed_artifact: dict | None = None) -> dict:
     req = {
         "schema_version": "1.0",
         "kind": "artifact_ready_check_request",
@@ -81,6 +87,8 @@ def build_ready_request(target_role: str, requirements: list,
     }
     if review_level:
         req["review_level"] = review_level
+    if reviewed_artifact is not None:
+        req["reviewed_artifact"] = reviewed_artifact
     return req
 
 
@@ -88,6 +96,7 @@ def extract_dependency_records(package: dict | None) -> dict:
     """Read previously exported T00 task_evidence rows. No new public field."""
     deps = []
     digest = None
+    reviewed_artifact = None
     for row in (package or {}).get("task_evidence") or []:
         if not isinstance(row, dict):
             continue
@@ -104,13 +113,15 @@ def extract_dependency_records(package: dict | None) -> dict:
             deps.append(rec)
         elif kind == EVIDENCE_SET:
             digest = row.get("dependency_digest") or digest
-    return {"requirements": deps, "digest": digest}
+        elif kind == EVIDENCE_SUBJECT:
+            reviewed_artifact = subject_identity(row)
+    return {"requirements": deps, "digest": digest, "reviewed_artifact": reviewed_artifact}
 
 
 def _strip_artifact_evidence(package: dict) -> None:
     package["task_evidence"] = [
         row for row in (package.get("task_evidence") or [])
-        if not (isinstance(row, dict) and row.get("kind") in {EVIDENCE_DEP, EVIDENCE_SET})
+        if not (isinstance(row, dict) and row.get("kind") in {EVIDENCE_DEP, EVIDENCE_SET, EVIDENCE_SUBJECT})
     ]
 
 
@@ -177,16 +188,19 @@ def public_ready_view(ready: dict) -> dict:
 
 
 def evaluate_ready(cartifact, store, target_role: str, requirements: list,
-                   review_level: str | None = None) -> tuple[dict, dict]:
-    request = build_ready_request(target_role, requirements, review_level)
+                   review_level: str | None = None, reviewed_artifact: dict | None = None) -> tuple[dict, dict]:
+    request = build_ready_request(target_role, requirements, review_level, reviewed_artifact)
     ready = cartifact.artifact_ready_check(store, request)
     exported = cartifact.export_t00_surfaces(store, requirements)
+    if reviewed_artifact is not None:
+        exported["task_evidence"].append(dict(subject_identity(reviewed_artifact), kind=EVIDENCE_SUBJECT))
     return ready, exported
 
 
 def evaluate_freshness(cartifact, store, *, previous_requirements: list,
                        previous_digest: str | None, current_requirements: list | None,
-                       target_role: str, review_level: str | None = None) -> dict:
+                       target_role: str, review_level: str | None = None, reviewed_artifact: dict | None = None,
+                       previous_reviewed_artifact: dict | None = None) -> dict:
     """Compare the accepted set to the current exact set. Fail closed."""
     previous = cartifact.normalize_requirements(previous_requirements or [])
     if current_requirements is not None:
@@ -195,19 +209,19 @@ def evaluate_freshness(cartifact, store, *, previous_requirements: list,
         current = resolve_current_requirements(cartifact, store, previous)
     prev_digest = previous_digest or (
         cartifact.dependency_digest(previous) if previous else None)
-    changed = False
+    changed = subject_identity(reviewed_artifact) != subject_identity(previous_reviewed_artifact)
     if prev_digest:
-        changed = cartifact.dependency_changed(prev_digest, current)
+        changed = changed or cartifact.dependency_changed(prev_digest, current)
     ready_current, exported = evaluate_ready(
-        cartifact, store, target_role, current, review_level)
+        cartifact, store, target_role, current, review_level, reviewed_artifact)
     ready_previous = ready_current
     if previous and cartifact.dependency_digest(previous) != cartifact.dependency_digest(current):
         changed = True
         ready_previous, _ignored = evaluate_ready(
-            cartifact, store, target_role, previous, review_level)
+            cartifact, store, target_role, previous, review_level, reviewed_artifact)
     elif previous:
         ready_previous, _ignored = evaluate_ready(
-            cartifact, store, target_role, previous, review_level)
+            cartifact, store, target_role, previous, review_level, reviewed_artifact)
     not_ready = (
         ready_current.get("status") != "ARTIFACT_READY"
         or ready_previous.get("status") != "ARTIFACT_READY"
@@ -228,11 +242,11 @@ def evaluate_freshness(cartifact, store, *, previous_requirements: list,
 
 
 def apply_finalize_gate(cartifact, envelope: dict, *, store, requirements: list,
-                        target_role: str, review_level: str | None = None) -> dict:
+                        target_role: str, review_level: str | None = None, reviewed_artifact: dict | None = None) -> dict:
     """Run ARTIFACT_READY_CHECK after T03. Never rewrite T03 status."""
     t03 = envelope.get("status")
     ready, exported = evaluate_ready(
-        cartifact, store, target_role, requirements, review_level)
+        cartifact, store, target_role, requirements, review_level, reviewed_artifact)
     view = public_ready_view(ready)
     view["t03_status"] = t03
     view["exported_digest"] = exported.get("dependency_digest")

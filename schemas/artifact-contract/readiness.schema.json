@@ -23,6 +23,7 @@
         "kind": { "const": "artifact_ready_check_request" },
         "target_role": { "type": "string", "pattern": "\\S" },
         "review_level": { "enum": ["R0", "R1", "R2"] },
+        "reviewed_artifact": { "$ref": "#/$defs/requirement" },
         "requirements": {
           "type": "array",
           "items": { "$ref": "#/$defs/requirement" }

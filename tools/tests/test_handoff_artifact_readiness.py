@@ -69,7 +69,7 @@ FROZEN_PATHS = (
 )
 PKG_S = "context-package.schema.json"
 RES_S = "context-handoff/prepare-handoff-result.schema.json"
-CONTRACT_REV = "sha256:9c2857ae252e1916ef79a4816dfb57c05a6f32ec1b97f31419cdfddfd9e83bfc"
+CONTRACT_REV = "sha256:8da6c9562c4802cd305f5398d66be9dea3ab3067dec1777f3e25d7c02419125e"
 
 
 def validate(schema_name: str, instance) -> list:
@@ -186,10 +186,10 @@ class PreconditionsTests(unittest.TestCase):
     def test_memory_registry_role_revisions_unchanged(self):
         self.assertEqual(
             chandoff.memory_revision(),
-            "sha256:30b51dea6d6f2a09b3ec25d283d207f8705d4198206664e33049ef6285138561")
+            "sha256:45cad0a1fb4c91f86bfb402c57e423137ba6f681bd9d6b594f3d0ba68a451693")
         self.assertEqual(
             chandoff.registry_revision(),
-            "sha256:a08e20ebea57bf830c605e8c9cc87950bc3781350d1d0c22c01e83e994684edb")
+            "sha256:ec7a825740060dbd7dc7aa857128aa2ad587a4a0c4fd4f034b1aa5d594d14401")
         self.assertEqual(
             chandoff.role_profile_revision(),
             "sha256:7b3bdf5249dba6e1aeec1f29180b89c51985b04a6ab10a9aaaf5da596361531f")

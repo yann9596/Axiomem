@@ -555,7 +555,16 @@ def _implied_requirements(request: dict, catalog: dict, routing: dict) -> list:
     have_types = {r.get("artifact_type") for r in request.get("requirements") or []}
     needed = []
     if role == "delivery-reviewer":
-        needed = list(spec["required_review_input_types"])
+        subject = request.get("reviewed_artifact")
+        if subject is not None:
+            keys = ("artifact_type", "artifact_id", "version")
+            present = any(all(r.get(k) == subject.get(k) for k in keys)
+                          and r.get("required", True)
+                          for r in request.get("requirements") or [])
+            if not present:
+                extra.append(dict(subject, _implied=True))
+        else:
+            needed = list(spec["required_review_input_types"])
     if role == "qa":
         needed = list(spec["required_qa_baseline_types"])
     for t in needed:
@@ -704,6 +713,10 @@ def _check_one_requirement(store, req, target_role, review_level, catalog,
             owner, "producer_correction",
         ))
     env_errs = validate_envelope(env, catalog, review_level)
+    for error in env_errs:
+        if error["code"] == "OWNER_ROLE_MISMATCH":
+            failures.append(_failure(req, error["code"], error["message"],
+                                     owner, "producer_correction"))
     rel_codes = {e["code"] for e in env_errs}
     if rel_codes & {
         "BASED_ON_MISSING", "REVIEWED_ARTIFACT_MISSING",

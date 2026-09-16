@@ -186,11 +186,13 @@ def _artifact_inputs(args, *, target_role: str, package: dict | None = None):
     requirements = None
     review_level = bind["review_level"]
     file_role = None
+    reviewed_artifact = extracted.get("reviewed_artifact")
     if bind["requirements_file"]:
         doc = artifact_gate.load_requirements_doc(bind["requirements_file"])
         requirements = list(doc.get("requirements") or [])
         review_level = review_level or doc.get("review_level")
         file_role = doc.get("target_role")
+        reviewed_artifact = doc.get("reviewed_artifact")
     elif extracted["requirements"]:
         requirements = list(extracted["requirements"])
     declared = bool(requirements)
@@ -207,7 +209,9 @@ def _artifact_inputs(args, *, target_role: str, package: dict | None = None):
         "requirements": requirements,
         "review_level": review_level,
         "target_role": target_role or file_role,
+        "reviewed_artifact": reviewed_artifact,
         "previous_digest": extracted.get("digest"),
+        "previous_reviewed_artifact": extracted.get("reviewed_artifact"),
         "previous_requirements": extracted.get("requirements") or [],
     }
 
@@ -511,7 +515,8 @@ def run_finalize(args, *, compose_fn: Callable | None = None,
             cartifact, result, store=store,
             requirements=inputs["requirements"],
             target_role=inputs["target_role"],
-            review_level=inputs.get("review_level"))
+            review_level=inputs.get("review_level"),
+            reviewed_artifact=inputs.get("reviewed_artifact"))
         _json_write(out / "artifact-ready-check.json", artifact_view)
 
     _json_write(out / "result.json", result)
@@ -794,7 +799,9 @@ def run_selfcheck(args, *, selfcheck_fn: Callable | None = None,
             previous_digest=previous_digest,
             current_requirements=current_reqs if supplied else None,
             target_role=role,
-            review_level=inputs.get("review_level"))
+            review_level=inputs.get("review_level"),
+            reviewed_artifact=inputs.get("reviewed_artifact"),
+            previous_reviewed_artifact=inputs.get("previous_reviewed_artifact"))
         _json_write(out / "artifact-freshness.json", {
             "dependency_changed": freshness["dependency_changed"],
             "previous_digest": freshness["previous_digest"],
@@ -865,7 +872,9 @@ def run_publish(args, *, note_cli_factory: Callable | None = None) -> tuple[dict
             previous_digest=inputs.get("previous_digest"),
             current_requirements=inputs["requirements"] if supplied else None,
             target_role=inputs["target_role"],
-            review_level=inputs.get("review_level"))
+            review_level=inputs.get("review_level"),
+            reviewed_artifact=inputs.get("reviewed_artifact"),
+            previous_reviewed_artifact=inputs.get("previous_reviewed_artifact"))
         ready = freshness["ready_current"]
         if freshness["stale"] or ready.get("status") != "ARTIFACT_READY":
             return {

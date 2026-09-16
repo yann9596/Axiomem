@@ -191,3 +191,18 @@ provenance), `BLOCKED` (reasons + provenance), or a bounded stop (adapter/
 compose errors, repair exhausted). Always include the artifacts dir so the
 caller can inspect `request.json`, `plan-envelope.json`,
 `compose-validation.json`, `result.json`.
+
+
+## TeachersApp1 parent-container handoff (2026-09-16 authorization)
+
+The task identity and publication container are distinct. In Lead's current parent issue, publish the finalized child-task envelope as the ONE final non-trigger comment of that run; use the real trigger comment as --parent when available. The envelope task_ref stays the child. Only after confirmed publication does Lead perform one native assignment. No second summary/parent mention and no unverified SAFE_DISPATCH.
+
+For worker SELF_CHECK, build a fresh request from the CHILD issue and its role, but pass the declared PARENT issue to --issue for discovery. Carry exact task binding, trusted map and prior source observation. A parent package for another task is not eligible. Do not change fingerprints to the parent identity.
+
+The producer task is done after its stated deliverable goal is actually met and its single child comment carries exact artifact and validation evidence. Independent review is a separate stage/task. Native stage completion wakes Lead; no additional normal-completion mention. A blocked task stays blocked and can mention Lead in its single child blocking comment. done does not mean merged or milestone accepted.
+
+The single real authorization source can be reused only inside its declared scope. Generate exact per-task binding/map after authenticated project/parent-chain checks; no wildcard task lists or invented authors. New package generation inside unchanged authorization is Lead's responsibility, not another Human-start gate. Keep fail-closed identity/source/freshness checks.
+
+For R1 non-code review, the artifact requirements document may carry explicit reviewed_artifact (artifact_type, artifact_id, exact version), also present as a required dependency. Without it, the legacy implementation requirement remains. Wrong owner, stale/superseded or unmatched subject fails. QA's full R2 baseline remains required. Keep this requirements document at finalize, publish and consumer selfcheck; omission fails closed for a non-code review.
+
+Evidence: parent-container discovery with fresh live YZT-114 task and real authority returned READY; wrong-task lookup rejected. This is transport-fixture evidence, not proof of live stage delivery. The integrated release must record a real canary separately. Historical U12 pins/reports and unused automated dispatch are not global application-development prerequisites.

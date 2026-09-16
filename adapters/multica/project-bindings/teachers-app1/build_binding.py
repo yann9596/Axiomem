@@ -56,9 +56,50 @@ def _fail(code: str, message: str, **details) -> "SystemExit":
     return SystemExit(2)
 
 
-def read_live_comment(executable: str, issue_id: str, comment_id: str) -> dict:
+def cli_prefix(executable, profile=None, workspace_id=None):
+    result = [executable]
+    if profile:
+        result += ["--profile", profile]
+    if workspace_id:
+        result += ["--workspace-id", workspace_id]
+    return result
+
+
+def validate_task_scope(task_refs, root_issue, project_id, read_issue):
+    """Every exact task must belong to this project and descend from the approved root."""
+    root = read_issue(root_issue)
+    if root.get("project_id") != project_id:
+        raise ValueError("authority root belongs to another project")
+    evidence = []
+    for ref in task_refs:
+        if not isinstance(ref, str) or not ref.startswith("multica://issue/"):
+            raise ValueError("exact Multica task reference required")
+        current = read_issue(ref.removeprefix("multica://issue/"))
+        seen = set()
+        chain = []
+        while True:
+            ident = current.get("id")
+            if not ident or ident in seen or len(seen) >= 64:
+                raise ValueError("invalid or cyclic parent chain")
+            if current.get("project_id") != project_id:
+                raise ValueError("task/parent belongs to another project")
+            seen.add(ident); chain.append(ident)
+            if ident == root.get("id"):
+                break
+            parent = current.get("parent_issue_id")
+            if not parent:
+                raise ValueError("task is outside the authorized root")
+            current = read_issue(parent)
+        evidence.append({"task_ref": ref, "project_id": project_id, "parent_chain": chain})
+    if not evidence:
+        raise ValueError("at least one exact task is required")
+    return evidence
+
+
+def read_live_comment(executable: str, issue_id: str, comment_id: str,
+                      profile=None, workspace_id=None) -> dict:
     """Read one comment through the authenticated CLI. Read-only, no effects."""
-    cmd = [executable, "issue", "comment", "list", issue_id,
+    cmd = cli_prefix(executable, profile, workspace_id) + ["issue", "comment", "list", issue_id,
            "--thread", comment_id, "--tail", "50", "--compact", "--output", "json"]
     proc = subprocess.run(cmd, capture_output=True, text=True, encoding="utf-8")
     if proc.returncode != 0:
@@ -136,6 +177,10 @@ def main(argv=None) -> int:
                         help="sha256 adapter/runtime pin "
                              "(default: sha256 of tools/chandoff_findings_source.py)")
     parser.add_argument("--executable", default="multica")
+    parser.add_argument("--profile")
+    parser.add_argument("--workspace-id")
+    parser.add_argument("--authority-root", help="approved task-tree root; defaults to the authority issue")
+    parser.add_argument("--multica-project-id", default="7a2195b5-6628-4b02-9fb2-bc3ce161de85")
     args = parser.parse_args(argv)
 
     repo = Path(args.repo).resolve()
@@ -175,7 +220,17 @@ def main(argv=None) -> int:
             (repo / "tools" / "chandoff_findings_source.py").read_bytes()
         ).hexdigest()
 
-    comment = read_live_comment(args.executable, args.issue, args.comment_id)
+    def read_issue(issue):
+        command = cli_prefix(args.executable, args.profile, args.workspace_id) + ["issue", "get", issue, "--output", "json"]
+        result = subprocess.run(command, check=True, capture_output=True, text=True, encoding="utf-8", timeout=45)
+        return json.loads(result.stdout)
+    try:
+        scope_evidence = validate_task_scope(task_refs, args.authority_root or args.issue,
+                                             args.multica_project_id, read_issue)
+    except (ValueError, subprocess.SubprocessError) as exc:
+        raise _fail("task_scope_unverified", str(exc))
+    comment = read_live_comment(args.executable, args.issue, args.comment_id,
+                                args.profile, args.workspace_id)
     binding = build_binding(
         comment=comment, issue_id=args.issue, comment_id=args.comment_id,
         source_id=args.source_id, project_id=args.project_id, root=root,
@@ -192,6 +247,7 @@ def main(argv=None) -> int:
     out.parent.mkdir(parents=True, exist_ok=True)
     out.write_text(json.dumps(validated, ensure_ascii=False, indent=2) + "\n",
                    encoding="utf-8")
+    out.with_suffix(".scope.json").write_text(json.dumps(scope_evidence, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
     print(json.dumps({
         "ok": True,
         "binding": str(out),
