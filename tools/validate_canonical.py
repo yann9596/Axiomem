@@ -27,6 +27,16 @@ VERIFICATIONS = {"verified", "partially_verified", "unverified", "conflicted", "
 FORBIDDEN_STATUSES = {"candidate", "stale", "archived", "waiting_human", "blocked",
                       "conflicted", "blocked_conflicted_waiting_human"}
 
+# Gate A project-drift alarm. Project ids/phases are DATA (the Registry is the
+# only phase authority, F-6); this constant only makes an unexpected project
+# appearing or disappearing a hard Gate A error instead of a silent drift.
+# `app1` is the archived (YZT-98) predecessor of `teachers-app1`: it must stay
+# registered and inspectable, never be silently dropped.
+EXPECTED_PROJECT_IDS = ["app1", "teachers-app1", "web-imagegen"]
+EXPECTED_ARCHIVED_PROJECT_IDS = ["app1"]
+# F-6 lifecycle for a project that is still a live target of work.
+LIVE_PHASES = {"incubation", "active_development"}
+
 
 def read_yaml(path: Path):
     return parse_yaml(path.read_text(encoding="utf-8"))
@@ -41,20 +51,36 @@ def main() -> int:
     errors: list[str] = []
 
     registry = read_yaml(TEAM / "registry" / "projects.yaml")
+    registered_ids: list[str] = []
     if registry.get("kind") != "project_registry":
         errors.append("registry: kind must be project_registry")
     else:
         errors += schema_check(registry, "project-registry.schema.json", "registry")
-        ids = sorted(p["id"] for p in registry["projects"])
-        if ids != ["app1", "web-imagegen"]:
-            errors.append(f"registry: unexpected project ids {ids}")
+        registered_ids = sorted(p["id"] for p in registry["projects"])
+        if registered_ids != EXPECTED_PROJECT_IDS:
+            errors.append(f"registry: unexpected project ids {registered_ids}")
+        archived_ids = sorted(p["id"] for p in registry["projects"]
+                              if p["phase"] == "archived")
+        if archived_ids != EXPECTED_ARCHIVED_PROJECT_IDS:
+            errors.append(f"registry: unexpected archived project ids {archived_ids}")
         for p in registry["projects"]:
-            if p["phase"] not in {"incubation", "active_development"}:
+            if p["phase"] == "archived":
+                continue
+            if p["phase"] not in LIVE_PHASES:
                 errors.append(f"registry/{p['id']}: phase {p['phase']} violates F-6")
 
     rules, facts, cases = [], [], []
     rules += [read_yaml(p) for p in sorted((TEAM / "rules").glob("RULE-*.yaml"))]
-    for pid in ("app1", "web-imagegen"):
+    # Anchors are derived from the filesystem and must match the Registry
+    # exactly: an anchor without a registration (or the reverse) is drift, not
+    # a new project. Archived projects keep their anchor for traceability.
+    anchor_dirs = sorted(p.name for p in PROJECTS.iterdir()
+                         if p.is_dir() and (p / "project.yaml").is_file())
+    if registered_ids and anchor_dirs != registered_ids:
+        errors.append("project-context anchors "
+                      f"{anchor_dirs} do not match registered projects "
+                      f"{registered_ids}")
+    for pid in anchor_dirs:
         a = read_yaml(PROJECTS / pid / "project.yaml")
         if a.get("kind") != "project_anchor":
             errors.append(f"anchor/{pid}: kind must be project_anchor")
@@ -85,7 +111,7 @@ def main() -> int:
         errors += schema_check(r, "rule.schema.json", f"rule:{r['id']}")
         if r["scope"]["type"] not in ("project", "team"):
             errors.append(f"rule:{r['id']}: illegal rule scope type")
-        elif r["scope"]["type"] == "project" and r["scope"].get("project_id") not in ("app1", "web-imagegen"):
+        elif r["scope"]["type"] == "project" and r["scope"].get("project_id") not in registered_ids:
             errors.append(f"rule:{r['id']}: unregistered project_id")
         if r.get("status") in FORBIDDEN_STATUSES:
             errors.append(f"rule:{r['id']}: forbidden status {r.get('status')}")
@@ -97,7 +123,7 @@ def main() -> int:
     for fdoc in facts:
         if fdoc["scope"]["type"] != "project":
             errors.append(f"fact:{fdoc['id']}: scope must be project")
-        elif fdoc["scope"].get("project_id") not in ("app1", "web-imagegen"):
+        elif fdoc["scope"].get("project_id") not in registered_ids:
             errors.append(f"fact:{fdoc['id']}: unregistered project_id")
 
     for c in cases:
@@ -127,7 +153,7 @@ def main() -> int:
         if fdoc["status"] == "processed" and not fdoc.get("disposition"):
             errors.append(f"finding:{fdoc['finding_id']}: processed without disposition")
 
-    counts = {"anchors": 2, "rules": len(rules), "facts": len(facts),
+    counts = {"anchors": len(anchor_dirs), "rules": len(rules), "facts": len(facts),
               "cases": len(cases), "checkpoints": len(checkpoints),
               "role_profiles": len(roles), "migration_findings": len(findings) + len(runtime_findings)}
     all_objects_schema_valid = not errors

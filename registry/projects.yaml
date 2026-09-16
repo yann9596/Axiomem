@@ -1,7 +1,17 @@
 # Multica 项目注册表(plan V1 §34,V1 简化版:共享单一记忆仓 D:\AI\multica-memory,用 tags 区分项目;独立 per-project context repo 为 P1 演进项)
 # Context Engineer 通过此表确认任务归属;跨项目检索默认禁止,除非链或关系显式指向。
+#
+# YZT-98（2026-09-16，Human 裁定 + 仅 YZT-98 的 Bootstrap 开工例外）：
+#   * 本文件是 **V1 legacy**，已非写入模型（见 README「Legacy V1.0」）；
+#     权威项目注册表是 team-context/registry/projects.yaml。
+#   * 下方 App1 条目属于 **已归档的旧项目**（新项目 TeachersApp1 使用新的
+#     Multica project 7a2195b5-6628-4b02-9fb2-bc3ce161de85 与新仓
+#     https://github.com/yann9596/teachers-app-one.git）。该条目保留仅供追溯，
+#     不得据以生成新项目上下文，也不要因同名把它当作 TeachersApp1。
+#   * 归档清单、验证与回滚：migration/retirement/app1-retirement-yzt98.md。
 projects:
   # App1（teachers-app1）：Multica project c671779f-059a-41b7-af11-95636de809ec；2026-09-07 由 02 Context Engineer 注册（YZT-22）。
+  # YZT-98：该身份已停用（archive）；权威表同条目 phase=archived。
   - id: c671779f-059a-41b7-af11-95636de809ec
     name: teachers-app1
     goal: 小学语文教师（Phase 1 优先班主任兼语文教师）的本地优先“学生关注记忆系统”；核心闭环 Capture→Connect→Follow→Validate→Act；无 LLM 主闭环必须成立；学生数据默认仅保存在设备本地
@@ -9,6 +19,8 @@ projects:
     memory_chain: app1-mvp
     # 2026-09-07 YZT-22 修正：get 必须用 --chain app1-mvp --tag app1（省略 --tag 时检索通道可混入其他项目单元）；
     # pending candidates 通道不做项目过滤，consumer 只接受 app1- 前缀候选（详见 app1-context-consumption-contract 单元）。
+    # YZT-98 警示：以下 --chain/--tag 只指向**已归档的旧 app1**；新项目 TeachersApp1 不得使用 app1 / app1-mvp
+    # 作为检索标签或链，也不会继承这些单元（新项目 scope 见 team-context/registry/projects.yaml#teachers-app1）。
     consumption_contract: app1-context-consumption-contract
     context_repo: D:\AI\multica-memory
     product_repos:

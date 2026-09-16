@@ -15,6 +15,7 @@ if str(TOOLS) not in sys.path:
     sys.path.insert(0, str(TOOLS))
 
 from schema_mini import Schema, load_schema_file  # noqa: E402
+import app1_registry_fixture as app1_fixture  # noqa: E402
 import chandoff  # noqa: E402
 import chandoff_compose as compose  # noqa: E402
 import chandoff_finalize as finalize  # noqa: E402
@@ -129,7 +130,8 @@ class LivePlanCache(unittest.TestCase):
         cls.conflicted = live(cls.conflict_req, docs=docs)
         cls.conflict_accepted = accept(cls.conflicted)
         cls.case_req = app1_case_request()
-        cls.case_match = live(cls.case_req)
+        cls.case_match = live(cls.case_req,
+                              registry=app1_fixture.registry_with_live_app1())
         cls.case_accepted = accept(cls.case_match)
         material = {
             "schema_version": "1.1",

@@ -1,7 +1,7 @@
 schema_version: "1.1"
 kind: project_registry
-updated_at: 2026-09-10T09:00:00Z
-authority_ref: multica://issue/YZT-66
+updated_at: 2026-09-16T04:05:00Z
+authority_ref: multica://issue/YZT-98
 notes: >
   Project Registry is the ONLY canonical source of project phase (F-6).
   Team Checkpoint phases are derived presentation only. Context repo topology:
@@ -14,11 +14,21 @@ notes: >
   level and milestone-triggered QA); ops-sre is not part of the V2.2 team
   roster. Prior V1/V1.1 role lists and their YZT-40 authority rows remain
   inspectable in git history.
+  YZT-98 (Human decision recorded on YZT-97, bootstrap exception approved
+  2026-09-16): TeachersApp1 is a NEW independent project under Multica project
+  7a2195b5-6628-4b02-9fb2-bc3ce161de85. The former `app1` entry is retained
+  for traceability but moved to phase `archived`: its Multica project UUID,
+  repository location and canonical subtree no longer identify the active
+  project, so a handoff PLAN scoped to `app1` fails closed (ScopeError
+  "archived project 'app1' excluded") and a package scoped to it fails
+  SELF_CHECK with `scope_mismatch`. No identity, frozen conclusion, VOC or
+  completion state is inherited by `teachers-app1`. Retirement record and
+  rollback: migration/retirement/app1-retirement-yzt98.md.
 
 projects:
   - id: app1
-    name: teachers-app1
-    phase: incubation
+    name: teachers-app1-legacy-archive
+    phase: archived
     multica_project_id: c671779f-059a-41b7-af11-95636de809ec
     context_repo:
       repo: multica-memory
@@ -39,8 +49,34 @@ projects:
     on_demand_roles:
       - delivery-reviewer
       - qa
-    updated_at: 2026-09-10T09:00:00Z
-    authority_ref: multica://issue/YZT-66
+    updated_at: 2026-09-16T04:05:00Z
+    authority_ref: multica://issue/YZT-98
+
+  - id: teachers-app1
+    name: TeachersApp1
+    phase: incubation
+    multica_project_id: 7a2195b5-6628-4b02-9fb2-bc3ce161de85
+    context_repo:
+      repo: multica-memory
+      local_path: D:\AI\multica-memory
+      subtree: project-context/teachers-app1
+    product_repos:
+      - id: teachers-app-one
+        url: https://github.com/yann9596/teachers-app-one.git
+        default_branch: main
+        local_path: D:\AI\projects\TeachersApp1
+        has_remote: true
+        execution_mode: worktree
+    active_roles:
+      - engineering-lead
+      - context-engineer
+      - solution-architect
+      - software-engineer
+    on_demand_roles:
+      - delivery-reviewer
+      - qa
+    updated_at: 2026-09-16T04:05:00Z
+    authority_ref: multica://issue/YZT-98
 
   - id: web-imagegen
     name: Web-ImageGen

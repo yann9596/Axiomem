@@ -11,6 +11,11 @@ scope:
 # Not a second phase authority. One-level posture only; no project internals.
 projects:
   - project_id: app1
+    phase: archived
+    phase_ref: registry
+    context_status: normal
+    checkpoint_ref: project
+  - project_id: teachers-app1
     phase: incubation
     phase_ref: registry
     context_status: normal
@@ -36,7 +41,9 @@ confirmed:
     summary: >
       人类已裁决的迁移拓扑：单 Git Repo + Team/Project 双根逻辑分区（F-2）；
       repo-local context 直接基于 main Reality 生成 V1.1 版（F-3）；项目
-      lifecycle 为 app1=incubation、web-imagegen=active_development（F-6）。
+      lifecycle 的当前权威值一律以 team-context/registry/projects.yaml 为准
+      （F-6）——本条原先写下的 app1=incubation 已被 YZT-98 取代，见
+      cp-confirmed-005。
     refs:
       - multica://issue/YZT-40
       - registry://app1
@@ -66,6 +73,26 @@ confirmed:
       - multica://issue/YZT-69
       - multica://issue/YZT-66
       - team-context/registry/projects.yaml
+  - id: cp-confirmed-005
+    summary: >
+      YZT-98（Human 于 YZT-97 决定，并批准仅 YZT-98 的人工 Bootstrap 开工例外）：
+      TeachersApp1 是新的独立项目，Multica project
+      7a2195b5-6628-4b02-9fb2-bc3ce161de85，产品仓
+      https://github.com/yann9596/teachers-app-one.git。原 `app1`
+      （c671779f-059a-41b7-af11-95636de809ec / 本地
+      D:\AI\projects\teachers-app1 / tag app1 / chain app1-mvp）转为
+      phase=archived，仅保留追溯与可恢复性：不继承身份、冻结结论、VOC 或
+      任务完成状态；同名不等于同一项目，跨项目检索默认禁止。旧身份的
+      Context 包与 Handoff 一律 fail closed（PLAN ScopeError archived
+      project；SELF_CHECK scope_mismatch）。新项目内容只依据其自身仓库的
+      有效文档索引与精确源版本。归档清单、验证与回滚见
+      migration/retirement/app1-retirement-yzt98.md。
+    refs:
+      - multica://issue/YZT-97
+      - multica://issue/YZT-98
+      - registry://app1
+      - registry://teachers-app1
+      - migration/retirement/app1-retirement-yzt98.md
 
 open:
   - id: cp-team-open-002
@@ -75,13 +102,14 @@ open:
       workspace-owner 平台 cutover 未执行——该清理债务明确归属 YZT-66
       Stage 3 (U04/U05) 与 U12 enablement，不是 U02 handoff gap；
       平台侧 staged 更新清单见 migration/contract-updates.md。
-    projects: [app1, web-imagegen]
+    projects: [app1, teachers-app1, web-imagegen]
     refs:
       - migration/contract-updates.md
 
 conflicts: []
 
 next:
+  - TeachersApp1（YZT-98 后）Bootstrap 仍停放：registry/anchor/来源边界已建立，但正式 Findings source binding 尚缺 Lead 授权 comment，PREPARE_HANDOFF/SELF_CHECK 为 NOT_RUN；恢复后由 01 继续 BOOT-02 起的编排
   - U02（YZT-69）六角色迁移已交付（in_review，等待 Lead 验收）；U03 以 U02 报告中的 registry/profile revision 为输入
   - U03 重新验证 T00–T06 并合并 handoff chain（drain FIND-WIMG-HO00-000001；含 duplicate checkpoint-entry id 修正）
   - U04/U05 重建 shared skill 与 Agent/Squad Instructions；05 agent 平台改名/Instructions cutover 归 U05/U12
@@ -91,6 +119,7 @@ refs:
   - migration/README.md
   - migration/cutover/CUTOVER_REPORT.md
   - migration/snapshot.yaml
+  - migration/retirement/app1-retirement-yzt98.md
   - team-context/registry/projects.yaml
 
-updated_at: 2026-09-10T09:00:00Z
+updated_at: 2026-09-16T04:05:00Z

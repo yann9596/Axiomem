@@ -13,6 +13,7 @@ if str(TOOLS) not in sys.path:
     sys.path.insert(0, str(TOOLS))
 
 from schema_mini import Schema, load_schema_file  # noqa: E402
+import app1_registry_fixture as app1_fixture  # noqa: E402
 import chandoff  # noqa: E402
 import chandoff_plan as plan  # noqa: E402
 from cdata import load_all_docs  # noqa: E402
@@ -174,11 +175,13 @@ class ScopeIsolationTests(unittest.TestCase):
         self.assertEqual(result["scope_pollution"], 0)
 
     def test_cross_project_requires_explicit_allow_list(self):
+        live_app1 = app1_fixture.registry_with_live_app1()
         with self.assertRaises(Exception):
             plan.resolve_handoff_scope(sample_request(
                 options={"cross_project_projects": ["web-imagegen"]}))
         scope = plan.resolve_handoff_scope(sample_request(
-            options={"cross_project_projects": ["app1", "web-imagegen"]}))
+            options={"cross_project_projects": ["app1", "web-imagegen"]}),
+            registry=live_app1)
         self.assertEqual(scope["type"], "cross_project")
         self.assertEqual(scope["projects"], ["app1", "web-imagegen"])
         self.assertIsNone(scope["task_id"])
@@ -202,7 +205,8 @@ class ScopeIsolationTests(unittest.TestCase):
             },
             options={"cross_project_projects": ["app1", "web-imagegen"], "limit": 8},
         )
-        result = plan.prepare_handoff_plan(req, findings=[])
+        result = plan.prepare_handoff_plan(
+            req, findings=[], registry=app1_fixture.registry_with_live_app1())
         self.assertEqual(result["status"], "PLAN_READY")
         self.assertEqual(result["plan"]["scope"]["type"], "cross_project")
         ids = [x["id"] for x in result["plan"]["candidates"]["facts"]]
@@ -212,6 +216,24 @@ class ScopeIsolationTests(unittest.TestCase):
         self.assertTrue(any("WIMG" in i for i in ids) or "anchor:web-imagegen" in anchor_ids)
         self.assertEqual(result["scope_pollution"], 0)
         self.assertEqual(validate_plan(result["plan"]), [])
+
+    def test_canonical_registry_archives_app1(self):
+        """YZT-98: the canonical Registry, not a fixture, keeps app1 archived."""
+        registry = plan.load_registry()
+        by_id = {p["id"]: p for p in registry["projects"]}
+        self.assertEqual(by_id["app1"]["phase"], "archived")
+        self.assertEqual(by_id["teachers-app1"]["phase"], "incubation")
+        self.assertEqual(by_id["teachers-app1"]["multica_project_id"],
+                         "7a2195b5-6628-4b02-9fb2-bc3ce161de85")
+        blocked = plan.prepare_handoff_plan(
+            sample_request(project={"project_id": "app1"}), findings=[])
+        self.assertEqual(blocked["status"], "BLOCKED")
+        self.assertIsNone(blocked["plan"])
+        self.assertIn("archived", blocked["escalation"]["reason"])
+        ready = plan.prepare_handoff_plan(
+            sample_request(project={"project_id": "teachers-app1"}), findings=[])
+        self.assertEqual(ready["status"], "PLAN_READY")
+        self.assertEqual(ready["plan"]["scope"]["project_id"], "teachers-app1")
 
     def test_archived_project_is_excluded(self):
         registry = parse_yaml((TEAM / "registry" / "projects.yaml").read_text(encoding="utf-8"))
@@ -267,15 +289,18 @@ class RoleAndAuthorityTests(unittest.TestCase):
 
 class CaseHardGateTests(unittest.TestCase):
     def test_default_case_search_off_rejects_cases(self):
-        result = plan.prepare_handoff_plan(sample_request(project={"project_id": "app1"}),
-                                           findings=[])
+        result = plan.prepare_handoff_plan(
+            sample_request(project={"project_id": "app1"}), findings=[],
+            registry=app1_fixture.registry_with_live_app1())
         self.assertFalse(result["plan"]["case_search"]["allowed"])
         self.assertEqual(result["plan"]["candidates"]["cases"], [])
         self.assertIn("case_activation_default_off",
                       result["plan"]["hard_filters_applied"])
 
     def test_case_hard_gate_admits_scenario_match(self):
-        result = plan.prepare_handoff_plan(app1_case_request(), findings=[])
+        result = plan.prepare_handoff_plan(
+            app1_case_request(), findings=[],
+            registry=app1_fixture.registry_with_live_app1())
         self.assertTrue(result["plan"]["case_search"]["allowed"])
         case_ids = [c["id"] for c in result["plan"]["candidates"]["cases"]]
         self.assertIn("CASE-APP1-000001", case_ids)
@@ -292,7 +317,8 @@ class CaseHardGateTests(unittest.TestCase):
             "acceptance_criteria": ["no push"],
             "relevant_decisions": [],
         }
-        result = plan.prepare_handoff_plan(req, findings=[])
+        result = plan.prepare_handoff_plan(
+            req, findings=[], registry=app1_fixture.registry_with_live_app1())
         self.assertTrue(result["plan"]["case_search"]["allowed"])
         self.assertEqual(result["plan"]["candidates"]["cases"], [])
 

@@ -15,6 +15,7 @@ if str(TOOLS) not in sys.path:
     sys.path.insert(0, str(TOOLS))
 
 from schema_mini import Schema, load_schema_file  # noqa: E402
+import app1_registry_fixture as app1_fixture  # noqa: E402
 import chandoff  # noqa: E402
 import chandoff_compose as compose  # noqa: E402
 import chandoff_plan as plan  # noqa: E402
@@ -125,6 +126,7 @@ class CompatibilityTests(unittest.TestCase):
 class LivePlanCache(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
+        live_app1 = app1_fixture.registry_with_live_app1()
         cls.crud = live(sample_request())
         cls.architecture = live(sample_request(purpose="architecture_design"))
         cls.cross = live(sample_request(
@@ -144,12 +146,12 @@ class LivePlanCache(unittest.TestCase):
                 "relevant_decisions": [],
             },
             options={"cross_project_projects": ["app1", "web-imagegen"], "limit": 8},
-        ))
+        ), registry=live_app1)
         docs = copy.deepcopy(load_all_docs())
         target = next(d for d in docs if d.get("id") == "RULE-WIMG-000001")
         target["status"] = "review_needed"
         cls.conflicted = live(sample_request(), docs=docs)
-        cls.case_match = live(app1_case_request())
+        cls.case_match = live(app1_case_request(), registry=live_app1)
         no_match = app1_case_request()
         no_match["task_snapshot"] = {
             "title": "Purely manual user-initiated recall with no push semantics",
@@ -158,7 +160,7 @@ class LivePlanCache(unittest.TestCase):
             "acceptance_criteria": ["no push"],
             "relevant_decisions": [],
         }
-        cls.case_nomatch = live(no_match)
+        cls.case_nomatch = live(no_match, registry=live_app1)
         material = finding(
             "FIND-WIMG-T02-000001",
             summary="architecture ownership of provider routing must become a Rule",

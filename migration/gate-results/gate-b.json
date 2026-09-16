@@ -5,12 +5,12 @@
     {
       "test": "rebuild_from_zero",
       "passed": true,
-      "detail": "22 objects rebuilt after deleting the index directory"
+      "detail": "24 objects rebuilt after deleting the index directory"
     },
     {
       "test": "derived_index_not_canonical",
       "passed": true,
-      "detail": "index dir deleted -> rebuilt 22 objects from zero; retrieval identical (True); 41 canonical files byte-identical (True)"
+      "detail": "index dir deleted -> rebuilt 24 objects from zero; retrieval identical (True); 44 canonical files byte-identical (True)"
     },
     {
       "test": "index_not_git_tracked",
@@ -40,7 +40,7 @@
     {
       "test": "role_profile_changes_context",
       "passed": true,
-      "detail": "lead_team=[('posture-app1', 'team', 'posture', 'app1: phase=incubation (derived from registry)'), ('posture-web-imagegen', 'team', 'posture', 'web-imagegen: phase=active_development (derived from registry)')] se_team=[] lead_project=[] se_project=[('cp-confirmed-001', 'web-imagegen', 'confirmed', 'main@600225a：PR#1 已合并，provider:gpt 离线发布（Phase A–G 完成：job schema v2、Provider Atte'), ('cp-confirmed-002', 'web-imagegen', 'confirmed', '活跃设计约束（ADR + README）：全局互斥 Provider 切换（adr://0002）、 Codex Chrome 唯一浏览器边界（adr://00'), ('cp-open-001', 'web-imagegen', 'open', 'repo-local context 迁移未合并：旧 V1 版 .ai/context.yaml + docs/repo-context.md 在分支 agen'), ('cp-open-002', 'web-imagegen', 'open', 'repo-map revalidation 已完成：旧 repo-map（verified@72db245）相对 main@600225a 漂移，已由 FACT'), ('cp-open-003', 'web-imagegen', 'open', 'Phase H 真实浏览器冒烟（gpt 路径）待授权：需用户先授权提交次数后才执行； 属实现 blocker（外部许可），不阻塞离线工作。\\n')]"
+      "detail": "lead_team=[('posture-app1', 'team', 'posture', 'app1: phase=archived (derived from registry)'), ('posture-teachers-app1', 'team', 'posture', 'teachers-app1: phase=incubation (derived from registry)'), ('posture-web-imagegen', 'team', 'posture', 'web-imagegen: phase=active_development (derived from registry)')] se_team=[] lead_project=[] se_project=[('cp-confirmed-001', 'web-imagegen', 'confirmed', 'main@600225a：PR#1 已合并，provider:gpt 离线发布（Phase A–G 完成：job schema v2、Provider Atte'), ('cp-confirmed-002', 'web-imagegen', 'confirmed', '活跃设计约束（ADR + README）：全局互斥 Provider 切换（adr://0002）、 Codex Chrome 唯一浏览器边界（adr://00'), ('cp-open-001', 'web-imagegen', 'open', 'repo-local context 迁移未合并：旧 V1 版 .ai/context.yaml + docs/repo-context.md 在分支 agen'), ('cp-open-002', 'web-imagegen', 'open', 'repo-map revalidation 已完成：旧 repo-map（verified@72db245）相对 main@600225a 漂移，已由 FACT'), ('cp-open-003', 'web-imagegen', 'open', 'Phase H 真实浏览器冒烟（gpt 路径）待授权：需用户先授权提交次数后才执行； 属实现 blocker（外部许可），不阻塞离线工作。\\n')]"
     },
     {
       "test": "checkpoint_slice_is_task_relevant",
@@ -53,5 +53,5 @@
       "detail": "task=b10-probe cases=0 search_performed=False"
     }
   ],
-  "generated_at": "2026-09-11T03:26:14Z"
+  "generated_at": "2026-09-16T04:09:38Z"
 }

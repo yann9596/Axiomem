@@ -46,11 +46,11 @@
             "role_profile_loaded"
           ],
           "excluded_counts": {
-            "other_project": 21,
+            "other_project": 23,
             "not_active": 0,
             "role_policy": 0
           },
-          "generated_at": "2026-09-11T03:26:14Z"
+          "generated_at": "2026-09-16T04:09:41Z"
         }
       },
       "result": {
@@ -69,7 +69,7 @@
         "false_forget_refs": [],
         "metric_status": "computed",
         "missing_evidence": [],
-        "context_density": 0.05,
+        "context_density": 0.04,
         "context_size": 1,
         "case_search_ok": true,
         "conflicts_ok": true
@@ -95,7 +95,7 @@
       },
       "actual": {
         "scope": "project",
-        "phase": "incubation",
+        "phase": "archived",
         "refs": [
           "rule:RULE-APP1-000006",
           "rule:RULE-TEAM-000001",
@@ -131,11 +131,11 @@
             "role_baseline_team_posture"
           ],
           "excluded_counts": {
-            "other_project": 7,
+            "other_project": 9,
             "not_active": 0,
             "role_policy": 0
           },
-          "generated_at": "2026-09-11T03:26:14Z"
+          "generated_at": "2026-09-16T04:09:41Z"
         }
       },
       "result": {
@@ -154,7 +154,7 @@
         "false_forget_refs": [],
         "metric_status": "computed",
         "missing_evidence": [],
-        "context_density": 0.63,
+        "context_density": 0.57,
         "context_size": 12,
         "case_search_ok": true,
         "conflicts_ok": true
@@ -178,7 +178,7 @@
       },
       "actual": {
         "scope": "project",
-        "phase": "incubation",
+        "phase": "archived",
         "refs": [
           "rule:RULE-APP1-000001",
           "rule:RULE-APP1-000002",
@@ -215,11 +215,11 @@
             "case_activation_scenario_match"
           ],
           "excluded_counts": {
-            "other_project": 7,
+            "other_project": 9,
             "not_active": 0,
             "role_policy": 0
           },
-          "generated_at": "2026-09-11T03:26:14Z"
+          "generated_at": "2026-09-16T04:09:41Z"
         }
       },
       "result": {
@@ -238,7 +238,7 @@
         "false_forget_refs": [],
         "metric_status": "computed",
         "missing_evidence": [],
-        "context_density": 0.65,
+        "context_density": 0.59,
         "context_size": 13,
         "case_search_ok": true,
         "conflicts_ok": true
@@ -265,7 +265,7 @@
       },
       "actual": {
         "scope": "project",
-        "phase": "incubation",
+        "phase": "archived",
         "refs": [
           "rule:RULE-APP1-000001",
           "rule:RULE-APP1-000002",
@@ -300,11 +300,11 @@
             "role_profile_loaded"
           ],
           "excluded_counts": {
-            "other_project": 7,
+            "other_project": 9,
             "not_active": 0,
             "role_policy": 0
           },
-          "generated_at": "2026-09-11T03:26:14Z"
+          "generated_at": "2026-09-16T04:09:41Z"
         }
       },
       "result": {
@@ -323,7 +323,7 @@
         "false_forget_refs": [],
         "metric_status": "computed",
         "missing_evidence": [],
-        "context_density": 0.63,
+        "context_density": 0.57,
         "context_size": 12,
         "case_search_ok": true,
         "conflicts_ok": true
@@ -383,11 +383,11 @@
             "role_baseline_team_posture"
           ],
           "excluded_counts": {
-            "other_project": 0,
+            "other_project": 2,
             "not_active": 0,
             "role_policy": 0
           },
-          "generated_at": "2026-09-11T03:26:14Z"
+          "generated_at": "2026-09-16T04:09:41Z"
         }
       },
       "result": {
@@ -406,7 +406,7 @@
         "false_forget_refs": [],
         "metric_status": "computed",
         "missing_evidence": [],
-        "context_density": 1.0,
+        "context_density": 0.87,
         "context_size": 13,
         "case_search_ok": true,
         "conflicts_ok": true
@@ -458,11 +458,11 @@
             "role_profile_loaded"
           ],
           "excluded_counts": {
-            "other_project": 14,
+            "other_project": 16,
             "not_active": 0,
             "role_policy": 0
           },
-          "generated_at": "2026-09-11T03:26:14Z"
+          "generated_at": "2026-09-16T04:09:41Z"
         }
       },
       "result": {
@@ -481,7 +481,7 @@
         "false_forget_refs": [],
         "metric_status": "computed",
         "missing_evidence": [],
-        "context_density": 0.3,
+        "context_density": 0.27,
         "context_size": 6,
         "case_search_ok": true,
         "conflicts_ok": true
@@ -504,8 +504,8 @@
     "false_forget": 0,
     "reinvestigation_cost": 0,
     "issue_noise": 0,
-    "context_density_avg": 0.54,
+    "context_density_avg": 0.48,
     "context_size_avg": 9.5
   },
-  "generated_at": "2026-09-11T03:26:14Z"
+  "generated_at": "2026-09-16T04:09:41Z"
 }

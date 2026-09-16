@@ -1,0 +1,23 @@
+{
+  "schema": "findings-trusted-source-map/1",
+  "project_id": "teachers-app1",
+  "sources": {
+    "teachers-app1-runtime-findings": {
+      "root": "D:\\AI\\multica-memory\\runtime\\v1.1\\projects\\teachers-app1\\findings",
+      "allowed": {
+        "task_refs": [
+          "multica://issue/YZT-97",
+          "multica://issue/YZT-98"
+        ],
+        "roles": [
+          "engineering-lead",
+          "context-engineer",
+          "solution-architect",
+          "software-engineer",
+          "delivery-reviewer",
+          "qa"
+        ]
+      }
+    }
+  }
+}

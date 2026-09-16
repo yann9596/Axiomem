@@ -1,0 +1,66 @@
+schema_version: "1.1"
+kind: project_anchor
+project_id: teachers-app1
+status: active
+
+governance:
+  mission: >
+    TeachersApp1（产品仓 teachers-app-one，HarmonyOS 原生教师 App）是教师个人的
+    Learning Context / 学情事实层。产品语义不在本锚点重定义：语义路由与验收索引
+    以产品仓 docs/product/product-expectations.md 的 PE-01…PE-07 为准，本锚点只
+    声明项目身份、来源边界与工程硬约束。
+  target_users:
+    - 小学语文教师（Phase 1 优先班主任兼语文教师；以产品仓 product-expectations 为准）
+  scope:
+    - 以产品仓 docs/README.md 声明的有效文档索引作为唯一产品/设计/执行基线入口
+    - HarmonyOS Stage Model 工程：ArkTS / ArkUI 与 ArkData（relationalStore 与 Preferences 分工）按产品仓 system-design 的工程边界推进
+    - MVP 范围由产品仓 mvp-execution-plan 的纵向切片定义；未计划实现的可选项必须显式延期，不静默删除
+    - 开发侧可选能力（HarmonyOS 知识/工程/设备包、通用方法包）按产品仓 .ai/project-capabilities.json 与 project-capability-profiles 接入，默认关闭且不进入 App 运行时
+  non_goals:
+    - 不复制 Memory Core、公共 Role Profile、全局 Skills 或第二 Orchestrator 到本仓
+    - MVP 内不新增后端或产品内 RAG；不预建空 Domain 目录或 LLM Adapter
+    - 不用源稿恢复已撤销的流程；源稿第 13–26、32 章与第 0.5 章实施现状不作为当前事实
+    - 不宣称未实测的 SDK / 设备 / CI / 能力隔离已就绪
+  hard_constraints:
+    - Product Expectation Baseline 的来源、Scope、Evidence、Authority 与 Conflict 治理归 02；产品方向决定不归 02
+    - Governance / Normative Claim 使用已批准决策与规范，Current Reality 使用当前代码、配置、测试或运行证据；冲突记 Finding / Conflict，不以“代码最新”静默改需求
+    - 产品任务使用独立 worktree；产品代码仅由 Software Engineer 写入；最终 Merge 保留给 Human
+    - 不得清理、覆盖、提交或丢弃产品仓当前未提交及未跟踪内容
+    - Canonical Memory 仅由 Context Engineer 正常写入
+    - 分支与提交按产品仓 docs/governance/version-control.md：不直接 push main、不 force-push 共享分支、不自动解决无法判断语义的冲突
+    - 不继承旧 app1（c671779f-…，D:\AI\projects\teachers-app1）的身份、冻结结论、VOC 或任务完成状态；同名不等于同一项目
+
+context:
+  repositories:
+    - repo_id: teachers-app-one
+      role: product-repo-harmonyos-app
+      local_path: D:\AI\projects\TeachersApp1
+  major_domains:
+    - learning-context
+    - product-expectations
+    - harmonyos-engineering
+    - repository-governance
+  repository_relationships:
+    - teachers-app-one (product code) ↔ multica-memory (canonical context, project-context/teachers-app1)
+  external_dependency_refs:
+    - repo://teachers-app-one@0ad4bd9/docs/README.md
+    - repo://teachers-app-one@0ad4bd9/docs/product/product-expectations.md
+
+authority_refs:
+  - multica://issue/YZT-98
+  - multica://issue/YZT-97
+  - repo://teachers-app-one@0ad4bd9/docs/README.md
+  - repo://teachers-app-one@0ad4bd9/docs/product/product-expectations.md
+
+source_refs:
+  - repo://teachers-app-one@0ad4bd9/docs/README.md
+  - repo://teachers-app-one@0ad4bd9/docs/product/product-expectations.md
+  - repo://teachers-app-one@0ad4bd9/docs/architecture/system-design.md
+  - repo://teachers-app-one@0ad4bd9/README.md
+  - repo://teachers-app-one@0ad4bd9/.ai/project-capabilities.json
+
+review:
+  reason: null
+  triggered_at: null
+
+updated_at: 2026-09-16T04:05:00Z

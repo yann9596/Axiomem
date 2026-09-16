@@ -1,0 +1,80 @@
+schema_version: "1.1"
+kind: checkpoint
+checkpoint_level: project
+scope:
+  type: project
+  project_id: teachers-app1
+  projects: []
+  task_id: null
+
+# phase = incubation (derived from the Project Registry, F-6). This checkpoint
+# starts from the YZT-98 identity decision only: no premise is inherited from
+# the archived `app1` project (its facts, VOC evidence, frozen baseline and
+# completion state stay on the old scope and are never re-scoped here).
+
+confirmed:
+  - id: cp-confirmed-001
+    summary: >
+      YZT-98（Human 于 YZT-97 决定）：TeachersApp1 是新的独立项目，Multica
+      project 7a2195b5-6628-4b02-9fb2-bc3ce161de85，产品仓
+      https://github.com/yann9596/teachers-app-one.git，本地
+      D:\AI\projects\TeachersApp1，默认分支 main，execution_mode=worktree。
+      旧 app1（c671779f-…，D:\AI\projects\teachers-app1）置 phase=archived，
+      仅保留追溯与可恢复性；不继承其身份、冻结结论、VOC 或任务完成状态。
+    refs:
+      - multica://issue/YZT-98
+      - registry://teachers-app1
+      - project.yaml
+  - id: cp-confirmed-002
+    summary: >
+      新项目的产品与工程语义只依据本仓自身的有效文档索引与精确源版本：
+      docs/README.md 为入口，product-expectations 为 PE Baseline 路由索引，
+      system-design 为工程边界，.ai/project-capabilities.json 默认全部关闭。
+      源稿第 13–26、32 章与第 0.5 章不作为当前事实。
+    refs:
+      - repo://teachers-app-one@0ad4bd9/docs/README.md
+      - repo://teachers-app-one@0ad4bd9/docs/product/product-expectations.md
+      - repo://teachers-app-one@0ad4bd9/docs/architecture/system-design.md
+      - FACT-TAPP1-000001
+
+open:
+  - id: cp-open-001
+    summary: >
+      Bootstrap 未完成：本项目的正式（production）Findings source binding 尚无
+      Lead 授权 comment 作为 authority anchor，因此 PREPARE_HANDOFF 与
+      SELF_CHECK 对本项目仍为 NOT_RUN，不能宣称 READY；BOOT-02～BOOT-05 与
+      D01 保持停放，恢复由 01 编排。trusted source map 与待激活 binding 已备好，
+      差一条 Lead comment。任务链接见 cp-confirmed-001 与归档记录（本条目刻意
+      只引用非 issue URI，避免污染 team-scope 重放的 blocked_by 指标）。
+    refs:
+      - project.yaml
+      - registry://teachers-app1
+      - migration/retirement/app1-retirement-yzt98.md
+  - id: cp-open-002
+    summary: >
+      本机产品仓 main 落后远端 2 个提交（本机 3678608d，
+      origin/main 0ad4bd9933a2c627b3f5ffdb7e476c3e1c9fd71e）。02 只读产品仓，
+      不代为 fetch/merge；该状态属 01 的仓库核验事项。
+    refs:
+      - repo://teachers-app-one@0ad4bd9/docs/governance/version-control.md
+      - project.yaml
+  - id: cp-open-003
+    summary: >
+      尚未冻结的产品语义（TopicPolicy 阈值、HistorySignal 观察充分性、名单排序
+      交互与外部 UI/UX 版本一致性）按产品仓 product-expectations 进入 D01
+      Contract Gap Register；不得用模板示例或聊天印象自行定产品算法。
+    refs:
+      - repo://teachers-app-one@0ad4bd9/docs/product/product-expectations.md
+
+conflicts: []
+
+next:
+  - 由 01 在取得正式 Findings binding 后恢复 BOOT-02 起的 Bootstrap 编排
+  - 需要 Lead 一条授权 comment 才能激活本项目 Findings source binding（见归档/来源边界记录）
+
+refs:
+  - project.yaml
+  - multica://issue/YZT-98
+  - migration/retirement/app1-retirement-yzt98.md
+
+updated_at: 2026-09-16T04:05:00Z

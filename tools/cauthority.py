@@ -24,6 +24,11 @@ REGISTRY_RE = re.compile(r"^registry://([^/]+)$")
 
 PRODUCT_REPOS = {
     "web-imagegen": Path(r"D:\AI\projects\opencode-web-imagegen"),
+    # Active App1 project (YZT-98): new independent repo, new identity.
+    "teachers-app-one": Path(r"D:\AI\projects\TeachersApp1"),
+    # Retired App1 repo/ids (phase=archived, YZT-98). Kept resolvable so the
+    # archived scope's evidence chain and history stay auditable; never a
+    # source for new canonical writes.
     "teachers-app1": Path(r"D:\AI\projects\teachers-app1"),
     "app1": Path(r"D:\AI\projects\teachers-app1"),
 }

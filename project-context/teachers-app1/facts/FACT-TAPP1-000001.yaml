@@ -1,0 +1,49 @@
+schema_version: "1.1"
+kind: current_fact
+id: FACT-TAPP1-000001
+title: TeachersApp1 产品仓与来源边界实态（YZT-98 核验）
+statement: >
+  产品仓 https://github.com/yann9596/teachers-app-one.git，默认分支 main，本机
+  路径 D:\AI\projects\TeachersApp1（execution_mode=worktree）。核验时远端
+  origin/main=0ad4bd9933a2c627b3f5ffdb7e476c3e1c9fd71e（2026-09-16 11:23 +0800，
+  "Merge pull request #2 from yann9596/develop"），该提交对象已在本机对象库中且为
+  origin/main 的祖先；本机 main 仍为 3678608d72d5a12ca193834893d2b8f824fd05e8
+  （落后 2 个提交，工作树干净）。有效文档索引入口为 docs/README.md；产品语义
+  路由为 docs/product/product-expectations.md（PE-01…PE-07）；工程边界为
+  docs/architecture/system-design.md（ArkTS/ArkUI/Stage Model，MVP 内不新增后端或
+  产品内 RAG）；.ai/project-capabilities.json 是自定义项目声明且 default_enabled=false，
+  不能作为宿主原生配置或“已安装/已生效”的证明。旧 app1 仓（D:\AI\projects\teachers-app1，
+  main@42f149a，无远端）与旧 Multica project c671779f-059a-41b7-af11-95636de809ec
+  不再代表本项目；两者本机目录仅大小写不同但为不同目录（不同 File ID），该区分
+  不可假定可移植。
+scope:
+  type: project
+  project_id: teachers-app1
+  projects: []
+  task_id: null
+domains:
+  - repository-state
+  - source-boundary
+repositories:
+  - teachers-app-one
+status: active
+verification: verified
+verified_against:
+  - source_ref: repo://teachers-app-one@0ad4bd9
+    revision: 0ad4bd9933a2c627b3f5ffdb7e476c3e1c9fd71e
+    paths:
+      - README.md
+      - docs/README.md
+      - docs/product/product-expectations.md
+      - docs/architecture/system-design.md
+      - .ai/project-capabilities.json
+source_refs:
+  - repo://teachers-app-one@0ad4bd9933a2c627b3f5ffdb7e476c3e1c9fd71e/docs/README.md
+  - repo://teachers-app-one@0ad4bd9933a2c627b3f5ffdb7e476c3e1c9fd71e/docs/product/product-expectations.md
+  - repo://teachers-app-one@0ad4bd9933a2c627b3f5ffdb7e476c3e1c9fd71e/docs/architecture/system-design.md
+  - repo://teachers-app-one@0ad4bd9933a2c627b3f5ffdb7e476c3e1c9fd71e/.ai/project-capabilities.json
+  - multica://issue/YZT-97
+  - multica://issue/YZT-98
+created_at: 2026-09-16T04:05:00Z
+verified_at: 2026-09-16T04:05:00Z
+updated_at: 2026-09-16T04:05:00Z
