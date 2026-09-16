@@ -462,7 +462,8 @@ class SelfCheckTests(ChainMixin, unittest.TestCase):
         req_file = self._request_file("self-check-request-missing.json",
                                       OTHER_TASK_REF, "qa")
         payload, code = pipeline.run_selfcheck(selfcheck_ns(
-            request_file=str(req_file)), finding_store=empty_finding_store())
+            request_file=str(req_file)), finding_store=empty_finding_store(),
+            note_cli_factory=lambda: note_cli(comments=[]))
         self.assertEqual(code, pipeline.BOUNDED_EXIT)
         self.assertEqual(payload["status"], "REFRESH_REQUIRED")
         self.assertIn("package_missing", payload["reasons"])

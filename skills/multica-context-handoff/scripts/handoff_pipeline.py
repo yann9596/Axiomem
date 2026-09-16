@@ -237,12 +237,25 @@ def _findings_binding_files(args, stage: str) -> str:
     return binding
 
 
+def _configured_cli(args, module, class_name):
+    """Keep the adapter allowlists; configure only the authenticated transport."""
+    flags = []
+    if getattr(args, "profile", None):
+        flags += ["--profile", args.profile]
+    if getattr(args, "workspace_id", None):
+        flags += ["--workspace-id", args.workspace_id]
+    def runner(argv):
+        return module._default_runner([argv[0], *flags, *argv[1:]])
+    return getattr(module, class_name)(
+        executable=getattr(args, "executable", "multica"),
+        **({"runner": runner} if flags else {}))
+
+
 def _authority_resolver(args, tools, stage: str):
     cfs = tools["findings_source"]
     cli = getattr(args, "findings_authority_cli", None)
     if cli is None:
-        cli = tools["adapter"].MulticaCli(
-            executable=getattr(args, "executable", "multica"))
+        cli = _configured_cli(args, tools["adapter"], "MulticaCli")
     return cfs.AuthenticatedCommentResolver(cli)
 
 
@@ -320,7 +333,11 @@ def run_prepare(args, *, adapter_fn: Callable | None = None,
                 "error": {"code": "options_json_invalid",
                           "message": f"--options-json is not valid JSON: {exc}"},
                 "guarantees": dict(GUARANTEES)}, BOUNDED_EXIT
-    adapter = adapter_fn or tools["adapter"].build_snapshot_request
+    adapter = adapter_fn
+    if adapter is None:
+        def adapter(**kwargs):
+            return tools["adapter"].build_snapshot_request(
+                cli=_configured_cli(args, tools["adapter"], "MulticaCli"), **kwargs)
     try:
         envelope = adapter(
             issue_id=args.issue,
@@ -676,7 +693,7 @@ def run_selfcheck(args, *, selfcheck_fn: Callable | None = None,
                           "files": list(args.envelope_file)}
         else:
             note_cli = note_cli_factory() if note_cli_factory \
-                else tools["note"].NoteCli(executable=args.executable)
+                else _configured_cli(args, tools["note"], "NoteCli")
             resolved = tools["note"].resolve_latest_handoff(
                 args.issue, task_ref=task_ref, target_role=role, cli=note_cli)
             provenance = {
@@ -908,7 +925,7 @@ def run_publish(args, *, note_cli_factory: Callable | None = None) -> tuple[dict
     findings_block = _findings_report(pre_publish["observation"])
 
     cli = note_cli_factory() if note_cli_factory \
-        else tools["note"].NoteCli(executable=args.executable)
+        else _configured_cli(args, tools["note"], "NoteCli")
     if args.dry_run:
         body, record = tools["note"].render_note_record(
             envelope, prepared_by=args.prepared_by,
@@ -981,6 +998,10 @@ def _add_artifact_args(p: argparse.ArgumentParser) -> None:
 
 
 def _add_findings_args(p: argparse.ArgumentParser) -> None:
+    p.add_argument("--profile", default=None,
+                   help="explicit Multica CLI profile for every authenticated boundary")
+    p.add_argument("--workspace-id", default=None,
+                   help="explicit Multica workspace for every authenticated boundary")
     p.add_argument("--findings-source-binding-file", default=None,
                    help="verified findings-source-binding/1 JSON "
                         "(required on every production stage)")
@@ -1034,6 +1055,7 @@ def build_parser() -> argparse.ArgumentParser:
     _add_findings_args(prep)
 
     fin = sub.add_parser("finalize", help="T02 compose validation + T03 FINALIZE")
+    fin.add_argument("--executable", default="multica")
     fin.add_argument("--plan-file", required=True)
     fin.add_argument("--result-file", required=True,
                      help="proposed frozen semantic_compose_result")
