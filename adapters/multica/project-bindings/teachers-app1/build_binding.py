@@ -229,10 +229,14 @@ def main(argv=None) -> int:
                                              args.multica_project_id, read_issue)
     except (ValueError, subprocess.SubprocessError) as exc:
         raise _fail("task_scope_unverified", str(exc))
-    comment = read_live_comment(args.executable, args.issue, args.comment_id,
+    # Compact comment reads may omit issue_id. Resolve the supplied human
+    # identifier through the authenticated issue read before recording the
+    # authority, so YZT-N never becomes a competing identity for its UUID.
+    authority_issue_id = read_issue(args.issue)["id"]
+    comment = read_live_comment(args.executable, authority_issue_id, args.comment_id,
                                 args.profile, args.workspace_id)
     binding = build_binding(
-        comment=comment, issue_id=args.issue, comment_id=args.comment_id,
+        comment=comment, issue_id=authority_issue_id, comment_id=args.comment_id,
         source_id=args.source_id, project_id=args.project_id, root=root,
         task_refs=task_refs, roles=roles, commit=commit,
         adapter_digest=adapter_digest)
