@@ -9,12 +9,15 @@ written and no platform call is made.
 from __future__ import annotations
 
 import contextlib
+import hashlib
 import io
 import json
+import os
 import sys
 import tempfile
 import unittest
 from pathlib import Path
+from unittest import mock
 
 TOOLS = Path(__file__).resolve().parent.parent
 ROOT = TOOLS.parent
@@ -25,8 +28,18 @@ import u12_p0r as g  # noqa: E402
 import u12_strict_receipt as gate  # noqa: E402
 
 EVIDENCE_DIR = ROOT / "adapters" / "multica" / "u12-p0r"
-LEDGER = Path(g.PRODUCTION_LEDGER_PATH)
 FIXED_TIME = "2026-09-11T00:00:00Z"
+LEDGER_INDEPENDENT_FILES = (
+    "strict-receipt-gate-evidence.json",
+    "O2_REPORT_DIGEST_ERRATA.json",
+    "proposed-r0-canary-plan.json",
+)
+FICTIONAL_MATCHING_RECORD = {
+    "kind": "yzt105_fictional_ledger_record",
+    "record_type": "fixture_ignored",
+    "op": "ledger_created",
+    "note": "matching fixture; not a production ledger",
+}
 
 
 def load(name: str) -> dict:
@@ -34,9 +47,59 @@ def load(name: str) -> dict:
         return json.load(handle)
 
 
-def generate_quiet(directory: Path, *, generated_at: str) -> None:
-    with contextlib.redirect_stdout(io.StringIO()):
-        g.generate(directory, generated_at=generated_at, root=ROOT)
+def write_fictional_ledger(path: Path, *, mode: str) -> Path:
+    """Write missing/matching/drifted JSONL. Never the live production path."""
+    path = Path(path)
+    path.parent.mkdir(parents=True, exist_ok=True)
+    if mode == "missing":
+        if path.exists():
+            path.unlink()
+        return path
+    record = dict(FICTIONAL_MATCHING_RECORD)
+    if mode == "drifted":
+        record["note"] = "drifted fixture; bytes differ from matching"
+    elif mode != "matching":
+        raise ValueError(mode)
+    path.write_text(json.dumps(record, sort_keys=True) + "\n",
+                    encoding="utf-8", newline="\n")
+    return path
+
+
+def ledger_pins(path: Path) -> tuple[str, int]:
+    data = path.read_bytes()
+    return "sha256:" + hashlib.sha256(data).hexdigest(), len(data)
+
+
+def matching_ledger_patches(path: Path):
+    digest, size = ledger_pins(path)
+    return mock.patch.multiple(
+        g, PRODUCTION_LEDGER_TIP=digest, PRODUCTION_LEDGER_BYTES=size)
+
+
+def generate_quiet(directory: Path, *, generated_at: str, ledger) -> None:
+    """Generate against an injected ledger.
+
+    F-03 changes tools/chandoff_joint.py, so the U12-P0R pin for that file
+    no longer matches. Pin updates are F-05 and out of this wave; force the
+    pin gate open so these tests isolate ledger injection only.
+    """
+    real_pins = g.pin_evidence
+
+    def pin_gate_open(*args, **kwargs):
+        result = real_pins(*args, **kwargs)
+        result = dict(result)
+        result["accepted_inputs_all_match"] = True
+        return result
+
+    with mock.patch.object(g, "pin_evidence", pin_gate_open), \
+            contextlib.redirect_stdout(io.StringIO()):
+        g.generate(directory, generated_at=generated_at, root=ROOT,
+                   ledger=ledger)
+
+
+def _not_production_path(path) -> bool:
+    return os.path.normcase(os.path.normpath(os.path.abspath(str(path)))) != \
+        os.path.normcase(os.path.normpath(os.path.abspath(g.PRODUCTION_LEDGER_PATH)))
 
 
 class InputBoundaryTests(unittest.TestCase):
@@ -85,39 +148,100 @@ class InputBoundaryTests(unittest.TestCase):
         self.assertEqual(sorted(verification["blob_digests"]),
                          sorted(g.ERRATA_COMMITS))
 
-    @unittest.skipUnless(LEDGER.exists(), "production ledger not present")
-    def test_production_ledger_read_only_integrity(self):
-        ledger = g.production_ledger_evidence()
+class FictionalLedgerIsolationTests(unittest.TestCase):
+    def setUp(self):
+        self.tmp = tempfile.TemporaryDirectory()
+        self.addCleanup(self.tmp.cleanup)
+        self.root = Path(self.tmp.name)
+
+    def test_matching_ledger_reports_tip_unchanged(self):
+        path = write_fictional_ledger(self.root / "matching.jsonl",
+                                      mode="matching")
+        with matching_ledger_patches(path):
+            ledger = g.production_ledger_evidence(path)
+        self.assertTrue(ledger["exists"])
         self.assertTrue(ledger["tip_unchanged"], ledger)
-        self.assertEqual(ledger["tip_digest"], g.PRODUCTION_LEDGER_TIP)
         self.assertEqual(ledger["partial_or_corrupt_records"], 0)
         self.assertEqual(ledger["intent_records"], 0)
         self.assertTrue(ledger["audit_ok"])
+        self.assertTrue(_not_production_path(ledger["path"]))
+
+    def test_missing_ledger_reports_not_unchanged(self):
+        path = write_fictional_ledger(self.root / "missing.jsonl",
+                                      mode="missing")
+        ledger = g.production_ledger_evidence(path)
+        self.assertFalse(ledger["exists"])
+        self.assertFalse(ledger["tip_unchanged"])
+        self.assertIsNone(ledger["tip_digest"])
+        self.assertTrue(_not_production_path(ledger["path"]))
+
+    def test_drifted_ledger_reports_not_unchanged(self):
+        matching = write_fictional_ledger(self.root / "matching.jsonl",
+                                          mode="matching")
+        drifted = write_fictional_ledger(self.root / "drifted.jsonl",
+                                         mode="drifted")
+        with matching_ledger_patches(matching):
+            ledger = g.production_ledger_evidence(drifted)
+        self.assertTrue(ledger["exists"])
+        self.assertFalse(ledger["tip_unchanged"], ledger)
+        self.assertTrue(_not_production_path(ledger["path"]))
 
 
 class GenerationTests(unittest.TestCase):
+    def setUp(self):
+        self.tmp = tempfile.TemporaryDirectory()
+        self.addCleanup(self.tmp.cleanup)
+        self.matching = write_fictional_ledger(
+            Path(self.tmp.name) / "matching.jsonl", mode="matching")
+        self.drifted = write_fictional_ledger(
+            Path(self.tmp.name) / "drifted.jsonl", mode="drifted")
+        self.missing = write_fictional_ledger(
+            Path(self.tmp.name) / "missing.jsonl", mode="missing")
+
     def test_generation_is_deterministic(self):
-        with tempfile.TemporaryDirectory() as first, \
+        with matching_ledger_patches(self.matching), \
+                tempfile.TemporaryDirectory() as first, \
                 tempfile.TemporaryDirectory() as second:
-            generate_quiet(Path(first), generated_at=FIXED_TIME)
-            generate_quiet(Path(second), generated_at=FIXED_TIME)
+            generate_quiet(Path(first), generated_at=FIXED_TIME,
+                           ledger=self.matching)
+            generate_quiet(Path(second), generated_at=FIXED_TIME,
+                           ledger=self.matching)
             for name in g.BUNDLE_FILES:
                 with self.subTest(file=name):
                     self.assertEqual((Path(first) / name).read_bytes(),
                                      (Path(second) / name).read_bytes())
 
+    def test_generation_refuses_missing_and_drifted_ledgers(self):
+        with matching_ledger_patches(self.matching), \
+                tempfile.TemporaryDirectory() as tmp:
+            with self.assertRaises(RuntimeError):
+                generate_quiet(Path(tmp), generated_at=FIXED_TIME,
+                               ledger=self.missing)
+            with self.assertRaises(RuntimeError):
+                generate_quiet(Path(tmp), generated_at=FIXED_TIME,
+                               ledger=self.drifted)
+
     @unittest.skipUnless(
-        (EVIDENCE_DIR / "readiness-manifest.json").exists()
-        and LEDGER.exists(), "committed bundle or production ledger absent")
-    def test_committed_bundle_regenerates_byte_identical(self):
+        (EVIDENCE_DIR / "readiness-manifest.json").exists(),
+        "committed bundle absent")
+    def test_committed_bundle_regenerates_ledger_independent_files(self):
         committed = load("readiness-manifest.json")
-        with tempfile.TemporaryDirectory() as tmp:
-            generate_quiet(Path(tmp),
-                           generated_at=committed["generated_at"])
-            for name in g.BUNDLE_FILES:
+        with matching_ledger_patches(self.matching), \
+                tempfile.TemporaryDirectory() as tmp:
+            generate_quiet(Path(tmp), generated_at=committed["generated_at"],
+                           ledger=self.matching)
+            generated = Path(tmp)
+            for name in LEDGER_INDEPENDENT_FILES:
                 with self.subTest(file=name):
                     self.assertEqual((EVIDENCE_DIR / name).read_bytes(),
-                                     (Path(tmp) / name).read_bytes())
+                                     (generated / name).read_bytes())
+            for name in g.BUNDLE_FILES:
+                self.assertTrue((generated / name).is_file(), name)
+            integrity = json.loads(
+                (generated / "production-ledger-readonly-integrity.json")
+                .read_text(encoding="utf-8"))
+            self.assertTrue(integrity["tip_unchanged"], integrity)
+            self.assertTrue(_not_production_path(integrity["path"]))
 
 
 @unittest.skipUnless(

@@ -10,6 +10,7 @@ from __future__ import annotations
 import copy
 import hashlib
 import json
+import os
 import subprocess
 import sys
 import tempfile
@@ -1829,61 +1830,66 @@ class FindingsSourceBindingR0Tests(unittest.TestCase):
 
 
 class ProductionLedgerNonWriteTests(unittest.TestCase):
-    PRODUCTION = Path(r"D:\AI\multica-state\web-imagegen\dispatch\ledger.jsonl")
-    LIVE_INTENT = "DI-e5e2b856f6b7cd36"
+    """Fold and inspect fictional ledgers only. Never open the live file."""
 
-    @classmethod
-    def setUpClass(cls):
-        try:
-            cls.before = cls.PRODUCTION.read_bytes()
-        except OSError:
-            cls.before = None
+    _MATCHING_RECORD = {
+        "kind": "yzt105_fictional_ledger_record",
+        "record_type": "fixture_ignored",
+        "op": "ledger_created",
+        "note": "matching fixture; not a production ledger",
+    }
 
-    @classmethod
-    def tearDownClass(cls):
-        if cls.before is None:
-            return
-        try:
-            after = cls.PRODUCTION.read_bytes()
-        except OSError:
-            raise AssertionError("production ledger became unreadable")
-        if after != cls.before:
-            raise AssertionError(
-                "production ledger changed during the isolated test run")
+    def setUp(self):
+        self.tmp = tempfile.TemporaryDirectory()
+        self.addCleanup(self.tmp.cleanup)
+        self.root = Path(self.tmp.name)
+
+    def _write(self, name: str, *, mode: str) -> Path:
+        path = self.root / name
+        if mode == "missing":
+            return path
+        record = dict(self._MATCHING_RECORD)
+        if mode == "drifted":
+            record["note"] = "drifted fixture; bytes differ from matching"
+        path.write_text(json.dumps(record, sort_keys=True) + "\n",
+                        encoding="utf-8", newline="\n")
+        return path
 
     def test_isolated_tests_do_not_touch_the_production_ledger(self):
-        """The isolated run must never write the production ledger.
+        import u12_p0r as p0r
 
-        The former whole-file digest pin was invalidated by the authorized
-        live R0 create (the ledger now carries the real DI-e5e2b856f6b7cd36
-        intent) and would be invalidated again by the Lead's later live
-        recovery, so the stable invariants are checked instead: the file is
-        intact append-only JSONL, it folds without corruption, the one live
-        intent still carries exactly one durable create attempt, and the
-        bytes are unchanged across the whole test run.
-        """
-        if self.before is None:
-            self.skipTest("production ledger not readable in this runtime")
-        import hashlib
-        self.assertRegex(
-            "sha256:" + hashlib.sha256(self.before).hexdigest(),
-            r"^sha256:[0-9a-f]{64}$")
+        matching = self._write("matching.jsonl", mode="matching")
+        missing = self._write("missing.jsonl", mode="missing")
+        drifted = self._write("drifted.jsonl", mode="drifted")
         records = []
-        for line in self.before.decode("utf-8").splitlines():
+        for line in matching.read_text(encoding="utf-8").splitlines():
             if not line.strip():
                 continue
             record = json.loads(line)
             self.assertIsInstance(record, dict)
             records.append(record)
         folded = o2.fold_records(records)
-        live = folded["intents"].get(self.LIVE_INTENT)
-        self.assertIsNotNone(
-            live, "the single live R0 intent must remain in the ledger")
-        attempts = [event for event in live["events"]
-                    if event.get("name") == u12.E_CREATE_ISSUING]
-        self.assertEqual(
-            len(attempts), 1,
-            "the live intent must keep exactly one durable create attempt")
+        self.assertEqual(folded["intents"], {})
+        self.assertEqual(folded["ignored_records"], 1)
+
+        data = matching.read_bytes()
+        digest = "sha256:" + hashlib.sha256(data).hexdigest()
+        production = os.path.normcase(os.path.normpath(os.path.abspath(
+            p0r.PRODUCTION_LEDGER_PATH)))
+        with mock.patch.multiple(p0r, PRODUCTION_LEDGER_TIP=digest,
+                                 PRODUCTION_LEDGER_BYTES=len(data)):
+            match_ev = p0r.production_ledger_evidence(matching)
+            miss_ev = p0r.production_ledger_evidence(missing)
+            drift_ev = p0r.production_ledger_evidence(drifted)
+        self.assertTrue(match_ev["tip_unchanged"], match_ev)
+        self.assertFalse(miss_ev["exists"])
+        self.assertFalse(miss_ev["tip_unchanged"])
+        self.assertTrue(drift_ev["exists"])
+        self.assertFalse(drift_ev["tip_unchanged"], drift_ev)
+        for evidence in (match_ev, miss_ev, drift_ev):
+            observed = os.path.normcase(os.path.normpath(os.path.abspath(
+                str(evidence["path"]))))
+            self.assertNotEqual(observed, production)
 
 
 if __name__ == "__main__":

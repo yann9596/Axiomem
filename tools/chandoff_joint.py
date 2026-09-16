@@ -2273,7 +2273,7 @@ def final_gate_matrix(*, capability: dict | None = None) -> dict:
         "duplicate_qa_run": ("topology-R2", digest(topology["R2"])),
         "duplicate_lead_stage_activation": ("stage-wake", stage["stage_completion_wake_idempotent"]["evidence_digest"]),
         "scope_pollution": ("topology-R0", digest(topology["R0"])),
-        "invalid_rule_authority": ("gate-a", file_digest(ROOT / "migration" / "gate-results" / "gate-a.json")),
+        "invalid_rule_authority": ("gate-a", file_digest(ROOT / "migration" / "gate-results" / "gate-a.json", normalize_lf=True)),
         "hidden_unresolved_conflict": ("finding-prepare", finding["prepare_material_finding_blocks"]["evidence_digest"]),
         "stale_or_missing_package_not_detected": ("stale-before-trigger", stale_before["evidence_digest"]),
         "stale_artifact_triggered": ("stale-before-trigger", stale_before["evidence_digest"]),

@@ -258,7 +258,8 @@ class RecoveryFixture:
         if authority is not None:
             authority = _CountingAuthority(authority, self.authority_reads)
         self.factory = u12.build_r0b_factory(
-            self.store, runner=self.cli, artifact_blob_reader=counting,
+            self.store, runner=u12.cfs.construct_simulation_entry(self.cli),
+            artifact_blob_reader=counting,
             authority_reader=authority,
             execution_blob_resolver=proposed_execution_resolver,
             require_findings_source=False)
@@ -493,7 +494,7 @@ class TransportProfileTests(unittest.TestCase):
         cli = LiveShapeCli()
         store = o2.DurableIntentStore(self.root / "prospective-ledger.jsonl")
         factory = u12.build_r0b_factory(
-            store, runner=cli,
+            store, runner=u12.cfs.construct_simulation_entry(cli),
             artifact_blob_reader=u12._git_blob_reader(u12.ROOT),
             require_findings_source=False)
         spec, intent_id = make_spec()
@@ -536,7 +537,7 @@ class TransportProfileTests(unittest.TestCase):
         cli = LiveShapeCli()
         store = o2.DurableIntentStore(self.root / "legacy-ledger.jsonl")
         factory = u12.build_r0b_factory(
-            store, runner=cli,
+            store, runner=u12.cfs.construct_simulation_entry(cli),
             artifact_blob_reader=u12._git_blob_reader(u12.ROOT),
             require_findings_source=False)
         spec, intent_id = make_spec()
@@ -558,7 +559,7 @@ class TransportProfileTests(unittest.TestCase):
         cli = LiveShapeCli()
         store = o2.DurableIntentStore(self.root / "refused-ledger.jsonl")
         factory = u12.build_r0b_factory(
-            store, runner=cli, require_findings_source=False)
+            store, runner=u12.cfs.construct_simulation_entry(cli), require_findings_source=False)
         spec, intent_id = make_spec()
         spec.pop("body")
         spec.pop("body_digest")
@@ -580,7 +581,7 @@ class TransportProfileTests(unittest.TestCase):
         cli = MangledTransportCli()
         store = o2.DurableIntentStore(self.root / "mangled-ledger.jsonl")
         factory = u12.build_r0b_factory(
-            store, runner=cli,
+            store, runner=u12.cfs.construct_simulation_entry(cli),
             artifact_blob_reader=u12._git_blob_reader(u12.ROOT),
             require_findings_source=False)
         spec, intent_id = make_spec()
@@ -1127,7 +1128,7 @@ class CrashReplayConcurrencyTests(unittest.TestCase):
             barrier.wait()
             store = o2.DurableIntentStore(path)
             factory = u12.build_r0b_factory(
-                store, runner=fx.cli,
+                store, runner=u12.cfs.construct_simulation_entry(fx.cli),
                 artifact_blob_reader=u12._git_blob_reader(u12.ROOT),
                 authority_reader=u12.ReadinessManifestAuthorityReader(),
                 execution_blob_resolver=proposed_execution_resolver,

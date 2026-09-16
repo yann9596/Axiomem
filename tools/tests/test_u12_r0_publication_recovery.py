@@ -433,7 +433,8 @@ class PublicationRecoveryFixture:
         authority = (u12.ReadinessManifestAuthorityReader()
                      if authority_reader == "default" else authority_reader)
         self.factory = u12.build_r0b_factory(
-            self.store, runner=self.cli, artifact_blob_reader=base_reader,
+            self.store, runner=u12.cfs.construct_simulation_entry(self.cli),
+            artifact_blob_reader=base_reader,
             authority_reader=authority, require_findings_source=False)
         self.finding_source: list = []
         self._prepare_source_activation()
@@ -823,7 +824,7 @@ class FutureTransportTests(unittest.TestCase):
         self.cli = FutureTransportCli()
         self.store = o2.DurableIntentStore(Path(self.tmp.name) / "ledger.jsonl")
         self.factory = u12.build_r0b_factory(
-            self.store, runner=self.cli,
+            self.store, runner=u12.cfs.construct_simulation_entry(self.cli),
             artifact_blob_reader=u12._git_blob_reader(u12.ROOT),
             authority_reader=u12.ReadinessManifestAuthorityReader(),
             require_findings_source=False)
@@ -1083,7 +1084,8 @@ class RecoveryRefusalTests(unittest.TestCase):
             self, fx, result, u12.REASON_PREFLIGHT_INPUT_MISSING)
         # a missing artifact reader is a typed material stop
         factory = u12.build_r0b_factory(
-            fx.store, runner=fx.cli, artifact_blob_reader=None,
+            fx.store, runner=u12.cfs.construct_simulation_entry(fx.cli),
+            artifact_blob_reader=None,
             authority_reader=u12.ReadinessManifestAuthorityReader(),
             require_findings_source=False)
         decision = fx.decision()
@@ -1097,7 +1099,7 @@ class RecoveryRefusalTests(unittest.TestCase):
     def test_superseded_authority_refuses(self):
         fx = self.fx
         fx.factory = u12.build_r0b_factory(
-            fx.store, runner=fx.cli,
+            fx.store, runner=u12.cfs.construct_simulation_entry(fx.cli),
             artifact_blob_reader=u12._git_blob_reader(u12.ROOT),
             authority_reader=FixedAuthorityReader(
                 real_readiness_manifest(), disposition="SUPERSEDED"),

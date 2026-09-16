@@ -684,6 +684,46 @@ class ReportTests(unittest.TestCase):
         self.assertIn(final["evidence_digest"], text)
 
 
+class GateANormalizeLfTests(unittest.TestCase):
+    """YZT-105 F-03: invalid_rule_authority hashes LF-normalized gate-a bytes."""
+
+    def test_file_digest_lf_and_crlf_are_equivalent(self):
+        payload = b'{"generated_at": "2026-09-16T04:09:00Z", "ok": true}\n'
+        with tempfile.TemporaryDirectory() as tmp:
+            lf = Path(tmp) / "lf.json"
+            crlf = Path(tmp) / "crlf.json"
+            lf.write_bytes(payload)
+            crlf.write_bytes(payload.replace(b"\n", b"\r\n"))
+            self.assertEqual(
+                u11.file_digest(lf, normalize_lf=True),
+                u11.file_digest(crlf, normalize_lf=True))
+            self.assertNotEqual(
+                u11.file_digest(lf, normalize_lf=False),
+                u11.file_digest(crlf, normalize_lf=False))
+
+    def test_file_digest_content_change_still_moves_digest(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            first = Path(tmp) / "a.json"
+            second = Path(tmp) / "b.json"
+            crlf = Path(tmp) / "b-crlf.json"
+            first.write_bytes(b'{"generated_at": "t1", "count": 1}\n')
+            second.write_bytes(b'{"generated_at": "t1", "count": 2}\n')
+            crlf.write_bytes(b'{"generated_at": "t1", "count": 2}\r\n')
+            self.assertNotEqual(
+                u11.file_digest(first, normalize_lf=True),
+                u11.file_digest(second, normalize_lf=True))
+            self.assertEqual(
+                u11.file_digest(second, normalize_lf=True),
+                u11.file_digest(crlf, normalize_lf=True))
+
+    def test_invalid_rule_authority_row_passes_normalize_lf(self):
+        text = (TOOLS / "chandoff_joint.py").read_text(encoding="utf-8")
+        needle = (
+            'file_digest(ROOT / "migration" / "gate-results" / "gate-a.json", '
+            "normalize_lf=True)")
+        self.assertIn(needle, text)
+
+
 class PredecessorGuardTests(unittest.TestCase):
     def lf_digest(self, rel: str) -> str:
         data = (ROOT / rel).read_bytes().replace(b"\r\n", b"\n")
