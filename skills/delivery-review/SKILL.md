@@ -10,9 +10,9 @@ description: >-
 # Delivery Review
 
 Review one exact deliverable version for integrity, not local issue compliance
-alone. Consume the shared Context Handoff skill for SELF_CHECK /
-PREPARE_HANDOFF / CHALLENGE_CONTEXT / REPORT_FINDING. Do not duplicate those
-policies here.
+alone. Use the shared Context Handoff skill for SELF_CHECK / PREPARE_HANDOFF.
+Its shared collaboration contract governs artifact and cognition handling;
+use the verified project Finding / Challenge interface for those operations.
 
 This skill does not authorize SAFE_DISPATCH, specialist downstream dispatch,
 autonomous PREPARE_HANDOFF refresh, or TASK_FINDING_DRAIN.
@@ -25,9 +25,8 @@ autonomous PREPARE_HANDOFF refresh, or TASK_FINDING_DRAIN.
 3. Verify Design / Context dependencies through `artifact_ready_check`.
    Stale or superseded inputs are `REFRESH_REQUIRED`: **stop and return to
    Engineering Lead**. Do not autonomously PREPARE_HANDOFF and continue.
-4. Reject any package, instruction digest, binding set, role token, or UUID
-   from `feature-reviewer` (including `b6335f8e-8147-45f7-aac0-8079d85423b5`).
-   There is no alias to this role. Do not reuse that live identity.
+4. Verify that the assigned identity, current role binding and Context Package
+   agree. Resolve the role through the current registry; refuse mismatched identities.
 
 ## Review work
 
