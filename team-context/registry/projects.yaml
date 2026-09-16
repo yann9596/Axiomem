@@ -8,12 +8,9 @@ notes: >
   single Git repo with team/project dual logical roots (F-2); scope isolation
   is enforced by Canonical Scope + Policy + Retrieval Engine, not repo count.
   Project ids are stable short ids; multica_project_id keeps the Multica
-  workspace identity for traceability. Role lists follow the V2.2 Corrected
-  six-role model (U02/YZT-69): delivery-reviewer replaces retired
-  feature-reviewer; review roles stay on-demand by design (R0/R1/R2 review
-  level and milestone-triggered QA); ops-sre is not part of the V2.2 team
-  roster. Prior V1/V1.1 role lists and their YZT-40 authority rows remain
-  inspectable in git history.
+  workspace identity for traceability. Role lists use the current six-role
+  model. Review roles stay on-demand by design (R0/R1/R2 review level and
+  milestone-triggered QA). Role migration evidence remains in git history.
   YZT-98 (Human decision recorded on YZT-97, bootstrap exception approved
   2026-09-16): TeachersApp1 is a NEW independent project under Multica project
   7a2195b5-6628-4b02-9fb2-bc3ce161de85. The former `app1` entry is retained

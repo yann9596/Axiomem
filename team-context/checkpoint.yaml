@@ -64,8 +64,7 @@ confirmed:
       U02/YZT-69 已按 V2.2 Corrected + Human 补充稿（§20/§28）迁移角色身份数据：
       canonical 当前 roster 恰为六个逻辑角色（engineering-lead、
       context-engineer、solution-architect、software-engineer、
-      delivery-reviewer、qa）；feature-reviewer 退役且不保留 alias，ops-sre
-      不在 V2.2 roster；六个 Role Profile 全部 revision bump，05/06 profile
+      delivery-reviewer、qa）；六个 Role Profile 的现行职责与检索范围已对齐，05/06 profile
       内容按补充稿 §28；RULE-TEAM-000001 更新为 V2.2 owner 模型（authority
       YZT-66）；Registry role lists 同步。Multica agent UUID 映射在
       adapters/multica/role-bindings/（Memory Core / Native API 之外）。
