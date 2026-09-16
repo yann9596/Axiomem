@@ -1,0 +1,75 @@
+{
+  "accepted_inputs_all_match": true,
+  "base_commit": "6439bd429af0aa9ec4b95d838643bd8b633ed053",
+  "checks": {
+    "bundle:adapters/multica/dispatch-intent": {
+      "actual": "sha256:3c207e85f195617fe50914e3384dd309e5847d4c6e55f33a96f328bae0924d4d",
+      "expected": "sha256:3c207e85f195617fe50914e3384dd309e5847d4c6e55f33a96f328bae0924d4d",
+      "file_count": 16,
+      "match": true
+    },
+    "bundle:adapters/multica/joint-replay": {
+      "actual": "sha256:641b756fc49d1f95cf52751b939e36fbe6a40b5e1eb5c7bec5c306fb98e69798",
+      "expected": "sha256:641b756fc49d1f95cf52751b939e36fbe6a40b5e1eb5c7bec5c306fb98e69798",
+      "file_count": 18,
+      "match": true
+    },
+    "commits": {
+      "match": true,
+      "present": {
+        "6439bd4": true,
+        "964f935": true,
+        "e855fa1": true
+      }
+    },
+    "file:adapters/multica/joint-replay/final-gate-matrix.json": {
+      "actual": "sha256:d8f7c84cc364be3a415878a177881d948f312be78a391138d6cfbbd7ec98f868",
+      "expected": "sha256:d8f7c84cc364be3a415878a177881d948f312be78a391138d6cfbbd7ec98f868",
+      "match": true
+    },
+    "file:tools/chandoff_intent.py": {
+      "actual": "sha256:0544046fa2ca97c12e6c48de574074df9de5715a950ad75a783cf31853037032",
+      "executing_lf": "sha256:50093f7fe9e58c646247d9a1371e98ef432db4739efe063bb16f6014afcb43a6",
+      "execution_note": "approved YZT-84 publication-recovery exception: the accepted artifact pin is the pinned commit blob; the executing bytes are bound by the committed publication execution migration",
+      "expected": "sha256:0544046fa2ca97c12e6c48de574074df9de5715a950ad75a783cf31853037032",
+      "match": true,
+      "pinned_commit": "49c48a9c2ef4ac89dd9321a42b0132a2a78cceb9"
+    },
+    "file:tools/chandoff_joint.py": {
+      "actual": "sha256:06373790cbf82bb31d94f3860fbcec2f33a58e28962fabcf4418dbf297a8f535",
+      "expected": "sha256:06373790cbf82bb31d94f3860fbcec2f33a58e28962fabcf4418dbf297a8f535",
+      "match": true
+    },
+    "file:tools/o2_store_probe.py": {
+      "actual": "sha256:b9cf1d3ac0cb95bd15c0ac02c29a969874fad430b269fac14421719f6b726922",
+      "expected": "sha256:b9cf1d3ac0cb95bd15c0ac02c29a969874fad430b269fac14421719f6b726922",
+      "match": true
+    },
+    "o2_report_test_row": {
+      "actual_lf": "sha256:78fb99d40ad22ffcf45a087314901e26df5c1d502b038404728c4f1672283665",
+      "blocking": false,
+      "finding": "U12-P0-F1",
+      "match": false,
+      "path": "tools/tests/test_handoff_intent.py",
+      "recorded_in_o2_report": "sha256:649580b22055202280a670889e0a8d5ec5b93a51d2a90ce8dc094d268502923d"
+    }
+  },
+  "documentation_discrepancies": [
+    {
+      "blocking": false,
+      "detail": "O2 report digest row for its own new test file is not reproducible from any committed blob; the runtime pins and bundle digests all reproduce. No history rewrite proposed.",
+      "evidence": {
+        "actual_lf": "sha256:78fb99d40ad22ffcf45a087314901e26df5c1d502b038404728c4f1672283665",
+        "blocking": false,
+        "finding": "U12-P0-F1",
+        "match": false,
+        "path": "tools/tests/test_handoff_intent.py",
+        "recorded_in_o2_report": "sha256:649580b22055202280a670889e0a8d5ec5b93a51d2a90ce8dc094d268502923d"
+      },
+      "id": "U12-P0-F1",
+      "severity": "low/documentation"
+    }
+  ],
+  "kind": "u12_p0_u11_o2_pin_verification",
+  "schema_version": "U12-P0/1.0"
+}

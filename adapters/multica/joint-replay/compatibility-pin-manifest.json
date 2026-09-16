@@ -1,5 +1,5 @@
 {
-  "all_reproduce": false,
+  "all_reproduce": true,
   "artifact_contract_revision": "sha256:9c2857ae252e1916ef79a4816dfb57c05a6f32ec1b97f31419cdfddfd9e83bfc",
   "base_commit": "49c48a9c2ef4ac89dd9321a42b0132a2a78cceb9",
   "kind": "u11_compatibility_pin_manifest",
@@ -11,8 +11,8 @@
   "predecessor_pins": {
     "tools/chandoff_assignment.py": {
       "actual": "sha256:acc67d823b7ea4f646f342723e463704196ac815d820ae518ce9c8e119cbcb1c",
-      "match": false,
-      "pin": "sha256:2d701541662c1862741202a6326eff7cccf39a2b2ad662f488332406c0b43129"
+      "match": true,
+      "pin": "sha256:acc67d823b7ea4f646f342723e463704196ac815d820ae518ce9c8e119cbcb1c"
     },
     "tools/chandoff_dispatch.py": {
       "actual": "sha256:62dbd08160dea730a9c9264449dbb7d6e7dd7c40ff01ee3b16dad43fab24cfaa",
@@ -31,8 +31,8 @@
     },
     "tools/chandoff_mention.py": {
       "actual": "sha256:6b95dc8a61fc983bc0f9bd716da4bf3dd170f05ecb0639d75c64242cf90f6f19",
-      "match": false,
-      "pin": "sha256:d3bba5b442e582eba93de9bbd2aa6d04227f75b27d9ac3bb5302c56c642c96c1"
+      "match": true,
+      "pin": "sha256:6b95dc8a61fc983bc0f9bd716da4bf3dd170f05ecb0639d75c64242cf90f6f19"
     }
   },
   "schema_version": "U11/1.0",
@@ -48,5 +48,5 @@
     "file_count": 16
   },
   "u09_bundle_expected": "sha256:d598d2c5db96f3e16eed23627d1a9b8d007412fc21f29a5360f7addc81b005eb",
-  "u10_store_chain_digest": "sha256:9c754a93b11150b5a8952928493476a661123b901563c11ce82145658fcb981a"
+  "u10_store_chain_digest": "sha256:d9eb3121755d262155039972e3336f14b007d20b6aa0b8fe3d123516989d8154"
 }

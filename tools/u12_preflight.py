@@ -405,17 +405,17 @@ PIN_FILES_LF = {
     "tools/o2_store_probe.py":
         "sha256:b9cf1d3ac0cb95bd15c0ac02c29a969874fad430b269fac14421719f6b726922",
     "tools/chandoff_joint.py":
-        "sha256:2afc229364e6202bef9fae0c5bba264194210d7d1797b5c6cdc39735fc6b6208",
+        "sha256:06373790cbf82bb31d94f3860fbcec2f33a58e28962fabcf4418dbf297a8f535",
 }
 PIN_BUNDLES = {
     "adapters/multica/dispatch-intent":
         "sha256:3c207e85f195617fe50914e3384dd309e5847d4c6e55f33a96f328bae0924d4d",
     "adapters/multica/joint-replay":
-        "sha256:04e0da8412ba8b024fc18fd06608b59ebe39de76692f7ed85f9c4663d28a29b9",
+        "sha256:641b756fc49d1f95cf52751b939e36fbe6a40b5e1eb5c7bec5c306fb98e69798",
 }
 PIN_MATRIX_FILE = (
     "adapters/multica/joint-replay/final-gate-matrix.json",
-    "sha256:a9ecc24c0ee1ff8965b534ba3b317b5e1c31e541458bb9fb06d88d59eefe946d")
+    "sha256:d8f7c84cc364be3a415878a177881d948f312be78a391138d6cfbbd7ec98f868")
 PIN_FEATURE_COMMITS = ["964f935", "e855fa1", "6439bd4"]
 # Approved YZT-84 publication-recovery exception: these dependency files are
 # legally changed by the bounded O2 store/fold increment and the exact

@@ -161,7 +161,7 @@
     }
   ],
   "source": "tools/fixtures/artifact-contract/store-chain.json",
-  "source_digest": "sha256:9c754a93b11150b5a8952928493476a661123b901563c11ce82145658fcb981a",
+  "source_digest": "sha256:d9eb3121755d262155039972e3336f14b007d20b6aa0b8fe3d123516989d8154",
   "types": [
     "issue_definition",
     "context_package",

@@ -2423,8 +2423,8 @@ def compatibility_manifest() -> dict:
     pins = {
         "tools/chandoff_finding.py": "sha256:efa29010b5a0b07aa76a329c107b903a54f342e8fa88cc3e99a384a121273848",
         "tools/chandoff_dispatch.py": "sha256:62dbd08160dea730a9c9264449dbb7d6e7dd7c40ff01ee3b16dad43fab24cfaa",
-        "tools/chandoff_assignment.py": "sha256:2d701541662c1862741202a6326eff7cccf39a2b2ad662f488332406c0b43129",
-        "tools/chandoff_mention.py": "sha256:d3bba5b442e582eba93de9bbd2aa6d04227f75b27d9ac3bb5302c56c642c96c1",
+        "tools/chandoff_assignment.py": "sha256:acc67d823b7ea4f646f342723e463704196ac815d820ae518ce9c8e119cbcb1c",
+        "tools/chandoff_mention.py": "sha256:6b95dc8a61fc983bc0f9bd716da4bf3dd170f05ecb0639d75c64242cf90f6f19",
         "tools/chandoff_fallback.py": "sha256:7884cfb6844d783fd2bd0664403752b2b45abaf615b88da95562b5b14148c93b",
     }
     reproduced = {}

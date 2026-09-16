@@ -1,0 +1,6 @@
+test_real_pins_reproduce_and_discrepancy_recorded (tools.tests.test_u12_preflight.PinVerificationTests.test_real_pins_reproduce_and_discrepancy_recorded) ... ok
+
+----------------------------------------------------------------------
+Ran 1 test in 0.064s
+
+OK

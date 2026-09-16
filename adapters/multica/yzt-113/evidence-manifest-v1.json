@@ -1,0 +1,83 @@
+{
+  "based_on": "403e7758d9908410e636cc3b923c879cfd620340",
+  "based_on_parent": "a243c6ff440aa0ef8a1a01c224f5aebf79009927",
+  "based_on_tree": "899d12859f322f7e29ff358cc9713dc16306da5d",
+  "files": {
+    "adapters/multica/joint-replay/artifact-set.json": {
+      "working_lf": "sha256:6090ef9bb7b9821504b83679d53c01f1e0022ea9887fa4a624bac85b5f420377",
+      "working_raw": "sha256:6090ef9bb7b9821504b83679d53c01f1e0022ea9887fa4a624bac85b5f420377"
+    },
+    "adapters/multica/joint-replay/compatibility-pin-manifest.json": {
+      "working_lf": "sha256:b3a4b5fc4833fd0b1f77f1dbfa5ad84c5cce11e1349cf8982294311e248e5938",
+      "working_raw": "sha256:b3a4b5fc4833fd0b1f77f1dbfa5ad84c5cce11e1349cf8982294311e248e5938"
+    },
+    "adapters/multica/yzt-113/implementation-v1.md": {
+      "working_lf": "sha256:37e8326e6962457139c0b30a1afbffba254f4040224ba27df188ca7e93fbfee9",
+      "working_raw": "sha256:37e8326e6962457139c0b30a1afbffba254f4040224ba27df188ca7e93fbfee9"
+    },
+    "adapters/multica/yzt-113/pin-refresh-manifest-v1.md": {
+      "working_lf": "sha256:4a9d776e6b53d8f7cac75cca3b48fb60ba4ec9595f130bb717e8b5949fb6c729",
+      "working_raw": "sha256:4a9d776e6b53d8f7cac75cca3b48fb60ba4ec9595f130bb717e8b5949fb6c729"
+    },
+    "tools/chandoff_joint.py": {
+      "post_d_lf": "sha256:06373790cbf82bb31d94f3860fbcec2f33a58e28962fabcf4418dbf297a8f535",
+      "pre_d_lf": "sha256:6e28025cae9cc6e33fff24bc93bfe5d591d7e283771389c267a110da8aee8d1d"
+    },
+    "tools/u12_preflight.py": {
+      "note": "three pin rows only; see pin-refresh-manifest-v1.md"
+    }
+  },
+  "inputs": {
+    "yzt109_bundle_attachment": "01a0a94d-2fdc-7b68-be90-0f18828a12cd",
+    "yzt109_bundle_sha256": "sha256:d70c688d2ed4058dfa56cb12ce5c9194c99463f2106537b443d9e749f235025b",
+    "yzt111_bundle_attachment": "01a0a96d-3c16-7de4-97de-db2b77ddbf60",
+    "yzt111_bundle_sha256": "sha256:ea6735516c85586f0b104fd553b3d5bf2bd1e20cf6bc033db4002b9dbbd4f502",
+    "yzt111_evidence_zip_attachment": "01a0a96d-3d4b-7528-b420-57f5c17e5105",
+    "yzt111_evidence_zip_sha256": "sha256:07442e72027c133a8be7209fabba8840f400ca4132939adfd3e19299f1dc90af"
+  },
+  "kind": "yzt113_evidence_manifest",
+  "matrix": {
+    "capability_bound": "sha256:14b892c22a3aa8547f382816d27376d114ef80664361680a969db1456fa079d5",
+    "cli_unbound": "sha256:8b49bf70436aaa1d6362ec875b40af04560853d8b5d83b75136f695ed5abba88",
+    "final_gate_matrix_json": "sha256:d8f7c84cc364be3a415878a177881d948f312be78a391138d6cfbbd7ec98f868"
+  },
+  "pins": {
+    "assignment_lf": "sha256:acc67d823b7ea4f646f342723e463704196ac815d820ae518ce9c8e119cbcb1c",
+    "chandoff_joint_lf_post_d": "sha256:06373790cbf82bb31d94f3860fbcec2f33a58e28962fabcf4418dbf297a8f535",
+    "joint_replay_18": "sha256:641b756fc49d1f95cf52751b939e36fbe6a40b5e1eb5c7bec5c306fb98e69798",
+    "joint_replay_17": "sha256:8ed9608d8f8298d4508baa651aa76ce9d81921fcedc6222f8523b392c0d85187",
+    "mention_lf": "sha256:6b95dc8a61fc983bc0f9bd716da4bf3dd170f05ecb0639d75c64242cf90f6f19"
+  },
+  "revision": "v1",
+  "selfcheck": {
+    "action": "USE_EXISTING",
+    "binding_digest": "sha256:c6276fcb4233ace80a50f3c29e6e79851776329df147421d3caf5cb9897184d9",
+    "findings_snapshot": "sha256:06c3e6290af11912d634956acf59c682b29f6c084fd5a1a78c0d4bb4b918dd0a",
+    "package_id": "CTX-software-engineer-c4c38c4ea45eb8d5",
+    "provenance_comment": "01a0a97f-a23c-73aa-b218-ca61c3755e78",
+    "role": "software-engineer",
+    "status": "READY",
+    "task_fingerprint": "sha256:46a616b00b4d924ea8858bc38bf4af2ab5873c1098cf30073da8b5f3d45ccc4c",
+    "task_ref": "multica://issue/YZT-113"
+  },
+  "source_repo_untouched": true,
+  "task_ref": "multica://issue/YZT-113",
+  "tests": {
+    "after": {
+      "exit": 0,
+      "failures": 0,
+      "module": "tools.tests.test_joint_replay",
+      "ran": 78
+    },
+    "lf_vs_crlf": "17/17",
+    "pin_verification_test": {
+      "exit": 0,
+      "name": "PinVerificationTests.test_real_pins_reproduce_and_discrepancy_recorded"
+    },
+    "verify_pins_accepted_inputs_all_match": true
+  },
+  "validated_against": [
+    "01a0a97b-14fd-71d7-941d-96dd841d2270",
+    "01a0a97b-9478-7212-b63b-031d8015f551"
+  ]
+}
