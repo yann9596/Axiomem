@@ -208,7 +208,7 @@ def artifact_set_manifest() -> dict:
         })
     return {
         "source": "tools/fixtures/artifact-contract/store-chain.json",
-        "source_digest": file_digest(U10_FIXTURES / "store-chain.json"),
+        "source_digest": file_digest(U10_FIXTURES / "store-chain.json", normalize_lf=True),
         "types": list(cartifact.CORE_ARTIFACT_TYPES),
         "envelopes": rows,
         "artifact_contract_revision": cartifact.artifact_contract_revision(),
@@ -2443,7 +2443,7 @@ def compatibility_manifest() -> dict:
         "u09_bundle": u09_bundle,
         "u09_bundle_expected": "sha256:d598d2c5db96f3e16eed23627d1a9b8d007412fc21f29a5360f7addc81b005eb",
         "artifact_contract_revision": cartifact.artifact_contract_revision(),
-        "u10_store_chain_digest": file_digest(U10_FIXTURES / "store-chain.json"),
+        "u10_store_chain_digest": file_digest(U10_FIXTURES / "store-chain.json", normalize_lf=True),
         "u05_pins": {
             "instruction_bundle_revision":
                 assignment.PINNED_INSTRUCTION_BUNDLE,

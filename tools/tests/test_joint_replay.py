@@ -724,6 +724,52 @@ class GateANormalizeLfTests(unittest.TestCase):
         self.assertIn(needle, text)
 
 
+class StoreChainNormalizeLfTests(unittest.TestCase):
+    """YZT-111 F-07-NEW-001: store-chain.json hashes are LF-normalized."""
+
+    STORE = 'file_digest(U10_FIXTURES / "store-chain.json", normalize_lf=True)'
+
+    def test_both_store_chain_call_sites_pass_normalize_lf(self):
+        text = (TOOLS / "chandoff_joint.py").read_text(encoding="utf-8")
+        self.assertEqual(text.count(self.STORE), 2)
+        self.assertNotIn(
+            'file_digest(U10_FIXTURES / "store-chain.json")',
+            text.replace(self.STORE, ""))
+
+    def test_manifests_use_lf_normalized_store_chain_digest(self):
+        expected = u11.file_digest(
+            u11.U10_FIXTURES / "store-chain.json", normalize_lf=True)
+        raw = u11.file_digest(
+            u11.U10_FIXTURES / "store-chain.json", normalize_lf=False)
+        self.assertEqual(
+            u11.artifact_set_manifest()["source_digest"], expected)
+        self.assertEqual(
+            u11.compatibility_manifest()["u10_store_chain_digest"], expected)
+        data = (u11.U10_FIXTURES / "store-chain.json").read_bytes()
+        if b"\r\n" in data:
+            self.assertNotEqual(expected, raw)
+
+    def test_store_chain_lf_crlf_same_content_same_digest(self):
+        original = (u11.U10_FIXTURES / "store-chain.json").read_bytes()
+        lf = original.replace(b"\r\n", b"\n")
+        crlf = lf.replace(b"\n", b"\r\n")
+        changed = lf.replace(b'"ART-WIMG-031"', b'"ART-WIMG-XXX"', 1)
+        with tempfile.TemporaryDirectory() as tmp:
+            base = Path(tmp)
+            (base / "lf.json").write_bytes(lf)
+            (base / "crlf.json").write_bytes(crlf)
+            (base / "changed.json").write_bytes(changed)
+            self.assertEqual(
+                u11.file_digest(base / "lf.json", normalize_lf=True),
+                u11.file_digest(base / "crlf.json", normalize_lf=True))
+            self.assertNotEqual(
+                u11.file_digest(base / "lf.json", normalize_lf=False),
+                u11.file_digest(base / "crlf.json", normalize_lf=False))
+            self.assertNotEqual(
+                u11.file_digest(base / "lf.json", normalize_lf=True),
+                u11.file_digest(base / "changed.json", normalize_lf=True))
+
+
 class PredecessorGuardTests(unittest.TestCase):
     def lf_digest(self, rel: str) -> str:
         data = (ROOT / rel).read_bytes().replace(b"\r\n", b"\n")

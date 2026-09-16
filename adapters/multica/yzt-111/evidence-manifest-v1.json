@@ -1,0 +1,86 @@
+{
+  "based_on": "a243c6ff440aa0ef8a1a01c224f5aebf79009927",
+  "based_on_parent": "833868092d4b45b8c965f79dbdac6f8ba466c7f5",
+  "based_on_tree": "ab5a0d61f75e7291650dd24c5b4367380df72c95",
+  "files": {
+    "adapters/multica/yzt-111/f04-f05-proposal-v1.md": {
+      "working_lf": "sha256:e98e2b2c3a9cc5cc1e600ac230fb801772f7e75911f9782e7aed9bc5608e4bc0",
+      "working_raw": "sha256:e98e2b2c3a9cc5cc1e600ac230fb801772f7e75911f9782e7aed9bc5608e4bc0"
+    },
+    "adapters/multica/yzt-111/implementation-v1.md": {
+      "working_lf": "sha256:504970dc6f69bd6ec41bbe36508663450d6eebd5bd5425948da472e429126013",
+      "working_raw": "sha256:504970dc6f69bd6ec41bbe36508663450d6eebd5bd5425948da472e429126013"
+    },
+    "tools/chandoff_joint.py": {
+      "working_lf": "sha256:6e28025cae9cc6e33fff24bc93bfe5d591d7e283771389c267a110da8aee8d1d",
+      "working_raw": "sha256:a91faaf71f0697da84a6be6f67bcc92d87802f8b8fa95a31face42b4fd5aeec3"
+    },
+    "tools/tests/test_joint_replay.py": {
+      "working_lf": "sha256:41bff44ba42df6bd4ec31468f9991134676837bbebfe73fac4dd976de73f4cbb",
+      "working_raw": "sha256:0a2b6574b7ac40e5ec8bbeea680b5bb0fe0843c04d7f0a3641c0e5ad4478a6c1"
+    }
+  },
+  "inputs": {
+    "yzt109_bundle_attachment": "01a0a94d-2fdc-7b68-be90-0f18828a12cd",
+    "yzt109_bundle_sha256": "sha256:d70c688d2ed4058dfa56cb12ce5c9194c99463f2106537b443d9e749f235025b",
+    "yzt109_evidence_zip_attachment": "01a0a94d-31e8-7e54-9c73-deaffa215286",
+    "yzt109_evidence_zip_sha256": "sha256:25c684ee5d9ad25e7b3d69caae3e0eae345e77f9ff2c6e88aa567fbc57173891"
+  },
+  "kind": "yzt111_evidence_manifest",
+  "matrix": {
+    "capability_bound": "sha256:14b892c22a3aa8547f382816d27376d114ef80664361680a969db1456fa079d5",
+    "cli_unbound": "sha256:8b49bf70436aaa1d6362ec875b40af04560853d8b5d83b75136f695ed5abba88",
+    "final_gate_matrix_json": "sha256:d8f7c84cc364be3a415878a177881d948f312be78a391138d6cfbbd7ec98f868"
+  },
+  "revision": "v1",
+  "scratch_generation": {
+    "artifact_set_json_new": "sha256:6090ef9bb7b9821504b83679d53c01f1e0022ea9887fa4a624bac85b5f420377",
+    "bundle_17_committed": "sha256:50e702dac5aa3f6ed3cb0d47538488939e0eec249bf31ea22809a5b174113b5e",
+    "bundle_17_new": "sha256:c1c51f6ef07801f0dbb5010a941346adde112c54048d19ec4f04206192e07ec9",
+    "compatibility_pin_manifest_json_new": "sha256:77f92fad28f8e7a326a2798177895c7f0f210391a4402c19e78a3fb143b17224",
+    "generated_at": "2026-09-11T00:00:00Z",
+    "lf_vs_crlf": "17/17",
+    "not_written_to_committed_bundle": true
+  },
+  "selfcheck": {
+    "action": "USE_EXISTING",
+    "binding_digest": "sha256:f4b09beaa436dc081482587fccf278938ddd3406c940946973f7cac7d8deed8d",
+    "findings_snapshot": "sha256:06c3e6290af11912d634956acf59c682b29f6c084fd5a1a78c0d4bb4b918dd0a",
+    "package_id": "CTX-software-engineer-e623d20b3f9542d3",
+    "provenance_comment": "01a0a95d-937e-763f-8e3a-fda722cc2add",
+    "role": "software-engineer",
+    "status": "READY",
+    "task_fingerprint": "sha256:93d9e56083d0ed00c8abb3fb319bc2296278a1e31246150efe62e8f06e628262",
+    "task_ref": "multica://issue/YZT-111"
+  },
+  "source_repo_untouched": true,
+  "store_chain": {
+    "crlf_raw": "sha256:9c754a93b11150b5a8952928493476a661123b901563c11ce82145658fcb981a",
+    "lf_normalized": "sha256:d9eb3121755d262155039972e3336f14b007d20b6aa0b8fe3d123516989d8154"
+  },
+  "task_ref": "multica://issue/YZT-111",
+  "tests": {
+    "after": {
+      "exit": 1,
+      "failures": 3,
+      "module": "tools.tests.test_joint_replay",
+      "ran": 78
+    },
+    "after_failure_names": [
+      "BundleTests.test_committed_bundle_regenerates_byte_for_byte",
+      "FinalGateTests.test_compatibility_pins_reproduce",
+      "PredecessorGuardTests.test_predecessor_pins_reproduce"
+    ],
+    "before": {
+      "exit": 1,
+      "failures": 2,
+      "module": "tools.tests.test_joint_replay",
+      "ran": 75
+    },
+    "new_tests_pass": [
+      "StoreChainNormalizeLfTests.test_both_store_chain_call_sites_pass_normalize_lf",
+      "StoreChainNormalizeLfTests.test_manifests_use_lf_normalized_store_chain_digest",
+      "StoreChainNormalizeLfTests.test_store_chain_lf_crlf_same_content_same_digest"
+    ]
+  }
+}
