@@ -1,6 +1,12 @@
 # U11_JOINT_END_TO_END_REPLAY_REPORT
 
-- tool: `tools/chandoff_joint.py` (U11/1.0); focused tests `tools/tests/test_joint_replay.py` (72 tests)
+- report revision: **v2 (F-07 committed-bundle + needle regeneration, YZT-109)** — the sections below are the U11 delivery text; every number that depends on the regenerated bundle was re-derived at the revision baseline and is listed in `## Revision 2 — F-07 Regeneration Verification`.
+  - based_on: `833868092d4b45b8c965f79dbdac6f8ba466c7f5` (branch `yzt-105-f01-f03-isolation-lf`, direct parent `fe27c15e34c61cc27112b065eb4a181c31e4fcc8`, tree `31b8dde4fba518bcb1f77dc1b46bc74dbdd15378`)
+  - supersedes: the U11 report bytes previously committed at this same path (report v1, base `49c48a9c2ef4ac89dd9321a42b0132a2a78cceb9`; v1 matrix evidence digest `sha256:5154381f…`, v1 bundle `sha256:ee15c79e…` (17 files) / `sha256:04e0da84…` (18 files incl. capture)). Revision 1 is **not** edited away: it stays byte-intact in Git history and is replayable with `git show <v1-commit>:adapters/multica/U11_JOINT_END_TO_END_REPLAY_REPORT.md`.
+  - validated_against: `83386809` in an isolated clone; the read-only source repository `D:/AI/multica-memory` was not modified.
+  - regeneration command: `python tools/chandoff_joint.py bundle --out-dir adapters/multica/joint-replay` (exit 0, `generated_at` `2026-09-11T00:00:00Z` preserved).
+  - needle policy: only the `final-gate matrix evidence digest` `sha256:14b892c2…` is authoritative. The v1 digest `sha256:5154381f…` and the CRLF-dependent (non-LF-normalized) digest `sha256:747494e1…` are **not** used and must never be written into this report.
+- tool: `tools/chandoff_joint.py` (U11/1.0); focused tests `tools/tests/test_joint_replay.py` (72 tests at U11 delivery; 75 tests at the v2 baseline)
 - branch: `yzt-80-u11-joint-replay`; base: exact O2 report commit `49c48a9c2ef4ac89dd9321a42b0132a2a78cceb9`
 - feature commits: `964f935` (harness, fixtures, evidence bundle) and `e855fa1` (closed-source guard replay + finding-drain coverage)
 - status: **simulation_only** — no live issue/comment/assignment/rerun/mention/status/run mutation was created or mutated; no live Delivery Review/QA activation, U12 enablement, production ledger-root selection, O3, platform change, Canonical/product write, or merge was performed
@@ -43,10 +49,10 @@ Ready for Review. The exact accepted U03–U10 + U09 + O2 lineage composes into 
 | feature commits | `964f935`, `e855fa1` |
 | `tools/chandoff_joint.py` | `sha256:2afc229364e6202bef9fae0c5bba264194210d7d1797b5c6cdc39735fc6b6208` (LF-normalized) |
 | `tools/tests/test_joint_replay.py` | `sha256:159b413dba25607159339d6a852d0481ba43f10272ef80dd71b0f2ecab4e2a94` (LF-normalized) |
-| U11 evidence bundle (17 generated files) | `sha256:ee15c79e062179d88cc6a71c25feab3560eaa2afe22895165468189bd51770ab` |
-| U11 evidence bundle incl. capture (18 files) | `sha256:04e0da8412ba8b024fc18fd06608b59ebe39de76692f7ed85f9c4663d28a29b9` |
-| `final-gate-matrix.json` (file) | `sha256:a9ecc24c0ee1ff8965b534ba3b317b5e1c31e541458bb9fb06d88d59eefe946d` |
-| final-gate matrix evidence digest | `sha256:5154381fdb725cbbb13a54c15285eb7d9d092a6bc19a92b6abf86e1eb1afb695` |
+| U11 evidence bundle (17 generated files) | `sha256:50e702dac5aa3f6ed3cb0d47538488939e0eec249bf31ea22809a5b174113b5e` |
+| U11 evidence bundle incl. capture (18 files) | `sha256:2047cc98737ea5fd82e7b7b3cb0199afe2480ef41c9bf0eca54a21fa6e1228c9` |
+| `final-gate-matrix.json` (file) | `sha256:d8f7c84cc364be3a415878a177881d948f312be78a391138d6cfbbd7ec98f868` |
+| final-gate matrix evidence digest | `sha256:14b892c22a3aa8547f382816d27376d114ef80664361680a969db1456fa079d5` |
 | `closed-source-guard.json` | `sha256:2517d6b19f708d5f13780b489d77668a4adcacf7f5962acf70361a77de2db0bb` |
 | `finding-drain.json` | `sha256:dc3c26b2dd63099e9a80965cfefd46f51e049f3bc55f4e454aa45c3782d77a9b` |
 | `o2-recovery-matrix.json` | `sha256:df3e2cde7d29c485f5f8ddec78704f673e818c260c09b3c06d3cc33dbd1f2d39` |
@@ -58,6 +64,8 @@ Ready for Review. The exact accepted U03–U10 + U09 + O2 lineage composes into 
 | U09 bundle (unchanged) | `sha256:d598d2c5db96f3e16eed23627d1a9b8d007412fc21f29a5360f7addc81b005eb` |
 
 Digest method: source files raw bytes with CRLF normalized to LF; bundle method canonical JSON of sorted `file name → sha256(bytes)`.
+
+The five rows above were re-derived at `83386809` (report v2). Their v1 values, kept only as superseded history, are: bundle 17 files `sha256:ee15c79e…`, bundle 18 files `sha256:04e0da84…`, `final-gate-matrix.json` `sha256:a9ecc24c…`, matrix evidence digest `sha256:5154381f…`. The remaining rows are byte-identical to v1 — `closed-source-guard.json`, `finding-drain.json`, `o2-recovery-matrix.json`, `capability-proof.json`, `side-effect-audit.json`, `replays.json`, the capture file, and the O2/U09 bundles were all regenerated and reproduced exactly.
 
 ## Joint Topology
 
@@ -107,7 +115,7 @@ Digest method: source files raw bytes with CRLF normalized to LF; bundle method 
 
 ## Parent Final Gate Matrix
 
-Machine-readable: `adapters/multica/joint-replay/final-gate-matrix.json` (evidence digest `sha256:5154381f…`). All 20 parent counters are **0**:
+Machine-readable: `adapters/multica/joint-replay/final-gate-matrix.json` (evidence digest `sha256:14b892c2…`). All 20 parent counters are **0**:
 
 - `feature_reviewer_activation`, `old_role_package_accepted`, `wrong_role_routing`, `normal_path_run_before_ready_handoff`, `duplicate_intended_run`, `duplicate_review_run`, `duplicate_qa_run`, `duplicate_lead_stage_activation`, `scope_pollution`, `invalid_rule_authority`, `hidden_unresolved_conflict`, `stale_or_missing_package_not_detected`, `stale_artifact_triggered`, `stale_baseline_received_qa_pass`, `relevant_finding_hidden`, `task_closed_with_open_unaccounted_finding`, `ordinary_ready_build_calls_context_engineer`, `grok_raw_signal_used_as_project_truth`, `qa_without_required_baseline`, `delivery_review_without_exact_artifact_version`.
 
@@ -116,6 +124,8 @@ All 12 O2 safety gates are **0**: `target_mutation_before_intent`, `underspecifi
 Replay integrity: dispatch failures 0, topology failures 0, artifact failures 0, finding failures 0, stage failures 0, retired identity ok, routing negatives all refused, closed-source guard ok, finding drain unaccounted 0, capability 6/6.
 
 ## Tests
+
+Scope note for this section: the three bullets below describe the **U11 delivery run** on branch `yzt-80-u11-joint-replay` (base `49c48a9`) and are kept verbatim as revision-1 evidence. They are not a claim about the `83386809` baseline; the current targeted results are in `## Revision 2 — F-07 Regeneration Verification`.
 
 - baseline on base commit `49c48a9`: full `tools/tests` **892/892 OK**; focused predecessor suites (O2/U09/U08/U06/U07/U04/U10/U03) 501 OK; capability proof 6/6; T00 scan clean; Gates A/B/C pass; pins/bytes and O2 bundle digest reproduce.
 - final: focused `tools.tests.test_joint_replay` **72/72 OK**; full suite **964/964 OK** (892 base + 72 U11); T00/framework scan clean; U11 boundary scan clean (no live-runner/network surface in the harness); zero-secret fixture scan clean; bundle regeneration byte-for-byte deterministic and committed bundle matches regeneration.
@@ -127,7 +137,14 @@ Replay integrity: dispatch failures 0, topology failures 0, artifact failures 0,
 
 ## Compatibility
 
-`compatibility-pin-manifest.json` (digest `sha256:49622f25…`): all predecessor runtime pins reproduce byte-for-byte (`chandoff_finding.py`, `chandoff_dispatch.py`, `chandoff_assignment.py`, `chandoff_mention.py`, `chandoff_fallback.py`); the O2 evidence bundle still hashes to `sha256:3c207e85…` and U09 to `sha256:d598d2c5…`; U05 instruction/binding/artifact-contract pins and `old_05_package_accepted: false` / `feature_reviewer_resolves_to: null` reproduce; the U10 artifact-contract revision and store-chain digest are recorded. Only forward-only U11 files were added.
+`compatibility-pin-manifest.json` (digest `sha256:2db0869e…` at the v2 baseline; v1 was `sha256:49622f25…`): **3 of 5** predecessor runtime pins still reproduce byte-for-byte (`chandoff_finding.py`, `chandoff_dispatch.py`, `chandoff_fallback.py`). Two do **not**, so the regenerated manifest records `all_reproduce: false`:
+
+- `tools/chandoff_assignment.py`: actual `sha256:acc67d823b7ea4f646f342723e463704196ac815d820ae518ce9c8e119cbcb1c` vs U11-era pin `sha256:2d701541662c1862741202a6326eff7cccf39a2b2ad662f488332406c0b43129`
+- `tools/chandoff_mention.py`: actual `sha256:6b95dc8a61fc983bc0f9bd716da4bf3dd170f05ecb0639d75c64242cf90f6f19` vs U11-era pin `sha256:d3bba5b442e582eba93de9bbd2aa6d04227f75b27d9ac3bb5302c56c642c96c1`
+
+Both files are LF-normalized digests; both drifts come from the post-U11 `yzt-88` Findings-source-binding work (`261df9a`, `d2b6299`, `2efb52f`, `58ba5d8`) that changed the assignment/mention runtimes after the U11 evidence base `49c48a9`. This is a **pin-baseline** condition, not a U11 replay regression: `chandoff_joint.py` and the frozen test assertions were deliberately **not** re-pinned by this task (pin/whitelist updates are F-04/F-05 and stay with the Lead). It is reported, not repaired, and it is the reason this report no longer claims universal predecessor-pin reproduction.
+
+The O2 evidence bundle still hashes to `sha256:3c207e85…` and U09 to `sha256:d598d2c5…`; U05 instruction/binding/artifact-contract pins and `old_05_package_accepted: false` / `feature_reviewer_resolves_to: null` reproduce; the U10 artifact-contract revision and store-chain digest (`sha256:9c754a93…`) are recorded. Only forward-only U11 files were added.
 
 ## Deviations
 
@@ -167,4 +184,20 @@ Lead: accept this U11 joint replay as the pre-enablement evidence for the accept
 
 ## Ready for Review
 
-Yes. Review level R2 pre-enablement joint replay, simulation-only. Return the exact replay Artifact (`adapters/multica/joint-replay/`, matrix digest `sha256:5154381f…`) to Engineering Lead; the R1/R2 live topology and U12 enablement have not been started.
+Yes. Review level R2 pre-enablement joint replay, simulation-only. Return the exact replay Artifact (`adapters/multica/joint-replay/`, matrix digest `sha256:14b892c2…`) to Engineering Lead; the R1/R2 live topology and U12 enablement have not been started.
+
+## Revision 2 — F-07 Regeneration Verification
+
+Task `multica://issue/YZT-109` (F-07, R1). Versioned companion documents: `adapters/multica/u11-f07/lineage-report-v1.md` (narrative lineage report v1) and `adapters/multica/u11-f07/evidence-manifest-v1.json` (machine-readable file-digest manifest, `manifest_digest` `sha256:bdb3463e…`).
+
+- **Input**: `833868092d4b45b8c965f79dbdac6f8ba466c7f5` (tree `31b8dde4fba518bcb1f77dc1b46bc74dbdd15378`), reproduced in an isolated clone. The read-only source repository was not modified, and no other run's scratch directory was searched or guessed.
+- **Command**: `python tools/chandoff_joint.py bundle --out-dir adapters/multica/joint-replay` — exit **0**, `generated_at` `2026-09-11T00:00:00Z` preserved. The generator, the tests, the pins and the immutability whitelist were **not** touched.
+- **Digest confirmation**: the real generation returns `final_gate_matrix(capability=run_all()["capability"])["evidence_digest"]` = `sha256:14b892c22a3aa8547f382816d27376d114ef80664361680a969db1456fa079d5`, matching the declared value. The superseded v1 needle `sha256:5154381f…` and the CRLF-dependent (non-LF-normalised) needle `sha256:747494e1…` are rejected and appear nowhere in the artifact.
+- **Modified files**: only `adapters/multica/joint-replay/final-gate-matrix.json` (`sha256:a9ecc24c…` → `sha256:d8f7c84c…`) and `adapters/multica/joint-replay/compatibility-pin-manifest.json` (`sha256:49622f25…` → `sha256:2db0869e…`), plus this report. The other **15** regenerated files reproduced byte-for-byte; the live read-only receipt capture was not rewritten.
+- **Bundle**: 17 generated files `sha256:ee15c79e…` → `sha256:50e702da…`; 18 files incl. capture `sha256:04e0da84…` → `sha256:2047cc98…`.
+- **Determinism**: two independent regenerations are byte-identical, and regeneration matches the committed bytes 17/17. Across a CRLF and an LF checkout, 15/17 files are byte-identical and `final-gate-matrix.json` — hence the matrix evidence digest — is identical in both modes.
+- **Line-ending/time rule**: the delivered bytes are the `core.autocrlf=true` Windows checkout, matching the original U11 generation environment; bundle byte comparison is valid within one line-ending mode. `generated_at` is the fixed `2026-09-11T00:00:00Z` constant, so byte comparison is time-stable. All source digests cited in this report are LF-normalised.
+- **Targeted tests** (`python -m unittest tools.tests.test_joint_replay -v`): **before** 75 ran / 4 failures / exit 1 → **after** 75 ran / 2 failures / exit 1. Fixed: `BundleTests.test_committed_bundle_regenerates_byte_for_byte` and `ReportTests.test_final_gate_matrix_digest_recorded_in_report`. New failures: **0**.
+- **Still failing (2, pre-existing pin-baseline drift, deliberately not repaired here)**: `FinalGateTests.test_compatibility_pins_reproduce` and `PredecessorGuardTests.test_predecessor_pins_reproduce` — `tools/chandoff_assignment.py` actual `sha256:acc67d82…` vs U11-era pin `sha256:2d701541…`, `tools/chandoff_mention.py` actual `sha256:6b95dc8a…` vs U11-era pin `sha256:d3bba5b4…`. Owner: F-04/F-05 pin-baseline approval with the Lead; implementation with 04.
+- **New finding raised (not repaired, out of scope)**: `tools/chandoff_joint.py:211` and `:2446` hash `tools/fixtures/artifact-contract/store-chain.json` without LF normalisation, so `artifact-set.json` and `compatibility-pin-manifest.json` are checkout-mode dependent (`sha256:9c754a93…` on CRLF vs `sha256:d9eb3121…` on LF). It does not reach the final-gate matrix or its evidence digest. `correction_owner`: 04 Software Engineer, to be scheduled by 01 alongside F-04/F-05.
+- **NOT_RUN**: full `tools/tests` suite; pin/whitelist refresh; F-06 integration (`4854d02e` is not in this lineage); U12 work; live runtime or Review/QA activation; Canonical writes; product-repository work; push; merge.

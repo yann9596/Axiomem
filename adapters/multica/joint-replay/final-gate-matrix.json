@@ -1,7 +1,7 @@
 {
   "all_pass": true,
   "counters_zero": true,
-  "evidence_digest": "sha256:5154381fdb725cbbb13a54c15285eb7d9d092a6bc19a92b6abf86e1eb1afb695",
+  "evidence_digest": "sha256:14b892c22a3aa8547f382816d27376d114ef80664361680a969db1456fa079d5",
   "kind": "u11_final_gate_matrix",
   "o2_safety_gate": [
     {
@@ -198,7 +198,7 @@
     {
       "actual": 0,
       "detail": "",
-      "evidence_digest": "sha256:bcb848ea407b3027cf060312e8d786c6e0b1f0c8024f8fd257a07a1966eac182",
+      "evidence_digest": "sha256:40bf72276f4da5cbb9c2a6b1b49c659d4cbfab8ff196a880b53600966ca37649",
       "expected": 0,
       "fixture": "gate-a",
       "gate": "invalid_rule_authority",

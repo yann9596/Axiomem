@@ -1,0 +1,247 @@
+{
+  "based_on": {
+    "branch": "yzt-105-f01-f03-isolation-lf",
+    "commit": "833868092d4b45b8c965f79dbdac6f8ba466c7f5",
+    "historical_comparison": "251034892d3e6b62d17b64b412e0f4a76ad7a555",
+    "parent": "fe27c15e34c61cc27112b065eb4a181c31e4fcc8",
+    "tree": "31b8dde4fba518bcb1f77dc1b46bc74dbdd15378"
+  },
+  "bundle_digest": {
+    "after_17_generated_files": "sha256:50e702dac5aa3f6ed3cb0d47538488939e0eec249bf31ea22809a5b174113b5e",
+    "after_18_files_incl_capture": "sha256:2047cc98737ea5fd82e7b7b3cb0199afe2480ef41c9bf0eca54a21fa6e1228c9",
+    "before_17_generated_files": "sha256:ee15c79e062179d88cc6a71c25feab3560eaa2afe22895165468189bd51770ab",
+    "before_18_files_incl_capture": "sha256:04e0da8412ba8b024fc18fd06608b59ebe39de76692f7ed85f9c4663d28a29b9",
+    "lf_checkout_17_generated_files": "sha256:c1c51f6ef07801f0dbb5010a941346adde112c54048d19ec4f04206192e07ec9",
+    "method": "chandoff_joint.bundle_digest: canonical_json of the sorted [relative_path, sha256(bytes)] entry list"
+  },
+  "determinism": {
+    "capture_file_regenerated": false,
+    "capture_note": "capture/rerun-receipt-capture.json is a live read-only CLI capture, not a generated file; the generator does not write it and it stayed byte-identical",
+    "generated_file_count": 17,
+    "regeneration_matches_committed_bytes": true,
+    "same_clone_two_runs_byte_identical": true
+  },
+  "environment_sensitivity": {
+    "checkout_modes_compared": [
+      "core.autocrlf=true (delivery mode)",
+      "core.autocrlf=false (LF checkout)"
+    ],
+    "files_differing_between_modes": [
+      "adapters/multica/joint-replay/artifact-set.json",
+      "adapters/multica/joint-replay/compatibility-pin-manifest.json"
+    ],
+    "final_gate_matrix_json_identical_across_modes": true,
+    "matrix_evidence_digest_identical_across_modes": true,
+    "owner": "04 software-engineer",
+    "root_cause": "tools/chandoff_joint.py hashes tools/fixtures/artifact-contract/store-chain.json with file_digest(..., normalize_lf=False) in artifact_set_manifest() and compatibility_manifest(); that fixture is not pinned -text in .gitattributes, so its checkout bytes differ between CRLF and LF"
+  },
+  "files": [
+    {
+      "changed": false,
+      "path": "adapters/multica/joint-replay/artifact-bindings.json",
+      "sha256_after": "sha256:f3241601a1704f3b0d055cfa6da2b6b73b95021bdccbdbffc2c5c39166d5e092",
+      "sha256_before": "sha256:f3241601a1704f3b0d055cfa6da2b6b73b95021bdccbdbffc2c5c39166d5e092"
+    },
+    {
+      "changed": false,
+      "path": "adapters/multica/joint-replay/artifact-set.json",
+      "sha256_after": "sha256:373ffbe86a05526160c8891b56e36dbda7ac08c5282af704de1b2628264c6462",
+      "sha256_before": "sha256:373ffbe86a05526160c8891b56e36dbda7ac08c5282af704de1b2628264c6462"
+    },
+    {
+      "changed": false,
+      "path": "adapters/multica/joint-replay/capability-proof.json",
+      "sha256_after": "sha256:ca57913de6c7a58ce526dd6c7eca20745f1e48471368e4a97a2b2bf3ebaeb411",
+      "sha256_before": "sha256:ca57913de6c7a58ce526dd6c7eca20745f1e48471368e4a97a2b2bf3ebaeb411"
+    },
+    {
+      "changed": false,
+      "path": "adapters/multica/joint-replay/capture/rerun-receipt-capture.json",
+      "sha256_after": "sha256:b00f5664581592634a8b37899aec23b6d2e7ac41726919a320bef9b842cb24bd",
+      "sha256_before": "sha256:b00f5664581592634a8b37899aec23b6d2e7ac41726919a320bef9b842cb24bd"
+    },
+    {
+      "changed": false,
+      "path": "adapters/multica/joint-replay/closed-source-guard.json",
+      "sha256_after": "sha256:2517d6b19f708d5f13780b489d77668a4adcacf7f5962acf70361a77de2db0bb",
+      "sha256_before": "sha256:2517d6b19f708d5f13780b489d77668a4adcacf7f5962acf70361a77de2db0bb"
+    },
+    {
+      "changed": true,
+      "path": "adapters/multica/joint-replay/compatibility-pin-manifest.json",
+      "sha256_after": "sha256:2db0869edd13ec0902b2eb53e9ecc6e9ff62531691fb0056e13e781ff4e3bf18",
+      "sha256_before": "sha256:49622f257cdf261d5a40786161dba01ea405b3a3b11ccbcbb376f0dbb3fa1646"
+    },
+    {
+      "changed": true,
+      "path": "adapters/multica/joint-replay/final-gate-matrix.json",
+      "sha256_after": "sha256:d8f7c84cc364be3a415878a177881d948f312be78a391138d6cfbbd7ec98f868",
+      "sha256_before": "sha256:a9ecc24c0ee1ff8965b534ba3b317b5e1c31e541458bb9fb06d88d59eefe946d"
+    },
+    {
+      "changed": false,
+      "path": "adapters/multica/joint-replay/finding-challenge-matrix.json",
+      "sha256_after": "sha256:2e385b44986b8d3c3ef1a1e2cc58168c0e7a974c1c2423b7d5e50235be2ee388",
+      "sha256_before": "sha256:2e385b44986b8d3c3ef1a1e2cc58168c0e7a974c1c2423b7d5e50235be2ee388"
+    },
+    {
+      "changed": false,
+      "path": "adapters/multica/joint-replay/finding-drain.json",
+      "sha256_after": "sha256:dc3c26b2dd63099e9a80965cfefd46f51e049f3bc55f4e454aa45c3782d77a9b",
+      "sha256_before": "sha256:dc3c26b2dd63099e9a80965cfefd46f51e049f3bc55f4e454aa45c3782d77a9b"
+    },
+    {
+      "changed": false,
+      "path": "adapters/multica/joint-replay/o2-recovery-matrix.json",
+      "sha256_after": "sha256:df3e2cde7d29c485f5f8ddec78704f673e818c260c09b3c06d3cc33dbd1f2d39",
+      "sha256_before": "sha256:df3e2cde7d29c485f5f8ddec78704f673e818c260c09b3c06d3cc33dbd1f2d39"
+    },
+    {
+      "changed": false,
+      "path": "adapters/multica/joint-replay/replays.json",
+      "sha256_after": "sha256:d18fc0e68f2f7a115a425693bbc48433c99e255c4221a84c388cfb39feca239b",
+      "sha256_before": "sha256:d18fc0e68f2f7a115a425693bbc48433c99e255c4221a84c388cfb39feca239b"
+    },
+    {
+      "changed": false,
+      "path": "adapters/multica/joint-replay/rerun-receipt-contract.json",
+      "sha256_after": "sha256:e897702e14cd5670544793e5575eed947512c3e15bf93e39d0d519bbd608e28d",
+      "sha256_before": "sha256:e897702e14cd5670544793e5575eed947512c3e15bf93e39d0d519bbd608e28d"
+    },
+    {
+      "changed": false,
+      "path": "adapters/multica/joint-replay/residual-decisions.json",
+      "sha256_after": "sha256:95f2ed360291d9a95ec118cc01a8cf46938414d90e547fc92b3beeb77e31b7cc",
+      "sha256_before": "sha256:95f2ed360291d9a95ec118cc01a8cf46938414d90e547fc92b3beeb77e31b7cc"
+    },
+    {
+      "changed": false,
+      "path": "adapters/multica/joint-replay/retired-identity-matrix.json",
+      "sha256_after": "sha256:62e9b96954de50192538b270bcc3d7eed606dbfa670488f8c3305644614db559",
+      "sha256_before": "sha256:62e9b96954de50192538b270bcc3d7eed606dbfa670488f8c3305644614db559"
+    },
+    {
+      "changed": false,
+      "path": "adapters/multica/joint-replay/routing-negative-matrix.json",
+      "sha256_after": "sha256:370c08052f072022a933e06c008ce6837a25923d1c1ccb2bbb5be5655d48fc3b",
+      "sha256_before": "sha256:370c08052f072022a933e06c008ce6837a25923d1c1ccb2bbb5be5655d48fc3b"
+    },
+    {
+      "changed": false,
+      "path": "adapters/multica/joint-replay/side-effect-audit.json",
+      "sha256_after": "sha256:084002452de271abb836b676ada2ca0eca6eb9673ba66f5de3f1ef5b1a1932aa",
+      "sha256_before": "sha256:084002452de271abb836b676ada2ca0eca6eb9673ba66f5de3f1ef5b1a1932aa"
+    },
+    {
+      "changed": false,
+      "path": "adapters/multica/joint-replay/stage-wake-matrix.json",
+      "sha256_after": "sha256:69e3759bdbe17abd2b50d82adbea8aa59ff1fd54f25ae7dfae33b1df0d9df8e8",
+      "sha256_before": "sha256:69e3759bdbe17abd2b50d82adbea8aa59ff1fd54f25ae7dfae33b1df0d9df8e8"
+    },
+    {
+      "changed": false,
+      "path": "adapters/multica/joint-replay/topology-matrix.json",
+      "sha256_after": "sha256:1ddd75e1bcfddaa31f215e3ff37e72fdcb3557d0f2bb42915557d7f21e227267",
+      "sha256_before": "sha256:1ddd75e1bcfddaa31f215e3ff37e72fdcb3557d0f2bb42915557d7f21e227267"
+    }
+  ],
+  "generator": {
+    "command": "python tools/chandoff_joint.py bundle --out-dir adapters/multica/joint-replay",
+    "exit_code": 0,
+    "generated_at": "2026-09-11T00:00:00Z",
+    "layer_version": "U11/1.0",
+    "tool": "tools/chandoff_joint.py",
+    "tool_lf_digest": "sha256:0fc9190f68fba84a6aebcf7c7335c5dd37978e1fceb1456ca00b5de130019ed4"
+  },
+  "kind": "u11_f07_regeneration_evidence_manifest",
+  "manifest_digest": "sha256:bdb3463ea5ed7e6875c6d7c6854598ee456bd03795e7fa6efceda27ec459090f",
+  "matrix_evidence_digest": {
+    "call_path": "chandoff_joint.final_gate_matrix(capability=chandoff_joint.run_all()['capability'])",
+    "cli_matrix_note": "the `matrix` CLI subcommand calls final_gate_matrix() with no capability argument, so replay_integrity.capability_ok is null and the digest differs; only the capability-bound call used by the focused tests is authoritative",
+    "cli_matrix_subcommand_digest": "sha256:8b49bf70436aaa1d6362ec875b40af04560853d8b5d83b75136f695ed5abba88",
+    "matrix_file_sha256": "sha256:d8f7c84cc364be3a415878a177881d948f312be78a391138d6cfbbd7ec98f868",
+    "rejected_crlf_unnormalized": "sha256:747494e1bf8c6a479542883e490c6d628c1f5faee622592a597c7f3303e39f11",
+    "rejected_v1": "sha256:5154381fdb725cbbb13a54c15285eb7d9d092a6bc19a92b6abf86e1eb1afb695",
+    "value": "sha256:14b892c22a3aa8547f382816d27376d114ef80664361680a969db1456fa079d5"
+  },
+  "modified_paths": [
+    "adapters/multica/joint-replay/compatibility-pin-manifest.json",
+    "adapters/multica/joint-replay/final-gate-matrix.json",
+    "adapters/multica/U11_JOINT_END_TO_END_REPLAY_REPORT.md",
+    "adapters/multica/u11-f07/evidence-manifest-v1.json",
+    "adapters/multica/u11-f07/lineage-report-v1.md"
+  ],
+  "not_run": [
+    "full tools/tests suite",
+    "pin or immutability-whitelist refresh",
+    "F-06 U09 bundle integration (commit 4854d02e is not in this lineage)",
+    "U12 work",
+    "live runtime, Canonical Memory, product repository, merge"
+  ],
+  "report_revision": "U11 report v2 (F-07)",
+  "schema_version": "U11-F07/1.0",
+  "supersedes": {
+    "bundle_v1_17_files": "sha256:ee15c79e062179d88cc6a71c25feab3560eaa2afe22895165468189bd51770ab",
+    "bundle_v1_18_files": "sha256:04e0da8412ba8b024fc18fd06608b59ebe39de76692f7ed85f9c4663d28a29b9",
+    "matrix_evidence_digest_v1": "sha256:5154381fdb725cbbb13a54c15285eb7d9d092a6bc19a92b6abf86e1eb1afb695",
+    "preserved_by": "git history (revision 1 bytes stay readable at their original commits)",
+    "u11_report_revision": 1,
+    "u11_report_v1_base": "49c48a9c2ef4ac89dd9321a42b0132a2a78cceb9"
+  },
+  "targeted_tests": {
+    "after": {
+      "exit": 1,
+      "failing": [
+        "FinalGateTests.test_compatibility_pins_reproduce",
+        "PredecessorGuardTests.test_predecessor_pins_reproduce"
+      ],
+      "failures": 2,
+      "ran": 75
+    },
+    "before": {
+      "exit": 1,
+      "failing": [
+        "BundleTests.test_committed_bundle_regenerates_byte_for_byte",
+        "FinalGateTests.test_compatibility_pins_reproduce",
+        "PredecessorGuardTests.test_predecessor_pins_reproduce",
+        "ReportTests.test_final_gate_matrix_digest_recorded_in_report"
+      ],
+      "failures": 4,
+      "ran": 75
+    },
+    "fixed_by_this_task": [
+      "BundleTests.test_committed_bundle_regenerates_byte_for_byte",
+      "ReportTests.test_final_gate_matrix_digest_recorded_in_report"
+    ],
+    "module": "tools.tests.test_joint_replay",
+    "new_failures": [],
+    "still_failing": [
+      "FinalGateTests.test_compatibility_pins_reproduce",
+      "PredecessorGuardTests.test_predecessor_pins_reproduce"
+    ]
+  },
+  "task_ref": "multica://issue/YZT-109",
+  "unchanged_generated_files": [
+    "adapters/multica/joint-replay/artifact-bindings.json",
+    "adapters/multica/joint-replay/artifact-set.json",
+    "adapters/multica/joint-replay/capability-proof.json",
+    "adapters/multica/joint-replay/capture/rerun-receipt-capture.json",
+    "adapters/multica/joint-replay/closed-source-guard.json",
+    "adapters/multica/joint-replay/finding-challenge-matrix.json",
+    "adapters/multica/joint-replay/finding-drain.json",
+    "adapters/multica/joint-replay/o2-recovery-matrix.json",
+    "adapters/multica/joint-replay/replays.json",
+    "adapters/multica/joint-replay/rerun-receipt-contract.json",
+    "adapters/multica/joint-replay/residual-decisions.json",
+    "adapters/multica/joint-replay/retired-identity-matrix.json",
+    "adapters/multica/joint-replay/routing-negative-matrix.json",
+    "adapters/multica/joint-replay/side-effect-audit.json",
+    "adapters/multica/joint-replay/stage-wake-matrix.json",
+    "adapters/multica/joint-replay/topology-matrix.json"
+  ],
+  "validated_against": {
+    "commit": "833868092d4b45b8c965f79dbdac6f8ba466c7f5",
+    "isolated_clone": "D:\\AI\\worktrees\\multica-memory-yzt-109-f07",
+    "source_repository": "D:/AI/multica-memory (read-only; not modified by this task)"
+  }
+}
