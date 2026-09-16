@@ -29,7 +29,8 @@ confirmed:
     summary: >
       新项目的产品与工程语义只依据本仓自身的有效文档索引与精确源版本：
       docs/README.md 为入口，product-expectations 为 PE Baseline 路由索引，
-      system-design 为工程边界，.ai/project-capabilities.json 默认全部关闭。
+      system-design 为工程边界。当前产品本机提交 96b8b2a，项目能力 policy 默认拒绝；
+      knowledge、engineering、methods 三包按角色启用，device 已安装但因无设备保持关闭。
       源稿第 13–26、32 章与第 0.5 章不作为当前事实。
     refs:
       - repo://teachers-app-one@0ad4bd9/docs/README.md
@@ -40,21 +41,20 @@ confirmed:
 open:
   - id: cp-open-001
     summary: >
-      Bootstrap 未完成：本项目的正式（production）Findings source binding 尚无
-      Lead 授权 comment 作为 authority anchor，因此 PREPARE_HANDOFF 与
-      SELF_CHECK 对本项目仍为 NOT_RUN，不能宣称 READY；BOOT-02～BOOT-05 与
-      D01 保持停放，恢复由 01 编排。trusted source map 与待激活 binding 已备好，
-      差一条 Lead comment。任务链接见 cp-confirmed-001 与归档记录（本条目刻意
-      只引用非 issue URI，避免污染 team-scope 重放的 blocked_by 指标）。
+      2026-09-17 用户授权的管理员接入修复已完成本机运行时整合、项目能力安装与团队配置校正。
+      旧“缺一条 Lead comment、SELF_CHECK 全部 NOT_RUN”已过时：历史 YZT-114 正式自检曾 READY。
+      当前版本仍需新任务的准确包、自检与真实 stage 回交 canary；不得继承旧包 READY。
+      当前远端发布及 PR 合并尚未完成，Axiomem 上传被自动审批阻断、等待用户明确授权。
+      这次管理员事实校正不冒充 02 Run，不扩大日常 Canonical 写入权限。
     refs:
       - project.yaml
       - registry://teachers-app1
       - migration/retirement/app1-retirement-yzt98.md
   - id: cp-open-002
     summary: >
-      本机产品仓 main 落后远端 2 个提交（本机 3678608d，
-      origin/main 0ad4bd9933a2c627b3f5ffdb7e476c3e1c9fd71e）。02 只读产品仓，
-      不代为 fetch/merge；该状态属 01 的仓库核验事项。
+      本机产品仓已快速前进至 96b8b2a，未提交的快捷方式保留。
+      实际未签名构建、lint、LocalUnit 1/1 与能力入口验证通过；仓库测试 38 项通过。
+      没有设备测试或业务覆盖通过声明。远端状态不能由本机合并推定。
     refs:
       - repo://teachers-app-one@0ad4bd9/docs/governance/version-control.md
       - project.yaml
@@ -69,12 +69,12 @@ open:
 conflicts: []
 
 next:
-  - 由 01 在取得正式 Findings binding 后恢复 BOOT-02 起的 Bootstrap 编排
-  - 需要 Lead 一条授权 comment 才能激活本项目 Findings source binding（见归档/来源边界记录）
+  - 以单一启动确认 Issue 收口当前版本与 canary，确认后由 01 编排 D01
+  - 先解决远端发布权限并验证真实交接，不重放无关历史自动化作为业务总门
 
 refs:
   - project.yaml
   - multica://issue/YZT-98
   - migration/retirement/app1-retirement-yzt98.md
 
-updated_at: 2026-09-16T04:05:00Z
+updated_at: 2026-09-17T01:00:00+08:00
