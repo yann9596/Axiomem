@@ -9,22 +9,35 @@ statement: >
   "feat(data): add U01 projection scheduler"）。该集成版本相对 FACT-TAPP1-000002
   记录的 9afcf154 只增加一个已审切片：YZT-128 的 U01 派生调度与失败隔离合成实现
   （implementation/teachers-app1-d01-u01-projection-scheduler/0.1.0-ba8e32d），
-  该切片已完成独立 R1 并获 APPROVE / APPROVE_AS_IMPLEMENTATION，随后由 01 合入
-  develop，git push 与 ls-remote/fetch 读回一致；无移植或源码等价性争议。develop 现
+  该切片已完成独立 R1 并获 APPROVE / APPROVE_AS_IMPLEMENTATION（YZT-130 最终评论
+  01a0af9b-cc0a-7e3c-ae42-50153a2fccb9 及其复用的审查评论
+  01a0af48-f448-76af-b779-781da17e4ebf，被审对象 0.1.0-ba8e32d）；"随后由 01 合入
+  develop、git push 与 ls-remote/fetch 读回一致"的来源是 01 父 Stage14 回交线程
+  01a0af9b-7d4e-7e93-87be-7d1d028ca3e4 中的正式交接
+  01a0afa2-25ef-7b3c-b3e5-1e354d1b8fc0、当前父 Decision（multica://issue/YZT-132）
+  及本任务直接 git 核验，不由管理员父评论
+  01a0af9d-9b82-7b27-b147-c5416bb20e16 证明：该评论只记录完成契约 75a9e563 的本机
+  整合并要求其后另行核验 U01 的 develop 整合结果；无移植或源码等价性争议。develop 现
   完整包含：已审 S1 T01–T05 实现（59e76ce）、开发/整合工作流文档（f6620ab，其中
   docs/governance/version-control.md 的 blob 为 632fd9a4，自 9afcf154 起未再改动）、
   以及 ba8e32d 的 U01 切片。main 本机与 origin/main 均为
   558fdc939414142636f9b4f43530facf1c7cfb7e，未变动；develop 领先 main 4 个提交
-  （9afcf154、f6620ab、59e76ce、ba8e32d），main 合并仍待用户精确授权。本批同时
-  修正 FACT-TAPP1-000002 中"develop 领先 3 个提交"的计数错误：实际为 4 个。
+  （9afcf154、f6620ab、59e76ce、ba8e32d），main 合并仍待用户精确授权。领先数由 3
+  变为 4 属正常 as-of 版本推进，不是旧条目计数错误：FACT-TAPP1-000002 的"develop
+  领先 3 个提交"是其在 as-of 2026-09-17 YZT-129 核验时点的正确计数（YZT-132 实测
+  git rev-list --count 558fdc93..9afcf154 = 3），U01 的 ba8e32d 在该时点之后新增
+  一个提交，同一命令 558fdc93..ba8e32d = 4；本次纠正只修 YZT-131 批次的叙述与来源
+  归因，不改写 FACT-TAPP1-000002 的正文与来源（YZT-132 有界纠正，2026-09-17）。
   授权分层（治理可引用的现行规范，非本批新决定）：已审切片通过适用 Review 后由 01
   及时合 develop、push 并远端读回，不将 push/开 PR 再次交 Human 选择；普通产品
   main 的最终确认与合并保留给用户。该分层记于产品仓
   docs/governance/version-control.md（f6620ab 起，随 ba8e32d 处于已集成基线）。
   团队公共完成契约：parent-handoff-wake（skills/parent-handoff-wake/SKILL.md 与
   scripts/complete_task.py）已由 Memory 仓 75a9e56364c32dfeca9d20438e5228bb0d9e9d3c
-  提交并本机整合，base 为 6331e9458c22bd0ea47150876ed184da30aab68e；覆盖 02–06
-  完整 deliverable，要求设置 done 并 live readback；完整负面 Review/QA 报告的状态
+  提交并本机整合，base 为 6331e9458c22bd0ea47150876ed184da30aab68e（来源：管理员
+  父评论 01a0af9d-9b82-7b27-b147-c5416bb20e16，2026-09-17T13:45:36Z；该记录的证据
+  范围仅限该契约提交与本机 main 快进整合，不含其后才发生的 U01 develop 整合）；
+  覆盖 02–06 完整 deliverable，要求设置 done 并 live readback；完整负面 Review/QA 报告的状态
   完成不更改 verdict；Context pipeline 不写 Issue 状态，原生 stage 回交 01。规范
   正文以该精确 commit 的 skill 文本为准，不在本事实复制全文，也不据此创造 Core 触发器。
   工具接入、真实交接 canary 与旧有界修复已完成其已验范围；本机能力策略仍默认拒绝，
@@ -84,6 +97,10 @@ source_refs:
   - multica://issue/YZT-128
   - multica://issue/YZT-130
   - multica://issue/YZT-131
+  - multica://issue/YZT-132
+  - multica://comment/01a0af9d-9b82-7b27-b147-c5416bb20e16
+  - multica://comment/01a0af9b-cc0a-7e3c-ae42-50153a2fccb9
+  - multica://comment/01a0afa2-25ef-7b3c-b3e5-1e354d1b8fc0
 
 relations:
   conflicts_with: []
@@ -91,7 +108,8 @@ relations:
     - FACT-TAPP1-000002
   supersedes_note: >
     取代 FACT-TAPP1-000002 的集成基线与提交计数快照（9afcf154 / "develop 领先 3 个
-    提交"），并新增完成契约与授权分层的来源指针；不否认历史：该对象在 2026-09-17
+    提交"，该 3 为其 as-of 核验时点的正确值；U01 的 ba8e32d 之后新增一个提交，
+    当前领先数为 4），并新增完成契约与授权分层的来源指针；不否认历史：该对象在 2026-09-17
     YZT-129 治理时的核验、其取代 FACT-TAPP1-000001 的关系、以及它对工具接入、
     能力策略、NOT_RUN 边界的记录继续有效，只是"当前集成提交/领先计数"类快照不再是
     current。该对象保留在库内并标 status=superseded，原正文与来源不被改写。
@@ -103,5 +121,5 @@ review:
   triggered_at: null
 
 created_at: 2026-09-17T14:00:00Z
-verified_at: 2026-09-17T14:00:00Z
-updated_at: 2026-09-17T14:00:00Z
+verified_at: 2026-09-17T14:10:00Z
+updated_at: 2026-09-17T14:10:00Z
