@@ -1,7 +1,7 @@
 schema_version: "1.1"
 kind: current_fact
 id: FACT-TAPP1-000003
-title: TeachersApp1 集成基线与完成契约实态（YZT-131 治理，2026-09-17）
+title: TeachersApp1 集成基线与完成契约实态（YZT-131 治理，2026-09-17；YZT-139 更新集成基线至 a67179d，2026-09-18）
 
 statement: >
   as-of 2026-09-17（YZT-131 治理核验）：origin/develop = 本地 develop =
@@ -53,6 +53,31 @@ statement: >
   接受为 M1 技术合同输入；M1 尚未实现，其 Norm/Reality/pending 边界与精确来源见
   FACT-TAPP1-000004。本条记录的集成基线 ba8e32d 与完成契约仍然 current，本次补充不
   改变其中任何既有叙述，也不构成 supersession。
+  YZT-139 更新（2026-09-18 +08:00 / UTC 2026-09-17T17:20Z，只推进集成基线与其证据，
+  不改写上文任何历史叙述）：origin/develop = 本地 develop =
+  a67179dfc02f0461a7962dcc697161395c5deb76。来源为 01 在 multica://issue/YZT-139
+  Decision 记录的"从 ba8e32d 快进至 a67179d 并非强制 push、ls-remote 与本地 develop
+  读回一致"；本批另以独立只读核验确认 git ls-remote origin refs/heads/develop 与本地
+  refs/heads/develop 均为该 SHA。相对 ba8e32d，develop 新增三个提交：
+  f84b85391c4bd9c377249caf3759ea5bd9ad43ba（D02 M1 名单命令与 schema2 的唯一业务代码
+  提交）、2c3645a92311a5125a1fb1d0f64734f2f83fccc5（只改 specs/d02-m1、
+  specs/README.md 与 CHANGELOG.md 的信封/报告修正）、
+  a67179dfc02f0461a7962dcc697161395c5deb76（只改 specs/d02-m1 信封与报告两个文件的
+  locator 修正）；后两者经 git show --stat 复核未触及产品源码。被审 target_head 与该
+  集成版本为同一 SHA，故该切片"审查对象 = 集成版本"，不存在审后再次改码。main 本机与
+  origin/main 仍均为 558fdc939414142636f9b4f43530facf1c7cfb7e；develop 现领先 main
+  8 个提交（上一 as-of 时点为 4，属正常版本推进而非旧条目计数错误），main 合并仍待
+  用户精确授权。上文 ba8e32d 段、其 U01 来源以及 YZT-135 补充段均保留为历史时点：
+  其中"本条记录的集成基线 ba8e32d 与完成契约仍然 current"与"M1 尚未实现"两句自本更新
+  起不再成立，集成基线与 M1 现状分别由本段和 FACT-TAPP1-000004 的 YZT-139 更新段承接。
+  本条其余内容继续 current 且不被本更新改变：授权分层（已审切片由 01 及时合 develop、push 并
+  远端读回，main 的最终确认与合并保留给用户）、公共完成契约 parent-handoff-wake
+  （75a9e56364c32dfeca9d20438e5228bb0d9e9d3c）、本机能力策略默认拒绝与
+  knowledge/engineering/methods 按角色启用、device OFF、真机与 HarmonyOS
+  relationalStore/UI 走查/签名/发布/R2 的 NOT_RUN 边界、产品路径
+  D:\AI\projects\TeachersApp1 与 execution_mode=worktree、不继承旧 app1；G01/G02、
+  main 授权、Axiomem 公开上传与设备/签名/发布边界亦均未被本批改动。本条既不改写
+  FACT-TAPP1-000002 的既有 supersession 链，本批也不新增 supersession。
 
 scope:
   type: project
@@ -73,6 +98,28 @@ status: active
 verification: verified
 
 verified_against:
+  - source_ref: repo://teachers-app-one@a67179dfc02f0461a7962dcc697161395c5deb76/docs/governance/version-control.md
+    revision: a67179dfc02f0461a7962dcc697161395c5deb76
+    paths:
+      - docs/governance/version-control.md
+  - source_ref: repo://teachers-app-one@a67179dfc02f0461a7962dcc697161395c5deb76/docs/README.md
+    revision: a67179dfc02f0461a7962dcc697161395c5deb76
+    paths:
+      - docs/README.md
+  - source_ref: multica://issue/YZT-139
+    revision: stage-23-governance-batch
+    paths:
+      - Decision
+  - source_ref: multica://issue/YZT-137
+    revision: 0.1.1
+    paths:
+      - 01a0b03c-be08-75e0-880d-f279f596b4c8
+      - implementation-report.md
+  - source_ref: multica://issue/YZT-138
+    revision: 0.1.0
+    paths:
+      - 01a0b04e-113b-7908-8562-81e396f05b9a
+      - D02-M1-0.1.1-R1-delivery-review.md
   - source_ref: repo://teachers-app-one@ba8e32d10772fd79314de387fade98ed4852d358/docs/governance/version-control.md
     revision: ba8e32d10772fd79314de387fade98ed4852d358
     paths:
@@ -92,6 +139,8 @@ verified_against:
       - skills/parent-handoff-wake/scripts/complete_task.py
 
 source_refs:
+  - repo://teachers-app-one@a67179dfc02f0461a7962dcc697161395c5deb76/docs/governance/version-control.md
+  - repo://teachers-app-one@a67179dfc02f0461a7962dcc697161395c5deb76/docs/README.md
   - repo://teachers-app-one@ba8e32d10772fd79314de387fade98ed4852d358/docs/governance/version-control.md
   - repo://teachers-app-one@ba8e32d10772fd79314de387fade98ed4852d358/docs/README.md
   - repo://teachers-app-one@ba8e32d10772fd79314de387fade98ed4852d358/docs/project-management/multica-workflow.md
@@ -110,6 +159,12 @@ source_refs:
   - multica://issue/YZT-133
   - multica://issue/YZT-134
   - multica://issue/YZT-135
+  - multica://issue/YZT-136
+  - multica://issue/YZT-137
+  - multica://issue/YZT-138
+  - multica://issue/YZT-139
+  - multica://comment/01a0b03c-be08-75e0-880d-f279f596b4c8
+  - multica://comment/01a0b04e-113b-7908-8562-81e396f05b9a
 
 relations:
   conflicts_with: []
@@ -130,5 +185,5 @@ review:
   triggered_at: null
 
 created_at: 2026-09-17T14:00:00Z
-verified_at: 2026-09-17T14:10:00Z
-updated_at: 2026-09-17T15:12:00Z
+verified_at: 2026-09-17T17:20:00Z
+updated_at: 2026-09-17T17:20:00Z

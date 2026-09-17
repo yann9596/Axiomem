@@ -1,7 +1,7 @@
 schema_version: "1.1"
 kind: current_fact
 id: FACT-TAPP1-000004
-title: D02 名单设计已审并获 Lead 接受（M1 待实现；YZT-135 治理，2026-09-17）
+title: D02 名单设计已审并获 Lead 接受；M1 0.1.1 已独立 R1 并集成 develop a67179d（YZT-135 治理 + YZT-139 更新，2026-09-18）
 
 statement: >
   as-of 2026-09-17（YZT-135 治理核验）。
@@ -44,6 +44,66 @@ statement: >
   本条与 FACT-TAPP1-000003 并存：000003 的集成基线（ba8e32d / main 558fdc93）、授权
   分层与完成契约仍为 current，本条只新增“D02 设计已审并由 01 接受”这一事实及其
   Norm/Reality/pending 边界，不取代、不改写 000003 的原正文与来源。
+  YZT-139 更新（2026-09-18 +08:00 / UTC 2026-09-17T17:20Z）：M1 已实现、已通过独立
+  R1 并已集成 develop；上文 Norm 段的设计权威指针与其 pending 边界继续有效，上文
+  Reality 段的"M1 尚未实现"自本更新起不再成立，由本段承接。
+  Norm（已审实现切片，仅权威指针，不复制实现正文）：implementation /
+  teachers-app1-d02-m1-roster / 0.1.1（作者 04 Software Engineer，任务 YZT-137）已由
+  05 Delivery Reviewer 完成独立 R1，verdict APPROVE、Required Changes NONE，被审对象
+  即该 0.1.1；该切片 based_on design_baseline / teachers-app1-d02-roster-design /
+  0.1.0-draft（正文 SHA256 9240b3c17ba28fd5825f19a7d445ec0dcc236ffbdf87138a94680f8a758d9b6a，
+  其自身 R1 0.1.0 仍然有效），supersedes implementation /
+  teachers-app1-d02-m1-roster / 0.1.0-f84b853。精确 locator：YZT-137 最终评论
+  01a0b03c-be08-75e0-880d-f279f596b4c8 及 implementation 0.1.1 信封/报告；YZT-138
+  最终评论 01a0b04e-113b-7908-8562-81e396f05b9a 及附件
+  D02-M1-0.1.1-R1-delivery-review.md（SHA256
+  43d06eb8a441d3419eca359a9339de7f03eedd5d4e0b3a5278f0b2bd4698b361）与
+  D02-M1-R1-delivery-review-envelope.json（SHA256
+  8a4c2434b04ce14aa05543ce4b075543f074cce313805632c8026939d51b2b90）；审查产物标识
+  delivery_review / teachers-app1-d02-m1-roster-r1-review / 0.1.0；实现产物标识
+  implementation / teachers-app1-d02-m1-roster / 0.1.1。被审版本三元组：源码
+  f84b85391c4bd9c377249caf3759ea5bd9ad43ba（唯一 M1 业务代码提交）、修正文档
+  2c3645a92311a5125a1fb1d0f64734f2f83fccc5（只改 specs/d02-m1、specs/README.md 与
+  CHANGELOG.md）、locator 修正 a67179dfc02f0461a7962dcc697161395c5deb76（只改
+  specs/d02-m1 两个文件）；本更新不复制该实现的字段表/DDL/错误码/A01–A14 正文，也不
+  改写任何旧信封、旧 report 或旧 verdict；0.1.0-f84b853 仍只是被冻结的历史缺陷证据
+  （信封 schema 违规），不得混入 live consumer store。
+  Reality（当前运行与集成事实）：origin/develop = 本地 develop =
+  a67179dfc02f0461a7962dcc697161395c5deb76；被审 target_head 与该集成版本为同一 SHA，
+  即"审查对象 = 集成版本"，不存在审后再次改码。上文 Norm 段的 M1 技术合同（四类名单
+  命令 CreateClass/1、CreateStudent/1、RenameClass/1、RenameStudent/1；三类点读
+  GetClass/1、GetStudent/1、ReadRosterMutation/1；全库不透明稳定身份与跨班/同班同名
+  隔离不合并；名称更正不改写历史 Evidence、Thread、Episode 与 Capture 回执、不重触发
+  U01 派生；专用 roster_mutation_receipts 回执与幂等重放返回提交当时快照；写前校验 +
+  单事务 + expectedRevision CAS；schema2 标识 user_version=2 / schema_version=2 /
+  contract_id=d02-roster-m1/1 与统一写入口停写；已存在 v1 库整体 MIGRATION_REQUIRED
+  并保留原文件）自本更新起已从"待实现合同"变为"已实现且已审并集成"。仍不得读作平台或
+  产品完成：该切片只是底层命令与点读的合成实现，不是教师名单 UI，无排序/初始位置实现，
+  不构成 S2 作业闭环；A03 仅是同一 FakeStore 上新建仓储实例而非进程重启，A08 仅是顺序
+  CAS 与宿主 SQLite 文件锁；HarmonyOS relationalStore 进程重启/多连接、设备、签名
+  HAP、真实数据、UI 走查、发布与 R2 均为 NOT_RUN；宿主 SQLite 探针与 FakeStore 不得
+  冒充平台持久化 PASS。
+  证据分层（不覆盖历史、不用本轮数字改写他轮）：137 的 local-test 63/63、unsigned
+  HAP、0 lint findings 是在含 f84b853 祖先的修正分支 4594d558 上执行的来源，HEAD
+  记录为 4594d558 而非 f84b853；YZT-136 历史 capability run 记录 HEAD=ba8e32d，只是
+  历史缺陷证据，不证明在 f84b853 上执行；137 报告自述 unittest 38 与 host probe 74
+  未存 argv/log，故不作为 f84b853 已证。01 在 YZT-139 记录的 a67179d 隔离 checkout
+  结果为 38 仓库测试 PASS、validate_capability_policy PASS（declaration-only）、
+  verify_repository PASS、宿主 SQLite 探针 74/74 PASS，且 01 未重跑原生构建/linter/
+  Hypium；本批 02 不重跑原生构建，也不把上述任一数字升级为设备或平台结论。
+  Finding 与候选边界（按 05 结论保留，不升格）：Finding-DR-01（S1CaptureRepository
+  构造内写死 S1Session，调用方需先构造 capture 仓储再传 .session 才能共享同进程队列）
+  保留为后续建议，不是已批准重构；Finding-DR-02（测试替身把通用事务异常硬编码为
+  STORAGE_INVARIANT 进而 STOPPED，与设计"STOPPED 停写 / FAILED 可重试"存在分类差异）
+  按 05 非阻塞结论保留为平台关口前置项，不得治理成"错误恢复合同已全部验证"；
+  Finding-DR-03（切片边界）确认为不是名单功能、不是 S2 完成。
+  pending（未批准/未授权，不因实现被审或被集成而改变）：G01/G02（TopicPolicy 等）、
+  G06 排序/初始位置、同班同名 UI 区分、归档、删除、转班、合并仍未批准（设计 §Open
+  Questions 的推荐 A 仍只是建议，不是决定）；v1 库迁移执行、清库或任何真实数据操作、
+  平台 relationalStore、设备、UI 走查、签名、发布与 R2、产品 main 合并（main 仍为
+  558fdc939414142636f9b4f43530facf1c7cfb7e）与公开 Memory 上传均未授权或未验收。
+  与 FACT-TAPP1-000003 的关系：000003 的 YZT-139 更新段承接集成基线推进，本条承接
+  M1 的 Norm/Reality/pending；本条不改写 000003 的原正文与来源，也不新增 supersession。
 
 scope:
   type: project
@@ -77,12 +137,40 @@ verified_against:
     revision: stage-19-governance-batch
     paths:
       - Decision
+  - source_ref: repo://teachers-app-one@a67179dfc02f0461a7962dcc697161395c5deb76/specs/d02-m1/artifact-envelope.json
+    revision: 0.1.1
+    paths:
+      - specs/d02-m1/artifact-envelope.json
+      - specs/d02-m1/implementation-report.md
+  - source_ref: multica://issue/YZT-137
+    revision: 0.1.1
+    paths:
+      - 01a0b03c-be08-75e0-880d-f279f596b4c8
+      - implementation-report.md
+      - implementation-envelope-0.1.1.json
+  - source_ref: multica://issue/YZT-138
+    revision: 0.1.0
+    paths:
+      - 01a0b04e-113b-7908-8562-81e396f05b9a
+      - D02-M1-0.1.1-R1-delivery-review.md
+      - D02-M1-R1-delivery-review-envelope.json
+  - source_ref: multica://issue/YZT-139
+    revision: stage-23-governance-batch
+    paths:
+      - Decision
 
 source_refs:
+  - repo://teachers-app-one@a67179dfc02f0461a7962dcc697161395c5deb76/specs/d02-m1/artifact-envelope.json
   - multica://issue/YZT-133
   - multica://issue/YZT-134
   - multica://issue/YZT-135
   - multica://issue/YZT-116
+  - multica://issue/YZT-136
+  - multica://issue/YZT-137
+  - multica://issue/YZT-138
+  - multica://issue/YZT-139
+  - multica://comment/01a0b03c-be08-75e0-880d-f279f596b4c8
+  - multica://comment/01a0b04e-113b-7908-8562-81e396f05b9a
   - multica://comment/01a0afcc-b3d5-7eb8-b921-547864201321
   - multica://comment/01a0afdd-df58-7ccc-8326-df309ed22efc
 
@@ -98,5 +186,5 @@ review:
   triggered_at: null
 
 created_at: 2026-09-17T15:12:00Z
-verified_at: 2026-09-17T15:12:00Z
-updated_at: 2026-09-17T15:12:00Z
+verified_at: 2026-09-17T17:20:00Z
+updated_at: 2026-09-17T17:20:00Z
