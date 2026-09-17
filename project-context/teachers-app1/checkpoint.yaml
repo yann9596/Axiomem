@@ -79,6 +79,30 @@ confirmed:
       - repo://multica-memory@82817c601b61c690c8cfaccfa6dab4b8b4ea793c/adapters/multica/APP1_SUPPORTED_EXECUTION.md
       - RULE-TEAM-000001
       - multica://issue/YZT-129
+  - id: cp-confirmed-005
+    summary: >
+      D02 名单最小数据合同已审并由 01 接受为 M1 输入：design_baseline /
+      teachers-app1-d02-roster-design / 0.1.0-draft（03 Solution Architect，YZT-133
+      最终评论 01a0afcc-b3d5-7eb8-b921-547864201321，正文 SHA256
+      9240b3c17ba28fd5825f19a7d445ec0dcc236ffbdf87138a94680f8a758d9b6a）经 05 独立
+      R1（YZT-134 最终评论 01a0afdd-df58-7ccc-8326-df309ed22efc，报告 SHA256
+      1b2f1a08d146022088c668e8df2e78ba1d54150fdcd82c924bdee90b193db74a，产物
+      delivery_review / teachers-app1-d02-roster-design-r1-review / 0.1.0）verdict
+      APPROVE、scope_verdict APPROVE_AS_DESIGN_BASELINE_INCREMENT、Required Changes
+      NONE；01 在 YZT-135 的 Decision 接受其 M1 技术合同——四类创建/更名命令、三类
+      点读、稳定身份与同名隔离、历史引用不变、专用回执与幂等重放、单事务与 CAS、
+      schema2 全库统一停写、v1 库 MIGRATION_REQUIRED 保留原文件——作为后续合成数据
+      实现输入。设计 based_on D01 0.3.0-draft、无 supersedes，不改写旧信封或旧
+      verdict。M1 尚未实现：schema2 是待实现技术合同而非运行事实，develop ba8e32d 上
+      仍只有已审 S1/U01 合成切片，没有名单 UI、没有排序、不构成 S2 完成宣称。
+      详见 FACT-TAPP1-000004。
+    refs:
+      - multica://issue/YZT-133
+      - multica://issue/YZT-134
+      - multica://issue/YZT-135
+      - multica://comment/01a0afcc-b3d5-7eb8-b921-547864201321
+      - multica://comment/01a0afdd-df58-7ccc-8326-df309ed22efc
+      - FACT-TAPP1-000004
 
 open:
   - id: cp-open-001
@@ -104,9 +128,13 @@ open:
     summary: >
       尚未冻结的产品语义（TopicPolicy 阈值、HistorySignal 观察充分性、名单排序
       交互与外部 UI/UX 版本一致性）按产品仓 product-expectations 进入 D01
-      Contract Gap Register；不得用模板示例或聊天印象自行定产品算法。
+      Contract Gap Register；不得用模板示例或聊天印象自行定产品算法。D02 只为
+      “首次建序/新增位置”备了未批准的窄候选（设计 §Open Questions，其中 A 是建议
+      而非决定）；G01/G02、G06、同班同名 UI 区分、归档、删除、转班、合并仍未批准，
+      设计被接受不等于产品取舍被批准。
     refs:
       - repo://teachers-app-one@ba8e32d10772fd79314de387fade98ed4852d358/docs/product/product-expectations.md
+      - multica://issue/YZT-133
   - id: cp-open-004
     summary: >
       Axiomem 公开上传仍无专项授权：本机精确 commit/patch 与治理产物可交付，
@@ -117,11 +145,26 @@ open:
       - multica://issue/YZT-129
       - registry://teachers-app1
       - project.yaml
+  - id: cp-open-005
+    summary: >
+      D02 的 M1 实施与派生候选仍待处置：本治理批次（YZT-135 / FACT-TAPP1-000004）
+      只记录已审设计与 Lead 接受事实，M1 合成实现尚未派发——按 01 的投入顺序，需先由
+      01 接受、部署并索引本批治理产物，且消费者 fresh SELF_CHECK 通过后才派 04 实施；
+      v1 库迁移执行、清库或任何真实数据操作仍然禁止，平台 relationalStore、设备、
+      UI 走查、签名、发布与 R2 均未验收。治理队列存在或本子任务 done 不等于本批已
+      governed。
+    refs:
+      - multica://issue/YZT-135
+      - multica://issue/YZT-134
+      - multica://issue/YZT-133
+      - FACT-TAPP1-000004
 
 conflicts: []
 
 next:
   - 从精确集成基线 ba8e32d 继续：U01 的独立 R1 与 develop 整合+远端读回已完成，依赖切片从该集成版本派发，不从旧的 main、9afcf154 或历史 Agent 分支开工
+  - D02 治理产物（YZT-135 提交）经 01 接受、部署并重建索引后，才派 04 实施 M1；派发上下文携带已审 design_baseline / teachers-app1-d02-roster-design / 0.1.0-draft 的精确指针与独立 R1 verdict
+  - M1 只在可证明的新合成库上实施（schema2：user_version=2 / schema_version=2 / contract_id=d02-roster-m1/1）；已存在的 v1 库整体 MIGRATION_REQUIRED 停写并保留原文件，不授权迁移、清库或真实数据操作
   - main 合并与设备/签名/发布/真实数据保持等待用户精确授权；在真机/relationalStore 与首轮 UI 交互切片到达平台关口前，只准备合成数据与回滚方案，不宣称平台 PASS
   - G01/G02 等未决产品规则维持 pending，由 01 提交完整可理解选择；设计增量批准与 U01 合成实现不得当作产品取舍或生产准入
   - 专业交付的完成协议统一按 skills/parent-handoff-wake/SKILL.md（Memory 仓 75a9e563）执行：达成交付目标后设置 done 并 live readback；完成治理任务不等于其产物已被接受、部署或 indexed
@@ -131,4 +174,4 @@ refs:
   - multica://issue/YZT-98
   - migration/retirement/app1-retirement-yzt98.md
 
-updated_at: 2026-09-17T14:00:00Z
+updated_at: 2026-09-17T15:12:00Z

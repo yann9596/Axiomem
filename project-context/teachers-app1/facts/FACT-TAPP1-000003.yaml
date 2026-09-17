@@ -47,6 +47,12 @@ statement: >
   D:\AI\projects\TeachersApp1，execution_mode=worktree；任务工作树按 Issue 精确
   commit 建立。本条取代 FACT-TAPP1-000002 的集成基线与提交计数快照；G01/G02 未决
   产品选择、main 授权边界、Axiomem 公开上传边界与设备/签名/发布边界均未被本批改动。
+  YZT-135 有界补充（2026-09-17，只加指针、不改写上文）：D02 名单最小数据合同
+  design_baseline / teachers-app1-d02-roster-design / 0.1.0-draft 已通过独立 R1
+  （APPROVE / APPROVE_AS_DESIGN_BASELINE_INCREMENT / Required Changes NONE）并由 01
+  接受为 M1 技术合同输入；M1 尚未实现，其 Norm/Reality/pending 边界与精确来源见
+  FACT-TAPP1-000004。本条记录的集成基线 ba8e32d 与完成契约仍然 current，本次补充不
+  改变其中任何既有叙述，也不构成 supersession。
 
 scope:
   type: project
@@ -101,6 +107,9 @@ source_refs:
   - multica://comment/01a0af9d-9b82-7b27-b147-c5416bb20e16
   - multica://comment/01a0af9b-cc0a-7e3c-ae42-50153a2fccb9
   - multica://comment/01a0afa2-25ef-7b3c-b3e5-1e354d1b8fc0
+  - multica://issue/YZT-133
+  - multica://issue/YZT-134
+  - multica://issue/YZT-135
 
 relations:
   conflicts_with: []
@@ -122,4 +131,4 @@ review:
 
 created_at: 2026-09-17T14:00:00Z
 verified_at: 2026-09-17T14:10:00Z
-updated_at: 2026-09-17T14:10:00Z
+updated_at: 2026-09-17T15:12:00Z

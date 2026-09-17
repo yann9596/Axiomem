@@ -1,0 +1,102 @@
+schema_version: "1.1"
+kind: current_fact
+id: FACT-TAPP1-000004
+title: D02 名单设计已审并获 Lead 接受（M1 待实现；YZT-135 治理，2026-09-17）
+
+statement: >
+  as-of 2026-09-17（YZT-135 治理核验）。
+  Norm（已审设计基线，仅权威指针，不复制正文）：`design_baseline /
+  teachers-app1-d02-roster-design / 0.1.0-draft`（作者 03 Solution Architect，任务
+  YZT-133）已由 05 Delivery Reviewer 完成独立 R1，verdict APPROVE、scope_verdict
+  APPROVE_AS_DESIGN_BASELINE_INCREMENT、Required Changes NONE，被审对象即该
+  0.1.0-draft；01 Engineering Lead 在 YZT-135 的 Decision 中接受其中的 M1 技术合同
+  作为后续合成数据实现输入。精确 locator：YZT-133 最终评论
+  01a0afcc-b3d5-7eb8-b921-547864201321 及附件 D02-roster-design-0.1.0-draft.md
+  （SHA256 9240b3c17ba28fd5825f19a7d445ec0dcc236ffbdf87138a94680f8a758d9b6a）；
+  YZT-134 最终评论 01a0afdd-df58-7ccc-8326-df309ed22efc 及附件
+  D02-0.1.0-draft-R1-delivery-review.md（SHA256
+  1b2f1a08d146022088c668e8df2e78ba1d54150fdcd82c924bdee90b193db74a）；审查产物标识
+  delivery_review / teachers-app1-d02-roster-design-r1-review / 0.1.0；设计产物标识
+  design_baseline / teachers-app1-d02-roster-design / 0.1.0-draft。该设计 based_on
+  design_baseline / teachers-app1-d01-homework-design / 0.3.0-draft，无 supersedes，
+  不改写任何旧信封、旧 R1 或旧 based_on。字段表、DDL、错误码与 A01–A14 验收合同以
+  设计正文为准；本条只记录权威指针与合同边界，不把设计复制为第二套规范。
+  M1 技术合同范围（Norm，待实现）：四类名单命令 CreateClass/1、CreateStudent/1、
+  RenameClass/1、RenameStudent/1；三类点读 GetClass/1、GetStudent/1、
+  ReadRosterMutation/1；全库不透明稳定身份（class_id/student_id）与同名隔离——跨班与
+  同班同名均不得合并，姓名可更正但不是身份主键；名称更正不改写历史 Evidence、Thread、
+  Episode 与 Capture 回执，不重新触发 U01 派生状态；专用 roster_mutation_receipts 回执
+  与幂等重放（重放返回提交当时的快照，不是最新值）；写前校验 + 单数据库事务 +
+  expectedRevision CAS 并发，数据库主键/外键/CAS 为最终保护；schema2 标识固定为
+  user_version=2 / schema_meta.schema_version=2 / contract_id=d02-roster-m1/1，所有
+  写入口共享同一已验证 schema 状态；不兼容或未知结构整体停写；已存在的 v1 库整体识别为
+  MIGRATION_REQUIRED 并保留原文件。
+  Reality（当前运行事实）：M1 尚未实现——develop ba8e32d 上仍只有已审 S1 T01–T05 与
+  U01 合成切片，没有名单命令、schema2、roster 回执表或名单 UI；schema2 是待实现技术
+  合同，不是运行事实；无教师名单 UI、无排序/初始位置实现，也不构成 S2 作业闭环。S1 的
+  mutation_receipts 限定 CaptureObservation/1 且强制引用 Evidence/Thread/Episode，
+  不能复用于名单命令（产品源码事实 @ba8e32d，经设计 E1 引用；本批未逐行复核）。
+  pending（未批准/未授权）：G01/G02（TopicPolicy 等）与 G06 排序/初始位置、同班同名 UI
+  区分、归档、删除、转班、合并均未批准；D02 只为 G06 备了未批准的窄候选（设计
+  §Open Questions 推荐 A 仅为建议，不是决定）；v1 库迁移执行、清库或任何真实数据操作、
+  平台 relationalStore、设备、UI 走查、签名、发布与 R2、产品 main 合并与公开 Memory
+  上传均未授权或未验收，不因设计被接受而改变。
+  本条与 FACT-TAPP1-000003 并存：000003 的集成基线（ba8e32d / main 558fdc93）、授权
+  分层与完成契约仍为 current，本条只新增“D02 设计已审并由 01 接受”这一事实及其
+  Norm/Reality/pending 边界，不取代、不改写 000003 的原正文与来源。
+
+scope:
+  type: project
+  project_id: teachers-app1
+  projects: []
+  task_id: null
+
+domains:
+  - design-baseline
+  - domain-model
+  - data-lifecycle
+
+repositories:
+  - teachers-app-one
+
+status: active
+verification: verified
+
+verified_against:
+  - source_ref: multica://issue/YZT-133
+    revision: 0.1.0-draft
+    paths:
+      - 01a0afcc-b3d5-7eb8-b921-547864201321
+      - D02-roster-design-0.1.0-draft.md
+  - source_ref: multica://issue/YZT-134
+    revision: 0.1.0
+    paths:
+      - 01a0afdd-df58-7ccc-8326-df309ed22efc
+      - D02-0.1.0-draft-R1-delivery-review.md
+  - source_ref: multica://issue/YZT-135
+    revision: stage-19-governance-batch
+    paths:
+      - Decision
+
+source_refs:
+  - multica://issue/YZT-133
+  - multica://issue/YZT-134
+  - multica://issue/YZT-135
+  - multica://issue/YZT-116
+  - multica://comment/01a0afcc-b3d5-7eb8-b921-547864201321
+  - multica://comment/01a0afdd-df58-7ccc-8326-df309ed22efc
+
+relations:
+  conflicts_with: []
+  supersedes: []
+  supersedes_note: null
+  drift_of: null
+  norm_reality_conflict: []
+
+review:
+  reason: null
+  triggered_at: null
+
+created_at: 2026-09-17T15:12:00Z
+verified_at: 2026-09-17T15:12:00Z
+updated_at: 2026-09-17T15:12:00Z
