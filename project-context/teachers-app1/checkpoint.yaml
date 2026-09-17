@@ -31,18 +31,22 @@ confirmed:
       docs/README.md 为入口（含当前基线/路由声明），product-expectations 为
       PE Baseline 路由索引，system-design 为工程边界。当前集成基线
       origin/develop=本地 develop=a67179d（2026-09-18 由 ba8e32d 快进，新增 D02 M1
-      三个已审提交 f84b853/2c3645a/a67179d；被审 target_head 与集成版本为同一 SHA），
+      四个已审提交 f84b853/4594d558/2c3645a/a67179d；被审 target_head 与集成版本为同一 SHA），
       main 本机与远端均为 558fdc93、develop 领先 8 个提交待
       用户精确授权合并；已审切片按 docs/governance/version-control.md 及时合
       develop 并远端读回后才派依赖（合 develop 属 01 既有授权，main 才保留
       用户最终确认），真机/设备验收安排在首个实际使用 relationalStore 的可运行
       切片。项目能力 policy 默认拒绝；knowledge、engineering、methods 三包按
-      角色启用，device OFF。源稿第 13–26、32 章与第 0.5 章不作为当前事实。
+      角色启用，device OFF。源稿第 13–26、32 章与第 0.5 章不作为当前事实。本条的 M1
+      提交清单经 YZT-140 有界纠正补齐为四个，补入被漏记的原始 locator 修正 4594d558
+      （其 locator 文本已被 2c3645a/a67179d 取代，只作真实祖先关系保留，不得混入当前
+      live Artifact 版本）。
     refs:
       - repo://teachers-app-one@a67179dfc02f0461a7962dcc697161395c5deb76/docs/README.md
       - repo://teachers-app-one@a67179dfc02f0461a7962dcc697161395c5deb76/docs/product/product-expectations.md
       - repo://teachers-app-one@a67179dfc02f0461a7962dcc697161395c5deb76/docs/architecture/system-design.md
       - repo://teachers-app-one@a67179dfc02f0461a7962dcc697161395c5deb76/docs/governance/version-control.md
+      - multica://issue/YZT-140
       - FACT-TAPP1-000003
   - id: cp-confirmed-003
     summary: >
@@ -115,8 +119,9 @@ confirmed:
       8a4c2434b04ce14aa05543ce4b075543f074cce313805632c8026939d51b2b90；产物
       delivery_review / teachers-app1-d02-m1-roster-r1-review /
       0.1.0）verdict APPROVE、Required Changes NONE；01 接受并把 develop 从 ba8e32d
-      快进到 a67179d，被审 target_head 与集成版本为同一 SHA（审查对象=集成版本），源码
-      f84b853、修正文档 2c3645a、locator 修正 a67179d 完整保留且未新增产品代码。该切片
+      快进到 a67179d，被审 target_head 与集成版本为同一 SHA（审查对象=集成版本），四个
+      提交 f84b853（源码）、4594d558（原始 locator 修正，其后被 2c3645a/a67179d 修正）、
+      2c3645a（修正文档）、a67179d（locator 修正）完整保留且未新增产品代码。该切片
       是底层四类命令 + 三类点读 + schema2 首建与统一停写的合成实现，不是教师名单 UI、
       无排序，不构成 S2 完成；A03 仅 FakeStore 同实例新仓储、A08 仅顺序 CAS 与宿主锁，
       HarmonyOS relationalStore 进程重启/多连接、设备、签名、真实数据、UI 走查、发布与
@@ -127,6 +132,7 @@ confirmed:
       - multica://issue/YZT-137
       - multica://issue/YZT-138
       - multica://issue/YZT-139
+      - multica://issue/YZT-140
       - multica://comment/01a0b03c-be08-75e0-880d-f279f596b4c8
       - multica://comment/01a0b04e-113b-7908-8562-81e396f05b9a
       - repo://teachers-app-one@a67179dfc02f0461a7962dcc697161395c5deb76/specs/d02-m1/artifact-envelope.json
@@ -205,4 +211,4 @@ refs:
   - multica://issue/YZT-98
   - migration/retirement/app1-retirement-yzt98.md
 
-updated_at: 2026-09-17T17:20:00Z
+updated_at: 2026-09-17T17:29:00Z

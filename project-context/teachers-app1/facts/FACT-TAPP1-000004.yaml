@@ -61,8 +61,12 @@ statement: >
   D02-M1-R1-delivery-review-envelope.json（SHA256
   8a4c2434b04ce14aa05543ce4b075543f074cce313805632c8026939d51b2b90）；审查产物标识
   delivery_review / teachers-app1-d02-m1-roster-r1-review / 0.1.0；实现产物标识
-  implementation / teachers-app1-d02-m1-roster / 0.1.1。被审版本三元组：源码
-  f84b85391c4bd9c377249caf3759ea5bd9ad43ba（唯一 M1 业务代码提交）、修正文档
+  implementation / teachers-app1-d02-m1-roster / 0.1.1。被审版本的四提交祖先链（YZT-140
+  有界纠正：原 YZT-139 写作"三元组"并漏记祖先 4594d558）：源码
+  f84b85391c4bd9c377249caf3759ea5bd9ad43ba（唯一 M1 业务代码提交）、原始 locator 修正
+  4594d558746409a66218d1e36eb21a1448b4b696（只改 specs/d02-m1 信封与报告两个文件，其
+  locator 文本随后被 2c3645a/a67179d 取代，只作为真实祖先关系保留、不得混入当前 live
+  Artifact 版本）、修正文档
   2c3645a92311a5125a1fb1d0f64734f2f83fccc5（只改 specs/d02-m1、specs/README.md 与
   CHANGELOG.md）、locator 修正 a67179dfc02f0461a7962dcc697161395c5deb76（只改
   specs/d02-m1 两个文件）；本更新不复制该实现的字段表/DDL/错误码/A01–A14 正文，也不
@@ -169,6 +173,7 @@ source_refs:
   - multica://issue/YZT-137
   - multica://issue/YZT-138
   - multica://issue/YZT-139
+  - multica://issue/YZT-140
   - multica://comment/01a0b03c-be08-75e0-880d-f279f596b4c8
   - multica://comment/01a0b04e-113b-7908-8562-81e396f05b9a
   - multica://comment/01a0afcc-b3d5-7eb8-b921-547864201321
@@ -186,5 +191,5 @@ review:
   triggered_at: null
 
 created_at: 2026-09-17T15:12:00Z
-verified_at: 2026-09-17T17:20:00Z
-updated_at: 2026-09-17T17:20:00Z
+verified_at: 2026-09-17T17:29:00Z
+updated_at: 2026-09-17T17:29:00Z

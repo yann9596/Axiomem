@@ -58,12 +58,18 @@ statement: >
   a67179dfc02f0461a7962dcc697161395c5deb76。来源为 01 在 multica://issue/YZT-139
   Decision 记录的"从 ba8e32d 快进至 a67179d 并非强制 push、ls-remote 与本地 develop
   读回一致"；本批另以独立只读核验确认 git ls-remote origin refs/heads/develop 与本地
-  refs/heads/develop 均为该 SHA。相对 ba8e32d，develop 新增三个提交：
+  refs/heads/develop 均为该 SHA。相对 ba8e32d，develop 新增四个提交（YZT-140 有界纠正：
+  原 YZT-139 误记为三个并漏记其间的祖先 4594d558；本批实测 git log --oneline
+  ba8e32d..a67179d 为 f84b853、4594d558、2c3645a、a67179d，git rev-list --count
+  ba8e32d..a67179d = 4）：
   f84b85391c4bd9c377249caf3759ea5bd9ad43ba（D02 M1 名单命令与 schema2 的唯一业务代码
-  提交）、2c3645a92311a5125a1fb1d0f64734f2f83fccc5（只改 specs/d02-m1、
-  specs/README.md 与 CHANGELOG.md 的信封/报告修正）、
+  提交）、4594d558746409a66218d1e36eb21a1448b4b696（只改 specs/d02-m1 信封与报告两个
+  文件的原始 locator 修正，其 locator 文本随后被 2c3645a/a67179d 取代，只作为真实祖先
+  关系保留、不得混入当前 live Artifact 版本）、2c3645a92311a5125a1fb1d0f64734f2f83fccc5
+  （只改 specs/d02-m1、specs/README.md 与 CHANGELOG.md 的信封/报告修正）、
   a67179dfc02f0461a7962dcc697161395c5deb76（只改 specs/d02-m1 信封与报告两个文件的
-  locator 修正）；后两者经 git show --stat 复核未触及产品源码。被审 target_head 与该
+  locator 修正）；四个提交经 git show --stat 复核，除 f84b853 外的三个均未触及产品
+  源码。被审 target_head 与该
   集成版本为同一 SHA，故该切片"审查对象 = 集成版本"，不存在审后再次改码。main 本机与
   origin/main 仍均为 558fdc939414142636f9b4f43530facf1c7cfb7e；develop 现领先 main
   8 个提交（上一 as-of 时点为 4，属正常版本推进而非旧条目计数错误），main 合并仍待
@@ -163,6 +169,7 @@ source_refs:
   - multica://issue/YZT-137
   - multica://issue/YZT-138
   - multica://issue/YZT-139
+  - multica://issue/YZT-140
   - multica://comment/01a0b03c-be08-75e0-880d-f279f596b4c8
   - multica://comment/01a0b04e-113b-7908-8562-81e396f05b9a
 
@@ -185,5 +192,5 @@ review:
   triggered_at: null
 
 created_at: 2026-09-17T14:00:00Z
-verified_at: 2026-09-17T17:20:00Z
-updated_at: 2026-09-17T17:20:00Z
+verified_at: 2026-09-17T17:29:00Z
+updated_at: 2026-09-17T17:29:00Z
