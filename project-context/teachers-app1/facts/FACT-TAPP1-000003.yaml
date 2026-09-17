@@ -1,0 +1,107 @@
+schema_version: "1.1"
+kind: current_fact
+id: FACT-TAPP1-000003
+title: TeachersApp1 集成基线与完成契约实态（YZT-131 治理，2026-09-17）
+
+statement: >
+  as-of 2026-09-17（YZT-131 治理核验）：origin/develop = 本地 develop =
+  ba8e32d10772fd79314de387fade98ed4852d358（2026-09-17 18:27 +08:00，
+  "feat(data): add U01 projection scheduler"）。该集成版本相对 FACT-TAPP1-000002
+  记录的 9afcf154 只增加一个已审切片：YZT-128 的 U01 派生调度与失败隔离合成实现
+  （implementation/teachers-app1-d01-u01-projection-scheduler/0.1.0-ba8e32d），
+  该切片已完成独立 R1 并获 APPROVE / APPROVE_AS_IMPLEMENTATION，随后由 01 合入
+  develop，git push 与 ls-remote/fetch 读回一致；无移植或源码等价性争议。develop 现
+  完整包含：已审 S1 T01–T05 实现（59e76ce）、开发/整合工作流文档（f6620ab，其中
+  docs/governance/version-control.md 的 blob 为 632fd9a4，自 9afcf154 起未再改动）、
+  以及 ba8e32d 的 U01 切片。main 本机与 origin/main 均为
+  558fdc939414142636f9b4f43530facf1c7cfb7e，未变动；develop 领先 main 4 个提交
+  （9afcf154、f6620ab、59e76ce、ba8e32d），main 合并仍待用户精确授权。本批同时
+  修正 FACT-TAPP1-000002 中"develop 领先 3 个提交"的计数错误：实际为 4 个。
+  授权分层（治理可引用的现行规范，非本批新决定）：已审切片通过适用 Review 后由 01
+  及时合 develop、push 并远端读回，不将 push/开 PR 再次交 Human 选择；普通产品
+  main 的最终确认与合并保留给用户。该分层记于产品仓
+  docs/governance/version-control.md（f6620ab 起，随 ba8e32d 处于已集成基线）。
+  团队公共完成契约：parent-handoff-wake（skills/parent-handoff-wake/SKILL.md 与
+  scripts/complete_task.py）已由 Memory 仓 75a9e56364c32dfeca9d20438e5228bb0d9e9d3c
+  提交并本机整合，base 为 6331e9458c22bd0ea47150876ed184da30aab68e；覆盖 02–06
+  完整 deliverable，要求设置 done 并 live readback；完整负面 Review/QA 报告的状态
+  完成不更改 verdict；Context pipeline 不写 Issue 状态，原生 stage 回交 01。规范
+  正文以该精确 commit 的 skill 文本为准，不在本事实复制全文，也不据此创造 Core 触发器。
+  工具接入、真实交接 canary 与旧有界修复已完成其已验范围；本机能力策略仍默认拒绝，
+  知识/工程/方法三包按角色启用，device 包 OFF。构建、CodeLinter 与本地测试有各自
+  证据；真机、HarmonyOS relationalStore、UI 走查、签名、发布与 R2 仍为 NOT_RUN，
+  不得由宿主探针或合成组件冒充平台持久化 PASS。产品路径
+  D:\AI\projects\TeachersApp1，execution_mode=worktree；任务工作树按 Issue 精确
+  commit 建立。本条取代 FACT-TAPP1-000002 的集成基线与提交计数快照；G01/G02 未决
+  产品选择、main 授权边界、Axiomem 公开上传边界与设备/签名/发布边界均未被本批改动。
+
+scope:
+  type: project
+  project_id: teachers-app1
+  projects: []
+  task_id: null
+
+domains:
+  - repository-state
+  - integration-workflow
+  - completion-contract
+  - toolchain-verification
+
+repositories:
+  - teachers-app-one
+
+status: active
+verification: verified
+
+verified_against:
+  - source_ref: repo://teachers-app-one@ba8e32d10772fd79314de387fade98ed4852d358/docs/governance/version-control.md
+    revision: ba8e32d10772fd79314de387fade98ed4852d358
+    paths:
+      - docs/governance/version-control.md
+  - source_ref: repo://teachers-app-one@ba8e32d10772fd79314de387fade98ed4852d358/docs/README.md
+    revision: ba8e32d10772fd79314de387fade98ed4852d358
+    paths:
+      - docs/README.md
+  - source_ref: repo://teachers-app-one@558fdc939414142636f9b4f43530facf1c7cfb7e/docs/README.md
+    revision: 558fdc939414142636f9b4f43530facf1c7cfb7e
+    paths:
+      - docs/README.md
+  - source_ref: repo://multica-memory@75a9e56364c32dfeca9d20438e5228bb0d9e9d3c/skills/parent-handoff-wake/SKILL.md
+    revision: 75a9e56364c32dfeca9d20438e5228bb0d9e9d3c
+    paths:
+      - skills/parent-handoff-wake/SKILL.md
+      - skills/parent-handoff-wake/scripts/complete_task.py
+
+source_refs:
+  - repo://teachers-app-one@ba8e32d10772fd79314de387fade98ed4852d358/docs/governance/version-control.md
+  - repo://teachers-app-one@ba8e32d10772fd79314de387fade98ed4852d358/docs/README.md
+  - repo://teachers-app-one@ba8e32d10772fd79314de387fade98ed4852d358/docs/project-management/multica-workflow.md
+  - repo://teachers-app-one@ba8e32d10772fd79314de387fade98ed4852d358/docs/engineering/harmonyos-toolchain.md
+  - repo://multica-memory@75a9e56364c32dfeca9d20438e5228bb0d9e9d3c/skills/parent-handoff-wake/SKILL.md
+  - repo://multica-memory@75a9e56364c32dfeca9d20438e5228bb0d9e9d3c/skills/parent-handoff-wake/scripts/complete_task.py
+  - repo://multica-memory@75a9e56364c32dfeca9d20438e5228bb0d9e9d3c/adapters/multica/completion-lifecycle/role-instruction-patch.json
+  - multica://issue/YZT-116
+  - multica://issue/YZT-128
+  - multica://issue/YZT-130
+  - multica://issue/YZT-131
+
+relations:
+  conflicts_with: []
+  supersedes:
+    - FACT-TAPP1-000002
+  supersedes_note: >
+    取代 FACT-TAPP1-000002 的集成基线与提交计数快照（9afcf154 / "develop 领先 3 个
+    提交"），并新增完成契约与授权分层的来源指针；不否认历史：该对象在 2026-09-17
+    YZT-129 治理时的核验、其取代 FACT-TAPP1-000001 的关系、以及它对工具接入、
+    能力策略、NOT_RUN 边界的记录继续有效，只是"当前集成提交/领先计数"类快照不再是
+    current。该对象保留在库内并标 status=superseded，原正文与来源不被改写。
+  drift_of: null
+  norm_reality_conflict: []
+
+review:
+  reason: null
+  triggered_at: null
+
+created_at: 2026-09-17T14:00:00Z
+verified_at: 2026-09-17T14:00:00Z
+updated_at: 2026-09-17T14:00:00Z

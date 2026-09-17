@@ -38,7 +38,7 @@ domains:
 repositories:
   - teachers-app-one
 
-status: active
+status: superseded
 verification: verified
 
 verified_against:
@@ -88,7 +88,11 @@ relations:
     取代旧 as-of 状态，不否认历史：FACT-TAPP1-000001 的 2026-09-16 核验及其
     YZT-97/YZT-98 来源约束、旧 app1≠新项目区分继续有效，仅其"当前提交/落后提交数/
     工作树状态"类快照不再是 current；该对象保留在库内并标 status=superseded，原
-    正文与来源不被改写。
+    正文与来源不被改写。本条自身亦已被 FACT-TAPP1-000003 取代（YZT-131 治理，
+    2026-09-17）：develop 由 9afcf154 前进到 ba8e32d（U01 已审并整合读回），
+    develop 相对 main 实际领先 4 个提交而非本条所写的 3 个；本条的工具接入、
+    能力策略（默认拒绝、device OFF）与 NOT_RUN 边界记录继续有效，仅
+    "当前集成提交/领先计数"类快照不再是 current，原正文与原来源不被改写。
   drift_of: null
   norm_reality_conflict: []
 

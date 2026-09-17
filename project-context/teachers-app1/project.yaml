@@ -24,7 +24,7 @@ governance:
   hard_constraints:
     - Product Expectation Baseline 的来源、Scope、Evidence、Authority 与 Conflict 治理归 02；产品方向决定不归 02
     - Governance / Normative Claim 使用已批准决策与规范，Current Reality 使用当前代码、配置、测试或运行证据；冲突记 Finding / Conflict，不以“代码最新”静默改需求
-    - 产品任务使用独立 worktree；产品代码仅由 Software Engineer 写入；最终 Merge 保留给 Human
+    - 产品任务使用独立 worktree；产品代码仅由 Software Engineer 写入。合入 develop 与合入 main 是不同授权层：已审切片通过适用 Review 后由 01 及时合 develop、push 并远端读回，不再把 push/开 PR 交 Human 选择；普通产品 main 的最终确认与合并保留给用户。精确边界与当前版本以产品仓 docs/governance/version-control.md 为准，本锚点不重述其全文
     - 不得清理、覆盖、提交或丢弃产品仓当前未提交及未跟踪内容
     - Canonical Memory 仅由 Context Engineer 正常写入
     - 分支与提交按产品仓 docs/governance/version-control.md：不直接 push main、不 force-push 共享分支、不自动解决无法判断语义的冲突
@@ -49,18 +49,23 @@ context:
 authority_refs:
   - multica://issue/YZT-98
   - multica://issue/YZT-97
+  - multica://issue/YZT-116
+  - repo://teachers-app-one@ba8e32d10772fd79314de387fade98ed4852d358/docs/governance/version-control.md
   - repo://teachers-app-one@0ad4bd9/docs/README.md
   - repo://teachers-app-one@0ad4bd9/docs/product/product-expectations.md
 
 source_refs:
+  - repo://teachers-app-one@ba8e32d10772fd79314de387fade98ed4852d358/docs/governance/version-control.md
   - repo://teachers-app-one@0ad4bd9/docs/README.md
   - repo://teachers-app-one@0ad4bd9/docs/product/product-expectations.md
   - repo://teachers-app-one@0ad4bd9/docs/architecture/system-design.md
   - repo://teachers-app-one@0ad4bd9/README.md
   - repo://teachers-app-one@0ad4bd9/.ai/project-capabilities.json
+  - multica://issue/YZT-116
+  - multica://issue/YZT-131
 
 review:
   reason: null
   triggered_at: null
 
-updated_at: 2026-09-16T04:05:00Z
+updated_at: 2026-09-17T14:00:00Z

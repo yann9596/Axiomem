@@ -30,18 +30,19 @@ confirmed:
       新项目的产品与工程语义只依据本仓自身的有效文档索引与精确源版本：
       docs/README.md 为入口（含当前基线/路由声明），product-expectations 为
       PE Baseline 路由索引，system-design 为工程边界。当前集成基线
-      origin/develop=本地 develop=9afcf154（2026-09-17），main 本机与远端均为
-      558fdc93、develop 领先 3 个提交待用户精确授权合并；已审切片按
-      docs/governance/version-control.md 及时合 develop 并远端读回后才派依赖，
-      真机/设备验收安排在首个实际使用 relationalStore 的可运行切片。项目能力
-      policy 默认拒绝；knowledge、engineering、methods 三包按角色启用，device OFF。
-      源稿第 13–26、32 章与第 0.5 章不作为当前事实。
+      origin/develop=本地 develop=ba8e32d（2026-09-17，相对 9afcf154 只增加
+      已审 U01 切片），main 本机与远端均为 558fdc93、develop 领先 4 个提交待
+      用户精确授权合并；已审切片按 docs/governance/version-control.md 及时合
+      develop 并远端读回后才派依赖（合 develop 属 01 既有授权，main 才保留
+      用户最终确认），真机/设备验收安排在首个实际使用 relationalStore 的可运行
+      切片。项目能力 policy 默认拒绝；knowledge、engineering、methods 三包按
+      角色启用，device OFF。源稿第 13–26、32 章与第 0.5 章不作为当前事实。
     refs:
-      - repo://teachers-app-one@9afcf154e99e7c16ae9486eda74dabbb329ff5be/docs/README.md
-      - repo://teachers-app-one@9afcf154e99e7c16ae9486eda74dabbb329ff5be/docs/product/product-expectations.md
-      - repo://teachers-app-one@9afcf154e99e7c16ae9486eda74dabbb329ff5be/docs/architecture/system-design.md
-      - repo://teachers-app-one@9afcf154e99e7c16ae9486eda74dabbb329ff5be/docs/governance/version-control.md
-      - FACT-TAPP1-000002
+      - repo://teachers-app-one@ba8e32d10772fd79314de387fade98ed4852d358/docs/README.md
+      - repo://teachers-app-one@ba8e32d10772fd79314de387fade98ed4852d358/docs/product/product-expectations.md
+      - repo://teachers-app-one@ba8e32d10772fd79314de387fade98ed4852d358/docs/architecture/system-design.md
+      - repo://teachers-app-one@ba8e32d10772fd79314de387fade98ed4852d358/docs/governance/version-control.md
+      - FACT-TAPP1-000003
   - id: cp-confirmed-003
     summary: >
       D01 设计血缘与审查边界：0.2.1-draft 经独立 R1 后由 0.3.0-draft 合法取代
@@ -49,10 +50,10 @@ confirmed:
       S1 T01–T05 实现 0.1.0-071d4b3 已独立 R1（YZT-123/YZT-124/YZT-125）并随
       9afcf154 合入 develop；YZT-128 交付 U01 派生调度与失败隔离合成实现
       （implementation/teachers-app1-d01-u01-projection-scheduler/0.1.0-ba8e32d，
-      commit ba8e32d、PR#11 对 develop，未合 main），待独立 R1 与整合，其 R1
-      通过并远端读回前不作为 live 依赖基线。该设计增量
-      批准不等于用户批准 G01/G02 产品取舍，也不解除 synthetic guard、生产策略、
-      设备/签名/发布或真实数据限制。
+      commit ba8e32d），该切片已完成独立 R1（APPROVE/APPROVE_AS_IMPLEMENTATION）
+      并已由 01 合入 develop、远端读回一致，构成当前 live 依赖基线；main 未合。
+      该设计增量批准不等于用户批准 G01/G02 产品取舍，也不解除 synthetic guard、
+      生产策略、设备/签名/发布或真实数据限制。
     refs:
       - multica://issue/YZT-121
       - multica://issue/YZT-122
@@ -62,7 +63,9 @@ confirmed:
       - multica://issue/YZT-126
       - multica://issue/YZT-127
       - multica://issue/YZT-128
-      - repo://teachers-app-one@9afcf154e99e7c16ae9486eda74dabbb329ff5be/docs/governance/version-control.md
+      - multica://issue/YZT-130
+      - repo://teachers-app-one@ba8e32d10772fd79314de387fade98ed4852d358/docs/governance/version-control.md
+      - FACT-TAPP1-000003
   - id: cp-confirmed-004
     summary: >
       公共协作契约已收口并部署（Memory 仓 82817c6）：shared
@@ -80,29 +83,30 @@ confirmed:
 open:
   - id: cp-open-001
     summary: >
-      main 合并待用户精确授权：develop 9afcf154 领先 main 558fdc93 三个已审提交，
+      main 合并待用户精确授权：develop ba8e32d 领先 main 558fdc93 四个已审提交，
       审批等待期间可从 develop 继续已授权工作，不因等待 main 阻塞开发，也不把
-      "用户要求补治理" 推导成 main/签名/发布授权。
+      "用户要求补治理" 推导成 main/签名/发布授权；合 develop 与合 main 的授权分层
+      以产品仓 version-control.md 为准。
     refs:
-      - repo://teachers-app-one@9afcf154e99e7c16ae9486eda74dabbb329ff5be/docs/governance/version-control.md
+      - repo://teachers-app-one@ba8e32d10772fd79314de387fade98ed4852d358/docs/governance/version-control.md
       - registry://teachers-app1
-      - FACT-TAPP1-000002
+      - FACT-TAPP1-000003
   - id: cp-open-002
     summary: >
       平台与发布验收未完成：真机、HarmonyOS relationalStore、UI 走查、签名、发布
       与 R2 仍按实际状态为 NOT_RUN；设备验收安排在首个实际使用 relationalStore /
       UI 交互的可运行切片，宿主 SQLite 合成探针或 U01 合成组件不得冒充平台 PASS。
     refs:
-      - repo://teachers-app-one@9afcf154e99e7c16ae9486eda74dabbb329ff5be/docs/engineering/harmonyos-toolchain.md
-      - repo://teachers-app-one@9afcf154e99e7c16ae9486eda74dabbb329ff5be/docs/project-management/mvp-execution-plan.md
-      - FACT-TAPP1-000002
+      - repo://teachers-app-one@ba8e32d10772fd79314de387fade98ed4852d358/docs/engineering/harmonyos-toolchain.md
+      - repo://teachers-app-one@ba8e32d10772fd79314de387fade98ed4852d358/docs/project-management/mvp-execution-plan.md
+      - FACT-TAPP1-000003
   - id: cp-open-003
     summary: >
       尚未冻结的产品语义（TopicPolicy 阈值、HistorySignal 观察充分性、名单排序
       交互与外部 UI/UX 版本一致性）按产品仓 product-expectations 进入 D01
       Contract Gap Register；不得用模板示例或聊天印象自行定产品算法。
     refs:
-      - repo://teachers-app-one@9afcf154e99e7c16ae9486eda74dabbb329ff5be/docs/product/product-expectations.md
+      - repo://teachers-app-one@ba8e32d10772fd79314de387fade98ed4852d358/docs/product/product-expectations.md
   - id: cp-open-004
     summary: >
       Axiomem 公开上传仍无专项授权：本机精确 commit/patch 与治理产物可交付，
@@ -117,13 +121,14 @@ open:
 conflicts: []
 
 next:
-  - 从精确集成基线 9afcf154 继续：先完成 YZT-128 U01 的独立 R1 与（通过后）develop 整合+远端读回，再从该集成版本派依赖切片，不从旧的 main 或历史 Agent 分支开工
+  - 从精确集成基线 ba8e32d 继续：U01 的独立 R1 与 develop 整合+远端读回已完成，依赖切片从该集成版本派发，不从旧的 main、9afcf154 或历史 Agent 分支开工
   - main 合并与设备/签名/发布/真实数据保持等待用户精确授权；在真机/relationalStore 与首轮 UI 交互切片到达平台关口前，只准备合成数据与回滚方案，不宣称平台 PASS
   - G01/G02 等未决产品规则维持 pending，由 01 提交完整可理解选择；设计增量批准与 U01 合成实现不得当作产品取舍或生产准入
+  - 专业交付的完成协议统一按 skills/parent-handoff-wake/SKILL.md（Memory 仓 75a9e563）执行：达成交付目标后设置 done 并 live readback；完成治理任务不等于其产物已被接受、部署或 indexed
 
 refs:
   - project.yaml
   - multica://issue/YZT-98
   - migration/retirement/app1-retirement-yzt98.md
 
-updated_at: 2026-09-17T10:50:00+08:00
+updated_at: 2026-09-17T14:00:00Z

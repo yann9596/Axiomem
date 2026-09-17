@@ -92,6 +92,24 @@ confirmed:
       - registry://app1
       - registry://teachers-app1
       - migration/retirement/app1-retirement-yzt98.md
+  - id: cp-confirmed-006
+    summary: >
+      统一完成契约已批准、提交并部署（覆盖 02–06 全部专业角色，含 01 的协调父任务
+      完成口径）：专业交付达到其准确目标并留下唯一最终子任务评论后，必须用
+      skills/parent-handoff-wake/scripts/complete_task.py 设置该子任务 done 并读回
+      平台真实状态；完整负面 Review/QA 报告同样完成其报告任务，状态完成不更改
+      verdict；仅当权威项目生命周期显式要求时才用 in_review 并走其真实回交途径。
+      Context pipeline 仍只做 prepare/校验/发布，不写 Issue 状态；原生 stage 完成
+      回交 01，专业角色不派下一角色。治理任务的 done 不等于其产物已被接受、部署、
+      indexed 或被消费。规范正文以精确 commit 的 skill 文本为准，本条不复制全文，
+      也不据此新增 Memory Core 触发器。
+    refs:
+      - repo://multica-memory@75a9e56364c32dfeca9d20438e5228bb0d9e9d3c/skills/parent-handoff-wake/SKILL.md
+      - repo://multica-memory@75a9e56364c32dfeca9d20438e5228bb0d9e9d3c/skills/parent-handoff-wake/scripts/complete_task.py
+      - repo://multica-memory@75a9e56364c32dfeca9d20438e5228bb0d9e9d3c/adapters/multica/completion-lifecycle/role-instruction-patch.json
+      - repo://multica-memory@75a9e56364c32dfeca9d20438e5228bb0d9e9d3c/adapters/multica/APP1_SUPPORTED_EXECUTION.md
+      - RULE-TEAM-000001
+      - multica://issue/YZT-130
 
 open:
   - id: cp-team-open-002
@@ -115,6 +133,7 @@ next:
   - TeachersApp1（YZT-98 后的独立项目）已越过 bootstrap 与首轮 canary：正式 Findings source binding、PREPARE_HANDOFF/SELF_CHECK 与真实 stage 回交均按当前任务执行；不再以"停放/等待启动确认"作为现状
   - 常规记忆治理入口已确立：01 在批准决定、契约变化与实质陈旧状态上记录 Memory Disposition，02 在明确来源与 Scope 内做最小 canonical 更新、supersede/退役并重建派生索引；普通 Finding 捕获不自动唤醒 02
   - 每个项目的 Current Fact / Checkpoint 必须记录 as-of 与精确来源版本，替代只写"当前提交"的易腐快照；产品仓整合时机、真机位置与 Human 决策格式以该产品仓自身有效文档为准
+  - 专业任务收尾按 cp-confirmed-006 的统一完成契约执行（done + live readback）；治理 done 与其产物被接受/部署/indexed 是两件事，后者由 01 在适用 Review 后另行验证
 
 refs:
   - migration/README.md
@@ -123,4 +142,4 @@ refs:
   - migration/retirement/app1-retirement-yzt98.md
   - team-context/registry/projects.yaml
 
-updated_at: 2026-09-17T10:50:00+08:00
+updated_at: 2026-09-17T14:00:00Z
