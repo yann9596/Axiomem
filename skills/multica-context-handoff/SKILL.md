@@ -123,7 +123,7 @@ For R1 non-code review, the artifact requirements document may carry explicit re
 
 ## Shared collaboration contract
 
-This section is the single shared definition for the bound team's context, artifact and cognition duties. Role instructions retain professional responsibilities and reference this skill instead of duplicating these rules.
+This section is the single shared definition for the bound team's context, artifact, cognition and Human-decision duties. Role instructions retain professional responsibilities and reference this skill instead of duplicating these rules.
 
 - Resolve the current project, repository, role and capability policy from authoritative task/project inputs. Installed tools are used only when that project enables them for the current role. Do not inherit another project's paths, credentials, technology, scope or temporary authorization. Role identities resolve through the current registry/binding, not historical names or IDs in prompts.
 - Before consequential work, run the bound fresh SELF_CHECK with exact task/role, trusted source map, real source binding and prior observation. READY permits the authorized path; stale or BLOCKED stops it. Specialists return the reason to Lead; Lead refreshes within unchanged authorization. Never assert READY or bypass drift. Read-only diagnosis is allowed.
@@ -134,3 +134,20 @@ This section is the single shared definition for the bound team's context, artif
 - Preserve uncommitted/untracked work. Do not silently take over another role's write surface. After one challenge and one owner response, unresolved disagreement goes to Lead; a dispute over Lead authority goes to Human. R0/R1/R2 are project collaboration policy, not Memory Core concepts.
 
 CLI connection scope is explicit when needed: every pipeline stage accepts --executable, --profile and --workspace-id. These configure the existing authenticated read/publication adapters; they do not broaden allowlists or grant dispatch rights.
+
+## Human decision contract — all roles, all projects
+
+This is the common contract for every bound agent, including Lead, Context Engineer, Solution Architect, Software Engineer, Delivery Reviewer and QA. Apply it whenever an agent prepares, escalates, reviews or presents a decision for the user, whether in an issue, chat, review, blocker or approval request. It is not specific to one specialist or product. Keep professional ownership and existing project routing; an escalation does not grant dispatch or decision authority.
+
+Before asking for a decision, finish the authorized investigation and preparation needed to make it concrete and reviewable. Check existing authorization first: do not ask again for an action already approved within unchanged scope. Distinguish an actual user tradeoff from routine technical work the agent can complete itself.
+
+Present the following in plain language, with detail proportional to impact; major decisions must make each item explicit:
+
+1. Background and purpose: what needs deciding and why now.
+2. Current state: what is verified, what is unknown, the relevant evidence/version and the part of the work affected. Explain domain terms; use a small example when helpful. Unexplained issue IDs or labels are not explanations.
+3. Concrete options: normally two or three feasible choices the user can select, including deferral or keeping the current behavior when viable. Do not invent false alternatives to fill a quota; if only one action is viable, explain why and the consequence of declining it.
+4. Consequences: describe differences in user-visible behavior, scope, compatibility/data, effort/cost, risk and reversibility as relevant. Do not dump technical detail without explaining its effect.
+5. Recommendation: state the preferred choice, the reason and material uncertainty. Do not replace the recommendation with an open-ended question.
+6. Exact decision boundary and pending behavior: name the artifact/version or action being approved, what approval includes, what remains outside it, what must wait without an answer and which independent authorized work continues. Silence is not approval.
+
+Ask for the choice after presenting this package. Record the selected option and source decision reference before freezing the affected contract or performing the gated action. An approval applies only to its stated scope; a material change requires renewed assessment. When reviewing another agent's request, correct missing decision context before passing it to the user. For a missing factual input rather than a decision, ask one precise factual clarification instead of fabricating choices.
