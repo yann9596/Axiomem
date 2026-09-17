@@ -68,7 +68,7 @@ HISTORICAL_PINNED_SKILL_MD_U04 = (
 # guards. Historical U04 pin is preserved above; U05 bundle.json is not
 # rewritten in place.
 PINNED_SKILL_MD = (
-    "sha256:a7326f93a63e1718fb8ed08ecdc7818726db02cca06eacfee9bffc377d1262dd"
+    "sha256:93e26e97db9027661eb3fbd0c6b7b179a4bfcdba6244b997f6bf62b77132dbf6"
 )
 # Issue text also cites sha256:1df6a40c… as a U04 "skill integration digest".
 # That value is not a T08-style bundle digest of U04@702cb9b; U05 pins the

@@ -675,8 +675,9 @@ def _assemble_package(request: dict, plan: dict, result: dict, by_id: dict,
     pointers = []
     if scope.get("type") == "project" and scope.get("project_id"):
         pointers.append(f"project-context/{scope['project_id']}")
-        pointers.append(
-            f".ai/context.yaml (lives in the {scope['project_id']} product repo)")
+        if scope["project_id"] != "teachers-app1":
+            pointers.append(
+                f".ai/context.yaml (lives in the {scope['project_id']} product repo)")
     elif scope.get("type") == "cross_project":
         for pid in scope.get("projects") or []:
             pointers.append(f"project-context/{pid}")

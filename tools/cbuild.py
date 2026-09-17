@@ -205,7 +205,8 @@ def build_package(task_id: str, role: str, task_scope: dict, decision: str = "",
     pointers = []
     if task_scope["type"] == "project":
         pointers.append(f"project-context/{task_scope['project_id']}")
-        pointers.append(f".ai/context.yaml (lives in the {task_scope['project_id']} product repo)")
+        if task_scope["project_id"] != "teachers-app1":
+            pointers.append(f".ai/context.yaml (lives in the {task_scope['project_id']} product repo)")
     # de-dupe filter names while preserving order
     seen = set()
     trace["filters_applied"] = [f for f in trace["filters_applied"]
