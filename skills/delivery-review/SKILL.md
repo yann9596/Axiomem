@@ -59,3 +59,5 @@ Do not dispatch the next specialist.
 Verdict, Reviewed Artifact (exact version), the five lenses, artifact-specific
 findings, required changes, non-blocking follow-ups, context/design challenges.
 Do **not** run TASK_FINDING_DRAIN.
+
+Complete the assigned report under the bound parent-handoff-wake contract, using its verified completion helper and live done readback. The verdict and later Lead acceptance/correction are separate from completion of this reporting task.

@@ -4,3 +4,5 @@ index/v1.1/
 runtime/v1.1/
 __pycache__/
 *.pyc
+
+.ai/local/

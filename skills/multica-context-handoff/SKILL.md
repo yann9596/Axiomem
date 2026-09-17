@@ -115,7 +115,7 @@ The task identity and publication container are distinct. In Lead's current pare
 
 For worker SELF_CHECK, build a fresh request from the CHILD issue and its role, but pass the declared PARENT issue to --issue for discovery. Carry exact task binding, trusted map and prior source observation. A parent package for another task is not eligible. Do not change fingerprints to the parent identity.
 
-The producer task is done after its stated deliverable goal is actually met and its single child comment carries exact artifact and validation evidence. Independent review is a separate stage/task. Native stage completion wakes Lead; no additional normal-completion mention. A blocked task stays blocked and can mention Lead in its single child blocking comment. done does not mean merged or milestone accepted.
+Task completion, including Context/Design/Implementation/Review/QA deliverables, follows the bound parent-handoff-wake contract. After the assigned goal is met and the single final child result exists, its verified completion helper must set done and confirm live readback. Later acceptance, review verdict, governance deployment, merge and milestone decisions remain separate; never park a completed report in in_review merely to wait for them.
 
 The single real authorization source can be reused only inside its declared scope. Generate exact per-task binding/map after authenticated project/parent-chain checks; no wildcard task lists or invented authors. New package generation inside unchanged authorization is Lead's responsibility, not another Human-start gate. Keep fail-closed identity/source/freshness checks.
 

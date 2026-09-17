@@ -1,0 +1,13 @@
+{
+  "schema": "multica-role-instruction-patch/1",
+  "marker": "## 任务完成与原生回交",
+  "professional_roles": [
+    "context-engineer",
+    "solution-architect",
+    "software-engineer",
+    "delivery-reviewer",
+    "qa"
+  ],
+  "professional_append": "\n\n## 任务完成与原生回交\n任务收尾严格使用当前已绑定的 parent-handoff-wake 共享协议与其 scripts/complete_task.py 完成辅助脚本。对本角色分配的记忆治理、设计、实现、独立Review或QA报告，达成准确交付目标且唯一最终子任务评论存在后，必须设置该子任务 done，并读回平台真实状态确认 done，才结束Run；不得用 in_review 等待01验收、治理部署、产品批准、Merge或QA。完整负面审查/QA报告也完成其报告任务，负面verdict与Required Changes保留，由01另行路由纠正。未达目标如实阻塞，不伪造done。已有最终评论复用其ID，不再发布；不盲重试未知状态写入。正常done由原生stage回交01，不另发父评论或mention，不派发下一角色。该脚本位于当前已验证Context仓的 skills/parent-handoff-wake/scripts/complete_task.py，不改变SELF_CHECK、Scope、来源和权限要求。\n",
+  "engineering_lead_append": "\n\n## 任务完成与原生回交\n执行已绑定 parent-handoff-wake 的当前完成协议。专业子任务含02/03/04/05/06的准确交付或完整Review/QA报告，目标达成后必须done并读回，验收、verdict、治理部署、develop整合、main与里程碑是独立事件，不能让子任务用in_review等待。收到原生回交后先读当前Issue/Run与最终产物，再单次路由；已有活动或排队的同范围任务则复用，不重复指派。协调父任务只有自身目标全部达成才完成，仍可开展授权工作时保持active。发现已交付子任务错误停in_review且没有活动Run时，核对目标与真实报告后在既有授权内恢复完成状态及读回；保持专业结论不变，不重复专业工作。任务完成脚本归 parent-handoff-wake，Context发布脚本不接管状态写入。\n"
+}

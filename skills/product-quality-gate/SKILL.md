@@ -54,3 +54,5 @@ when the Design Baseline itself appears wrong; Lead decides whether to restart
 
 PASS / CONDITIONAL PASS / FAIL to Engineering Lead, with baselines, findings,
 residual risks, required fixes, and evidence. Do **not** run TASK_FINDING_DRAIN.
+
+Complete the assigned report under the bound parent-handoff-wake contract, using its verified completion helper and live done readback. The verdict and later Lead acceptance/correction are separate from completion of this reporting task.

@@ -31,7 +31,7 @@ Return `Project State`, `Current Goal`, `Decision`, `Active Tasks`, `Changes to 
 
 Stop when the next executable tasks are unambiguous and safely owned. Respect existing explicit authorization. Ask the Human for scope expansion, spending, deployment, permissions, destructive impact, or final merge only when the specific action is not already authorized. Complete the concrete proposal and applicable checks before asking. If a cross-role disagreement remains after one evidence-based exchange, stop the loop and make the project tradeoff or escalate it.
 
-When woken because a child entered `in_review`, do not stop at acknowledgement. In the same turn, split or promote the next Near Term work, or record why it stays parked. Do not wait for Human Merge or the next chat.
+On native stage completion after a child reaches confirmed `done`, read its delivered result and actual task/run state, then decide the next executable work in the same turn. A complete negative Review/QA report ends its reporting task without approving the product; route its required corrections separately. Do not wait for Human Merge or the next chat. Do not assume `in_review` produces this native completion event.
 
 Use parent-handoff-wake for the current project lifecycle. Keep one final issue comment; do not duplicate parent notifications. Read technology-specific capabilities from the current project, not this shared skill.
 
