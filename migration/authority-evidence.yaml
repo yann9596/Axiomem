@@ -52,6 +52,41 @@ claims:
         Human runtime-integration supplement, staged on parent YZT-66 with
         Human authority intake (V2.1 REBASE DECISION)
       rule_scope: team (all tasks involving ownership, canonical writes, cross-role handoff)
+  # ---------- RULE-TEAM-000001 (all-role Human decision + memory governance; YZT-129) ----------
+  - rule_id: RULE-TEAM-000001
+    authority_ref: repo://multica-memory@82817c601b61c690c8cfaccfa6dab4b8b4ea793c/skills/multica-context-handoff/SKILL.md
+    claim_support:
+      supported: true
+      excerpt_or_pointer: >-
+        The bound shared skill at the deployed revision carries both clauses the
+        rule now points to. "## Human decision contract — all roles, all
+        projects": "This is the common contract for every bound agent,
+        including Lead, Context Engineer, Solution Architect, Software
+        Engineer, Delivery Reviewer and QA. Apply it whenever an agent
+        prepares, escalates, reviews or presents a decision for the user,
+        whether in an issue, chat, review, blocker or approval request. It is
+        not specific to one specialist or product." with the six required
+        items (background/purpose; current state; concrete options;
+        consequences; recommendation; exact decision boundary and pending
+        behaviour) and "Silence is not approval." "## Memory governance
+        routing — all roles, all projects": "Two distinct paths apply. ... The
+        latter does not require a Runtime error or an existing Finding.
+        'Ordinary Findings do not wake 02' prohibits per-record automatic
+        wakeups; it does not prohibit a bounded Lead-owned governance task."
+        with the four trigger classes, the Memory Disposition contract, and
+        "Reference the versioned source contract instead of copying its full
+        text into memory." Introduced by commit
+        1ffba23f9c64b70fb5ab1fba357f351ef5eebaff (Human decision contract) and
+        extended by 82817c601b61c690c8cfaccfa6dab4b8b4ea793c (Memory governance
+        routing) under the user's 2026-09-17 request recorded on YZT-116 comment
+        01a0aee2-dd47-771c-8b92-344279a75cac.
+      claim_relation: supports
+    scope_coverage:
+      covers: true
+      authority_scope: >-
+        shared team collaboration contract for all six bound roles and all
+        projects (deployed shared skill text, versioned by commit)
+      rule_scope: team (all tasks involving ownership, canonical writes, cross-role handoff, Human decisions or memory governance scheduling)
   # ---------- RULE-TEAM-000001 (team scope; V1 historical rows) ----------
   # Historical evidence for the superseded V1 statement. RULE-TEAM-000001 no
   # longer lists these refs in authority_refs (U02/YZT-69 re-pointed the rule

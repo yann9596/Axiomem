@@ -18,7 +18,16 @@ statement: >
   Any role may challenge, but
   unresolved cross-role disagreement escalates to Engineering Lead after one
   round trip. Any role may Challenge; no role silently takes over another
-  Owner's domain.
+  Owner's domain. Human decisions presented by any role or project follow the
+  single common Human decision contract carried by the bound shared skill
+  (background/current state, concrete options, effects, recommendation, exact
+  approval boundary, behaviour while undecided), not a per-role or per-product
+  approval format. Approved durable decisions, contracts, role boundaries and
+  materially stale state are curated through the shared Memory governance
+  routing: Engineering Lead records a concrete Memory Disposition and, when
+  needed, one deduplicated bounded task for this owner; ordinary Finding
+  capture is not an automatic trigger. Reference the versioned skill text
+  instead of restating either contract here.
 
 scope:
   type: team
@@ -40,6 +49,7 @@ applicability:
   semantic:
     applicable_when:
       - any task involving role ownership, canonical memory writes or cross-role handoff
+      - any task presenting a Human decision, recording a Memory Disposition or curating approved durable changes
     not_applicable_when:
       - platform-managed runtime maintenance not touching team cognition
 
@@ -64,12 +74,18 @@ verification: verified
 
 authority_refs:
   - multica://issue/YZT-66
+  - repo://multica-memory@82817c601b61c690c8cfaccfa6dab4b8b4ea793c/skills/multica-context-handoff/SKILL.md
 
 source_refs:
   - multica://issue/YZT-66
   - multica://issue/YZT-39
+  - multica://issue/YZT-129
+  - repo://multica-memory@1ffba23f9c64b70fb5ab1fba357f351ef5eebaff/skills/multica-context-handoff/SKILL.md
+  - repo://multica-memory@82817c601b61c690c8cfaccfa6dab4b8b4ea793c/skills/multica-context-handoff/SKILL.md
+  - repo://multica-memory@82817c601b61c690c8cfaccfa6dab4b8b4ea793c/skills/adaptive-task-planning/SKILL.md
+  - repo://multica-memory@82817c601b61c690c8cfaccfa6dab4b8b4ea793c/adapters/multica/APP1_SUPPORTED_EXECUTION.md
   - repo://multica-memory@61c6f0e/sources/project-context-2026-09-06.json
   - repo://multica-memory@61c6f0e/memory/governance-owner-boundaries.json
 
 created_at: 2026-09-06T00:00:00Z
-updated_at: 2026-09-10T09:00:00Z
+updated_at: 2026-09-17T10:45:00Z

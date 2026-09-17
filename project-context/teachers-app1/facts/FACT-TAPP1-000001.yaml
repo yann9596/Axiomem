@@ -26,8 +26,21 @@ domains:
   - source-boundary
 repositories:
   - teachers-app-one
-status: active
+status: superseded
 verification: verified
+
+relations:
+  conflicts_with: []
+  supersedes: []
+  supersedes_note: >
+    Superseded by FACT-TAPP1-000002 (YZT-129 governance, 2026-09-17): the
+    repository state recorded here was correct at its 2026-09-16 as-of and is
+    kept as history, but its commit snapshot is no longer current. The identity
+    and source-boundary statements (product repo, docs/README.md routing entry,
+    archived app1 != teachers-app1) carry forward unchanged.
+  drift_of: null
+  norm_reality_conflict: []
+
 verified_against:
   - source_ref: repo://teachers-app-one@0ad4bd9
     revision: 0ad4bd9933a2c627b3f5ffdb7e476c3e1c9fd71e

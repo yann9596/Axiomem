@@ -1,0 +1,101 @@
+schema_version: "1.1"
+kind: current_fact
+id: FACT-TAPP1-000002
+title: TeachersApp1 集成基线与工具实态（YZT-129 治理，2026-09-17）
+
+statement: >
+  as-of 2026-09-17（YZT-129 治理核验）：origin/develop = 本地 develop =
+  9afcf154e99e7c16ae9486eda74dabbb329ff5be（2026-09-17 17:25 +0800，
+  "Merge pull request #9 from yann9596/codex/sync-and-development-plan-20260917"），
+  该提交已含已审 S1 T01–T05 实现（59e76ce）与开发/整合工作流文档（f6620ab）。
+  main 本机与 origin/main 均为 558fdc939414142636f9b4f43530facf1c7cfb7e；
+  develop 领先 main 3 个提交，尚未合并，main 合并等待用户精确授权，不因本治理
+  自动推进。已审切片按产品仓 docs/governance/version-control.md：通过适用 Review
+  后由 01 及时合 develop、push 并远端读回，之后依赖任务才从该精确集成基线开工；
+  真机/设备验收安排在首个实际使用 relationalStore 的可运行切片，不是设计或纯宿主
+  工作的前置。工具接入、真实交接 canary 与旧有界修复已完成其已验范围；本机能力
+  策略仍默认拒绝，知识/工程/方法三包按角色启用，device 包 OFF。构建、CodeLinter
+  与本地测试有各自证据：本地单测 43/43 与 scoped 2/2 PASS、宿主 SQLite 合成探针
+  65/65 PASS、仓库检查按当轮证据；真机、HarmonyOS relationalStore、UI 走查、
+  签名、发布与 R2 仍为 NOT_RUN，不得由宿主探针或合成组件冒充平台持久化 PASS。
+  产品路径 D:\AI\projects\TeachersApp1，execution_mode=worktree；平台默认工作树
+  develop=9afcf154，任务工作树按 Issue 精确 commit 建立。本条取代
+  FACT-TAPP1-000001 的旧 as-of 状态（旧 main=3678608/"落后 2 提交"/"工作树干净"、
+  旧 origin/main=0ad4bd9 快照）：历史出处与当时证据保留在该被取代对象与 git 历史中，
+  不改写为从未发生。
+
+scope:
+  type: project
+  project_id: teachers-app1
+  projects: []
+  task_id: null
+
+domains:
+  - repository-state
+  - integration-workflow
+  - toolchain-verification
+
+repositories:
+  - teachers-app-one
+
+status: active
+verification: verified
+
+verified_against:
+  - source_ref: repo://teachers-app-one@9afcf154e99e7c16ae9486eda74dabbb329ff5be/docs/governance/version-control.md
+    revision: 9afcf154e99e7c16ae9486eda74dabbb329ff5be
+    paths:
+      - docs/governance/version-control.md
+  - source_ref: repo://teachers-app-one@9afcf154e99e7c16ae9486eda74dabbb329ff5be/docs/project-management/mvp-execution-plan.md
+    revision: 9afcf154e99e7c16ae9486eda74dabbb329ff5be
+    paths:
+      - docs/project-management/mvp-execution-plan.md
+  - source_ref: repo://teachers-app-one@9afcf154e99e7c16ae9486eda74dabbb329ff5be/docs/engineering/harmonyos-toolchain.md
+    revision: 9afcf154e99e7c16ae9486eda74dabbb329ff5be
+    paths:
+      - docs/engineering/harmonyos-toolchain.md
+  - source_ref: repo://teachers-app-one@9afcf154e99e7c16ae9486eda74dabbb329ff5be/docs/README.md
+    revision: 9afcf154e99e7c16ae9486eda74dabbb329ff5be
+    paths:
+      - docs/README.md
+  - source_ref: repo://teachers-app-one@558fdc939414142636f9b4f43530facf1c7cfb7e/docs/README.md
+    revision: 558fdc939414142636f9b4f43530facf1c7cfb7e
+    paths:
+      - docs/README.md
+
+source_refs:
+  - repo://teachers-app-one@9afcf154e99e7c16ae9486eda74dabbb329ff5be/docs/governance/version-control.md
+  - repo://teachers-app-one@9afcf154e99e7c16ae9486eda74dabbb329ff5be/docs/project-management/mvp-execution-plan.md
+  - repo://teachers-app-one@9afcf154e99e7c16ae9486eda74dabbb329ff5be/docs/engineering/harmonyos-toolchain.md
+  - repo://teachers-app-one@9afcf154e99e7c16ae9486eda74dabbb329ff5be/docs/README.md
+  - repo://teachers-app-one@9afcf154e99e7c16ae9486eda74dabbb329ff5be/docs/project-management/multica-workflow.md
+  - repo://teachers-app-one@9afcf154e99e7c16ae9486eda74dabbb329ff5be/docs/product/product-expectations.md
+  - repo://multica-memory@82817c601b61c690c8cfaccfa6dab4b8b4ea793c/adapters/multica/APP1_SUPPORTED_EXECUTION.md
+  - multica://issue/YZT-116
+  - multica://issue/YZT-129
+  - multica://issue/YZT-123
+  - multica://issue/YZT-124
+  - multica://issue/YZT-125
+  - multica://issue/YZT-126
+  - multica://issue/YZT-127
+  - multica://issue/YZT-128
+
+relations:
+  conflicts_with: []
+  supersedes:
+    - repo://multica-memory@82817c601b61c690c8cfaccfa6dab4b8b4ea793c/project-context/teachers-app1/facts/FACT-TAPP1-000001.yaml
+  supersedes_note: >
+    取代旧 as-of 状态，不否认历史：FACT-TAPP1-000001 的 2026-09-16 核验及其
+    YZT-97/YZT-98 来源约束、旧 app1≠新项目区分继续有效，仅其"当前提交/落后提交数/
+    工作树状态"类快照不再是 current；该对象保留在库内并标 status=superseded，原
+    正文与来源不被改写。
+  drift_of: null
+  norm_reality_conflict: []
+
+review:
+  reason: null
+  triggered_at: null
+
+created_at: 2026-09-17T10:45:00Z
+verified_at: 2026-09-17T10:50:00Z
+updated_at: 2026-09-17T10:50:00Z

@@ -96,23 +96,25 @@ confirmed:
 open:
   - id: cp-team-open-002
     summary: >
-      Workspace/Agent Instructions 与平台 Skills 仍为 V1/V1.1 混合形态，
-      V2 六角色重建（shared skill U04、Agent/Squad Instructions U05）与
-      workspace-owner 平台 cutover 未执行——该清理债务明确归属 YZT-66
-      Stage 3 (U04/U05) 与 U12 enablement，不是 U02 handoff gap；
-      平台侧 staged 更新清单见 migration/contract-updates.md。
+      V2 六角色重建与平台侧契约 cutover 的实际完成面已前移，本条不再描述
+      "仍为 V1/V1.1 混合、未执行"：当前 bound shared skills 与六角色实际指令
+      已回读且活跃（multica-context-handoff 携带 all-role Human decision
+      contract 与 Memory governance routing，代码源 82817c6）。保留项仅为
+      平台侧后续内容变更需按 workspace-owner 流程落地，以及跨项目检索与
+      索引一致性需在每次 02 治理后复核；历史 staged 清单仍见
+      migration/contract-updates.md，不改写为从未需要更新。
     projects: [app1, teachers-app1, web-imagegen]
     refs:
+      - repo://multica-memory@82817c601b61c690c8cfaccfa6dab4b8b4ea793c/skills/multica-context-handoff/SKILL.md
       - migration/contract-updates.md
+      - multica://issue/YZT-66
 
 conflicts: []
 
 next:
-  - TeachersApp1（YZT-98 后）Bootstrap 仍停放：registry/anchor/来源边界已建立，但正式 Findings source binding 尚缺 Lead 授权 comment，PREPARE_HANDOFF/SELF_CHECK 为 NOT_RUN；恢复后由 01 继续 BOOT-02 起的编排
-  - U02（YZT-69）六角色迁移已交付（in_review，等待 Lead 验收）；U03 以 U02 报告中的 registry/profile revision 为输入
-  - U03 重新验证 T00–T06 并合并 handoff chain（drain FIND-WIMG-HO00-000001；含 duplicate checkpoint-entry id 修正）
-  - U04/U05 重建 shared skill 与 Agent/Squad Instructions；05 agent 平台改名/Instructions cutover 归 U05/U12
-  - 平台 Instructions/Skills cutover 由 workspace owner 执行
+  - TeachersApp1（YZT-98 后的独立项目）已越过 bootstrap 与首轮 canary：正式 Findings source binding、PREPARE_HANDOFF/SELF_CHECK 与真实 stage 回交均按当前任务执行；不再以"停放/等待启动确认"作为现状
+  - 常规记忆治理入口已确立：01 在批准决定、契约变化与实质陈旧状态上记录 Memory Disposition，02 在明确来源与 Scope 内做最小 canonical 更新、supersede/退役并重建派生索引；普通 Finding 捕获不自动唤醒 02
+  - 每个项目的 Current Fact / Checkpoint 必须记录 as-of 与精确来源版本，替代只写"当前提交"的易腐快照；产品仓整合时机、真机位置与 Human 决策格式以该产品仓自身有效文档为准
 
 refs:
   - migration/README.md
@@ -121,4 +123,4 @@ refs:
   - migration/retirement/app1-retirement-yzt98.md
   - team-context/registry/projects.yaml
 
-updated_at: 2026-09-16T04:05:00Z
+updated_at: 2026-09-17T10:50:00+08:00
