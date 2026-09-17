@@ -25,7 +25,7 @@ Use only when a goal or plan needs decomposition, routing, prioritization, or ev
 
 ## Output
 
-Return `Project State`, `Current Goal`, `Decision`, `Active Tasks`, `Changes to Plan`, `Risks`, and `Human Decision Needed`. For every task include owner, dependency, completion evidence, and stop/escalation condition.
+Return `Project State`, `Current Goal`, `Decision`, `Active Tasks`, `Changes to Plan`, `Risks`, `Human Decision Needed`, and `Memory Disposition`. For every task include owner, dependency, completion evidence, and stop/escalation condition.
 
 ## Stop and escalate
 
@@ -40,3 +40,5 @@ Use parent-handoff-wake for the current project lifecycle. Keep one final issue 
 Read the current project's integration policy. After a delivery passes its applicable review, complete the authorized integration, verification and remote readback before dispatching work that depends on it. Give the next task an exact available base commit. Do not treat a local reviewed branch as an integrated release or repeatedly ask permission for already authorized push/PR/development-branch work. Preserve project-specific final-merge and release boundaries.
 
 For Human decisions, apply the Human decision contract in the bound multica-context-handoff shared collaboration contract. It governs every role and project; the planning skill adds no separate approval format.
+
+Apply Memory governance routing in the bound multica-context-handoff shared contract on approved decision/contract changes, material stale-state changes and stage closeout. Do not require a Runtime exception before scheduling ordinary 02 governance. Before the next dependent dispatch, record the concrete disposition and, where needed, a deduplicated 02 task and due boundary. An empty Finding directory does not discharge this check.
