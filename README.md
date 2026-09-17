@@ -45,6 +45,10 @@ the compatibility/rollback window; it is not the write model.
 - `migration/`: V1.0 → V1.1 migration evidence, gates, cutover record
 - `registry/`, `memory/`, `chains/`, `sources/`: legacy V1.0 (see below)
 
+## Supported Multica execution
+
+Memory Core is framework-neutral; `adapters/multica/` maps platform tasks and role identities. Project-specific HarmonyOS capabilities stay in the product repository. For the current TeachersApp1 handoff lifecycle see [supported execution](adapters/multica/APP1_SUPPORTED_EXECUTION.md); the prior scoped integration evidence is [readiness verification](adapters/multica/APP1_READINESS_VERIFICATION.md). Historical reports are not current release gates. The planning skill source lives in `skills/adaptive-task-planning/SKILL.md`.
+
 ## Commands (V1.1)
 
 Run from the repository root with Python 3.10+:

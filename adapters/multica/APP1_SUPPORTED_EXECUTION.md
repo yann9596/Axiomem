@@ -1,8 +1,8 @@
 # App1 supported execution
 
-## TeachersApp1 execution contract — 2026-09-16
+## TeachersApp1 execution contract — 2026-09-17
 
-This contract replaces the old per-run Human-start and two-comment parent-handoff protocol for TeachersApp1. The user authorized infrastructure repair, integration, configuration, and bounded development preparation on 2026-09-16. Product work starts after the single launch confirmation issue. Do not expand this authorization to product scope changes, secrets, signing, production release, destructive data changes, or other projects.
+This contract replaces the old per-run Human-start and two-comment parent-handoff protocol for TeachersApp1. The user authorized infrastructure repair, integration, configuration, and bounded development preparation on 2026-09-16. The launch was confirmed in YZT-116; design and S1 implementation/review stages have completed. Read the current parent for the next scoped work; do not restore the launch-confirmation gate. Do not expand this authorization to product scope changes, secrets, signing, production release, destructive data changes, or other projects.
 
 Use only the six current registry roles. Preserve project identity teachers-app1 (Multica project 7a2195b5-6628-4b02-9fb2-bc3ce161de85), product repository D:/AI/projects/TeachersApp1, and Context repository D:/AI/multica-memory. Do not reuse the retired app1 scope or feature-reviewer identity. Read current repository facts; no guessed APIs, IDs, paths, versions, or completion claims.
 
@@ -21,16 +21,10 @@ For one workflow defect: at most one implementation, one independent review, and
 Use isolated worktrees for changes. Keep run logs, packages, downloads and scratch outside the product repository. Never overwrite another worker's uncommitted files. Integration into develop requires applicable review and checks; main uses a PR. Human authorization for this remediation permits its reviewed merges; future main merge/release follows the launch issue's explicit scope. Report PASS, NOT_RUN and BLOCKED accurately. On Windows use only C:/Program Files/PowerShell/7/pwsh.exe -NoProfile -NonInteractive and process-scoped toolchain configuration.
 
 
-## TeachersApp1 parent-container handoff (2026-09-16 authorization)
+For non-code R1, carry explicit reviewed_artifact (artifact_type, artifact_id, exact version) in the artifact requirements and required dependency throughout finalize, publish and consumer selfcheck. Missing subjects retain legacy implementation requirements; wrong owner, stale/superseded and unmatched subjects fail closed. R2 keeps its full baseline.
 
-The task identity and publication container are distinct. In Lead's current parent issue, publish the finalized child-task envelope as the ONE final non-trigger comment of that run; use the real trigger comment as --parent when available. The envelope task_ref stays the child. Only after confirmed publication does Lead perform one native assignment. No second summary/parent mention and no unverified SAFE_DISPATCH.
+The real YZT-117 canary completed after its documented first-run recovery. YZT-116 subsequently completed design, artifact registration, implementation and independent review through YZT-125. These are live workflow observations; the earlier YZT-114 transport fixture and 212-test report remain historical evidence for their own revisions.
 
-For worker SELF_CHECK, build a fresh request from the CHILD issue and its role, but pass the declared PARENT issue to --issue for discovery. Carry exact task binding, trusted map and prior source observation. A parent package for another task is not eligible. Do not change fingerprints to the parent identity.
+Current product execution, installed HarmonyOS tools, merge timing, device-test placement and decision format belong to the product repository's docs/project-management/multica-workflow.md, docs/governance/version-control.md and docs/engineering/harmonyos-toolchain.md. They are not Memory Core contracts. Read the current approved develop revision before dependent work. Reviewed slices must be integrated, pushed and read back before dependency dispatch; main follows explicit Human authorization. Device acceptance waits until the runnable platform-dependent slice, not initial design or host-only work.
 
-The producer task is done after its stated deliverable goal is actually met and its single child comment carries exact artifact and validation evidence. Independent review is a separate stage/task. Native stage completion wakes Lead; no additional normal-completion mention. A blocked task stays blocked and can mention Lead in its single child blocking comment. done does not mean merged or milestone accepted.
-
-The single real authorization source can be reused only inside its declared scope. Generate exact per-task binding/map after authenticated project/parent-chain checks; no wildcard task lists or invented authors. New package generation inside unchanged authorization is Lead's responsibility, not another Human-start gate. Keep fail-closed identity/source/freshness checks.
-
-For R1 non-code review, the artifact requirements document may carry explicit reviewed_artifact (artifact_type, artifact_id, exact version), also present as a required dependency. Without it, the legacy implementation requirement remains. Wrong owner, stale/superseded or unmatched subject fails. QA's full R2 baseline remains required. Keep this requirements document at finalize, publish and consumer selfcheck; omission fails closed for a non-code review.
-
-Evidence: parent-container discovery with fresh live YZT-114 task and real authority returned READY; wrong-task lookup rejected. This is transport-fixture evidence, not proof of live stage delivery. The integrated release must record a real canary separately. Historical U12 pins/reports and unused automated dispatch are not global application-development prerequisites.
+Human decisions follow the shared adaptive-task-planning skill: background, verified state, concrete options and effects, recommendation, exact approval boundary and pending behavior. Never replace this with unexplained G-codes. The skill source is versioned at skills/adaptive-task-planning/SKILL.md; platform content must be read back after deployment.
