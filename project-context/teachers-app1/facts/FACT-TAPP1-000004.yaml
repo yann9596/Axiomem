@@ -1,7 +1,7 @@
 schema_version: "1.1"
 kind: current_fact
 id: FACT-TAPP1-000004
-title: D02 名单设计已审并获 Lead 接受；M1 0.1.1 已独立 R1 并集成 develop a67179d（YZT-135 治理 + YZT-139 更新，2026-09-18）
+title: D02 名单设计已审并获 Lead 接受；M1 0.1.1 已独立 R1 并集成 develop a67179d（YZT-135 治理 + YZT-139 更新，2026-09-18；YZT-142 收窄产品预期 pending，2026-09-18）
 
 statement: >
   as-of 2026-09-17（YZT-135 治理核验）。
@@ -108,6 +108,16 @@ statement: >
   558fdc939414142636f9b4f43530facf1c7cfb7e）与公开 Memory 上传均未授权或未验收。
   与 FACT-TAPP1-000003 的关系：000003 的 YZT-139 更新段承接集成基线推进，本条承接
   M1 的 Norm/Reality/pending；本条不改写 000003 的原正文与来源，也不新增 supersession。
+  YZT-142 更新（2026-09-18 +08:00 / UTC 2026-09-17T23:51Z 决定，只收窄产品预期 pending
+  边界，不改写上文设计、实现、审查与集成叙述）：上文本条 pending 列表中的 G01/G02 与
+  G06 的名单初始顺序、新学生位置已由用户在 direct room 批准为产品语义（Norm，尚未实现；
+  语义、剩余 pending 与 Reality 边界见 FACT-TAPP1-000005）。设计 §Open Questions 的 G06
+  候选 A 仍只是当时的建议、不是批准来源；用户批准的是该语义本身，并明确不含拖动排序或
+  同班同名区分方式。仍 pending（不因本次批准改变）：同班同名 UI 区分、归档、删除、转班、
+  合并、旧名单迁移、G01 的按不同作业计数备选、G02 的有限自动关闭，以及 v1 库迁移执行、
+  清库或任何真实数据操作、平台 relationalStore、设备、UI 走查、签名、发布、R2、产品 main
+  合并（main 仍为 558fdc93）与公开 Memory 上传。M1 0.1.1 的 Norm/Reality 段与其 R1
+  verdict 不变，本批准不改变其范围，也不构成任何新实现、新验证或"S2 完成"结论。
 
 scope:
   type: project
@@ -174,6 +184,7 @@ source_refs:
   - multica://issue/YZT-138
   - multica://issue/YZT-139
   - multica://issue/YZT-140
+  - multica://issue/YZT-142
   - multica://comment/01a0b03c-be08-75e0-880d-f279f596b4c8
   - multica://comment/01a0b04e-113b-7908-8562-81e396f05b9a
   - multica://comment/01a0afcc-b3d5-7eb8-b921-547864201321
@@ -191,5 +202,5 @@ review:
   triggered_at: null
 
 created_at: 2026-09-17T15:12:00Z
-verified_at: 2026-09-17T17:29:00Z
-updated_at: 2026-09-17T17:29:00Z
+verified_at: 2026-09-18T00:30:00Z
+updated_at: 2026-09-18T00:30:00Z

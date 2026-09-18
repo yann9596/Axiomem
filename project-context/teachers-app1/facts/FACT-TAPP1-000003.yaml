@@ -1,7 +1,7 @@
 schema_version: "1.1"
 kind: current_fact
 id: FACT-TAPP1-000003
-title: TeachersApp1 集成基线与完成契约实态（YZT-131 治理，2026-09-17；YZT-139 更新集成基线至 a67179d，2026-09-18）
+title: TeachersApp1 集成基线与完成契约实态（YZT-131 治理，2026-09-17；YZT-139 更新集成基线至 a67179d，2026-09-18；YZT-142 更新 G01/G02 指针，2026-09-18）
 
 statement: >
   as-of 2026-09-17（YZT-131 治理核验）：origin/develop = 本地 develop =
@@ -84,6 +84,14 @@ statement: >
   D:\AI\projects\TeachersApp1 与 execution_mode=worktree、不继承旧 app1；G01/G02、
   main 授权、Axiomem 公开上传与设备/签名/发布边界亦均未被本批改动。本条既不改写
   FACT-TAPP1-000002 的既有 supersession 链，本批也不新增 supersession。
+  YZT-142 更新（2026-09-18 +08:00 / UTC 2026-09-17T23:51Z 决定，只推进受影响的产品预期
+  指针，不改写上文任何历史叙述）：用户已在 direct room 批准 G01/G02/G06 的产品语义
+  （Norm，尚未实现；语义、剩余 pending 与 Reality 边界见 FACT-TAPP1-000005）。上文各批次
+  所述「G01/G02 未决产品选择 …均未被本批改动」在其各自 as-of 时点与批次范围内仍然成立，
+  但自本批起「G01/G02 是否已批准」以 FACT-TAPP1-000005 为准，不再读作当前未决。本条其余
+  内容继续 current 且未被本批改动：集成基线 a67179d、授权分层、完成契约 parent-handoff-wake、
+  能力策略默认拒绝与 device OFF、真机/relationalStore/UI 走查/签名/发布/R2 的 NOT_RUN
+  边界、main 授权边界、Axiomem 公开上传边界与不继承旧 app1。
 
 scope:
   type: project
@@ -170,6 +178,7 @@ source_refs:
   - multica://issue/YZT-138
   - multica://issue/YZT-139
   - multica://issue/YZT-140
+  - multica://issue/YZT-142
   - multica://comment/01a0b03c-be08-75e0-880d-f279f596b4c8
   - multica://comment/01a0b04e-113b-7908-8562-81e396f05b9a
 
@@ -192,5 +201,5 @@ review:
   triggered_at: null
 
 created_at: 2026-09-17T14:00:00Z
-verified_at: 2026-09-17T17:29:00Z
-updated_at: 2026-09-17T17:29:00Z
+verified_at: 2026-09-18T00:30:00Z
+updated_at: 2026-09-18T00:30:00Z
