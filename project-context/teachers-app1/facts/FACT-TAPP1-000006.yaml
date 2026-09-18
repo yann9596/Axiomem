@@ -1,7 +1,7 @@
 schema_version: "1.1"
 kind: current_fact
 id: FACT-TAPP1-000006
-title: P01 relationalStore 接入设计基线已通过独立 R1 并被 01 接受、尚未实现（YZT-146 治理，2026-09-18）
+title: P01 relationalStore 接入设计已审并被 01 接受；实现 0.1.1 已独立 R1（限定可编译准备）并集成 develop 83ba4a5，平台未验证（YZT-146 治理，2026-09-18；YZT-154 更新，2026-09-18）
 
 statement: >
   as-of 2026-09-18（YZT-146 治理核验）。 Norm（已审设计基线，仅权威指针，不复制设计正文，
@@ -65,6 +65,70 @@ statement: >
   device 入口绑定由 04 在对应切片形成并交 01 决定版本，02 不改产品代码。本条不得读作
   G01/G02/G06 已实现、S2 完成或平台关口已开。
 
+   YZT-154 更新（2026-09-18 +08:00 / UTC 2026-09-18 治理批次）。上文 Norm 段的设计权威指针、
+   四条非阻塞跟进与 pending 边界继续有效；上文 Reality 段的"P01-01～06 是纠正设计而不是
+   已落地的代码修复"与"产品仓 develop a67179d 上仍无该接入：EntryAbility 未接库，ohosTest
+   只有 assertContain 示例"自本更新起不再成立，由本段承接。pending 段（平台准入 A/B 选择、
+   设备与签名、真实数据、v1 库迁移执行或清库、main 合并与 Axiomem 公开上传）完全不变。
+   Norm（已审实现切片，仅权威指针，不复制实现正文）：implementation /
+   teachers-app1-p01-platform-storage-implementation / 0.1.1（作者 04 Software Engineer，
+   任务 multica://issue/YZT-151，最终评论 01a0b2dc-8b61-7071-91c9-93c4c2f8abfc）已由 05
+   Delivery Reviewer 完成独立 R1（任务 multica://issue/YZT-152，最终评论
+   01a0b2ee-dee3-77cd-8aba-d8e3b41b9b25；报告 SHA256
+   95f6ff7f49207fd14bd54a01809b6de69523d597e8cc29a8cad3536c718d1c33；原审查信封 SHA256
+   a6596faab9aa6d803925c05c1a08e2d9272825ae94bd04dfb611d77a8816bdc4），verdict APPROVE、
+   限定 APPROVE_AS_COMPILABLE_PLATFORM_STORAGE_PREPARATION、Required Changes NONE、
+   Challenges NONE；被审对象即该 0.1.1，source_commit
+   4c8a35df991cd802338ed82fdb77976da59cd480、docs_commit
+   83ba4a508d97f00f5cfdc326c88fc5c78481299b、base a67179d，supersedes 0.1.0（YZT-148/150 身份
+   纠正线，其 R1 为 YZT-149 CHANGES_REQUIRED）。该 verdict 只覆盖"可编译的平台测试准备"，
+   不是平台执行 PASS，也不是 P01-01～06 / DR-01/02 的平台复验。审查产物标识 delivery_review /
+   teachers-app1-p01-platform-storage-implementation-r1-review：YZT-153（R0 依赖关系有界纠正，
+   最终评论 01a0b301-b4c3-7e8b-be04-e889b06e36fb）把已 stale 的 YZT-149 旧审查从 live
+   based_on 移除并出具 0.1.2，0.1.2 supersedes 0.1.1、0.1.1 supersedes 0.1.0；YZT-152 原报告与
+   0.1.1 信封字节保留（0.1.1 在组合 store 中置 superseded），该纠正只改信封元数据关系，
+   专业结论不变。
+   RC 关闭（01 接受，04/05 双方均有证据）：RC-01 ohosTest v02 对可选 technicalCode 先判空并保留
+   非空断言，ArkTS 10605999 不再出现；RC-02 新增 entry/src/ohosTest/ets/test/P01A08Driver.ets，
+   在同一 RdbStore 上取两个独立 IMMEDIATE Transaction，含 M-RACE-1/M-RACE-2 竞争、M-SAME
+   同意图重放、五段屏障 A08_LOCK_BARRIERS、有限重试上限 3、finally 回滚与 close 的清理及证据
+   槽，未证明物理 overlap 时写 limitation 并保持 NOT_RUN；RC-03 unsigned
+   entry@ohosTest assembleHap 的 OhosTestCompileArkTS 0 错误（04 于
+   2026-09-18T04:44:50Z–04:44:56Z 执行，05 在 4c8a35d 隔离 worktree 独立重编 0 错误）。
+   Reality（当前运行与集成事实）：origin/develop = 83ba4a508d97f00f5cfdc326c88fc5c78481299b
+   已包含 P01 平台存储接入的四个提交（b8c4fd9 业务源码、fd7f079 与 83ba4a5 locator/身份文档、
+   4c8a35d ohosTest 整改）；被审源码 4c8a35d 为 83ba4a5 的直接父提交，且本批实测
+   git diff --stat 4c8a35d..83ba4a5 -- entry/ 为空（05 亦实测
+   git diff --stat b8c4fd9..4c8a35d -- entry/src/main 为 0），故"审查对象 = 集成版本"的源码
+   等价性成立。本批独立只读核验 @83ba4a5：entry/src/main/ets/entryability/EntryAbility.ets
+   仍不引用 RdbS1Store / P01PlatformSupport / S1Session / S1SchemaGuard，即生产入口仍未接入该
+   实验库（实现只在 entry/src/main/ets/data 与测试侧就绪）；ohosTest 已由仅 assertContain 的
+   示例扩展为 P01Database.test.ets、P01A03Driver.ets 与 P01A08Driver.ets。集成基线推进与提交
+   计数以 FACT-TAPP1-000003 的 YZT-154 更新段为准。上文 Norm 段的设计合同（P01-01～06、
+   DR-01、DR-02、V01–V10、A03、A08）自本更新起已有"已审且已集成"的实现准备，但其平台执行
+   仍全部未验证：HarmonyOS relationalStore 真实 V01–V10、A03 进程外杀 PID 两阶段真实重启、
+   A08 真实硬件连接级竞争、教师名单 UI、S2 作业闭环、签名 HAP、真机安装与调试、发布与 R2
+   全部 NOT_RUN；宿主 SQLite 3.50.4 探针（74 项）与 FakeStore/合成组件不得冒充平台持久化
+   PASS。本地与宿主证据（能力运行器，提交 4c8a35d）：local-test 79/79 PASS、unsigned build
+   PASS（HAP SHA256 21244b28…2210）、check 0 lint；工程单测 38 PASS、
+   validate_capability_policy PASS、verify_repository PASS、宿主探针 74 PASS；05 在 4c8a35d
+   独立复验同一组能力与工程检查；01 在 83ba4a5 整合树复验仓库单测 38、policy 与 repository
+   PASS 并确认 entry 与所审树一致。这些是本地/宿主证据，不是设备或平台结论。
+   证据偏差与限制（如实保留，不因整合而消失）：YZT-153 勘误信封自述 updated_at
+   2026-09-18T05:35:00Z，晚于其服务器最终评论 2026-09-18T05:33:48Z 与附件 05:33:46Z，故
+   "无未来时间"不成立；01 不采用该嵌入时间作排序或真实性权威，本批只记录真实服务器来源时间与
+   精确 SHA，不重签、不改写 05 产物。YZT-153 另行声明的 38 项工程测试缺准确 commit 与原始
+   日志，NOT_AVAILABLE，不作为新验证证据；本条只采用 YZT-152 在 4c8a35d 的专业验证与既有
+   83ba4a5 整合验证。设计四条非阻塞跟进（V02 事务内 PRAGMA 实测、V06 execute 返回类型记录、
+   A03 进程外驱动、设备与签名清单）仍未关闭。
+   pending（未批准/未授权，不因实现被审、被接受或被集成而改变）：平台准入选项 A/B 仍未选择；
+   设备与签名、真实数据、v1 库迁移执行或清库、产品 main 合并（main 仍为
+   558fdc939414142636f9b4f43530facf1c7cfb7e）与 Axiomem 公开上传均未授权或未验收。
+   本条不得读作 G01/G02/G06 已实现、S2 完成、平台关口已开或 P01 设计已被平台复验。
+   与既有对象的关系：本条不取代 FACT-TAPP1-000003、FACT-TAPP1-000004 或 FACT-TAPP1-000005，
+   也不改写它们的正文、来源与 pending 边界；集成基线推进由 FACT-TAPP1-000003 的 YZT-154
+   更新段承接，本条只承接 P01 实现与验证边界。
+
 scope:
   type: project
   project_id: teachers-app1
@@ -123,6 +187,42 @@ verified_against:
     paths:
       - entry/src/ohosTest/ets/test/Ability.test.ets
 
+  - source_ref: multica://issue/YZT-151
+    revision: final-comment-01a0b2dc-8b61-7071-91c9-93c4c2f8abfc
+    paths:
+      - P01-platform-storage-implementation-report-0.1.1.md
+      - P01-platform-storage-implementation-envelope-0.1.1.json
+      - p01-yzt151-rc.patch
+      - p01-yzt151-correction.bundle
+      - 01a0b2dc-8b61-7071-91c9-93c4c2f8abfc
+  - source_ref: multica://issue/YZT-152
+    revision: final-comment-01a0b2ee-dee3-77cd-8aba-d8e3b41b9b25
+    paths:
+      - P01-platform-storage-implementation-0.1.1-R1-delivery-review.md
+      - P01-platform-storage-implementation-r1-review-envelope.json
+      - p01-review-verification.json
+      - 01a0b2ee-dee3-77cd-8aba-d8e3b41b9b25
+  - source_ref: multica://issue/YZT-153
+    revision: final-comment-01a0b301-b4c3-7e8b-be04-e889b06e36fb
+    paths:
+      - P01-platform-storage-implementation-r1-review-envelope-0.1.2.json
+      - P01-platform-storage-implementation-0.1.2-R1-delivery-review-errata.md
+      - p01-review-verification.json
+      - 01a0b301-b4c3-7e8b-be04-e889b06e36fb
+  - source_ref: multica://issue/YZT-154
+    revision: stage-38-governance-batch
+    paths:
+      - Requirements
+      - Acceptance Criteria
+      - Decision
+  - source_ref: repo://teachers-app-one@83ba4a508d97f00f5cfdc326c88fc5c78481299b/entry/src/main/ets/entryability/EntryAbility.ets
+    revision: 83ba4a508d97f00f5cfdc326c88fc5c78481299b
+    paths:
+      - entry/src/main/ets/entryability/EntryAbility.ets
+  - source_ref: repo://teachers-app-one@83ba4a508d97f00f5cfdc326c88fc5c78481299b/specs/p01-platform-storage/artifact-envelope.json
+    revision: 83ba4a508d97f00f5cfdc326c88fc5c78481299b
+    paths:
+      - specs/p01-platform-storage/artifact-envelope.json
 source_refs:
   - multica://issue/YZT-141
   - multica://issue/YZT-145
@@ -141,6 +241,18 @@ source_refs:
   - FACT-TAPP1-000003
   - FACT-TAPP1-000004
 
+  - repo://teachers-app-one@83ba4a508d97f00f5cfdc326c88fc5c78481299b/entry/src/main/ets/entryability/EntryAbility.ets
+  - repo://teachers-app-one@83ba4a508d97f00f5cfdc326c88fc5c78481299b/entry/src/ohosTest/ets/test/P01Database.test.ets
+  - repo://teachers-app-one@83ba4a508d97f00f5cfdc326c88fc5c78481299b/entry/src/ohosTest/ets/test/P01A08Driver.ets
+  - repo://teachers-app-one@83ba4a508d97f00f5cfdc326c88fc5c78481299b/specs/p01-platform-storage/artifact-envelope.json
+  - repo://teachers-app-one@83ba4a508d97f00f5cfdc326c88fc5c78481299b/specs/p01-platform-storage/implementation-report.md
+  - multica://issue/YZT-151
+  - multica://issue/YZT-152
+  - multica://issue/YZT-153
+  - multica://issue/YZT-154
+  - multica://comment/01a0b2dc-8b61-7071-91c9-93c4c2f8abfc
+  - multica://comment/01a0b2ee-dee3-77cd-8aba-d8e3b41b9b25
+  - multica://comment/01a0b301-b4c3-7e8b-be04-e889b06e36fb
 relations:
   conflicts_with: []
   supersedes: []
@@ -153,5 +265,5 @@ review:
   triggered_at: null
 
 created_at: 2026-09-18T01:35:00Z
-verified_at: 2026-09-18T01:35:00Z
-updated_at: 2026-09-18T01:35:00Z
+verified_at: 2026-09-18T05:48:32Z
+updated_at: 2026-09-18T05:48:32Z

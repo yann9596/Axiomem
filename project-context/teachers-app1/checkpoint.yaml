@@ -41,6 +41,11 @@ confirmed:
       提交清单经 YZT-140 有界纠正补齐为四个，补入被漏记的原始 locator 修正 4594d558
       （其 locator 文本已被 2c3645a/a67179d 取代，只作真实祖先关系保留，不得混入当前
       live Artifact 版本）。
+      YZT-154 更新（2026-09-18）：本条上文的集成基线 as-of 叙述保留为历史时点；当前集成基线
+      已由 a67179d 推进为 origin/develop = 83ba4a508d97f00f5cfdc326c88fc5c78481299b（新增 P01
+      平台存储接入的四个已审提交 b8c4fd9/fd7f079/4c8a35d/83ba4a5），develop 现领先 main
+      558fdc93 十二个提交；逐提交归属、证据与 NOT_RUN 边界以 FACT-TAPP1-000003 的 YZT-154
+      更新段为准。
     refs:
       - repo://teachers-app-one@a67179dfc02f0461a7962dcc697161395c5deb76/docs/README.md
       - repo://teachers-app-one@a67179dfc02f0461a7962dcc697161395c5deb76/docs/product/product-expectations.md
@@ -186,6 +191,11 @@ confirmed:
       构建与本地 App 测试、签名、发布、UI 走查与 R2 全部 NOT_RUN。仍未批准：平台准入
       A/B 选择、设备与签名、真实数据、v1 库迁移或清库、main 合并与公开上传。详见
       FACT-TAPP1-000006。
+      YZT-154 补充（2026-09-18）：该设计的实现准备 implementation /
+      teachers-app1-p01-platform-storage-implementation / 0.1.1 已实现、经 05 独立 R1（限定
+      APPROVE_AS_COMPILABLE_PLATFORM_STORAGE_PREPARATION，Required Changes NONE）并集成
+      develop 83ba4a5（见 cp-confirmed-009）；本条上文的"尚未实现"自该补充起只读作"平台运行
+      未实现/未验证"，设计被实现不等于平台验证，本条 NOT_RUN 与 pending 边界完全不变。
     refs:
       - multica://issue/YZT-141
       - multica://issue/YZT-145
@@ -196,6 +206,35 @@ confirmed:
       - FACT-TAPP1-000006
       - FACT-TAPP1-000004
 
+  - id: cp-confirmed-009
+    summary: >
+      P01 平台存储接入的实现准备已实现、经独立 R1 限定通过并集成 develop（YZT-154 治理，
+      2026-09-18 +08:00）：implementation /
+      teachers-app1-p01-platform-storage-implementation / 0.1.1（04 Software Engineer，YZT-151
+      最终评论 01a0b2dc-8b61-7071-91c9-93c4c2f8abfc）经 05 独立 R1（YZT-152 最终评论
+      01a0b2ee-dee3-77cd-8aba-d8e3b41b9b25；报告 SHA256
+      95f6ff7f49207fd14bd54a01809b6de69523d597e8cc29a8cad3536c718d1c33；原信封 SHA256
+      a6596faab9aa6d803925c05c1a08e2d9272825ae94bd04dfb611d77a8816bdc4）verdict APPROVE、
+      限定 APPROVE_AS_COMPILABLE_PLATFORM_STORAGE_PREPARATION、Required Changes NONE、
+      Challenges NONE；YZT-149 的 RC-01/02/03 关闭；YZT-153（R0）把已 stale 的 149 旧审查移出
+      live based_on 并出具 review 0.1.2（supersedes 0.1.1 → 0.1.0，只改信封关系，结论不变）。
+      源码 4c8a35d、文档/身份 83ba4a5，被审源码为集成提交 83ba4a5 的直接父提交且 entry/ 逐字节
+      相同；01 接受并把 develop 集成至 83ba4a508d97f00f5cfdc326c88fc5c78481299b。Reality：
+      真实 HarmonyOS relationalStore V01–V10、A03 杀 PID 跨进程重启、A08 真实硬件锁竞争、
+      名单 UI、S2 作业闭环、签名/安装/发布与 R2 全部 NOT_RUN，生产 EntryAbility 仍未接入该
+      实验库；宿主 SQLite 探针与 FakeStore 不得冒充平台 PASS。仍未批准：平台准入 A/B、设备与
+      签名、真实数据、v1 库迁移或清库、main 合并与公开上传。详见 FACT-TAPP1-000006。
+    refs:
+      - multica://issue/YZT-151
+      - multica://issue/YZT-152
+      - multica://issue/YZT-153
+      - multica://issue/YZT-154
+      - multica://comment/01a0b2dc-8b61-7071-91c9-93c4c2f8abfc
+      - multica://comment/01a0b2ee-dee3-77cd-8aba-d8e3b41b9b25
+      - multica://comment/01a0b301-b4c3-7e8b-be04-e889b06e36fb
+      - FACT-TAPP1-000006
+      - FACT-TAPP1-000003
+
 open:
   - id: cp-open-001
     summary: >
@@ -203,6 +242,10 @@ open:
       审批等待期间可从 develop 继续已授权工作，不因等待 main 阻塞开发，也不把
       "用户要求补治理" 推导成 main/签名/发布授权；合 develop 与合 main 的授权分层
       以产品仓 version-control.md 为准。
+      YZT-154 更新（2026-09-18）：develop 已达 83ba4a5，领先 main 558fdc93 十二个已审提交
+      （含 P01 平台存储接入的四个提交）；本条"main 合并待用户精确授权"与不因等待 main 阻塞
+      已授权工作的边界完全不变，合 develop 与合 main 的授权分层以产品仓 version-control.md
+      为准。
     refs:
       - repo://teachers-app-one@a67179dfc02f0461a7962dcc697161395c5deb76/docs/governance/version-control.md
       - registry://teachers-app1
@@ -216,6 +259,12 @@ open:
       teachers-app1-p01-platform-storage / 0.1.0-draft）已过独立 R1 并被 01 接受
       （见 cp-confirmed-008），但设计被接受不等于实现或平台验证——本条的 NOT_RUN
       边界与“不得以合成探针冒充平台 PASS”完全不变。
+      YZT-154 补充：P01 平台存储接入的实现准备（implementation /
+      teachers-app1-p01-platform-storage-implementation / 0.1.1）已过独立 R1 限定
+      （APPROVE_AS_COMPILABLE_PLATFORM_STORAGE_PREPARATION）并集成 develop 83ba4a5，ohosTest
+      assembleHap 0 错误；但生产 EntryAbility 仍未接入该实验库，平台 relationalStore 真实
+      V01–V10、A03 杀 PID、A08 真实竞争、真机、签名、发布与 R2 仍全部 NOT_RUN——"实现已集成"
+      不等于"平台已验收"，本条的 NOT_RUN 边界与"不得以合成探针冒充平台 PASS"完全不变。
     refs:
       - repo://teachers-app-one@a67179dfc02f0461a7962dcc697161395c5deb76/docs/engineering/harmonyos-toolchain.md
       - repo://teachers-app-one@a67179dfc02f0461a7962dcc697161395c5deb76/docs/project-management/mvp-execution-plan.md
@@ -280,16 +329,19 @@ next:
   - main 合并与设备/签名/发布/真实数据保持等待用户精确授权；在真机/relationalStore 与首轮 UI 交互切片到达平台关口前，只准备合成数据与回滚方案，不宣称平台 PASS
   - G01/G02/G06 的产品语义已由用户批准为 Norm（YZT-142，见 cp-confirmed-007），但尚未实现、未经验证：依赖这些语义的设计/实现派发必须先携带已审合同与 fresh Context，且不得把批准读作已配置策略、已实现或 S2 完成；仍未批准的产品取舍（按不同作业计数、有限自动关闭、拖动排序、同班同名区分、旧名单迁移等）继续 pending，由 01 提交完整可理解选择
   - YZT-142 治理产物经 01 独立 R1、接受、部署并重建索引后，受影响消费者才以其 fresh SELF_CHECK 为准
-  - P01 平台存储接入设计已审并被 01 接受（YZT-146，见 cp-confirmed-008），但尚未实现：后续实现/审查/平台派发必须携带 design_baseline / teachers-app1-p01-platform-storage / 0.1.0-draft 的精确指针与其 R1 0.1.0 的 APPROVE_AS_DESIGN_BASELINE_PREPARATION 限定，不得把 P01-01～06 当作已修的代码事实，也不得把设计被接受读作平台就绪、S2 完成或设备/签名授权
+  - P01 平台存储接入设计已审并被 01 接受（YZT-146，见 cp-confirmed-008），其实现准备已实现、经独立 R1 限定通过并集成 develop 83ba4a5，但平台执行仍未验证（YZT-154，见 cp-confirmed-009）：后续实现/审查/平台派发必须携带 design_baseline / teachers-app1-p01-platform-storage / 0.1.0-draft 的精确指针与其 R1 0.1.0 的 APPROVE_AS_DESIGN_BASELINE_PREPARATION 限定，不得把 P01-01～06 当作已修的代码事实，也不得把设计被接受读作平台就绪、S2 完成或设备/签名授权
+  - 从精确集成基线 83ba4a5 继续：P01 平台存储接入的实现准备已审并集成 develop（见 cp-confirmed-009），后续依赖切片从该集成版本派发，不使用旧的 main、a67179d、ba8e32d 或历史 Agent 分支
+  - P01 实现已集成但仍未平台验证：向设备/平台切片派发时必须携带已审 design_baseline / teachers-app1-p01-platform-storage / 0.1.0-draft、其 R1 0.1.0 与 implementation / teachers-app1-p01-platform-storage-implementation / 0.1.1 及其 review 0.1.2 的精确指针与 APPROVE_AS_COMPILABLE_PLATFORM_STORAGE_PREPARATION 限定，不得把编译准备读作平台 PASS
   - 专业交付的完成协议统一按 skills/parent-handoff-wake/SKILL.md（Memory 仓 75a9e563）执行：达成交付目标后设置 done 并 live readback；完成治理任务不等于其产物已被接受、部署或 indexed
 
 refs:
   - project.yaml
   - multica://issue/YZT-98
+  - multica://issue/YZT-154
   - multica://issue/YZT-142
   - multica://issue/YZT-146
   - FACT-TAPP1-000005
   - FACT-TAPP1-000006
   - migration/retirement/app1-retirement-yzt98.md
 
-updated_at: 2026-09-18T01:35:00Z
+updated_at: 2026-09-18T05:48:49Z

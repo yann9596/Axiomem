@@ -1,7 +1,7 @@
 schema_version: "1.1"
 kind: current_fact
 id: FACT-TAPP1-000003
-title: TeachersApp1 集成基线与完成契约实态（YZT-131 治理，2026-09-17；YZT-139 更新集成基线至 a67179d，2026-09-18；YZT-142 更新 G01/G02 指针，2026-09-18）
+title: TeachersApp1 集成基线与完成契约实态（YZT-131 治理，2026-09-17；YZT-139 更新集成基线至 a67179d，2026-09-18；YZT-142 更新 G01/G02 指针，2026-09-18；YZT-154 更新集成基线至 83ba4a5，2026-09-18）
 
 statement: >
   as-of 2026-09-17（YZT-131 治理核验）：origin/develop = 本地 develop =
@@ -93,6 +93,42 @@ statement: >
   能力策略默认拒绝与 device OFF、真机/relationalStore/UI 走查/签名/发布/R2 的 NOT_RUN
   边界、main 授权边界、Axiomem 公开上传边界与不继承旧 app1。
 
+   YZT-154 更新（2026-09-18 +08:00 / UTC 2026-09-18 治理批次，只推进集成基线与其证据，
+   不改写上文任何历史叙述）：origin/develop = refs/remotes/origin/develop =
+   83ba4a508d97f00f5cfdc326c88fc5c78481299b（"docs: pin P01 0.1.1 correction identity"）。
+   来源为本批在 D:\AI\projects\TeachersApp1 的只读核验：git fetch 后 git ls-remote origin
+   refs/heads/develop 与 refs/remotes/origin/develop 均为该 SHA；本机 refs/heads/develop 分支
+   本批未移动（仍为 a67179d），故本条只声明远端已集成，不宣称本地分支已同步。
+   相对上一 as-of 基线 a67179d，develop 新增四个已审提交（实测 git log --oneline
+   a67179d..83ba4a5 为 b8c4fd9、fd7f079、4c8a35d、83ba4a5，git rev-list --count = 4）：
+   b8c4fd9b84603af11be74a379826c433fa048dc0（"feat(data): add P01 platform storage guards"，
+   P01 平台存储接入的唯一业务源码提交，触及 entry/src/main/ets/data 下的存储实现与
+   entry/src/test、entry/src/ohosTest 支撑文件，另加 specs/p01-platform-storage 的报告/信封与
+   docs/project-management/mvp-execution-plan.md 一行）、
+   fd7f0795b6be7f35720f8c54e628874c313a1f4c（只改 specs/p01-platform-storage 信封与报告两个
+   文件的 locator）、4c8a35df991cd802338ed82fdb77976da59cd480（"test: close P01 ohosTest
+   RC-01 and RC-02"，只改 entry/src/ohosTest 的 P01Database.test.ets 与新增 P01A08Driver.ets；
+   该提交即独立 R1 复审的源码 target_head）、
+   83ba4a508d97f00f5cfdc326c88fc5c78481299b（只改 specs/README.md 与 specs/p01-platform-storage
+   的 0.1.1 身份/历史冲突文件）。被审源码 4c8a35d 是 83ba4a5 的直接父提交，且本批实测
+   git diff --stat 4c8a35d..83ba4a5 -- entry/ 为空（05 在 YZT-152 复审亦实测
+   git diff --stat b8c4fd9..4c8a35d -- entry/src/main 为 0），故该切片"审查对象 = 集成版本"
+   的源码等价性成立，不存在审后再次改码。main 本机与 origin/main 仍均为
+   558fdc939414142636f9b4f43530facf1c7cfb7e；develop 现领先 main 12 个提交（上一 as-of 时点
+   为 8，属正常版本推进而非旧条目计数错误），main 合并仍待用户精确授权。P01 实现切片的
+   Norm/Reality/pending 边界与来源见 FACT-TAPP1-000006 的 YZT-154 更新段；本段只承接集成
+   基线。上文各段的 as-of 叙述（ba8e32d、a67179d）保留为历史时点，"当前集成基线"自本段起为
+   83ba4a5，也不再读作 a67179d。本条其余内容继续 current 且不被本更新改变：授权分层
+   （已审切片通过适用 Review 后由 01 及时合 develop、push 并远端读回，main 的最终确认与合并
+   保留给用户）、公共完成契约 parent-handoff-wake
+   （75a9e56364c32dfeca9d20438e5228bb0d9e9d3c）、本机能力策略默认拒绝与
+   knowledge/engineering/methods 按角色启用、device OFF、真机与 HarmonyOS
+   relationalStore/UI 走查/签名/发布/R2 的 NOT_RUN 边界、产品路径
+   D:\AI\projects\TeachersApp1 与 execution_mode=worktree、不继承旧 app1；G01/G02/G06 已由
+   用户批准为 Norm（YZT-142）、main 授权边界、Axiomem 公开上传边界与设备/签名/发布边界亦均
+   未被本批改动。本条既不改写 FACT-TAPP1-000002 的既有 supersession 链，本批也不新增
+   supersession。
+
 scope:
   type: project
   project_id: teachers-app1
@@ -152,6 +188,29 @@ verified_against:
       - skills/parent-handoff-wake/SKILL.md
       - skills/parent-handoff-wake/scripts/complete_task.py
 
+  - source_ref: repo://teachers-app-one@83ba4a508d97f00f5cfdc326c88fc5c78481299b/specs/p01-platform-storage/artifact-envelope.json
+    revision: 83ba4a508d97f00f5cfdc326c88fc5c78481299b
+    paths:
+      - specs/p01-platform-storage/artifact-envelope.json
+  - source_ref: multica://issue/YZT-154
+    revision: stage-38-governance-batch
+    paths:
+      - Requirements
+      - Acceptance Criteria
+      - Decision
+  - source_ref: multica://issue/YZT-116
+    revision: stage-38-execution-decision
+    paths:
+      - Decision
+      - 01a0b30a-1690-7437-b56c-63ab3df51028
+  - source_ref: multica://issue/YZT-151
+    revision: final-comment-01a0b2dc-8b61-7071-91c9-93c4c2f8abfc
+    paths:
+      - 01a0b2dc-8b61-7071-91c9-93c4c2f8abfc
+  - source_ref: multica://issue/YZT-152
+    revision: final-comment-01a0b2ee-dee3-77cd-8aba-d8e3b41b9b25
+    paths:
+      - 01a0b2ee-dee3-77cd-8aba-d8e3b41b9b25
 source_refs:
   - repo://teachers-app-one@a67179dfc02f0461a7962dcc697161395c5deb76/docs/governance/version-control.md
   - repo://teachers-app-one@a67179dfc02f0461a7962dcc697161395c5deb76/docs/README.md
@@ -182,6 +241,15 @@ source_refs:
   - multica://comment/01a0b03c-be08-75e0-880d-f279f596b4c8
   - multica://comment/01a0b04e-113b-7908-8562-81e396f05b9a
 
+  - repo://teachers-app-one@83ba4a508d97f00f5cfdc326c88fc5c78481299b/specs/p01-platform-storage/artifact-envelope.json
+  - repo://teachers-app-one@83ba4a508d97f00f5cfdc326c88fc5c78481299b/specs/p01-platform-storage/implementation-report.md
+  - multica://issue/YZT-151
+  - multica://issue/YZT-152
+  - multica://issue/YZT-153
+  - multica://issue/YZT-154
+  - multica://comment/01a0b2dc-8b61-7071-91c9-93c4c2f8abfc
+  - multica://comment/01a0b2ee-dee3-77cd-8aba-d8e3b41b9b25
+  - multica://comment/01a0b301-b4c3-7e8b-be04-e889b06e36fb
 relations:
   conflicts_with: []
   supersedes:
@@ -201,5 +269,5 @@ review:
   triggered_at: null
 
 created_at: 2026-09-17T14:00:00Z
-verified_at: 2026-09-18T00:30:00Z
-updated_at: 2026-09-18T00:30:00Z
+verified_at: 2026-09-18T05:48:32Z
+updated_at: 2026-09-18T05:48:32Z
