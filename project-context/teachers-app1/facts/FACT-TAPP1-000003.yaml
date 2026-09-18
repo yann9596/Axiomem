@@ -1,7 +1,7 @@
 schema_version: "1.1"
 kind: current_fact
 id: FACT-TAPP1-000003
-title: TeachersApp1 集成基线与完成契约实态（YZT-131 治理，2026-09-17；YZT-139 更新集成基线至 a67179d，2026-09-18；YZT-142 更新 G01/G02 指针，2026-09-18；YZT-154 更新集成基线至 83ba4a5，2026-09-18）
+title: TeachersApp1 集成基线与完成契约实态（YZT-131 治理，2026-09-17；YZT-139 更新集成基线至 a67179d，2026-09-18；YZT-142 更新 G01/G02 指针，2026-09-18；YZT-154 更新集成基线至 83ba4a5，2026-09-18；YZT-163 更新集成基线至 b058b44，2026-09-18）
 
 statement: >
   as-of 2026-09-17（YZT-131 治理核验）：origin/develop = 本地 develop =
@@ -128,6 +128,36 @@ statement: >
    用户批准为 Norm（YZT-142）、main 授权边界、Axiomem 公开上传边界与设备/签名/发布边界亦均
    未被本批改动。本条既不改写 FACT-TAPP1-000002 的既有 supersession 链，本批也不新增
    supersession。
+   YZT-163 更新（2026-09-18 +08:00 / UTC 治理批次，只推进集成基线与其证据，不改写上文任何
+   历史叙述）：origin/develop = refs/remotes/origin/develop =
+   b058b44172534ac78e053be060893aea19e79295（"docs: pin C1 0.1.1 envelope locator"）。
+   来源为本批在 D:\AI\projects\TeachersApp1 的只读核验：git ls-remote origin
+   refs/heads/develop 为该 SHA；本机 refs/heads/develop 分支本批未移动（仍为 a67179d），故本条
+   只声明远端已集成，不宣称本地分支已同步；本批不改动该仓产品源码。相对上一 as-of 基线
+   83ba4a508d97f00f5cfdc326c88fc5c78481299b，develop 新增四个已审提交（实测 git log --oneline
+   83ba4a5..b058b44 为 0b66848、6aa6f4c、ea6ac32、b058b44，git rev-list --count = 4，且
+   git merge-base --is-ancestor 83ba4a5 b058b44 成立即确为快进）：
+   0b6684837ba79d85f4481c7ba9cc9b1a58413d9a（"feat(data): add homework suggestion counter"，
+   S2 C1 纯内存计数器的唯一业务源码提交，只增加 entry/src/main/ets/data/HomeworkSuggestion.ets
+   与其测试文件）、6aa6f4c59738f401a74e4c1d076280e6d31de73b（"docs: pin S2 C1 design and
+   locator"，只改产品 docs 与 specs 定位）、ea6ac32611e03bb26ae46a34fc679104c0b30ce2
+   （"docs: complete C1 envelope required semantics"，只改 CHANGELOG、specs/README 与
+   specs/s2-c1 的信封/历史文件）、b058b44172534ac78e053be060893aea19e79295（只改
+   specs/s2-c1/artifact-envelope.json 的 6 行 locator）；四个提交经 git show --stat 复核，除
+   0b66848 外均未触及产品源码，且 0b66848 未改动 entry/src/main 的任何既有文件。被审源码
+   0b66848 与集成版本 b058b44 的 entry/ 逐字节等价（05 在 YZT-162 实测且本批复核
+   git diff 0b66848..b058b44 -- entry/ 为空），故该切片"审查对象 = 集成版本"，不存在审后再次
+   改码。main 本机与 origin/main 仍均为 558fdc939414142636f9b4f43530facf1c7cfb7e；develop 现
+   领先 main 16 个提交（上一 as-of 时点为 12，属正常版本推进而非旧条目计数错误），main 合并仍待
+   用户精确授权。C1 切片的 Norm/Reality/验证归属与 Q 边界见 FACT-TAPP1-000005 的 YZT-163 更新
+   段；本段只承接集成基线。上文各段的 as-of 叙述（ba8e32d、a67179d、83ba4a5）保留为历史时点，
+   "当前集成基线"自本段起为 b058b44，也不再读作 83ba4a5。本条其余内容继续 current 且不被本更新
+   改变：授权分层、公共完成契约 parent-handoff-wake、本机能力策略默认拒绝与
+   knowledge/engineering/methods 按角色启用、device OFF、真机与 HarmonyOS
+   relationalStore/UI 走查/签名/发布/R2 的 NOT_RUN 边界、产品路径
+   D:\AI\projects\TeachersApp1 与 execution_mode=worktree、不继承旧 app1、G01/G02/G06 已由用户
+   批准为 Norm（YZT-142）、main 授权边界、Axiomem 公开上传边界与设备/签名/发布边界均未被本段
+   改动；本条既不改写 FACT-TAPP1-000002 的既有 supersession 链，本段也不新增 supersession。
 
 scope:
   type: project
@@ -211,6 +241,20 @@ verified_against:
     revision: final-comment-01a0b2ee-dee3-77cd-8aba-d8e3b41b9b25
     paths:
       - 01a0b2ee-dee3-77cd-8aba-d8e3b41b9b25
+  - source_ref: repo://teachers-app-one@b058b44172534ac78e053be060893aea19e79295/specs/s2-c1/artifact-envelope.json
+    revision: b058b44172534ac78e053be060893aea19e79295
+    paths:
+      - specs/s2-c1/artifact-envelope.json
+  - source_ref: multica://issue/YZT-162
+    revision: final-comment-01a0b4a8-7ecb-7098-aca0-23b69030b229
+    paths:
+      - 01a0b4a8-7ecb-7098-aca0-23b69030b229
+  - source_ref: multica://issue/YZT-163
+    revision: stage-47-governance-batch
+    paths:
+      - Requirements
+      - Acceptance Criteria
+      - Decision
 source_refs:
   - repo://teachers-app-one@a67179dfc02f0461a7962dcc697161395c5deb76/docs/governance/version-control.md
   - repo://teachers-app-one@a67179dfc02f0461a7962dcc697161395c5deb76/docs/README.md
@@ -250,6 +294,13 @@ source_refs:
   - multica://comment/01a0b2dc-8b61-7071-91c9-93c4c2f8abfc
   - multica://comment/01a0b2ee-dee3-77cd-8aba-d8e3b41b9b25
   - multica://comment/01a0b301-b4c3-7e8b-be04-e889b06e36fb
+  - repo://teachers-app-one@b058b44172534ac78e053be060893aea19e79295/specs/s2-c1/artifact-envelope.json
+  - multica://issue/YZT-160
+  - multica://issue/YZT-161
+  - multica://issue/YZT-162
+  - multica://issue/YZT-163
+  - multica://comment/01a0b49a-ba50-7df2-9770-281754f89f07
+  - multica://comment/01a0b4a8-7ecb-7098-aca0-23b69030b229
 relations:
   conflicts_with: []
   supersedes:
@@ -269,5 +320,5 @@ review:
   triggered_at: null
 
 created_at: 2026-09-17T14:00:00Z
-verified_at: 2026-09-18T05:48:32Z
-updated_at: 2026-09-18T05:48:32Z
+verified_at: 2026-09-18T13:28:00Z
+updated_at: 2026-09-18T13:28:00Z

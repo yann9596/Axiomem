@@ -1,7 +1,7 @@
 schema_version: "1.1"
 kind: current_fact
 id: FACT-TAPP1-000005
-title: G01/G02/G06 产品语义已由用户批准为 Norm、尚未实现（YZT-142 治理，2026-09-18；YZT-158 补录落实该 Norm 的 S2 设计已被审并被 01 接受为 C1 与名单追加切片技术基线，2026-09-18）
+title: G01/G02/G06 产品语义已由用户批准为 Norm；C1 切片已实现、经独立 R1 限定通过并被 01 集成，其余仍未实现（YZT-142 治理，2026-09-18；YZT-158 补录落实该 Norm 的 S2 设计已被审并被 01 接受为 C1 与名单追加切片技术基线，2026-09-18；YZT-163 更新 C1 已实现并被集成 develop，2026-09-18）
 
 statement: >
   as-of 2026-09-18（YZT-142 治理核验；用户决定时点为 UTC 2026-09-17T23:51:17Z）。
@@ -98,6 +98,71 @@ statement: >
   设计使用独立 artifact_id、无 supersedes，只补充已批准子集。本条 YZT-158 更新段是本次接受
   的唯一权威指针（精确散列、切片边界与 Q 边界以本段为准），checkpoint 的 cp-confirmed-010
   只作摘要与引用；本条亦不因此新增 supersession。
+  YZT-163 更新（2026-09-18 +08:00 / UTC 治理批次，只新增「C1 切片已实现、经独立 R1 限定通过
+  并被 01 集成 develop」这一 Reality 增量与其停止边界，不改写上文任何历史叙述，不新增或改写
+  任何产品 Norm）：implementation / teachers-app1-s2-c1-homework-suggestion / 0.1.1
+  （04 Software Engineer，YZT-161 最终评论 01a0b49a-ba50-7df2-9770-281754f89f07，服务器
+  created_at 2026-09-18T13:00:34Z；业务源码提交
+  0b6684837ba79d85f4481c7ba9cc9b1a58413d9a「feat(data): add homework suggestion counter」，
+  补正与定位提交 ea6ac32611e03bb26ae46a34fc679104c0b30ce2「docs: complete C1 envelope required
+  semantics」、6aa6f4c59738f401a74e4c1d076280e6d31de73b「docs: pin S2 C1 design and locator」）
+  经 05 独立 R1（YZT-162 最终评论 01a0b4a8-7ecb-7098-aca0-23b69030b229，服务器 created_at
+  2026-09-18T13:15:36Z；产物标识 delivery_review /
+  teachers-app1-s2-c1-homework-suggestion-r1-review / 0.1.0；报告附件 SHA256
+  b5c972c97bd7d54e232bc0de2da8e818d93e6dcede394224d259983e074b2897，20345 字节；审查信封
+  附件 SHA256 9c6b45b00c3788823803db32fa88171fc60638d5efb244a6556133818c798ff3，5092 字节）
+  verdict APPROVE、限定结论 APPROVE_AS_S2_C1_IN_MEMORY_SUGGESTION_COUNTER_IMPLEMENTATION、
+  Required Changes NONE、Challenges NONE。01 Engineering Lead 接受该限定结论（来源为
+  multica://issue/YZT-163 描述所载本轮 Decision）并把产品远端 develop 自
+  83ba4a508d97f00f5cfdc326c88fc5c78481299b 快进至
+  b058b44172534ac78e053be060893aea19e79295「docs: pin C1 0.1.1 envelope locator」；本批独立
+  只读核验：git ls-remote origin refs/heads/develop 为该 SHA，83ba4a5 是 b058b44 的祖先且两者
+  间恰 4 个提交（0b66848、6aa6f4c、ea6ac32、b058b44），本机 refs/heads/develop 本批未移动、
+  仍为 a67179d，故本条只声明远端已集成而不宣称本地分支已同步；main 本机与 origin/main 仍均为
+  558fdc939414142636f9b4f43530facf1c7cfb7e，develop 现领先 main 16 个提交（上一 as-of 为 12，
+  属正常版本推进），main 合并仍待用户精确授权。被审源码与集成版本等价：05 实测且本批复核
+  git diff 0b66848..b058b44 -- entry/ 为空，entry/src/main/ets/data/HomeworkSuggestion.ets 的
+  blob 在两提交同为 7f7fb01711453c4428649012f47085271a7d72c5，不存在审后再次改码。
+  Reality（本段唯一实质内容；C1 已被实现、被审并被集成，但只是设计内两项切片中的第一项）：
+  C1 切片只增加 entry/src/main/ets/data/HomeworkSuggestion.ets（425 行）、
+  entry/src/test/HomeworkSuggestion.test.ets（其 3 个 describe 块共 14 条 it 用例，覆盖设计矩阵
+  C01–C13）与 entry/src/test/List.test.ets 的 2 行注册，是纯内存观察计数器：只 import
+  ./CanonicalInput、./CaptureIntent 与 ./U01Scheduler，不 import relationalStore/Preferences，
+  不写库、不改 schema、不做迁移、不依赖墙钟，把 N1/N2 落实为可验证计算。同批 6aa6f4c 只改产品
+  docs 与 specs 定位，ea6ac32 只改 CHANGELOG、specs/README 与 specs/s2-c1 的信封/历史文件，
+  b058b44 只改 specs/s2-c1/artifact-envelope.json 的 6 行 locator，均未触及 entry/src/main 的
+  其他生产路径。生产仍未绑定：计算器 kind 仍为 CALCULATOR_KIND_SYNTHETIC
+  （HomeworkSuggestion.ets:403，其上方第 400 行注释原文「Production remains
+  UnboundProductionCalculator; this class is test-bound.」），U01Scheduler.ets:92 的
+  UnboundProductionCalculator 与 P01PlatformSupport.ets 的生产选择未变；entry/ 中不存在
+  ReadHomeworkState 等新增正式查询 API，S1 生产采集策略对缺批准输入仍 fail-closed。
+  仍未实现：名单追加切片（设计内名 R1，限定全新合成库 d02-roster-append/1）、教师结束与新阶段
+  （L1 持久化）、纠错/Undo（G03）、FollowUp 再出现与补记草稿恢复、生产 Capture 与生产 UI、生产
+  EntryAbility 接库。G01/G02/G06 Norm 与上文的批准语义、N1/N5 边界一字未改。
+  验证归属（本批不把他人实测冒充为本批重复业务验证）：93/93 业务本地用例（覆盖 C01–C13）、
+  --scope localUnitTest 2/2、CodeLinter check 与 unsigned HAP build 均为 05 在隔离审查树对
+  b058b44 的实测（Run b6f3b4d010834d88aeb4fef66d0e5686、114e95e0b0144438a1a0f790ea861357、
+  d242b4e13e1641839d9690fefd8ac583、184a4cfefe634e509d8ec29b9673ba33；unsigned HAP SHA256
+  1757a2ab22b3e9fd787699ca46f9d4e35584c21dd5afd065347ae75dd8a52e79）；38 项仓库 Python 测试、
+  capability policy 与 repository 结构检查属 01 集成侧与本治理侧的独立证据，不等于对业务用例的
+  重复执行。本批不重跑实现或业务测试：HarmonyOS relationalStore V01–V10、A03 真实跨进程重启、
+  A08 真实硬件竞争、真机、签名 HAP、安装发布、UI 走查与 R2 全部仍为 NOT_RUN，宿主探针与
+  FakeStore/Hypium 不得冒充平台持久化 PASS。
+  保留的停止边界（Q1–Q6 全部不因 C1 实现与集成而解除，各自只阻断所列分支）：Q1 相同观察时间
+  混向仍返回 UNAVAILABLE/OBSERVATION_ORDER_UNRESOLVED（C11 是防猜测护栏，不是已批准排序算法，
+  也不得据 ID 字典序伪造成教师观察顺序）；Q2 opened_at 语义与历史归属判定规则仍未定；Q3 纠错/
+  Undo 生产入口保持关闭；Q4 FollowUp 节奏、教师调整合并与补记草稿跨进程/切班恢复未定；Q5 同班
+  同名区分 UI 与旧名单迁移未定；Q6 L1 专用 DDL/回执编码与设备授权未准入。未被本批改变的边界：
+  main 合并、公开上传、真实数据、旧库迁移或清库执行、设备、签名与发布，以及按不同作业计数、
+  有限自动关闭、拖动排序等仍未批准的产品取舍。
+  来源时点观察（非阻塞，不改写 05 附件或 verdict）：05 审查信封的 provenance.created_at 记为
+  2026-09-18T13:20:00Z，晚于其平台评论的服务器 created_at 2026-09-18T13:15:36Z；服务器
+  created_at 与评论 ID 才是顺序权威，本条只按来源时点观察记录，不对该附件或其结论作任何修改。
+  与既有对象的关系：本段在 YZT-158 段之后追加，不改写其任何文字，也不把候选设计整体升级为
+  已批准规范；本次治理产物使用独立 context_package 身份
+  （teachers-app1-s2-c1-integrated-reality-governance，其精确版本标识见该信封本身），无
+  supersedes，也不与 teachers-app1-s2-approved-design-governance 同身份续版，以避免机械地
+  令设计治理包失效；本条亦不因此新增 supersession。
 
 scope:
   type: project
@@ -156,6 +221,36 @@ verified_against:
       - Decision
       - Requirements
       - Acceptance Criteria
+  - source_ref: multica://issue/YZT-160
+    revision: 0b6684837ba79d85f4481c7ba9cc9b1a58413d9a
+    paths:
+      - entry/src/main/ets/data/HomeworkSuggestion.ets
+      - entry/src/test/HomeworkSuggestion.test.ets
+  - source_ref: multica://issue/YZT-161
+    revision: 0.1.1
+    paths:
+      - 01a0b49a-ba50-7df2-9770-281754f89f07
+      - implementation-report.md
+      - artifact-envelope.json
+  - source_ref: multica://issue/YZT-162
+    revision: 0.1.0
+    paths:
+      - 01a0b4a8-7ecb-7098-aca0-23b69030b229
+      - YZT-162-delivery-review-report.md
+      - YZT-162-delivery-review-envelope.json
+  - source_ref: repo://teachers-app-one@b058b44172534ac78e053be060893aea19e79295/entry/src/main/ets/data/HomeworkSuggestion.ets
+    revision: b058b44172534ac78e053be060893aea19e79295
+    paths:
+      - entry/src/main/ets/data/HomeworkSuggestion.ets
+      - entry/src/test/HomeworkSuggestion.test.ets
+      - specs/s2-c1/implementation-report.md
+      - specs/s2-c1/artifact-envelope.json
+  - source_ref: multica://issue/YZT-163
+    revision: stage-47-governance-batch
+    paths:
+      - Requirements
+      - Acceptance Criteria
+      - Decision
 
 source_refs:
   - multica://issue/YZT-142
@@ -172,6 +267,16 @@ source_refs:
   - multica://issue/YZT-158
   - multica://comment/01a0b42e-c1f6-7a4b-b2e5-31b746a35503
   - multica://comment/01a0b43a-7c8d-7866-b862-52f96ef96fba
+  - multica://issue/YZT-160
+  - multica://issue/YZT-161
+  - multica://issue/YZT-162
+  - multica://issue/YZT-163
+  - multica://comment/01a0b49a-ba50-7df2-9770-281754f89f07
+  - multica://comment/01a0b4a8-7ecb-7098-aca0-23b69030b229
+  - repo://teachers-app-one@b058b44172534ac78e053be060893aea19e79295/entry/src/main/ets/data/HomeworkSuggestion.ets
+  - repo://teachers-app-one@b058b44172534ac78e053be060893aea19e79295/entry/src/test/HomeworkSuggestion.test.ets
+  - repo://teachers-app-one@b058b44172534ac78e053be060893aea19e79295/specs/s2-c1/implementation-report.md
+  - repo://teachers-app-one@b058b44172534ac78e053be060893aea19e79295/specs/s2-c1/artifact-envelope.json
 
 relations:
   conflicts_with: []
@@ -185,5 +290,5 @@ review:
   triggered_at: null
 
 created_at: 2026-09-18T00:30:00Z
-verified_at: 2026-09-18T11:35:00Z
-updated_at: 2026-09-18T11:35:00Z
+verified_at: 2026-09-18T13:28:00Z
+updated_at: 2026-09-18T13:28:00Z
