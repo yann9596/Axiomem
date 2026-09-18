@@ -1,7 +1,7 @@
 schema_version: "1.1"
 kind: current_fact
 id: FACT-TAPP1-000005
-title: G01/G02/G06 产品语义已由用户批准为 Norm、尚未实现（YZT-142 治理，2026-09-18）
+title: G01/G02/G06 产品语义已由用户批准为 Norm、尚未实现（YZT-142 治理，2026-09-18；YZT-158 补录落实该 Norm 的 S2 设计已被审并被 01 接受为 C1 与名单追加切片技术基线，2026-09-18）
 
 statement: >
   as-of 2026-09-18（YZT-142 治理核验；用户决定时点为 UTC 2026-09-17T23:51:17Z）。
@@ -53,6 +53,51 @@ statement: >
   design_baseline / teachers-app1-d02-roster-design / 0.1.0-draft 的 §Open Questions
   中 G06 候选状态（候选 A 当时只是建议、不是批准来源，且明确不含拖动 UI）都落后于本次
   批准，须由 04 在对应切片形成已审更新后交 01 决定版本。
+  YZT-158 更新（2026-09-18 +08:00 / UTC 治理批次，只新增「落实本批准语义的设计已审并被
+  01 接受」这一持久指针与其停止边界，不改写上文任何历史叙述，也不把候选设计整体升级为
+  已批准规范）：design_baseline / teachers-app1-s2-approved-rules-design / 0.1.0-draft
+  （03 Solution Architect，YZT-156 最终评论 01a0b42e-c1f6-7a4b-b2e5-31b746a35503；正文
+  SHA256 86d9f3c8d221dac27f1283bb3cb09d54df47b73a72a2b6657c94ecc1ff7f1957，信封 SHA256
+  de55da28ee0df6dc546e18b16dded5ad9f304fac3e03c907139905b071c7b540）经 05 独立 R1
+  （YZT-157 最终评论 01a0b43a-7c8d-7866-b862-52f96ef96fba；报告 SHA256
+  0de81efc378d60dd4f4b6ad633f8dec41f2b21634fc2c4e3bc66df450205455a，审查信封 SHA256
+  4495dfb60268843ba34e5f12b827c2e7ff706ccedce91c3c44339c248834cb10；审查产物标识
+  delivery_review / teachers-app1-s2-approved-rules-design-r1-review / 0.1.0）verdict
+  APPROVE、scope_verdict APPROVE_AS_CANDIDATE_DESIGN_FOR_C1_AND_R1_SLICES、Required
+  Changes NONE、Challenges NONE；01 Engineering Lead 在 multica://issue/YZT-158 的 Decision
+  接受该候选设计为两项技术基线：C1 纯观察计数器，以及可独立交付的合成名单追加切片。接受
+  范围只有这两项切片，候选的其余部分（尤其 L1 持久化 DDL 与生产组装/UI）不因本接受成为
+  已批准规范，本条上文的 G01/G02/G06 Norm 也不因本接受扩大或改写。
+  切片边界（本条只记指针，不复制设计正文）：C1 是纯观察计数器（用例 C01–C13；纯内存算法，
+  无 schema 变更、不写库、不依赖墙钟/UI/平台库），把 N1/N2 落实为可验证计算；名单追加切片
+  在本设计内限定为全新合成库 d02-roster-append/1（user_version=3 / schema_version=3，基于
+  v2 结构新增 roster_order_state 与 student_order 两表）落实 N5，禁止改动生产
+  EntryAbility、禁止旧库自动迁移、不使用 created_at/ID 为旧名单猜顺序。设计切片名 C1、R1
+  与 review_level 的 R1（Deliverable Integrity Review 级别）不是同一概念，不得混用。
+  Reality（本接受不改变现状）：设计被接受不等于已实现、已配置或已验收——C1 与名单追加
+  切片都还没有实现提交，产品远端 develop 仍为 83ba4a508d97f00f5cfdc326c88fc5c78481299b，
+  生产 EntryAbility 仍未接入实验库，S1 生产策略对缺批准输入仍 fail-closed；设计随附的 35 项
+  业务矩阵、平台 relationalStore V01–V10、A03 真实跨进程重启、A08 真实硬件竞争、名单 UI、
+  生产组装、设备、签名发布与 R2 全部 NOT_RUN。设计/审查报告中的成熟度百分比（如 C1 100%、
+  R1 95%）属设计者与审查者评价，不是实现或测试事实，本条不采用为验证证据；其源码检索与
+  38 项仓库测试属 05 报告，由该报告承担，本条不重做也不升级为平台结论。
+  保留的停止边界（Q1–Q6 由本设计明确提出，均不因本接受解除；各只阻断所列具体分支，由 01
+  准备完整决策材料，不把局部缺口扩大成全业务阻塞）：Q1 相同观察时间出现相反方向时谁先谁后
+  仍未裁决——设计对混向同时间返回 UNAVAILABLE/OBSERVATION_ORDER_UNRESOLVED，这是防猜测的
+  技术保护，不是已批准排序算法，也不得据 ID 字典序伪造成教师观察顺序；Q2 opened_at 语义与
+  历史归属判定规则未定，L1 生产时间路由等待，不得回写旧行或据单条比较宣称历史归属已判；
+  Q3 Undo/纠错（G03）未启用，纠错生产入口保持关闭，不得用正向记录抵消错误；Q4 FollowUp
+  再出现节奏、教师调整合并与补记草稿跨进程/切班恢复未定，未完成前不得交付声称支持完整补记
+  的生产 UI，也不得用假 Evidence 持久化草稿；Q5 同班同名区分 UI 与旧名单迁移方式未定（R1
+  数据层追加不需要这些选择）；Q6 L1 专用 DDL/回执编码与真机设备授权未准入，04 不得从本设计
+  推断未给出的 DDL，设备包 OFF 只令相应平台验收 NOT_RUN。
+  未被本接受改变：上文除 G01/G02/G06 之外的产品取舍（按不同作业计数、有限自动关闭、拖动
+  排序、同班同名区分、旧名单迁移等）继续 pending；main 合并、公开上传、真实数据、旧库迁移
+  执行、设备、签名与发布边界完全不变。与既有对象的关系：本条不取代 FACT-TAPP1-000003 或
+  FACT-TAPP1-000004，本批未改写这两条正文；D01/D02 历史附件及其历史 APPROVE 未被编辑，本
+  设计使用独立 artifact_id、无 supersedes，只补充已批准子集。本条 YZT-158 更新段是本次接受
+  的唯一权威指针（精确散列、切片边界与 Q 边界以本段为准），checkpoint 的 cp-confirmed-010
+  只作摘要与引用；本条亦不因此新增 supersession。
 
 scope:
   type: project
@@ -93,6 +138,24 @@ verified_against:
     revision: a67179dfc02f0461a7962dcc697161395c5deb76
     paths:
       - entry/src/main/ets/data/RosterContract.ets
+  - source_ref: multica://issue/YZT-156
+    revision: 0.1.0-draft
+    paths:
+      - 01a0b42e-c1f6-7a4b-b2e5-31b746a35503
+      - S2-design-0.1.0-draft.md
+      - S2-design-envelope.json
+  - source_ref: multica://issue/YZT-157
+    revision: 0.1.0
+    paths:
+      - 01a0b43a-7c8d-7866-b862-52f96ef96fba
+      - YZT-157-delivery-review-report.md
+      - YZT-157-delivery-review-envelope.json
+  - source_ref: multica://issue/YZT-158
+    revision: stage-42-governance-batch
+    paths:
+      - Decision
+      - Requirements
+      - Acceptance Criteria
 
 source_refs:
   - multica://issue/YZT-142
@@ -104,6 +167,11 @@ source_refs:
   - repo://teachers-app-one@a67179dfc02f0461a7962dcc697161395c5deb76/docs/project-management/mvp-execution-plan.md
   - FACT-TAPP1-000003
   - FACT-TAPP1-000004
+  - multica://issue/YZT-156
+  - multica://issue/YZT-157
+  - multica://issue/YZT-158
+  - multica://comment/01a0b42e-c1f6-7a4b-b2e5-31b746a35503
+  - multica://comment/01a0b43a-7c8d-7866-b862-52f96ef96fba
 
 relations:
   conflicts_with: []
@@ -117,5 +185,5 @@ review:
   triggered_at: null
 
 created_at: 2026-09-18T00:30:00Z
-verified_at: 2026-09-18T00:30:00Z
-updated_at: 2026-09-18T00:30:00Z
+verified_at: 2026-09-18T11:35:00Z
+updated_at: 2026-09-18T11:35:00Z
