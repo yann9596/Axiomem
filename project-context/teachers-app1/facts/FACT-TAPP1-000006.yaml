@@ -1,0 +1,157 @@
+schema_version: "1.1"
+kind: current_fact
+id: FACT-TAPP1-000006
+title: P01 relationalStore 接入设计基线已通过独立 R1 并被 01 接受、尚未实现（YZT-146 治理，2026-09-18）
+
+statement: >
+  as-of 2026-09-18（YZT-146 治理核验）。 Norm（已审设计基线，仅权威指针，不复制设计正文，
+  也不把审查摘要的措辞升格为代码事实）：`design_baseline /
+  teachers-app1-p01-platform-storage / 0.1.0-draft`（作者 03 Solution Architect，
+  任务 multica://issue/YZT-141，状态 ready_for_review）已由 05 Delivery Reviewer 完成
+  独立 R1（任务 multica://issue/YZT-145），verdict APPROVE 且限定为
+  APPROVE_AS_DESIGN_BASELINE_PREPARATION、Required Changes NONE、Challenges NONE，
+  被审对象即该 0.1.0-draft；01 Engineering Lead 接受该 APPROVE，并只在父
+  multica://issue/YZT-116 的 Stage29 回交决策内记录该接受，未新增设备、签名、真实数据、
+  迁移或发布授权。
+  精确 locator 与实读散列：设计正文 P01-platform-storage-0.1.0-draft.md 由 YZT-141
+  最终评论 01a0b1e0-0a65-7953-b681-bc71a70625d8 交付，SHA256
+  18ec2d60d0d8cc447fe61270a720fba9f1ee8f9da5d664fcd30bcbfa97e10ab6；设计信封
+  P01-design-envelope-0.1.0-draft.json SHA256
+  44204bb968ea04a20dd2da977679db0bfc0bc876ea70d0b6cca8735700135572；合成 fixture
+  P01-fixtures-0.1.0.json SHA256
+  eff827fd586b0480f85a8396afb578a84ad240d55df992519029f8a32e387791；审查报告
+  P01-platform-storage-0.1.0-draft-R1-delivery-review.md 由 YZT-145 最终评论
+  01a0b217-0b74-736b-af3f-b9c7c52f1a31 交付，SHA256
+  7541f4a229102634e643ae19d3469906744a8cff4e00d2639cba68075684236a；审查信封
+  P01-platform-storage-r1-review-envelope.json SHA256
+  a1a7b20739a5d5f80878e2a1ddf27b9790eed36d7b65ebfdcb904e7857abc8ac。审查产物标识
+  delivery_review / teachers-app1-p01-platform-storage-r1-review / 0.1.0；设计产物标识
+  design_baseline / teachers-app1-p01-platform-storage / 0.1.0-draft。本治理批次对父发布包
+  指定持久目录内的上述五个文件逐一实读并复算 SHA256，全部与设计信封、审查信封及任务声明
+  一致；平台附件本体由 01 在该持久目录提供，本批未重新下载平台附件。
+  该设计的合同范围（Norm，只列指针，字段与步骤以设计正文为准）：P01-01 空库首建分类、
+  P01-02 队列内 ready 复核与统一停写、P01-03 commit 抛错后的 UNKNOWN 结局判定、
+  P01-04 CAS 与 insert 返回值校验、P01-05 每事务外键门与生命周期所有权、P01-06 view／
+  组合 FK／部分唯一索引的结构核验深度；DR-01 共享写 session 的顶层组装（不反转
+  Capture 构造注入）；DR-02 以事务阶段优先的错误语义（确定回滚为 FAILED、commit 尝试或
+  回滚结局不明为 UNKNOWN、结构／完整性为 STOPPED 且全库队列闭锁）；验证矩阵 V01–V10、
+  A03 需进程外两阶段真实重启、A08 需真实独立 Transaction 证明连接级竞争；平台准入
+  选项 A/B 仅为供 01 整理后交用户的准备材料，设计本身不请求新增授权。设计 based_on
+  design_baseline / teachers-app1-d02-roster-design / 0.1.0-draft 与其 R1 0.1.0、
+  implementation / teachers-app1-d02-m1-roster / 0.1.1 与其 R1 0.1.0，输入基线为产品仓
+  develop a67179dfc02f0461a7962dcc697161395c5deb76，无 supersedes，不改写任何旧信封、
+  旧 R1 或旧 verdict；设计明文不依赖当时尚未部署的 cb7011d 产品治理。
+  05 同时给出四条非阻塞跟进（Verdict 不变、不构成 Required Changes）：V02 需先在目标平台
+  实测事务内 `PRAGMA foreign_keys` 查询是否受驱动限制并记录替代验证方案；V06 需详实记录
+  execute 更新语句的原始返回类型与数值，不得退回无差别容错转换；A03 需设计进程外启动／
+  杀死与跨阶段结果汇总机制并记录前后 PID；设备准入与签名清单由 01 在后续切片按设计第 5 节
+  补齐，本审查不提前触发设备或 QA。
+  Reality（当前运行事实：未实现、未平台验证；本批只做只读检索，未重跑构建或设备）：
+  P01-01～06 是**纠正设计**而不是已落地的代码修复；145 报告摘要中的“修复／彻底消除”
+  只能按该设计的范围理解，不构成代码事实、也不改变旧 M1 合成切片的历史 verdict。产品仓
+  develop a67179d 上仍无该接入：EntryAbility 未接库，ohosTest 只有 assertContain 示例，
+  名单侧仍只是 M1 的合成实现。HarmonyOS relationalStore 平台执行、真机、构建与本地 App
+  测试、签名、发布、UI 走查与 R2 全部为 NOT_RUN；宿主机 SQLite 探针、FakeStore 或合成
+  组件都不得冒充平台持久化 PASS。
+  pending（未批准／未授权，不因本 APPROVE 或被接受而改变）：平台准入选项 A/B 仍未选择
+  （设计把 A 列为推荐的后续方向，但要求 01 先补齐目标设备／OS／API／签名 profile 等清单，
+  再提交最终设备授权）；设备与签名、真实数据、v1 库迁移执行或清库、产品 main 合并
+  （main 仍为 558fdc939414142636f9b4f43530facf1c7cfb7e）与 Axiomem 公开上传均未授权或
+  未验收。本条记录的是“设计已审并被接受”这一前提，不是实现、平台结论或阶段完成。
+  与既有对象的关系：本条不取代 FACT-TAPP1-000003、FACT-TAPP1-000004 或
+  FACT-TAPP1-000005，也不改写它们的正文、来源与 pending 边界；它只新增“P01 接入设计已审
+  并被 01 接受、其实现与平台验证仍缺失”这一事实。设计尚未进入产品仓（本批只读核验
+  develop a67179d：无该接入的源码或 specs 变更）；其后续落地、产品仓文档/specs 更新与
+  device 入口绑定由 04 在对应切片形成并交 01 决定版本，02 不改产品代码。本条不得读作
+  G01/G02/G06 已实现、S2 完成或平台关口已开。
+
+scope:
+  type: project
+  project_id: teachers-app1
+  projects: []
+  task_id: null
+
+domains:
+  - platform-storage
+  - relationalstore
+  - test-and-validation
+  - design-baseline
+
+repositories:
+  - teachers-app-one
+
+status: active
+verification: verified
+
+verified_against:
+  - source_ref: multica://issue/YZT-141
+    revision: final-comment-01a0b1e0-0a65-7953-b681-bc71a70625d8
+    paths:
+      - P01-platform-storage-0.1.0-draft.md
+      - P01-design-envelope-0.1.0-draft.json
+      - P01-fixtures-0.1.0.json
+      - P01-delivery-manifest.json
+      - 01a0b1e0-0a65-7953-b681-bc71a70625d8
+  - source_ref: multica://issue/YZT-145
+    revision: final-comment-01a0b217-0b74-736b-af3f-b9c7c52f1a31
+    paths:
+      - P01-platform-storage-0.1.0-draft-R1-delivery-review.md
+      - P01-platform-storage-r1-review-envelope.json
+      - 01a0b217-0b74-736b-af3f-b9c7c52f1a31
+  - source_ref: multica://issue/YZT-116
+    revision: stage-29-execution-decision
+    paths:
+      - Decision
+      - 01a0b217-4026-7161-8cb6-8d0f1fac57be
+      - 01a0b21e-27a2-73f9-b870-0908cd465a38
+  - source_ref: multica://issue/YZT-146
+    revision: stage-30-execution-decision
+    paths:
+      - Requirements
+      - Decision
+      - Memory Disposition
+  - source_ref: repo://teachers-app-one@a67179dfc02f0461a7962dcc697161395c5deb76/entry/src/main/ets/data/RdbS1Store.ets
+    revision: a67179dfc02f0461a7962dcc697161395c5deb76
+    paths:
+      - entry/src/main/ets/data/RdbS1Store.ets
+  - source_ref: repo://teachers-app-one@a67179dfc02f0461a7962dcc697161395c5deb76/entry/src/main/ets/data/S1SchemaGuard.ets
+    revision: a67179dfc02f0461a7962dcc697161395c5deb76
+    paths:
+      - entry/src/main/ets/data/S1SchemaGuard.ets
+  - source_ref: repo://teachers-app-one@a67179dfc02f0461a7962dcc697161395c5deb76/entry/src/ohosTest/ets/test/Ability.test.ets
+    revision: a67179dfc02f0461a7962dcc697161395c5deb76
+    paths:
+      - entry/src/ohosTest/ets/test/Ability.test.ets
+
+source_refs:
+  - multica://issue/YZT-141
+  - multica://issue/YZT-145
+  - multica://issue/YZT-116
+  - multica://issue/YZT-146
+  - multica://comment/01a0b1e0-0a65-7953-b681-bc71a70625d8
+  - multica://comment/01a0b217-0b74-736b-af3f-b9c7c52f1a31
+  - multica://comment/01a0b217-4026-7161-8cb6-8d0f1fac57be
+  - multica://comment/01a0b21e-27a2-73f9-b870-0908cd465a38
+  - repo://teachers-app-one@a67179dfc02f0461a7962dcc697161395c5deb76/docs/README.md
+  - repo://teachers-app-one@a67179dfc02f0461a7962dcc697161395c5deb76/docs/engineering/test-and-quality-gates.md
+  - repo://teachers-app-one@a67179dfc02f0461a7962dcc697161395c5deb76/docs/engineering/security-and-signing.md
+  - repo://teachers-app-one@a67179dfc02f0461a7962dcc697161395c5deb76/entry/src/main/ets/data/RdbS1Store.ets
+  - repo://teachers-app-one@a67179dfc02f0461a7962dcc697161395c5deb76/entry/src/main/ets/data/S1SchemaGuard.ets
+  - repo://teachers-app-one@a67179dfc02f0461a7962dcc697161395c5deb76/entry/src/ohosTest/ets/test/Ability.test.ets
+  - FACT-TAPP1-000003
+  - FACT-TAPP1-000004
+
+relations:
+  conflicts_with: []
+  supersedes: []
+  supersedes_note: null
+  drift_of: null
+  norm_reality_conflict: []
+
+review:
+  reason: null
+  triggered_at: null
+
+created_at: 2026-09-18T01:35:00Z
+verified_at: 2026-09-18T01:35:00Z
+updated_at: 2026-09-18T01:35:00Z

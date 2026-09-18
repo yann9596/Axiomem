@@ -163,6 +163,38 @@ confirmed:
       - FACT-TAPP1-000005
       - FACT-TAPP1-000003
       - FACT-TAPP1-000004
+  - id: cp-confirmed-008
+    summary: >
+      P01 平台存储接入设计已审并被 01 接受、尚未实现（YZT-146 治理，2026-09-18 +08:00）：
+      design_baseline / teachers-app1-p01-platform-storage / 0.1.0-draft（03 Solution
+      Architect，YZT-141 最终评论 01a0b1e0-0a65-7953-b681-bc71a70625d8，正文 SHA256
+      18ec2d60d0d8cc447fe61270a720fba9f1ee8f9da5d664fcd30bcbfa97e10ab6，信封 SHA256
+      44204bb968ea04a20dd2da977679db0bfc0bc876ea70d0b6cca8735700135572）经 05 独立 R1
+      （YZT-145 最终评论 01a0b217-0b74-736b-af3f-b9c7c52f1a31，报告 SHA256
+      7541f4a229102634e643ae19d3469906744a8cff4e00d2639cba68075684236a，审查信封 SHA256
+      a1a7b20739a5d5f80878e2a1ddf27b9790eed36d7b65ebfdcb904e7857abc8ac；产物
+      delivery_review / teachers-app1-p01-platform-storage-r1-review / 0.1.0）verdict
+      APPROVE，限定为 APPROVE_AS_DESIGN_BASELINE_PREPARATION，Required Changes NONE、
+      Challenges NONE；01 接受该 APPROVE。合同范围只以设计正文为准，本条只记指针：
+      P01-01～06 六个静态接入缺口的纠正设计、DR-01 共享写 session 顶层组装、DR-02
+      事务阶段优先的 FAILED/UNKNOWN/STOPPED 与全库闭锁、验证矩阵 V01–V10、A03 进程外
+      两阶段真实重启、A08 真实独立 Transaction，以及平台准入选项 A/B（仅准备材料，设计
+      不请求新增授权）。based_on D02 设计 0.1.0-draft 与其 R1 0.1.0、M1 实现 0.1.1 与其
+      R1 0.1.0，输入基线 develop a67179d，无 supersedes。Reality：P01-01～06 是纠正设计
+      而非代码事实，审查摘要中的“已修复/彻底消除”只按该设计范围理解；产品仓 a67179d 上
+      EntryAbility 未接库、ohosTest 仅 assertContain 示例，平台 relationalStore、真机、
+      构建与本地 App 测试、签名、发布、UI 走查与 R2 全部 NOT_RUN。仍未批准：平台准入
+      A/B 选择、设备与签名、真实数据、v1 库迁移或清库、main 合并与公开上传。详见
+      FACT-TAPP1-000006。
+    refs:
+      - multica://issue/YZT-141
+      - multica://issue/YZT-145
+      - multica://issue/YZT-146
+      - multica://issue/YZT-116
+      - multica://comment/01a0b1e0-0a65-7953-b681-bc71a70625d8
+      - multica://comment/01a0b217-0b74-736b-af3f-b9c7c52f1a31
+      - FACT-TAPP1-000006
+      - FACT-TAPP1-000004
 
 open:
   - id: cp-open-001
@@ -180,10 +212,16 @@ open:
       平台与发布验收未完成：真机、HarmonyOS relationalStore、UI 走查、签名、发布
       与 R2 仍按实际状态为 NOT_RUN；设备验收安排在首个实际使用 relationalStore /
       UI 交互的可运行切片，宿主 SQLite 合成探针或 U01/M1 合成组件不得冒充平台 PASS。
+      YZT-146 补充：该切片的接入设计（design_baseline /
+      teachers-app1-p01-platform-storage / 0.1.0-draft）已过独立 R1 并被 01 接受
+      （见 cp-confirmed-008），但设计被接受不等于实现或平台验证——本条的 NOT_RUN
+      边界与“不得以合成探针冒充平台 PASS”完全不变。
     refs:
       - repo://teachers-app-one@a67179dfc02f0461a7962dcc697161395c5deb76/docs/engineering/harmonyos-toolchain.md
       - repo://teachers-app-one@a67179dfc02f0461a7962dcc697161395c5deb76/docs/project-management/mvp-execution-plan.md
+      - multica://issue/YZT-146
       - FACT-TAPP1-000003
+      - FACT-TAPP1-000006
   - id: cp-open-003
     summary: >
       尚未冻结的产品语义按产品仓 product-expectations 进入 D01 Contract Gap Register；
@@ -242,13 +280,16 @@ next:
   - main 合并与设备/签名/发布/真实数据保持等待用户精确授权；在真机/relationalStore 与首轮 UI 交互切片到达平台关口前，只准备合成数据与回滚方案，不宣称平台 PASS
   - G01/G02/G06 的产品语义已由用户批准为 Norm（YZT-142，见 cp-confirmed-007），但尚未实现、未经验证：依赖这些语义的设计/实现派发必须先携带已审合同与 fresh Context，且不得把批准读作已配置策略、已实现或 S2 完成；仍未批准的产品取舍（按不同作业计数、有限自动关闭、拖动排序、同班同名区分、旧名单迁移等）继续 pending，由 01 提交完整可理解选择
   - YZT-142 治理产物经 01 独立 R1、接受、部署并重建索引后，受影响消费者才以其 fresh SELF_CHECK 为准
+  - P01 平台存储接入设计已审并被 01 接受（YZT-146，见 cp-confirmed-008），但尚未实现：后续实现/审查/平台派发必须携带 design_baseline / teachers-app1-p01-platform-storage / 0.1.0-draft 的精确指针与其 R1 0.1.0 的 APPROVE_AS_DESIGN_BASELINE_PREPARATION 限定，不得把 P01-01～06 当作已修的代码事实，也不得把设计被接受读作平台就绪、S2 完成或设备/签名授权
   - 专业交付的完成协议统一按 skills/parent-handoff-wake/SKILL.md（Memory 仓 75a9e563）执行：达成交付目标后设置 done 并 live readback；完成治理任务不等于其产物已被接受、部署或 indexed
 
 refs:
   - project.yaml
   - multica://issue/YZT-98
   - multica://issue/YZT-142
+  - multica://issue/YZT-146
   - FACT-TAPP1-000005
+  - FACT-TAPP1-000006
   - migration/retirement/app1-retirement-yzt98.md
 
-updated_at: 2026-09-18T00:30:00Z
+updated_at: 2026-09-18T01:35:00Z
