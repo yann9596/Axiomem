@@ -1,7 +1,7 @@
 schema_version: "1.1"
 kind: current_fact
 id: FACT-TAPP1-000005
-title: G01/G02/G06 产品语义已由用户批准为 Norm；C1 切片已实现、经独立 R1 限定通过并被 01 集成，其余仍未实现（YZT-142 治理，2026-09-18；YZT-158 补录落实该 Norm 的 S2 设计已被审并被 01 接受为 C1 与名单追加切片技术基线，2026-09-18；YZT-163 更新 C1 已实现并被集成 develop，2026-09-18）
+title: G01/G02/G06 产品语义已由用户批准为 Norm；C1 切片与名单追加数据层切片已实现、经独立 R1 限定通过并被 01 集成，教师可见的其余部分仍未实现（YZT-142 治理，2026-09-18；YZT-158 补录落实该 Norm 的 S2 设计已被审并被 01 接受为 C1 与名单追加切片技术基线，2026-09-18；YZT-163 更新 C1 已实现并被集成 develop，2026-09-18；YZT-167 更新名单追加数据层已实现并被集成 develop c87be89，2026-09-18）
 
 statement: >
   as-of 2026-09-18（YZT-142 治理核验；用户决定时点为 UTC 2026-09-17T23:51:17Z）。
@@ -164,6 +164,68 @@ statement: >
   supersedes，也不与 teachers-app1-s2-approved-design-governance 同身份续版，以避免机械地
   令设计治理包失效；本条亦不因此新增 supersession。
 
+  YZT-167 更新（2026-09-18 +08:00 / UTC 治理批次，只新增"名单追加数据层切片已实现、经独立 R1
+  限定通过并被 01 集成 develop"这一 Reality 增量与其停止边界，不改写上文任何历史叙述，不新增或
+  改写任何产品 Norm）：implementation / teachers-app1-s2-roster-append / 0.1.0（04 Software
+  Engineer，YZT-165 最终评论 01a0b504-3402-7cc2-ac10-fee9d68fd746，服务器 created_at
+  2026-09-18T14:55:46Z；业务源码提交 20396487bc524075e687bb75a132ac74a31f46c7"feat(data): add
+  roster append order"，文档与定位提交 c87be8922006e7c1ec10d670737447225b67dca7"docs: pin S2
+  roster-append locator"）经 05 独立 R1（YZT-166 最终评论
+  01a0b519-aba1-70c0-86a2-2464634e5df5，服务器 created_at 2026-09-18T15:19:13Z，附 3 份附件；
+  产物标识 delivery_review / teachers-app1-s2-roster-append-r1-review / 0.1.0；审查报告附件
+  SHA256 846ce35296342af026e4c589bf9484388189d3e415c9b785e75389b0ed23d805，23249 字节；审查
+  信封附件 SHA256 9335fbcdfdc6515996267acc122cd153d10707df4534cf53e147b57c4ea54dd4，5827 字节；
+  实测记录附件 SHA256 fc875b0e8d2469ab65dd383051de44d19fefaac5b866a27419052c55892ff5af，5055
+  字节——本批从持久项目目录逐一实读并复算，三份均与该批声明一致）verdict APPROVE、限定结论
+  APPROVE_AS_S2_ROSTER_APPEND_DATA_LAYER_CANDIDATE、Required Changes NONE、Challenges NONE。
+  01 Engineering Lead 接受该有界 R1 结论（来源为 multica://issue/YZT-167 描述所载本轮 Decision）
+  并把产品远端 develop 自 b058b44172534ac78e053be060893aea19e79295 快进至
+  c87be8922006e7c1ec10d670737447225b67dca7；本批独立只读核验：git ls-remote origin
+  refs/heads/develop 与 refs/heads/feat/yzt-165-roster-append 均为该 SHA，b058b44 是 c87be89 的
+  祖先且两者间恰 2 个提交（2039648、c87be89），本机 refs/heads/develop 本批未移动、仍为 a67179d，
+  故本条只声明远端已集成而不宣称本地分支已同步；main 本机与 origin/main 仍均为
+  558fdc939414142636f9b4f43530facf1c7cfb7e，develop 现领先 main 18 个提交（上一 as-of 为 16，属
+  正常版本推进），main 合并仍待用户精确授权。被审 HEAD 与集成版本为同一 SHA，且本批复核
+  git diff 2039648..c87be89 -- entry/ 为空，不存在审后再次改码。
+  Reality（本段唯一实质内容；名单追加已在合成数据层实现、被审并被集成，但仍不是教师可见的名单
+  功能）：该切片在已审 v2 结构上新增全新合成库标识 schema3（user_version=3 / schema_version=3 /
+  contract_id=d02-roster-append/1；本批只读核验 S1Schema.ets 中 S1_CONTRACT_ID 为
+  'd02-roster-append/1'、schema_version CHECK 为 3 且 user_version 为 3，这只有字面一致性含义，
+  不是平台执行证据），新增 roster_order_state 与 student_order 两表；CreateStudent/2 在同一变更
+  事务内按班尾分配严格递增的 position 并写入 order CAS 与不可变 RosterAppendReceipt/1；v3 库上的
+  CreateStudent/1 以 COMMAND_VERSION_UNSUPPORTED 拒绝；ListStudentsInOrder/1 按 position 升序返回
+  FOUND，遇缺行、重复位置或序号断裂触发 DATA_INTEGRITY_ERROR 并停写，不回退到姓名、created_at 或
+  ID 字典序推断；RenameClass/1 与 RenameStudent/1 不移动位置、不改 order_revision；覆盖设计矩阵
+  R01–R10 的 entry/src/test/RosterAppend.test.ets 与 FakeS1Store 等测试支撑改动属该切片。仍未实现
+  （不得读作已交付）：生产 EntryAbility 仍未接入实验库（本批实测 b058b44..c87be89 对
+  entry/src/main/ets/entryability/ 无改动），教师名单页与任何名单 UI、L1 教师结束与新阶段
+  （EndEpisode 持久化）、纠错/Undo（G03）、FollowUp 与补记草稿恢复、生产 Capture/UI、旧库位置推断、
+  迁移与清库全部仍不存在。G01/G02/G06 的 Norm 正文与上文批准语义一字未改：N5/G06-A 的"名单初始按
+  添加顺序、新学生放末尾、改名或新增学情不改变位置"至此有了数据层实现，但仍不是教师可见功能，也不
+  构成 S2 完成。
+  验证归属（本批不把他人实测冒充为本批重复业务验证）：full local-test 105/105（含 R01–R10）、
+  --scope localUnitTest 2/2、CodeLinter check 0 findings、unsigned HAP build（SHA256
+  3ed12ebcc6dd4a395973535292c85cab5bd41b339160683de832337f999de794）、宿主 SQLite 3.50.4 探针
+  81/81、仓库 Python 单测 38/38、capability policy 与 repository 结构检查（124 tracked files）均为
+  05 在从 c87be89 建立的隔离审查树中的实测（Run 65017e960cfc4d4792b0138aff80b505、
+  79f04aec110d40ff824dfd5ea7683425、c6704f3499394e16827df3f407a8ca59、
+  50db80ea13474a4b9d3f8d61212baff8）；01 在同一集成 HEAD 复验仓库单测 38/38、policy 与
+  repository PASS。本批不重跑实现或业务测试：HarmonyOS relationalStore 平台真实持久化 V01–V10、
+  A03 真实跨进程杀 PID 两阶段重启、A08 真实硬件连接级竞争、真机、签名 HAP、安装发布、UI 走查与 R2
+  全部仍为 NOT_RUN，FakeStore/Hypium 与宿主 SQLite 探针不得冒充平台持久化 PASS。
+  保留的停止边界（Q1–Q6 全部不因本实现与集成而解除，各自只阻断所列分支）：Q1 相同观察时间混向仍
+  返回 UNAVAILABLE/OBSERVATION_ORDER_UNRESOLVED；Q2 opened_at 语义与历史归属判定规则仍未定；Q3
+  纠错/Undo 生产入口保持关闭；Q4 FollowUp 节奏、教师调整合并与补记草稿跨进程/切班恢复未定；Q5 同班
+  同名区分 UI 与旧名单迁移未定（本切片 R10 只在数据层保留两个独立身份与位置，不做 UI 区分）；Q6 L1
+  专用 DDL/回执编码与设备授权未准入。未被本批改变的边界：main 合并、公开上传、真实数据、旧库迁移或
+  清库执行、设备、签名与发布，以及按不同作业计数、有限自动关闭、拖动排序等仍未批准的产品取舍。
+  与既有对象的关系：本段在 YZT-163 段之后追加，不改写其任何文字；上文 YZT-163 段"仍未实现：名单
+  追加切片……教师结束与新阶段……"中的"名单追加切片"一项自本段起由本段承接，该项其余内容（教师结束
+  与新阶段、纠错/Undo、FollowUp、生产 Capture/UI、生产 EntryAbility 接库）仍然成立。本次治理产物
+  使用独立 context_package 身份 teachers-app1-s2-roster-append-integrated-reality-governance（其
+  精确版本标识见该信封本身），无 supersedes，也不与前序治理包同身份续版，以避免机械地令设计治理包
+  与 C1 治理包失效；本条亦不因此新增 supersession。
+
 scope:
   type: project
   project_id: teachers-app1
@@ -251,6 +313,30 @@ verified_against:
       - Requirements
       - Acceptance Criteria
       - Decision
+  - source_ref: repo://teachers-app-one@c87be8922006e7c1ec10d670737447225b67dca7/specs/s2-roster-append/artifact-envelope.json
+    revision: c87be8922006e7c1ec10d670737447225b67dca7
+    paths:
+      - specs/s2-roster-append/artifact-envelope.json
+      - specs/s2-roster-append/implementation-report.md
+      - entry/src/main/ets/data/S1Schema.ets
+      - entry/src/test/RosterAppend.test.ets
+  - source_ref: multica://issue/YZT-165
+    revision: final-comment-01a0b504-3402-7cc2-ac10-fee9d68fd746
+    paths:
+      - 01a0b504-3402-7cc2-ac10-fee9d68fd746
+  - source_ref: multica://issue/YZT-166
+    revision: 0.1.0
+    paths:
+      - 01a0b519-aba1-70c0-86a2-2464634e5df5
+      - YZT-166-delivery-review-report.md
+      - YZT-166-delivery-review-envelope.json
+      - YZT-166-verification.json
+  - source_ref: multica://issue/YZT-167
+    revision: stage-51-governance-batch
+    paths:
+      - Requirements
+      - Acceptance Criteria
+      - Decision
 
 source_refs:
   - multica://issue/YZT-142
@@ -277,6 +363,15 @@ source_refs:
   - repo://teachers-app-one@b058b44172534ac78e053be060893aea19e79295/entry/src/test/HomeworkSuggestion.test.ets
   - repo://teachers-app-one@b058b44172534ac78e053be060893aea19e79295/specs/s2-c1/implementation-report.md
   - repo://teachers-app-one@b058b44172534ac78e053be060893aea19e79295/specs/s2-c1/artifact-envelope.json
+  - repo://teachers-app-one@c87be8922006e7c1ec10d670737447225b67dca7/specs/s2-roster-append/artifact-envelope.json
+  - repo://teachers-app-one@c87be8922006e7c1ec10d670737447225b67dca7/specs/s2-roster-append/implementation-report.md
+  - repo://teachers-app-one@c87be8922006e7c1ec10d670737447225b67dca7/entry/src/main/ets/data/S1Schema.ets
+  - repo://teachers-app-one@c87be8922006e7c1ec10d670737447225b67dca7/entry/src/test/RosterAppend.test.ets
+  - multica://issue/YZT-165
+  - multica://issue/YZT-166
+  - multica://issue/YZT-167
+  - multica://comment/01a0b504-3402-7cc2-ac10-fee9d68fd746
+  - multica://comment/01a0b519-aba1-70c0-86a2-2464634e5df5
 
 relations:
   conflicts_with: []
@@ -290,5 +385,5 @@ review:
   triggered_at: null
 
 created_at: 2026-09-18T00:30:00Z
-verified_at: 2026-09-18T13:28:00Z
-updated_at: 2026-09-18T13:28:00Z
+verified_at: 2026-09-21T15:24:00Z
+updated_at: 2026-09-21T15:24:00Z

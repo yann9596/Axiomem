@@ -170,6 +170,12 @@ confirmed:
       计数器已实现、经 05 独立 R1 限定通过并被 01 集成 develop b058b44（见 cp-confirmed-011）；
       其余（名单追加、教师结束与新阶段、纠错、生产 Capture/UI）仍未实现，G01/G02/G06 的 Norm
       正文与其未批准取舍、以及本条 NOT_RUN 边界均完全不变。
+      YZT-167 补充（2026-09-18）：本条"尚未实现"的名单收窄为教师可见与生产部分——名单追加的合成
+      数据层切片已实现、经 05 独立 R1 限定通过（APPROVE_AS_S2_ROSTER_APPEND_DATA_LAYER_CANDIDATE）
+      并被 01 集成 develop c87be89（见 cp-confirmed-012）；上一条 YZT-163 补充所列"其余（名单追加、
+      教师结束与新阶段、纠错、生产 Capture/UI）仍未实现"中的"名单追加"一项自本补充起改读为"数据层
+      已实现并集成，教师名单页/UI、L1 教师结束与新阶段、纠错、生产 Capture/UI、旧库位置推断与迁移
+      清库仍未实现"；G01/G02/G06 的 Norm 正文与其未批准取舍、以及本条 NOT_RUN 边界均完全不变。
     refs:
       - multica://issue/YZT-142
       - multica://issue/YZT-116
@@ -181,6 +187,9 @@ confirmed:
       - FACT-TAPP1-000005
       - FACT-TAPP1-000003
       - FACT-TAPP1-000004
+      - multica://issue/YZT-165
+      - multica://issue/YZT-166
+      - multica://issue/YZT-167
   - id: cp-confirmed-008
     summary: >
       P01 平台存储接入设计已审并被 01 接受、尚未实现（YZT-146 治理，2026-09-18 +08:00）：
@@ -280,6 +289,10 @@ confirmed:
       两句自本补充起只读作 YZT-158 接受时点的历史实态——C1 已实现、经独立 R1 并被 01 集成
       develop b058b44（见 cp-confirmed-011）；本条其余边界（名单追加切片未实现、Q1–Q6 未解除、
       候选其余部分不因接受成为已批准规范）完全不变。
+      YZT-167 补充（2026-09-18）：本条接受的两项切片中，名单追加切片（设计内名 R1）的合成数据层
+      已实现、经 05 独立 R1 限定通过并被 01 集成 develop c87be89（见 cp-confirmed-012），上一条
+      YZT-163 补充中的"名单追加切片未实现"自本补充起不再成立；候选的其余部分（尤其 L1 持久化 DDL
+      与生产组装/UI）不因该实现或本接受成为已批准规范，Q1–Q6 停止边界完全不变。
     refs:
       - multica://issue/YZT-156
       - multica://issue/YZT-157
@@ -290,6 +303,9 @@ confirmed:
       - FACT-TAPP1-000005
       - FACT-TAPP1-000004
       - FACT-TAPP1-000003
+      - multica://issue/YZT-165
+      - multica://issue/YZT-166
+      - multica://issue/YZT-167
 
   - id: cp-confirmed-011
     summary: >
@@ -335,6 +351,53 @@ confirmed:
       - FACT-TAPP1-000005
       - FACT-TAPP1-000003
 
+  - id: cp-confirmed-012
+    summary: >
+      S2 名单追加数据层切片已实现、经 05 独立 R1 限定通过并被 01 集成 develop（YZT-167 治理，
+      2026-09-18 +08:00）：implementation / teachers-app1-s2-roster-append / 0.1.0（04 Software
+      Engineer，YZT-165 最终评论 01a0b504-3402-7cc2-ac10-fee9d68fd746；业务源码
+      20396487bc524075e687bb75a132ac74a31f46c7，文档与定位提交
+      c87be8922006e7c1ec10d670737447225b67dca7）经 05 独立 R1（YZT-166 最终评论
+      01a0b519-aba1-70c0-86a2-2464634e5df5；产物标识 delivery_review /
+      teachers-app1-s2-roster-append-r1-review / 0.1.0；报告 SHA256
+      846ce35296342af026e4c589bf9484388189d3e415c9b785e75389b0ed23d805、审查信封 SHA256
+      9335fbcdfdc6515996267acc122cd153d10707df4534cf53e147b57c4ea54dd4、实测记录 SHA256
+      fc875b0e8d2469ab65dd383051de44d19fefaac5b866a27419052c55892ff5af）verdict APPROVE、
+      限定 APPROVE_AS_S2_ROSTER_APPEND_DATA_LAYER_CANDIDATE、Required Changes NONE、
+      Challenges NONE；01 接受该有界结论并把产品远端 develop 自
+      b058b44172534ac78e053be060893aea19e79295 快进至
+      c87be8922006e7c1ec10d670737447225b67dca7（2 个提交：2039648 业务源码、c87be89 文档与
+      locator）；本批只读核验 git ls-remote origin refs/heads/develop 与
+      refs/heads/feat/yzt-165-roster-append 均为该 SHA、被审 HEAD 与集成 HEAD 同为 c87be89、
+      git diff 2039648..c87be89 -- entry/ 为空（entry/ 逐字节等价），本机 develop 分支本批未移动
+      （仍 a67179d），main 仍 558fdc93（develop 领先 18 个提交）。
+      范围：该切片在已审 v2 结构上新增全新合成库 schema3（user_version=3 / schema_version=3 /
+      contract_id=d02-roster-append/1，新增 roster_order_state 与 student_order），CreateStudent/2
+      在单一事务内按班尾分配递增 position 并写 order CAS 与不可变 RosterAppendReceipt/1，v3 上的
+      CreateStudent/1 返回 COMMAND_VERSION_UNSUPPORTED，ListStudentsInOrder/1 按 position 升序返回
+      FOUND，遇缺行、重复位置或序号断裂触发 DATA_INTEGRITY_ERROR 停写且不按姓名或时间戳推断顺序，
+      RenameClass/1 与 RenameStudent/1 不移动位置；覆盖设计矩阵 R01–R10。生产仍未接入：EntryAbility
+      未接实验库、无教师名单页与任何名单 UI、无 L1 教师结束与新阶段、无纠错/Undo、无 FollowUp 与补记
+      草稿恢复、无生产 Capture/UI、无旧库位置推断与迁移清库。G01/G02/G06 的 Norm 正文一字未改，本
+      切片不构成 S2 完成。
+      验证归属与 NOT_RUN：105/105 full local test（含 R01–R10）、localUnitTest 2/2、CodeLinter check
+      0 findings、unsigned HAP build、宿主 SQLite 3.50.4 探针 81/81、仓库 Python 单测 38/38、
+      capability policy 与 repository 检查（124 tracked files）均为 05 在 c87be89 隔离审查树的实测，
+      01 在同一集成 HEAD 复验仓库单测 38/38 与 policy/repository PASS；平台 relationalStore
+      V01–V10、A03 真实跨进程重启、A08 真实硬件竞争、真机、签名、发布、UI 走查与 R2 全部 NOT_RUN，
+      FakeStore/Hypium 与宿主探针不得冒充平台持久化 PASS。Q1–Q6 停止边界不因本实现解除；main 合并、
+      公开上传、真实数据、迁移执行、设备与发布边界不变。
+      精确散列、切片边界与 Q 边界的唯一权威指针是 FACT-TAPP1-000005 的 YZT-167 更新段，本条目只作
+      摘要与引用。
+    refs:
+      - multica://issue/YZT-165
+      - multica://issue/YZT-166
+      - multica://issue/YZT-167
+      - multica://comment/01a0b504-3402-7cc2-ac10-fee9d68fd746
+      - multica://comment/01a0b519-aba1-70c0-86a2-2464634e5df5
+      - FACT-TAPP1-000005
+      - FACT-TAPP1-000003
+
 open:
   - id: cp-open-001
     summary: >
@@ -348,6 +411,9 @@ open:
       为准。
       YZT-163 更新（2026-09-18）：develop 远端已达 b058b44（含 C1 纯内存计数器与其文档/信封
       四个提交），领先 main 558fdc93 十六个已审提交；本机 develop 分支未同步（仍 a67179d）。
+      本条"main 合并待用户精确授权"与不因等待 main 阻塞已授权工作的边界仍完全不变。
+      YZT-167 更新（2026-09-18）：develop 远端已达 c87be89（含 S2 名单追加数据层与其文档/locator
+      两个提交），领先 main 558fdc93 十八个已审提交；本机 develop 分支仍未同步（仍 a67179d）。
       本条"main 合并待用户精确授权"与不因等待 main 阻塞已授权工作的边界仍完全不变。
     refs:
       - repo://teachers-app-one@a67179dfc02f0461a7962dcc697161395c5deb76/docs/governance/version-control.md
@@ -443,10 +509,13 @@ next:
   - P01 实现已集成但仍未平台验证：向设备/平台切片派发时必须携带已审 design_baseline / teachers-app1-p01-platform-storage / 0.1.0-draft、其 R1 0.1.0 与 implementation / teachers-app1-p01-platform-storage-implementation / 0.1.1 及其 review 0.1.2 的精确指针与 APPROVE_AS_COMPILABLE_PLATFORM_STORAGE_PREPARATION 限定，不得把编译准备读作平台 PASS
   - 专业交付的完成协议统一按 skills/parent-handoff-wake/SKILL.md（Memory 仓 75a9e563）执行：达成交付目标后设置 done 并 live readback；完成治理任务不等于其产物已被接受、部署或 indexed
   - C1 纯观察计数器是 S2 已批准规则的首个优先实现切片（YZT-158 接受设计 0.1.0-draft，见 cp-confirmed-010）：派发时必须携带 design_baseline / teachers-app1-s2-approved-rules-design / 0.1.0-draft 与其 R1 0.1.0 的 APPROVE_AS_CANDIDATE_DESIGN_FOR_C1_AND_R1_SLICES 限定以及 N1/N2 精确指针，C01–C13 按设计验收，不得把设计被接受读作已实现、已配置策略或 S2 完成；YZT-163 后 C1 已按该限定实现、经独立 R1 并被 01 集成 develop b058b44（见 cp-confirmed-011），依赖 C1 的派发改以该集成 commit 与 implementation / teachers-app1-s2-c1-homework-suggestion / 0.1.1（含 05 R1 0.1.0）的精确指针为准，仍不得读作 S2 完成、生产已配置或平台已验证
-  - 名单追加切片（设计内名 R1）限定在全新合成库 d02-roster-append/1（user_version=3/schema_version=3，新增 roster_order_state 与 student_order）：须经独立 R1 与 01 整合门后再派发依赖，禁止改生产 EntryAbility、禁止旧库自动迁移或按 created_at/ID 猜旧名单顺序；同班同名 UI、拖动排序与旧名单迁移仍未批准
+  - 名单追加切片（设计内名 R1）限定在全新合成库 d02-roster-append/1（user_version=3/schema_version=3，新增 roster_order_state 与 student_order）：须经独立 R1 与 01 整合门后再派发依赖，禁止改生产 EntryAbility、禁止旧库自动迁移或按 created_at/ID 猜旧名单顺序；同班同名 UI、拖动排序与旧名单迁移仍未批准。YZT-167 后该门已通过：数据层已实现、经独立 R1 限定通过（APPROVE_AS_S2_ROSTER_APPEND_DATA_LAYER_CANDIDATE）并被 01 集成 develop c87be89（见 cp-confirmed-012）；依赖该数据层的派发改以 c87be89 与 implementation / teachers-app1-s2-roster-append / 0.1.0（含 05 R1 0.1.0）的精确指针为准，禁止改生产 EntryAbility、禁止旧库自动迁移或按 created_at/ID 猜旧名单顺序、以及同班同名 UI/拖动排序/旧名单迁移仍未批准的边界完全不变
   - Q1–Q6 停止边界不因 YZT-158 接受设计而解除（见 cp-confirmed-010 与 cp-open-003）：混向同时间不猜顺序、opened_at 与历史归属待澄清、纠错未启用、FollowUp/草稿恢复未定、同名 UI 与旧迁移未定、L1 DDL 与设备未准入；各只阻断所列分支，由 01 准备完整决策材料，不扩大为全业务总门
   - YZT-158 治理产物经 01 派发适用独立 R1、接受、部署并重建索引后，受影响消费者才以其 fresh SELF_CHECK 为准；本子任务 done 不等于已被接受、部署或 indexed
   - YZT-163 治理产物（C1 已实现、经独立 R1 并被 01 集成 develop 的 Reality 增量）同样须经 01 派发适用独立 R1、接受、部署并重建索引后，受影响消费者才以其 fresh SELF_CHECK 为准；本子任务 done 不等于已被接受、部署或 indexed，本次候选使用独立 context_package 身份 teachers-app1-s2-c1-integrated-reality-governance，不与前序治理包同身份续版
+  - 从精确集成基线 c87be89 继续：S2 名单追加数据层已实现、经独立 R1 限定通过并被 01 集成 develop（见 cp-confirmed-012），后续依赖切片从该集成版本派发，不使用旧的 b058b44、a67179d、83ba4a5、ba8e32d、main 或历史 Agent 分支；该切片仍只是合成数据层，不是教师名单页、不是 L1、不构成 S2 完成
+  - 名单追加后的剩余停止边界不变：同班同名 UI（Q5）、拖动排序、旧名单迁移与旧库位置推断、生产 Capture/UI、L1 教师结束与新阶段、纠错/Undo 均未实现或未批准；向平台/设备切片派发时必须携带本条与 FACT-TAPP1-000005 的 YZT-167 更新段，且不得把 FakeStore/Hypium 与宿主 SQLite 探针读作平台持久化 PASS
+  - YZT-167 治理产物（名单追加数据层已实现、经独立 R1 并被 01 集成 develop 的 Reality 增量）同样须经 01 派发适用独立 R1、接受、部署并重建索引后，受影响消费者才以其 fresh SELF_CHECK 为准；本子任务 done 不等于已被接受、部署或 indexed，本次候选使用独立 context_package 身份 teachers-app1-s2-roster-append-integrated-reality-governance，不与前序治理包同身份续版
 
 refs:
   - project.yaml
@@ -459,10 +528,13 @@ refs:
   - multica://issue/YZT-161
   - multica://issue/YZT-162
   - multica://issue/YZT-163
+  - multica://issue/YZT-165
+  - multica://issue/YZT-166
+  - multica://issue/YZT-167
   - multica://issue/YZT-142
   - multica://issue/YZT-146
   - FACT-TAPP1-000005
   - FACT-TAPP1-000006
   - migration/retirement/app1-retirement-yzt98.md
 
-updated_at: 2026-09-18T13:28:00Z
+updated_at: 2026-09-21T15:24:00Z
