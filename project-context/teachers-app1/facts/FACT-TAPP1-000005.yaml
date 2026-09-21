@@ -1,7 +1,7 @@
 schema_version: "1.1"
 kind: current_fact
 id: FACT-TAPP1-000005
-title: G01/G02/G06 产品语义已由用户批准为 Norm；C1 切片与名单追加数据层切片已实现、经独立 R1 限定通过并被 01 集成，教师可见的其余部分仍未实现（YZT-142 治理，2026-09-18；YZT-158 补录落实该 Norm 的 S2 设计已被审并被 01 接受为 C1 与名单追加切片技术基线，2026-09-18；YZT-163 更新 C1 已实现并被集成 develop，2026-09-18；YZT-167 更新名单追加数据层已实现并被集成 develop c87be89，2026-09-18）
+title: G01/G02/G06 产品语义已由用户批准为 Norm；C1 切片与名单追加数据层切片已实现、经独立 R1 限定通过并被 01 集成，教师可见的其余部分仍未实现（YZT-142 治理，2026-09-18；YZT-158 补录落实该 Norm 的 S2 设计已被审并被 01 接受为 C1 与名单追加切片技术基线，2026-09-18；YZT-163 更新 C1 已实现并被集成 develop，2026-09-18；YZT-167 更新名单追加数据层已实现并被集成 develop c87be89，2026-09-18；YZT-171 补录 L1 教师结束持久化设计已独立 R1 并被 01 接受为下一数据层实现技术基线，2026-09-21）
 
 statement: >
   as-of 2026-09-18（YZT-142 治理核验；用户决定时点为 UTC 2026-09-17T23:51:17Z）。
@@ -226,6 +226,80 @@ statement: >
   精确版本标识见该信封本身），无 supersedes，也不与前序治理包同身份续版，以避免机械地令设计治理包
   与 C1 治理包失效；本条亦不因此新增 supersession。
 
+  YZT-171 更新（2026-09-21 UTC / 2026-09-22 +08:00 治理批次，只新增"L1 教师结束与新阶段的持久化
+  设计已独立 R1 限定通过并被 01 接受为下一最小数据层实现的技术基线"这一已接受技术设计指针与其停止
+  边界，不改写上文任何历史叙述，不新增或改写任何产品 Norm，也不把技术候选提升为产品语义新批准）：
+  design_baseline / teachers-app1-s2-l1-episode-end-design / 0.1.0-draft（03 Solution Architect，
+  YZT-169 最终评论 01a0c4db-b502-7336-abcc-af3e72b5422f，服务器 created_at 2026-09-21T16:45:28Z，
+  Issue done；设计正文 SHA256 f2b6005a265b10707849bcd45eacb1165bfbdb2a85e606dda765dc37c19d1108，
+  37004 字节；设计信封 SHA256 651a797f70797b8514d77296dfa08cba0fa0b0031290db84a3b4ccacfcee2f30，
+  44530 字节；附属 L1-schema4.sql SHA256
+  9ff29ce260ad29e1c46c8597f22cf4eb630780ee61d31799148504005a04db32，12820 字节；L1-vectors.json
+  SHA256 7b008aa871bf0f0191c5fc5c5d212dda9d88449ca709d577e56cfe318eac2870，4550 字节；以上散列由
+  本批从持久项目目录原始文件逐一实算，与 YZT-170 审查报告及 YZT-169 最终评论所载一致）经 05 独立 R1
+  （YZT-170 最终评论 01a0c4f5-4216-71e0-a800-66a08893354d，服务器 created_at 2026-09-21T17:13:22Z，
+  Issue done，附 3 份附件；产物标识 delivery_review /
+  teachers-app1-s2-l1-episode-end-design-r1-review / 0.1.0，其 reviewed_artifact 精确指向上述设计
+  0.1.0-draft；审查报告 SHA256 78a801489e7d8042c7c62c2bba48994727ed8a2527aa6b994d00bfa220f8f73b，
+  15946 字节；审查信封 SHA256 f9d197d5e014c81e7e65983ed5d1ae6a0255b56249e6f53e643bcad76d7e6e40，
+  6097 字节；实测记录 SHA256 07f49b9c1e62d739897b6b1ee672cff3f878bca4035c2bc159a985cb0969d765，
+  7227 字节——本批从持久项目目录逐一实读并复算，三份均与该批声明一致）verdict APPROVE、限定结论
+  APPROVE_AS_S2_L1_EPISODE_END_DESIGN_BASELINE_CANDIDATE、Required Changes NONE、Challenges NONE。
+  01 Engineering Lead 读取该完整独立 R1 报告后接受该限定结论（来源为 multica://issue/YZT-171 描述所载
+  本轮 Decision 与持久输入 lead/lead-decision.md），接受对象精确为上述 0.1.0-draft，并以其为下一最小
+  数据层实现切片的技术基线；接受不等于实现、集成、平台验证、UI、R2、设备、签名或发布完成。
+  切片边界（本条只记指针与身份，不复制设计正文、SQL 或编码合同；精确行为以该版本化 Artifact 为准）：
+  该设计补齐 S2 Q6 的 L1 部分，限定一个全新合成库 schema4（user_version=4 / schema_version=4 /
+  contract_id=s2-l1-episode-end/1，元数据三项必须一致；以已集成 c87be89 的 schema3 与 P01/D02/C1
+  合同为 based_on，共 22 项精确依赖、不使用 latest），在 EndEpisode/1 单一 IMMEDIATE 事务内成对写入
+  不可变结束记录与独立结束回执、关闭目标 Episode 并与同时到达的观察争用同一 Thread revision，另含
+  ReadEpisodeMutation/1、ReadThreadHistory/1、合成 CaptureHomeworkObservation/1 阶段令牌、Projection
+  失效保护与 L101–L126 验收矩阵。设计内 04 实现边界为 Domain/Data 层、合成测试、guard 结构目录与
+  P01 测试载体的 schema4 适配；候选使用独立 artifact 身份、supersedes 为空（补齐而非取代 S2/D01/D02/C1，
+  也不与任何前序设计同身份续版）。
+  该设计忠实保留 G02-A 产品 Norm，本条不因该接受新增或改写任何产品语义：仍只有教师明确的 resolved
+  或 teacher_stopped 能结束一次关注阶段，系统计算的"已缓解"（C1 的 homework_improved × 3）只是建议，
+  不自动关闭、不设观察次数门槛、关闭后新观察可建新阶段且不改写旧阶段；设计新增的 schema4、字段、错误码、
+  编码、CAS 与验证步骤均为 03 技术候选，不是新增用户 Norm，也不构成对 1A 之外任何部署、公开上传、main
+  合并、真实数据、旧库迁移执行、设备、签名或发布的授权。
+  Reality（本段唯一实质内容；设计已被独立 R1 并被 01 接受，但实现、集成、平台验证与产品入口都还没有
+  发生）：截至本批，L1 没有实现提交、没有集成、没有任何平台执行证据；产品远端 develop 仍为
+  c87be8922006e7c1ec10d670737447225b67dca7（本批独立只读核验 git ls-remote origin refs/heads/develop
+  与 refs/heads/feat/yzt-165-roster-append 均为该 SHA，origin/main 仍
+  558fdc939414142636f9b4f43530facf1c7cfb7e，本机 develop 分支仍 a67179d 未同步，develop 领先 main
+  18 个提交），生产 EntryAbility 仍未接入任何实验库，L1 生产入口保持未组装且新 Capture 生产计划返回
+  LIFECYCLE_NOT_CONFIGURED。设计随附的 L101–L126 App 业务矩阵、Hypium、真机构建、HarmonyOS
+  relationalStore 平台持久化 V01–V10、A03 真实跨进程杀 PID 两阶段重启、A08 真实硬件连接级竞争、真实
+  数据、迁移或清库、设备、签名、安装发布、UI 走查与 R2 全部仍为 NOT_RUN；YZT-169 的 37 项宿主机 SQLite
+  设计期检查、YZT-170 复核的 38/38 仓库单测与 103 文件仓库结构检查只是设计与仓库层证据，不得冒充平台
+  持久化 PASS。设计给出的 V01–V10 与 A03/A08 只是平台关口准备、逐例断言与立即停止条件，不是已执行的
+  平台结论。被接受的技术设计不等于已实现、已配置策略、已平台验收，也不构成 S2 完成。
+  保留的停止边界（Q1–Q6 不因本次接受解除，各自只阻断所列分支，由 01 准备完整决策材料，不扩大为全业务
+  总门）：Q1 相同观察时间混向仍返回 UNAVAILABLE/OBSERVATION_ORDER_UNRESOLVED，不得据 ID 字典序伪造
+  教师观察顺序；Q2 生产时间适配、历史目标归属与 opened_at 新语义仍未定，无法判定归属时返回
+  HISTORICAL_TARGET_REQUIRED 或 TIME_CONTEXT_UNRESOLVED，不得回写旧行或据单条比较宣称历史归属已判；
+  Q3 Undo/纠错（G03）未启用，纠错生产入口保持关闭，不得用正向记录抵消错误；Q4 FollowUp 再出现节奏、
+  教师调整合并与补记草稿跨进程/切班恢复未定，完成前不交付声称支持完整补记的生产 UI，也不用假 Evidence
+  持久化草稿；Q5 同班同名区分 UI 与旧名单迁移未定；Q6 的"L1 专用 DDL 与回执编码"部分自本段起由上述
+  已独立 R1 且被 01 接受的设计候选补齐（仅在"技术设计已给定"意义上，04 不得再自行推断 DDL），但真机
+  设备授权、平台准入 A/B、签名与发布仍未准入，设备能力包仍 OFF。
+  schema4 只适用于经明确新授权的合成库：确认的 schema1/schema2/schema3 一律返回 MIGRATION_REQUIRED
+  并保留原库拒写，未知版本或元数据矛盾返回 SCHEMA_UNSUPPORTED/SCHEMA_INCONSISTENT 并全库停写；不执行
+  ALTER、不生成名单位置、不旁建替代库、不删除数据，本接受不构成任何迁移或清库授权。
+  来源边界（不改写他人产物或专业 verdict）：docs/architecture/system-design.md 仍引用旧提交 b058b44，
+  属产品文档定位滞后观察；本 Context 治理任务不修改产品仓，该观察保留为来源边界与后续文档整合项，不
+  覆盖 live develop=c87be89。审查信封嵌入的 provenance.created_at 为 2026-09-21T17:15:00Z，晚于其平台
+  评论的服务器 created_at 2026-09-21T17:13:22Z；本条以服务器 created_at、原始字节与散列作为交付顺序
+  证据，不宣称时钟一致，也不因该局部时钟偏差改写 YZT-170 的专业 verdict 或其附件字节。
+  与既有对象的关系：本段在 YZT-167 段之后追加，不改写其任何文字，也不把该技术候选提升为已批准产品
+  语义；上文 YZT-167 段"仍未实现（不得读作已交付）"中"L1 教师结束与新阶段（EndEpisode 持久化）"
+  一项仍然成立（设计已接受，实现仍未发生），该项其余内容亦不变。本条不取代 FACT-TAPP1-000003 或
+  FACT-TAPP1-000004，本批未改写这两条正文（本批实查 000003 全文无 L1/episode 相关陈述，其集成基线段
+  仍准确指向 c87be89，故不因本次接受而修改）。本次治理产物使用独立 context_package 身份
+  teachers-app1-s2-l1-episode-end-design-acceptance-governance（其精确版本标识见该信封本身），无
+  supersedes，也不与前序治理包同身份续版，以避免机械地令设计治理包、C1 治理包与名单追加治理包失效；
+  本条亦不因此新增 supersession。
+
 scope:
   type: project
   project_id: teachers-app1
@@ -337,6 +411,28 @@ verified_against:
       - Requirements
       - Acceptance Criteria
       - Decision
+  - source_ref: multica://issue/YZT-169
+    revision: 0.1.0-draft
+    paths:
+      - 01a0c4db-b502-7336-abcc-af3e72b5422f
+      - L1-design-0.1.0-draft.md
+      - L1-design-envelope.json
+      - L1-schema4.sql
+      - L1-vectors.json
+      - verification.json
+  - source_ref: multica://issue/YZT-170
+    revision: 0.1.0
+    paths:
+      - 01a0c4f5-4216-71e0-a800-66a08893354d
+      - YZT-170-delivery-review-report.md
+      - YZT-170-delivery-review-envelope.json
+      - YZT-170-verification.json
+  - source_ref: multica://issue/YZT-171
+    revision: stage-55-governance-batch
+    paths:
+      - Requirements
+      - Acceptance Criteria
+      - Decision
 
 source_refs:
   - multica://issue/YZT-142
@@ -372,6 +468,11 @@ source_refs:
   - multica://issue/YZT-167
   - multica://comment/01a0b504-3402-7cc2-ac10-fee9d68fd746
   - multica://comment/01a0b519-aba1-70c0-86a2-2464634e5df5
+  - multica://issue/YZT-169
+  - multica://issue/YZT-170
+  - multica://issue/YZT-171
+  - multica://comment/01a0c4db-b502-7336-abcc-af3e72b5422f
+  - multica://comment/01a0c4f5-4216-71e0-a800-66a08893354d
 
 relations:
   conflicts_with: []
@@ -385,5 +486,5 @@ review:
   triggered_at: null
 
 created_at: 2026-09-18T00:30:00Z
-verified_at: 2026-09-21T15:24:00Z
-updated_at: 2026-09-21T15:24:00Z
+verified_at: 2026-09-21T17:34:42Z
+updated_at: 2026-09-21T17:34:42Z
