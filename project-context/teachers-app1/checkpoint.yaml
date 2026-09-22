@@ -176,6 +176,12 @@ confirmed:
       教师结束与新阶段、纠错、生产 Capture/UI）仍未实现"中的"名单追加"一项自本补充起改读为"数据层
       已实现并集成，教师名单页/UI、L1 教师结束与新阶段、纠错、生产 Capture/UI、旧库位置推断与迁移
       清库仍未实现"；G01/G02/G06 的 Norm 正文与其未批准取舍、以及本条 NOT_RUN 边界均完全不变。
+      YZT-177 补充（2026-09-22）：本条"尚未实现"自本补充起再收窄一项——L1 教师结束与新阶段的合成数据层
+      已实现、经 05 独立 R1 限定通过（APPROVE_AS_S2_L1_EPISODE_END_IMPLEMENTATION_CANDIDATE）并被 01
+      集成 develop 914e367（见 cp-confirmed-014）；上一条 YZT-167 补充所列"教师名单页/UI、L1 教师结束
+      与新阶段、纠错、生产 Capture/UI、旧库位置推断与迁移清库仍未实现"中的"L1 教师结束与新阶段"自本
+      补充起改读为"数据层已实现并集成，教师可见的阶段结束 UI 与生产组装仍未实现"；G01/G02/G06 的 Norm
+      正文与其未批准取舍、以及本条 NOT_RUN 边界均完全不变。
     refs:
       - multica://issue/YZT-142
       - multica://issue/YZT-116
@@ -299,6 +305,10 @@ confirmed:
       通过、被 01 接受为下一数据层实现的技术基线（见 cp-confirmed-013）。本条接受的 C1 与合成名单追加
       两项切片范围、Q1–Q6 停止边界以及"候选其余部分不因接受成为已批准规范"的边界完全不变；L1 设计
       候选是独立 artifact，不并入本条，也不与本条同身份续版。
+      YZT-177 补充（2026-09-22）：本条接受的 C1 与合成名单追加两项切片范围、Q1–Q6 停止边界以及"候选其余
+      部分不因接受成为已批准规范"的边界完全不变；L1 数据层的实现由独立的 implementation /
+      teachers-app1-s2-l1-episode-end / 0.1.1 承接，并经 05 独立 R1 限定通过、被 01 集成 develop
+      914e367（见 cp-confirmed-014），不并入本条，也不与本条同身份续版。
     refs:
       - multica://issue/YZT-156
       - multica://issue/YZT-157
@@ -442,12 +452,66 @@ confirmed:
       （04 不得再自行推断 DDL），真机设备授权、平台准入 A/B、签名与发布仍未准入。
       精确散列、切片边界与 Q 边界的唯一权威指针是 FACT-TAPP1-000005 的 YZT-171 更新段，本条目只作摘要
       与引用。
+      YZT-177 补充（2026-09-22）：本条"尚未实现"与"L1 无实现提交、无集成"两句自本补充起只读作 YZT-171
+      接受时点的历史实态——L1 合成数据层已由 implementation / teachers-app1-s2-l1-episode-end / 0.1.1
+      实现、经 05 独立 R1 限定通过并被 01 集成 develop 914e367（见 cp-confirmed-014）；本条其余边界
+      （G02-A 产品 Norm 一字未改、Q1–Q6 未解除、平台与设备 NOT_RUN、设计候选不因实现成为已批准规范）
+      完全不变，且该实现仍不是教师可见功能、不构成 S2 完成。
     refs:
       - multica://issue/YZT-169
       - multica://issue/YZT-170
       - multica://issue/YZT-171
       - multica://comment/01a0c4db-b502-7336-abcc-af3e72b5422f
       - multica://comment/01a0c4f5-4216-71e0-a800-66a08893354d
+      - FACT-TAPP1-000005
+      - FACT-TAPP1-000003
+
+  - id: cp-confirmed-014
+    summary: >
+      S2 L1 教师结束与新阶段的合成数据层切片已实现、经 05 独立 R1 限定通过并被 01 接受并集成 develop
+      （YZT-177 治理，2026-09-22 +08:00）：implementation / teachers-app1-s2-l1-episode-end / 0.1.1
+      （04 Software Engineer；业务源码 e80723e7e067c755072be5d275db9c8f329184c1，YZT-174 最终评论
+      01a0c730-8c4a-78d9-a0e0-c32e25a07f10；文档补正 829dc3174f8921fab59df76d5d7645b746d35700，
+      YZT-176 最终评论 01a0c753-67b0-7a69-9132-7767c7b33533；最终 pin
+      1cb6dcfc74b8c425937caaa242d160ae2fb210d2）经 05 独立 R1（YZT-175 最终评论
+      01a0c774-e068-7ded-a021-933d2a2ca4fe；产物标识 delivery_review /
+      teachers-app1-s2-l1-episode-end-r1-review / 0.1.0；报告 SHA256
+      aec87bf9a07ff4bebad1cf9d021571f326bd4248416143aa24ae9be704979b38、审查信封 SHA256
+      a45618d5820d244f2fdecf1a1a8b03fa831295b8b4e5d38e7108e80b73cb852b、实测记录 SHA256
+      67e47df702987b2b21af62595bb971c9de821e3a45a56e6b09e78c83a1630910）verdict APPROVE、限定
+      APPROVE_AS_S2_L1_EPISODE_END_IMPLEMENTATION_CANDIDATE、Required Changes NONE、Challenges NONE；
+      01 接受该限定结论并按其决定从维护提交 acad7b11b454279f8a40be709bc7b9a4325829b2 之上依次等价
+      摘取 e80723e→a37f443、a67d2c8→4f6b0f4、829dc31→9f1cc07、1cb6dcf→914e367，产品远端 develop
+      读回 914e367797ce25ba1606cf070cbe57760cd235da（本批只读核验 git ls-remote origin
+      refs/heads/develop 为该 SHA，四条 patch-id 逐一相同、entry/ tree 在 e80723e/1cb6dcf/a37f443/
+      914e367 同为 3fc5102a56babb7e261492e91ef926ec0ad42930 即"审查对象 = 集成版本"）。
+      范围：该切片按已审 L1 设计 0.1.0-draft 在全新合成库 schema4（user_version=4 /
+      schema_version=4 / contract_id=s2-l1-episode-end/1）内实现 EndEpisode/1 单事务成对写入不可变结束
+      记录与独立结束回执、关闭目标 Episode 并与同时到达的观察争用同一 Thread revision，另含
+      ReadEpisodeMutation/1、ReadThreadHistory/1、合成 CaptureHomeworkObservation/1 阶段令牌与
+      Projection 失效保护；已知 v1/v2/v3 库返回 MIGRATION_REQUIRED 并保留原库拒写。G02-A 产品 Norm
+      一字未改：仍只有教师明确的 resolved 或 teacher_stopped 能结束，系统"已缓解"只是建议，不设观察
+      次数门槛，关闭后新观察可建新阶段且不改写旧阶段。
+      Reality 与 NOT_RUN：L1 数据层已实现并被集成，但仍不是教师可见功能、不构成 S2 完成——生产
+      EntryAbility 仍未接入任何实验库（本批实测 EntryAbility.ets@914e367 不引用 L1Episode /
+      RdbS1Store / P01PlatformSupport / S1Session / S1SchemaGuard），教师可见阶段结束 UI、生产
+      Capture 组装、纠错/Undo（G03）、FollowUp 与跨重启补记草稿、同班同名 UI、旧库迁移与清库均未实现；
+      HarmonyOS relationalStore V01–V10、A03 真实跨进程重启、A08 真实硬件竞争、真机、签名、安装发布、
+      UI 走查、R2、真实学生数据、迁移与清库全部 NOT_RUN，宿主 SQLite/FakeStore/Hypium 不得冒充平台
+      持久化 PASS。01 集成侧与本批独立复跑的仓库单测 45/45、capability policy、repository（131
+      tracked）、L1 宿主探针 6/6 与 schema 宿主探针 98/98 只是仓库/宿主层证据。
+      Q1–Q6 停止边界不因本实现与集成解除；main 合并（main 仍 558fdc93，develop 领先 23）、公开上传、
+      真实数据、迁移清库、设备、签名与发布边界均不变。
+      精确散列、切片边界与 Q 边界的唯一权威指针是 FACT-TAPP1-000005 的 YZT-177 更新段，本条目只作摘要
+      与引用。
+    refs:
+      - multica://issue/YZT-174
+      - multica://issue/YZT-175
+      - multica://issue/YZT-176
+      - multica://issue/YZT-177
+      - multica://comment/01a0c730-8c4a-78d9-a0e0-c32e25a07f10
+      - multica://comment/01a0c753-67b0-7a69-9132-7767c7b33533
+      - multica://comment/01a0c774-e068-7ded-a021-933d2a2ca4fe
       - FACT-TAPP1-000005
       - FACT-TAPP1-000003
 
@@ -468,6 +532,10 @@ open:
       YZT-167 更新（2026-09-18）：develop 远端已达 c87be89（含 S2 名单追加数据层与其文档/locator
       两个提交），领先 main 558fdc93 十八个已审提交；本机 develop 分支仍未同步（仍 a67179d）。
       本条"main 合并待用户精确授权"与不因等待 main 阻塞已授权工作的边界仍完全不变。
+      YZT-177 更新（2026-09-22）：develop 远端已达 914e367（含维护提交 acad7b1 与 S2 L1 教师结束合成
+      数据层及其信封/报告四个等价摘取提交），领先 main 558fdc93 二十三个已审提交；本批实测本机 develop
+      分支亦为 914e367（已与远端一致，与上文各批"本机仍未同步"的 as-of 叙述不冲突）。本条"main 合并待
+      用户精确授权"与不因等待 main 阻塞已授权工作的边界仍完全不变。
     refs:
       - repo://teachers-app-one@a67179dfc02f0461a7962dcc697161395c5deb76/docs/governance/version-control.md
       - registry://teachers-app1
@@ -491,6 +559,11 @@ open:
       切片补齐了 V01–V10 与 A03/A08 的平台关口准备、逐例断言与立即停止条件，但那只准备、未执行：平台
       relationalStore 真实持久化、A03 真实跨进程重启、A08 真实硬件竞争、真机、签名、安装发布与 R2 仍
       全部 NOT_RUN，设备能力包仍 OFF，也不得以该设计或宿主探针冒充平台 PASS；本条 NOT_RUN 边界完全不变。
+      YZT-177 补充（2026-09-22）：L1 合成数据层已被实现并集成 develop 914e367（见 cp-confirmed-014），
+      但"实现已集成"不等于"平台已验收"——平台 relationalStore 真实持久化 V01–V10、A03 真实跨进程重启、
+      A08 真实硬件竞争、真机、签名、安装发布、UI 走查与 R2 仍全部 NOT_RUN，设备能力包仍 OFF，本次集成中
+      的仓库单测 45/45、宿主 SQLite 探针 6/6 与 98/98 也不得冒充平台持久化 PASS；本条 NOT_RUN 边界完全
+      不变。
     refs:
       - repo://teachers-app-one@a67179dfc02f0461a7962dcc697161395c5deb76/docs/engineering/harmonyos-toolchain.md
       - repo://teachers-app-one@a67179dfc02f0461a7962dcc697161395c5deb76/docs/project-management/mvp-execution-plan.md
@@ -587,6 +660,9 @@ next:
   - L1 教师结束与新阶段的最小数据层切片（设计内 schema4 = s2-l1-episode-end/1）：派发 04 实现时必须携带 design_baseline / teachers-app1-s2-l1-episode-end-design / 0.1.0-draft、其 05 R1 0.1.0 的 APPROVE_AS_S2_L1_EPISODE_END_DESIGN_BASELINE_CANDIDATE 限定与 01 接受指针（见 cp-confirmed-013 与 FACT-TAPP1-000005 的 YZT-171 更新段），按 L101–L126 分层验收；禁止改生产 EntryAbility、禁止旧库迁移或旁建替代库、禁止把宿主 SQLite 与假存储探针读作 relationalStore 平台 PASS，也不得读作已实现、已配置策略或 S2 完成
   - L1 之后的停止边界不变：Q1 混向同时间不猜顺序、Q2 生产时间适配与历史归属未定、Q3 纠错/Undo 未启用、Q4 FollowUp 与跨重启草稿未定、Q5 同名 UI 与旧名单迁移未定、Q6 真机设备授权与平台准入 A/B 未准入；各只阻断所列分支，由 01 准备完整决策材料，不扩大为全业务总门
   - YZT-171 治理产物（L1 设计已独立 R1 并被 01 接受为下一数据层实现技术基线的已接受技术设计指针）同样须经 01 派发适用独立 R1、接受、部署并重建索引后，受影响消费者才以其 fresh SELF_CHECK 为准；本子任务 done 不等于已被接受、部署或 indexed，本次候选使用独立 context_package 身份 teachers-app1-s2-l1-episode-end-design-acceptance-governance，不与前序治理包同身份续版
+  - 从精确集成基线 914e367 继续：S2 L1 教师结束与新阶段的合成数据层已实现、经 05 独立 R1 限定通过并被 01 按内容等价摘取集成 develop（见 cp-confirmed-014）——后续依赖切片从该集成版本派发，不使用旧的 c87be89、acad7b1、b058b44、a67179d、83ba4a5、ba8e32d、main 或历史 Agent 分支；依赖该数据层的派发必须携带 implementation / teachers-app1-s2-l1-episode-end / 0.1.1 与其 R1 delivery_review / teachers-app1-s2-l1-episode-end-r1-review / 0.1.0 的精确指针及其 APPROVE_AS_S2_L1_EPISODE_END_IMPLEMENTATION_CANDIDATE 限定，禁止改生产 EntryAbility、禁止旧库迁移或清库、禁止把宿主 SQLite/FakeStore/Hypium 读作 relationalStore 平台 PASS，也不得读作 S2 完成
+  - L1 实现集成后的剩余停止边界不变：教师可见阶段结束 UI 与任何名单页/UI、生产 Capture 组装、纠错/Undo（G03）、FollowUp 与跨重启补记草稿、同班同名 UI 与旧名单迁移未实现或未批准；Q1 混向同时间不猜顺序、Q2 生产时间适配与历史归属未定、Q3 纠错/Undo 未启用、Q4 FollowUp 与跨重启草稿未定、Q5 同名 UI 与旧名单迁移未定、Q6 真机设备授权与平台准入 A/B 未准入；各只阻断所列分支，由 01 准备完整决策材料，不扩大为全业务总门
+  - YZT-177 治理产物（L1 合成数据层已实现、经独立 R1 并被 01 接受并集成 develop 的 Reality 增量）同样须经 01 派发适用独立 R1、接受、部署并重建索引后，受影响消费者才以其 fresh SELF_CHECK 为准；本子任务 done 不等于已被接受、部署或 indexed，本次候选使用独立 context_package 身份 teachers-app1-s2-l1-episode-end-integrated-reality-governance，不与前序治理包同身份续版
 
 refs:
   - project.yaml
@@ -607,8 +683,13 @@ refs:
   - multica://issue/YZT-171
   - multica://issue/YZT-142
   - multica://issue/YZT-146
+  - multica://issue/YZT-174
+  - multica://issue/YZT-175
+  - multica://issue/YZT-176
+  - multica://issue/YZT-177
+  - FACT-TAPP1-000003
   - FACT-TAPP1-000005
   - FACT-TAPP1-000006
   - migration/retirement/app1-retirement-yzt98.md
 
-updated_at: 2026-09-21T17:34:42Z
+updated_at: 2026-09-22T05:45:00Z

@@ -1,7 +1,7 @@
 schema_version: "1.1"
 kind: current_fact
 id: FACT-TAPP1-000003
-title: TeachersApp1 集成基线与完成契约实态（YZT-131 治理，2026-09-17；YZT-139 更新集成基线至 a67179d，2026-09-18；YZT-142 更新 G01/G02 指针，2026-09-18；YZT-154 更新集成基线至 83ba4a5，2026-09-18；YZT-163 更新集成基线至 b058b44，2026-09-18；YZT-167 更新集成基线至 c87be89，2026-09-18）
+title: TeachersApp1 集成基线与完成契约实态（YZT-131 治理，2026-09-17；YZT-139 更新集成基线至 a67179d，2026-09-18；YZT-142 更新 G01/G02 指针，2026-09-18；YZT-154 更新集成基线至 83ba4a5，2026-09-18；YZT-163 更新集成基线至 b058b44，2026-09-18；YZT-167 更新集成基线至 c87be89，2026-09-18；YZT-177 更新集成基线至 914e367，2026-09-22）
 
 statement: >
   as-of 2026-09-17（YZT-131 治理核验）：origin/develop = 本地 develop =
@@ -193,6 +193,71 @@ statement: >
   授权边界、Axiomem 公开上传边界与设备/签名/发布边界亦均未被本批改动。本条既不改写
   FACT-TAPP1-000002 的既有 supersession 链，本批也不新增 supersession。
 
+  YZT-177 更新（2026-09-22 +08:00 / UTC 治理批次，只推进集成基线与其证据，不改写上文任何
+  历史叙述）：origin/develop = refs/remotes/origin/develop =
+  914e367797ce25ba1606cf070cbe57760cd235da（"docs: pin L1 0.1.1 envelope locator"）。来源为本批
+  在 D:\AI\projects\TeachersApp1 的独立只读核验：git fetch --all --prune 后 git ls-remote origin
+  refs/heads/develop 为该 SHA；本机 refs/heads/develop 亦为该 SHA，即本机 develop 自本批起已与远端
+  一致——这与上文各批"本机 develop 仍未同步、仍为 a67179d"的 as-of 叙述不冲突：那些是其各自时点的
+  正确实态，本段只声明本批实测的当前状态，不改写上文。
+  相对上一 as-of 基线 c87be8922006e7c1ec10d670737447225b67dca7，develop 新增五个提交，第一个是
+  维护提交、其余四个是本次等价摘取的 L1 切片（本批实测 git log --oneline acad7b1..914e367 恰为
+  后四个、git rev-list --count = 4、git merge-base --is-ancestor acad7b1 914e367 成立即确为快进，
+  且 git log --format=%P 实测父链为 acad7b1→a37f443→4f6b0f4→9f1cc07→914e367；c87be89..acad7b1
+  恰一个提交）：
+  acad7b11b454279f8a40be709bc7b9a4325829b2（"fix(workflow): guard Multica worktree handoff"，
+  author Yann，AuthorDate 2026-09-22T12:04:02+08:00，只新增
+  scripts/verification/check_multica_worktree.py 与其测试，并在 AGENTS.md、
+  docs/governance/version-control.md、docs/project-management/multica-workflow.md 各加少量行；本批
+  实测 git diff --stat c87be89..acad7b1 -- entry/ 为空，且 c87be89:entry 与 acad7b1:entry 同为 tree
+  b6eefe1f710a089c10404012f8ebb7f5e14331a6，即该维护提交未触及任何产品源码、属工作流护栏，
+  不是已审业务切片，也不构成对任何实现 verdict 的延伸或替换）；
+  a37f443073d9791f0ef3489b04b31d81cbb7fca6（"feat(data): add L1 episode end schema4"，L1 业务源码）、
+  4f6b0f4040d706ce956c81b31d4d048b58643e46（"docs: pin L1 episode-end locator"）、
+  9f1cc07beec281838c43b61a97da904e98a5c7df（"docs: correct L1 artifact envelope lineage"）、
+  914e367797ce25ba1606cf070cbe57760cd235da（"docs: pin L1 0.1.1 envelope locator"）。
+  原提交到集成提交的映射与等价性（本批实测四条 git patch-id --stable 逐一相同，故为内容等价摘取而
+  非重写，这正是 01 本次"依次等价摘取"的机械证据）：
+  e80723e7e067c755072be5d275db9c8f329184c1（YZT-174 业务源码，patch-id
+  df87d5c5a69db3b989ec0cb715baeab021cb96ca）→ a37f443（同 patch-id）；
+  a67d2c8526e9d5cc36fa78c476872774e9f2df09（YZT-174 文档 pin，patch-id
+  27b9c69a55c73e08650d9bab3de9906bc45bb05a）→ 4f6b0f4（同 patch-id）；
+  829dc3174f8921fab59df76d5d7645b746d35700（YZT-176 补正，patch-id
+  4008083fe498ef9fb42d67f83aec953521383b40）→ 9f1cc07（同 patch-id）；
+  1cb6dcfc74b8c425937caaa242d160ae2fb210d2（YZT-176 最终 pin，patch-id
+  005455320b2e2b3e3108206946267e9557014cbb，只改
+  specs/s2-l1-episode-end/artifact-envelope.json 六行）→ 914e367（同 patch-id）。
+  被审业务源码与集成版本等价：本批实测 entry/ tree 在 e80723e、1cb6dcf、a37f443、914e367 四者同为
+  3fc5102a56babb7e261492e91ef926ec0ad42930，且 git diff --stat e80723e..914e367 -- entry/ 与
+  git diff --stat 1cb6dcf..914e367 -- entry/ 均为空（05 在 YZT-175 亦实测
+  git diff e80723e 1cb6dcf -- entry/ 为空），故该切片"审查对象 = 集成版本"成立，不存在审后再次
+  改码。被审对象为 implementation / teachers-app1-s2-l1-episode-end / 0.1.1（业务源码
+  e80723e、文档补正 829dc31、最终 pin 1cb6dcf，均位于远端分支
+  origin/agent/04-software-engineer/yzt-176-fix）；其 R1 限定结论、验证归属与 Norm/Reality 边界见
+  FACT-TAPP1-000005 的 YZT-177 更新段，本段只承接集成基线。相对 acad7b1，914e367 触及
+  entry/src/main/ets/data 与 entry/src/test 的 L1 相关文件、
+  scripts/verification/probe_l1_episode_end.py、scripts/verification/probe_s1_storage_contract.py、
+  specs/s2-l1-episode-end 的信封与实现报告、specs/README.md 与 CHANGELOG.md；本批实测
+  git diff --stat c87be89..914e367 -- entry/src/main/ets/entryability/ 为空，且
+  entry/src/main/ets/entryability/EntryAbility.ets@914e367 不引用 L1Episode / RdbS1Store /
+  P01PlatformSupport / S1Session / S1SchemaGuard，即生产入口仍未接入任何实验库。
+  main 本机与 origin/main 仍均为 558fdc939414142636f9b4f43530facf1c7cfb7e（本批 git ls-remote
+  origin refs/heads/main 实测）；develop 现领先 main 23 个提交（本批实测 git rev-list --count
+  558fdc93..914e367 = 23；上一 as-of 时点为 18，属正常版本推进而非旧条目计数错误），main 合并仍待
+  用户精确授权。集成侧验证归属：本批在 D:\AI\projects\TeachersApp1@914e367 只读复跑仓库 Python
+  单测 45/45 PASS、validate_capability_policy PASS、verify_repository PASS（131 tracked files）、
+  L1 宿主探针 6/6、schema 宿主探针 98/98（SQLite 3.50.4），与 01 本轮集成验证声明一致；这些是仓库
+  与宿主层证据，不是 HarmonyOS 平台、设备或发布结论。
+  上文各段的 as-of 叙述（ba8e32d、a67179d、83ba4a5、b058b44、c87be89）保留为历史时点，"当前集成
+  基线"自本段起为 914e367，也不再读作 c87be89。本条其余内容继续 current 且不被本更新改变：授权分层
+  （已审切片通过适用 Review 后由 01 及时合 develop、push 并远端读回，main 的最终确认与合并保留给
+  用户）、公共完成契约 parent-handoff-wake（75a9e56364c32dfeca9d20438e5228bb0d9e9d3c）、本机能力
+  策略默认拒绝与 knowledge/engineering/methods 按角色启用、device OFF、真机与 HarmonyOS
+  relationalStore/UI 走查/签名/发布/R2 的 NOT_RUN 边界、产品路径 D:\AI\projects\TeachersApp1 与
+  execution_mode=worktree、不继承旧 app1、G01/G02/G06 已由用户批准为 Norm（YZT-142）、main 授权
+  边界、Axiomem 公开上传边界与设备/签名/发布边界亦均未被本批改动。本条既不改写 FACT-TAPP1-000002
+  的既有 supersession 链，本批也不新增 supersession。
+
 scope:
   type: project
   project_id: teachers-app1
@@ -311,6 +376,38 @@ verified_against:
       - Requirements
       - Acceptance Criteria
       - Decision
+  - source_ref: repo://teachers-app-one@914e367797ce25ba1606cf070cbe57760cd235da/specs/s2-l1-episode-end/artifact-envelope.json
+    revision: 914e367797ce25ba1606cf070cbe57760cd235da
+    paths:
+      - specs/s2-l1-episode-end/artifact-envelope.json
+      - specs/s2-l1-episode-end/implementation-report.md
+      - entry/src/main/ets/entryability/EntryAbility.ets
+  - source_ref: multica://issue/YZT-174
+    revision: final-comment-01a0c730-8c4a-78d9-a0e0-c32e25a07f10
+    paths:
+      - 01a0c730-8c4a-78d9-a0e0-c32e25a07f10
+      - implementation-report.md
+      - artifact-envelope.json
+  - source_ref: multica://issue/YZT-175
+    revision: final-comment-01a0c774-e068-7ded-a021-933d2a2ca4fe
+    paths:
+      - 01a0c774-e068-7ded-a021-933d2a2ca4fe
+      - YZT-175-delivery-review-report.md
+      - YZT-175-delivery-review-envelope.json
+      - YZT-175-verification.json
+  - source_ref: multica://issue/YZT-176
+    revision: final-comment-01a0c753-67b0-7a69-9132-7767c7b33533
+    paths:
+      - 01a0c753-67b0-7a69-9132-7767c7b33533
+      - implementation-report.md
+      - artifact-envelope.json
+      - yzt-176-verification.json
+  - source_ref: multica://issue/YZT-177
+    revision: stage-61-governance-batch
+    paths:
+      - Requirements
+      - Acceptance Criteria
+      - Decision
 source_refs:
   - repo://teachers-app-one@a67179dfc02f0461a7962dcc697161395c5deb76/docs/governance/version-control.md
   - repo://teachers-app-one@a67179dfc02f0461a7962dcc697161395c5deb76/docs/README.md
@@ -364,6 +461,16 @@ source_refs:
   - multica://issue/YZT-167
   - multica://comment/01a0b504-3402-7cc2-ac10-fee9d68fd746
   - multica://comment/01a0b519-aba1-70c0-86a2-2464634e5df5
+  - repo://teachers-app-one@914e367797ce25ba1606cf070cbe57760cd235da/specs/s2-l1-episode-end/artifact-envelope.json
+  - repo://teachers-app-one@914e367797ce25ba1606cf070cbe57760cd235da/specs/s2-l1-episode-end/implementation-report.md
+  - repo://teachers-app-one@914e367797ce25ba1606cf070cbe57760cd235da/entry/src/main/ets/entryability/EntryAbility.ets
+  - multica://issue/YZT-174
+  - multica://issue/YZT-175
+  - multica://issue/YZT-176
+  - multica://issue/YZT-177
+  - multica://comment/01a0c730-8c4a-78d9-a0e0-c32e25a07f10
+  - multica://comment/01a0c753-67b0-7a69-9132-7767c7b33533
+  - multica://comment/01a0c774-e068-7ded-a021-933d2a2ca4fe
 relations:
   conflicts_with: []
   supersedes:
@@ -383,5 +490,5 @@ review:
   triggered_at: null
 
 created_at: 2026-09-17T14:00:00Z
-verified_at: 2026-09-21T15:24:00Z
-updated_at: 2026-09-21T15:24:00Z
+verified_at: 2026-09-22T05:45:00Z
+updated_at: 2026-09-22T05:45:00Z

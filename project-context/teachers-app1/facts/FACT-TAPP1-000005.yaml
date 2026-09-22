@@ -1,7 +1,7 @@
 schema_version: "1.1"
 kind: current_fact
 id: FACT-TAPP1-000005
-title: G01/G02/G06 产品语义已由用户批准为 Norm；C1 切片与名单追加数据层切片已实现、经独立 R1 限定通过并被 01 集成，教师可见的其余部分仍未实现（YZT-142 治理，2026-09-18；YZT-158 补录落实该 Norm 的 S2 设计已被审并被 01 接受为 C1 与名单追加切片技术基线，2026-09-18；YZT-163 更新 C1 已实现并被集成 develop，2026-09-18；YZT-167 更新名单追加数据层已实现并被集成 develop c87be89，2026-09-18；YZT-171 补录 L1 教师结束持久化设计已独立 R1 并被 01 接受为下一数据层实现技术基线，2026-09-21）
+title: G01/G02/G06 产品语义已由用户批准为 Norm；C1 切片与名单追加数据层切片已实现、经独立 R1 限定通过并被 01 集成，教师可见的其余部分仍未实现（YZT-142 治理，2026-09-18；YZT-158 补录落实该 Norm 的 S2 设计已被审并被 01 接受为 C1 与名单追加切片技术基线，2026-09-18；YZT-163 更新 C1 已实现并被集成 develop，2026-09-18；YZT-167 更新名单追加数据层已实现并被集成 develop c87be89，2026-09-18；YZT-171 补录 L1 教师结束持久化设计已独立 R1 并被 01 接受为下一数据层实现技术基线，2026-09-21；YZT-177 更新 L1 教师结束合成数据层已实现、经独立 R1 限定通过并被 01 集成 develop 914e367，2026-09-22）
 
 statement: >
   as-of 2026-09-18（YZT-142 治理核验；用户决定时点为 UTC 2026-09-17T23:51:17Z）。
@@ -300,6 +300,98 @@ statement: >
   supersedes，也不与前序治理包同身份续版，以避免机械地令设计治理包、C1 治理包与名单追加治理包失效；
   本条亦不因此新增 supersession。
 
+  YZT-177 更新（2026-09-22 +08:00 / UTC 治理批次，只新增"L1 教师结束与新阶段的合成数据层切片已实现、
+  经独立 R1 限定通过并被 01 接受并集成 develop 914e367"这一 Reality 增量与其停止边界，不改写上文任何
+  历史叙述，不新增或改写任何产品 Norm）：implementation / teachers-app1-s2-l1-episode-end / 0.1.1
+  （04 Software Engineer；业务源码提交 e80723e7e067c755072be5d275db9c8f329184c1"feat(data): add L1
+  episode end schema4"，YZT-174 最终评论 01a0c730-8c4a-78d9-a0e0-c32e25a07f10，服务器 created_at
+  2026-09-22T03:37:22Z；文档补正提交 829dc3174f8921fab59df76d5d7645b746d35700"docs: correct L1
+  artifact envelope lineage"，YZT-176 最终评论 01a0c753-67b0-7a69-9132-7767c7b33533，服务器
+  created_at 2026-09-22T04:15:27Z；最终 pin 1cb6dcfc74b8c425937caaa242d160ae2fb210d2"docs: pin L1
+  0.1.1 envelope locator"，远端分支 origin/agent/04-software-engineer/yzt-176-fix）经 05 独立 R1
+  （YZT-175 最终评论 01a0c774-e068-7ded-a021-933d2a2ca4fe，服务器 created_at 2026-09-22T04:52:00Z，
+  Issue done，附 3 份附件；产物标识 delivery_review / teachers-app1-s2-l1-episode-end-r1-review /
+  0.1.0，其 reviewed_artifact 精确指向 implementation / teachers-app1-s2-l1-episode-end / 0.1.1；
+  审查报告 SHA256 aec87bf9a07ff4bebad1cf9d021571f326bd4248416143aa24ae9be704979b38，19285 字节；审查
+  信封 SHA256 a45618d5820d244f2fdecf1a1a8b03fa831295b8b4e5d38e7108e80b73cb852b，6964 字节；实测记录
+  SHA256 67e47df702987b2b21af62595bb971c9de821e3a45a56e6b09e78c83a1630910，5938 字节——本批从持久
+  项目目录逐一实读并复算，三份均与该批声明一致，其中报告散列与 01 本轮决定所载一致）verdict
+  APPROVE、限定结论 APPROVE_AS_S2_L1_EPISODE_END_IMPLEMENTATION_CANDIDATE、Required Changes NONE、
+  Challenges NONE。01 Engineering Lead 读取该完整独立 R1 报告后接受该限定结论，并把它按内容等价摘取
+  集成到产品远端 develop：从维护提交 acad7b11b454279f8a40be709bc7b9a4325829b2 之上依次摘取
+  e80723e→a37f443、a67d2c8→4f6b0f4、829dc31→9f1cc07、1cb6dcf→914e367，远端 develop 读回
+  914e367797ce25ba1606cf070cbe57760cd235da（来源为 multica://issue/YZT-177 描述所载本轮 Decision
+  即 Project decision / Memory Disposition 段；提交映射、patch-id 等价性与 entry/ 等价性由本批独立
+  只读核验，见 FACT-TAPP1-000003 的 YZT-177 更新段）。接受与集成不等于实现之外任何闸门已被打开：
+  它不是平台验证、UI、R2、设备、签名、安装、发布或 S2 完成。
+  切片边界（本条只记指针与身份，不复制实现或报告正文；精确行为以该版本化 Artifact 为准）：该切片按
+  已审 L1 设计 0.1.0-draft 在全新合成库 schema4（本批只读核验 S1Schema.ets 中 S1_SCHEMA_VERSION = 4、
+  S1_USER_VERSION = 4、S1_CONTRACT_ID = 's2-l1-episode-end/1' 三项一致，这只有字面一致性含义，不是
+  平台执行证据）内实现 EndEpisode/1 单事务成对写入不可变结束记录与独立结束回执、关闭目标 Episode 并与
+  同时到达的观察争用同一 Thread revision，另含 ReadEpisodeMutation/1、ReadThreadHistory/1、合成
+  CaptureHomeworkObservation/1 阶段令牌与 Projection 失效保护；已知 v1/v2/v3 库返回
+  MIGRATION_REQUIRED 并保留原库拒写，未执行 ALTER、迁移或清库。本次治理不重跑也不改写 05 的实现与
+  L101–L126 判定。
+  该实现忠实保留 G02-A 产品 Norm，本条不因本次接受新增或改写任何产品语义：仍只有教师明确的 resolved
+  或 teacher_stopped 能结束一次关注阶段，系统计算的"已缓解"（C1 的 homework_improved × 3）只是建议，
+  不自动关闭、不设观察次数门槛、关闭后新观察可建新阶段且不改写旧阶段；实现中的错误码、CAS、回执编码与
+  事务步骤均为 03/04 技术候选，不是新增用户 Norm，也不构成对 1A 之外任何部署、公开上传、main 合并、
+  真实数据、旧库迁移执行、设备、签名或发布的授权。
+  Reality（本段唯一实质内容；L1 已在合成数据层实现、被审并被集成，但仍不是教师可见功能，也不构成 S2
+  完成）：该切片新增 entry/src/main/ets/data/L1Episode.ets（本批实测 1216 行、54899 字节）并改动
+  S1Schema.ets、CanonicalInput.ets、CaptureIntent.ets、S1Repository.ets、S1SchemaGuard.ets、
+  S1StoreContract.ets、U01Scheduler.ets 与 entry/src/test 的相关测试与支撑（含新增
+  entry/src/test/L1Episode.test.ets，其 14 条命名用例覆盖 L101、L102、L104–L107、L113、L114、L116、
+  L118、L119、L122、L124、L125），以及 scripts/verification/probe_l1_episode_end.py 与
+  probe_s1_storage_contract.py；本批实测 git diff --stat c87be89..914e367 --
+  entry/src/main/ets/entryability/ 为空，且 EntryAbility.ets@914e367 不引用 L1Episode / RdbS1Store /
+  P01PlatformSupport / S1Session / S1SchemaGuard，即生产入口仍未接入任何实验库、生产 Capture 仍未
+  组装。仍未实现（不得读作已交付）：教师可见的阶段结束 UI 与任何名单页/UI、生产 Capture 与生产
+  EntryAbility 接库、纠错/Undo（G03）、FollowUp 再出现与补记草稿跨进程/切班恢复、同班同名 UI 区分与
+  旧名单迁移、旧库迁移与清库，以及按不同作业计数、有限自动关闭、拖动排序等未批准取舍。
+  验证归属（本批不把他人实测冒充为本批重复业务验证）：119/119 本地用例（直跑 hvigorw test，含 L1 命名
+  用例与既有 Capture/U01/C1/名单套件）、unsigned HAP build（SHA256
+  3611a02b4e979edad18c0d93f41f7111460d8843f38b46f566a54b3269cadb17，无签名配置、不是可安装签名包）、
+  CodeLinter check 0 findings 均为 04 在 e80723e 的 YZT-174 实测（YZT-176 明确声明未重跑，本批沿用其
+  引用归属）；05 在 1cb6dcf 隔离审查树独立复跑仓库 Python 单测 45/45、capability policy PASS、
+  verify_repository PASS（126 tracked）、L1 宿主探针 6/6（s_one_open_episode、s_end_pair_commits、
+  s_end_record_immutable、s_closed_episode_immutable、s_no_evidence_on_closed_episode、
+  s_end_vector_sha256）、schema 宿主探针 98/98（SQLite 3.50.4、37 statements），并实测
+  git diff e80723e 1cb6dcf -- entry/ 为空、信封/报告 Git blob LF 与 checkout CRLF 双散列精确匹配；
+  YZT-175 的评测运行器本身在 04 侧因 locator multica 路径缺失为 BLOCKED，属如实保留的局部限制。01
+  集成侧与本批：本批在 D:\AI\projects\TeachersApp1@914e367 只读复跑仓库 Python 单测 45/45 PASS、
+  validate_capability_policy PASS、verify_repository PASS（131 tracked files）、L1 宿主探针 6/6、schema
+  宿主探针 98/98（SQLite 3.50.4），与 01 本轮集成验证声明一致；这些是仓库与宿主层证据，不是平台结论。
+  本批不重跑实现或业务测试：HarmonyOS relationalStore 平台真实持久化 V01–V10、A03 真实跨进程杀 PID
+  两阶段重启、A08 真实硬件连接级竞争、真机、签名 HAP、安装发布、UI 走查、R2、真实学生数据、迁移与
+  清库全部仍为 NOT_RUN，宿主 SQLite 探针、FakeStore 与 Hypium 不得冒充平台持久化 PASS；设备能力包
+  仍 OFF。
+  保留的停止边界（Q1–Q6 全部不因本实现与集成而解除，各自只阻断所列分支，由 01 准备完整决策材料，
+  不扩大为全业务总门）：Q1 相同观察时间混向仍返回 UNAVAILABLE/OBSERVATION_ORDER_UNRESOLVED，不得据
+  ID 字典序伪造教师观察顺序；Q2 生产时间适配、历史目标归属与 opened_at 新语义仍未定，无法判定归属时
+  返回 HISTORICAL_TARGET_REQUIRED 或 TIME_CONTEXT_UNRESOLVED，不得回写旧行或据单条比较宣称历史归属
+  已判；Q3 Undo/纠错（G03）未启用，纠错生产入口保持关闭，不得用正向记录抵消错误；Q4 FollowUp 再出现
+  节奏、教师调整合并与补记草稿跨进程/切班恢复未定，完成前不交付声称支持完整补记的生产 UI，也不用假
+  Evidence 持久化草稿；Q5 同班同名区分 UI 与旧名单迁移未定；Q6 的"L1 专用 DDL 与回执编码"部分已由被
+  独立 R1 并被 01 接受的 L1 设计候选与本次实现给定（04 不得再自行推断 DDL），但真机设备授权、平台
+  准入 A/B、签名与发布仍未准入。未被本批改变的边界：main 合并（main 仍
+  558fdc939414142636f9b4f43530facf1c7cfb7e，develop 领先 23 个提交）、公开上传、真实数据、旧库迁移或
+  清库执行、设备、签名与发布，以及按不同作业计数、有限自动关闭、拖动排序等仍未批准的产品取舍。
+  来源边界（不改写他人产物或专业 verdict）：docs/architecture/system-design.md 仍引用旧提交 b058b44，
+  属产品文档定位滞后观察；本 Context 治理任务不修改产品仓，该观察保留为来源边界与后续文档整合项，不
+  覆盖 live develop=914e367。YZT-175 审查信封嵌入的 provenance.created_at 为 2026-09-22T04:50:00Z，
+  早于其平台评论的服务器 created_at 2026-09-22T04:52:00Z；本条以服务器 created_at、原始字节与散列作为
+  交付顺序证据，不宣称时钟一致，也不因该局部时序差改写 YZT-175 的专业 verdict 或其附件字节。
+  与既有对象的关系：本段在 YZT-171 段之后追加，不改写其任何文字，也不把技术候选提升为已批准产品语义；
+  上文 YZT-171 段与 YZT-167 段中"L1 教师结束与新阶段（EndEpisode 持久化）仍未实现/实现仍未发生"的
+  表述自本段起由本段承接（实现已发生并已集成），其"设计与实现都不是教师可见功能、不构成 S2 完成、平台
+  与设备边界不变"的部分继续成立，其余未实现项亦不变。本条不取代 FACT-TAPP1-000003、FACT-TAPP1-000004
+  或 FACT-TAPP1-000006，本批未改写这三条正文（集成基线推进由 FACT-TAPP1-000003 的 YZT-177 更新段承接）。
+  本次治理产物使用独立 context_package 身份
+  teachers-app1-s2-l1-episode-end-integrated-reality-governance（其精确版本标识见该信封本身），无
+  supersedes，也不与前序治理包同身份续版，以避免机械地令设计治理包、C1 治理包、名单追加治理包与 L1
+  设计治理包失效；本条亦不因此新增 supersession。
+
 scope:
   type: project
   project_id: teachers-app1
@@ -433,6 +525,42 @@ verified_against:
       - Requirements
       - Acceptance Criteria
       - Decision
+  - source_ref: repo://teachers-app-one@914e367797ce25ba1606cf070cbe57760cd235da/specs/s2-l1-episode-end/artifact-envelope.json
+    revision: 914e367797ce25ba1606cf070cbe57760cd235da
+    paths:
+      - specs/s2-l1-episode-end/artifact-envelope.json
+      - specs/s2-l1-episode-end/implementation-report.md
+      - entry/src/main/ets/data/L1Episode.ets
+      - entry/src/main/ets/data/S1Schema.ets
+      - entry/src/test/L1Episode.test.ets
+      - entry/src/main/ets/entryability/EntryAbility.ets
+  - source_ref: multica://issue/YZT-174
+    revision: 0.1.0
+    paths:
+      - 01a0c730-8c4a-78d9-a0e0-c32e25a07f10
+      - implementation-report.md
+      - artifact-envelope.json
+  - source_ref: multica://issue/YZT-175
+    revision: final-comment-01a0c774-e068-7ded-a021-933d2a2ca4fe
+    paths:
+      - 01a0c774-e068-7ded-a021-933d2a2ca4fe
+      - YZT-175-delivery-review-report.md
+      - YZT-175-delivery-review-envelope.json
+      - YZT-175-verification.json
+  - source_ref: multica://issue/YZT-176
+    revision: 0.1.1
+    paths:
+      - 01a0c753-67b0-7a69-9132-7767c7b33533
+      - implementation-report.md
+      - artifact-envelope.json
+      - yzt-176-verification.json
+  - source_ref: multica://issue/YZT-177
+    revision: stage-61-governance-batch
+    paths:
+      - Requirements
+      - Acceptance Criteria
+      - Decision
+      - Memory Disposition
 
 source_refs:
   - multica://issue/YZT-142
@@ -473,6 +601,19 @@ source_refs:
   - multica://issue/YZT-171
   - multica://comment/01a0c4db-b502-7336-abcc-af3e72b5422f
   - multica://comment/01a0c4f5-4216-71e0-a800-66a08893354d
+  - repo://teachers-app-one@914e367797ce25ba1606cf070cbe57760cd235da/specs/s2-l1-episode-end/artifact-envelope.json
+  - repo://teachers-app-one@914e367797ce25ba1606cf070cbe57760cd235da/specs/s2-l1-episode-end/implementation-report.md
+  - repo://teachers-app-one@914e367797ce25ba1606cf070cbe57760cd235da/entry/src/main/ets/data/L1Episode.ets
+  - repo://teachers-app-one@914e367797ce25ba1606cf070cbe57760cd235da/entry/src/main/ets/data/S1Schema.ets
+  - repo://teachers-app-one@914e367797ce25ba1606cf070cbe57760cd235da/entry/src/test/L1Episode.test.ets
+  - repo://teachers-app-one@914e367797ce25ba1606cf070cbe57760cd235da/entry/src/main/ets/entryability/EntryAbility.ets
+  - multica://issue/YZT-174
+  - multica://issue/YZT-175
+  - multica://issue/YZT-176
+  - multica://issue/YZT-177
+  - multica://comment/01a0c730-8c4a-78d9-a0e0-c32e25a07f10
+  - multica://comment/01a0c753-67b0-7a69-9132-7767c7b33533
+  - multica://comment/01a0c774-e068-7ded-a021-933d2a2ca4fe
 
 relations:
   conflicts_with: []
@@ -486,5 +627,5 @@ review:
   triggered_at: null
 
 created_at: 2026-09-18T00:30:00Z
-verified_at: 2026-09-21T17:34:42Z
-updated_at: 2026-09-21T17:34:42Z
+verified_at: 2026-09-22T05:45:00Z
+updated_at: 2026-09-22T05:45:00Z
