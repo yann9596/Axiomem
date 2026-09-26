@@ -515,6 +515,51 @@ confirmed:
       - FACT-TAPP1-000005
       - FACT-TAPP1-000003
 
+  - id: cp-confirmed-015
+    summary: >
+      YZT-179 真机验收的离线执行包已交付、经 05 独立 R1 限定通过并被 01 接受并内容等价集成 develop
+      （YZT-182 治理，2026-09-26 UTC）：implementation / teachers-app1-yzt-179-offline-execution-pack /
+      0.1.0（04 Software Engineer，YZT-180 最终评论 01a0de3f-9f62-7542-a1ae-6842f971ca2b；驱动源码
+      0e7dc50dfddf00442d8ecd5ce843ca7fc29fd674、文档 pin
+      c631ba6dcac23754b42587345bf7d28f9a04ec97，远端分支
+      origin/agent/04-software-engineer/yzt-180）经 05 独立 R1（YZT-181 最终评论
+      01a0dec9-a7cb-7768-a66b-fd3eff8b77ce；产物标识 delivery_review /
+      teachers-app1-yzt-180-offline-pack-r1-review / 0.1.0；报告 SHA256
+      fe021320fb39641eeac43323cd0b3f6bc4253db5c772de9ee48d7f4e5cc1570e、审查信封 SHA256
+      7a2fac7c768980ee3e2f9e60d181a0b48fbccc26ac4d457628f9bdbe1c0bc092）verdict APPROVE、限定
+      APPROVE_AS_OFFLINE_EXECUTION_PACK_PREPARATION、Required Changes NONE、Challenges NONE；01 接受
+      该限定结论并从 914e367 之上依次等价摘取 0e7dc50→945514a、c631ba6→0edffe3（两条 patch-id 逐一
+      相同、被审与集成内容逐字节等价），产品远端 develop 读回
+      0edffe33e15292bb52aceca204514313750a3205（本批只读核验 git ls-remote origin refs/heads/develop
+      即该 SHA，entry/ tree 在 0e7dc50/0edffe3 同为 e52e5e3cd4cc4b1da9e0d412d1671457b9093772，
+      git diff --stat 0e7dc50..0edffe3 -- entry/ 为空，即"审查对象 = 集成版本"）。
+      范围：该包是 YZT-179 平台关口的离线工程准备——V01–V10、A03 跨进程 PID、A08 真实并发
+      overlapProven、L1 成对写入与历史不可变等强断言驱动，加离线预检脚本与白名单定向清理剧本
+      （合成数据 C-A / S-A1 / HA；数据库白名单 p01_<run-id>_<case>.db），全部限定在
+      entry/src/ohosTest、scripts/verification 与 specs/yzt-179-device-pack。
+      Reality 与 NOT_RUN：准备不等于执行——产品生产源码未变（本批实测 git diff --stat
+      914e367..0edffe3 -- entry/src/main 为空，EntryAbility.ets 在两者为同一 blob
+      6dd239c6b166034260d87d564b4caaa71d529cef，共享 build-profile.json5 的 signingConfigs 仍为 []）；
+      已签名可安装 HAP 仍 NOT_READY，自动签名材料只按文件名枚举、未读取凭据，VDE-AL00 的 profile
+      归属仍 UNVERIFIED_NOT_READ；device 能力包仍 OFF，未调用 hdc、未安装、未写设备；平台
+      relationalStore V01–V10、A03 真实跨进程重启、A08 真实硬件竞争、真机、签名、安装发布、UI 走查、
+      R2、真实学生数据、迁移与清库全部 NOT_RUN，宿主 SQLite 与离线预检不得冒充平台持久化 PASS。
+      R1 记录的 3 项 QA 准入门（用户确认时间窗内由 DevEco 自动签名产出已签名 debug HAP；用户确认前
+      不得连接设备/安装/写入/启动 06；A03 分两次执行并在宿主 aa force-stop）仍待满足，YZT-179 保持
+      backlog，具体设备时间窗仍未确认。G01/G02/G06 与 L1 的产品 Norm 一字未改，Q1–Q6 停止边界不变；
+      main 合并（main 仍 558fdc93，develop 领先 25）、公开上传、真实数据、迁移清库、设备、签名与发布
+      边界均不变。详见 FACT-TAPP1-000003 的 YZT-182 更新段。
+    refs:
+      - multica://issue/YZT-180
+      - multica://issue/YZT-181
+      - multica://issue/YZT-182
+      - multica://issue/YZT-116
+      - multica://comment/01a0de3f-9f62-7542-a1ae-6842f971ca2b
+      - multica://comment/01a0dec9-a7cb-7768-a66b-fd3eff8b77ce
+      - repo://teachers-app-one@0edffe33e15292bb52aceca204514313750a3205/specs/yzt-179-device-pack/artifact-envelope.json
+      - FACT-TAPP1-000003
+      - FACT-TAPP1-000006
+
 open:
   - id: cp-open-001
     summary: >
@@ -536,6 +581,11 @@ open:
       数据层及其信封/报告四个等价摘取提交），领先 main 558fdc93 二十三个已审提交；本批实测本机 develop
       分支亦为 914e367（已与远端一致，与上文各批"本机仍未同步"的 as-of 叙述不冲突）。本条"main 合并待
       用户精确授权"与不因等待 main 阻塞已授权工作的边界仍完全不变。
+      YZT-182 更新（2026-09-26）：develop 远端与本机已达 0edffe3（含 YZT-179 真机验收离线执行包的
+      两个等价摘取提交 945514a、0edffe3），领先 main 558fdc93 二十五个已审提交；本批实测
+      origin/develop、refs/remotes/origin/develop 与本机 develop 三者一致。本条 main 合并待用户精确
+      授权、以及不因等待 main 阻塞已授权工作的边界仍完全不变；设备时间窗仍未确认，不得把"离线包已
+      集成"或"用户已选设备并授权操作"推导成 main、签名、安装或发布授权。
     refs:
       - repo://teachers-app-one@a67179dfc02f0461a7962dcc697161395c5deb76/docs/governance/version-control.md
       - registry://teachers-app1
@@ -564,6 +614,15 @@ open:
       A08 真实硬件竞争、真机、签名、安装发布、UI 走查与 R2 仍全部 NOT_RUN，设备能力包仍 OFF，本次集成中
       的仓库单测 45/45、宿主 SQLite 探针 6/6 与 98/98 也不得冒充平台持久化 PASS；本条 NOT_RUN 边界完全
       不变。
+      YZT-182 补充（2026-09-26）：YZT-179 真机验收的离线执行包已交付、经独立 R1 限定通过并被 01
+      内容等价集成 develop 0edffe3（见 cp-confirmed-015），该包为 V01–V10、A03、A08、L1 补齐了逐例
+      强断言、立即停止条件、白名单定向清理剧本与离线预检——但那只是准备、不是执行：平台
+      relationalStore 真实持久化、A03 真实跨进程重启、A08 真实硬件竞争、真机、签名、安装发布、
+      UI 走查与 R2 仍全部 NOT_RUN，已签名可安装 HAP 仍 NOT_READY（共享 signingConfigs=[]、自动签名
+      材料未读取、VDE-AL00 profile 归属 UNVERIFIED_NOT_READ），设备能力包仍 OFF，未调用 hdc、未安装、
+      未写设备；R1 的 3 项 QA 准入门与用户确认的设备时间窗仍未满足，复用该包时不得把离线预检
+      READY_OFFLINE、仓库单测 49/49 或宿主探针读作平台持久化 PASS，也不得读作可安装或已验收；本条
+      NOT_RUN 边界完全不变。
     refs:
       - repo://teachers-app-one@a67179dfc02f0461a7962dcc697161395c5deb76/docs/engineering/harmonyos-toolchain.md
       - repo://teachers-app-one@a67179dfc02f0461a7962dcc697161395c5deb76/docs/project-management/mvp-execution-plan.md
@@ -663,6 +722,9 @@ next:
   - 从精确集成基线 914e367 继续：S2 L1 教师结束与新阶段的合成数据层已实现、经 05 独立 R1 限定通过并被 01 按内容等价摘取集成 develop（见 cp-confirmed-014）——后续依赖切片从该集成版本派发，不使用旧的 c87be89、acad7b1、b058b44、a67179d、83ba4a5、ba8e32d、main 或历史 Agent 分支；依赖该数据层的派发必须携带 implementation / teachers-app1-s2-l1-episode-end / 0.1.1 与其 R1 delivery_review / teachers-app1-s2-l1-episode-end-r1-review / 0.1.0 的精确指针及其 APPROVE_AS_S2_L1_EPISODE_END_IMPLEMENTATION_CANDIDATE 限定，禁止改生产 EntryAbility、禁止旧库迁移或清库、禁止把宿主 SQLite/FakeStore/Hypium 读作 relationalStore 平台 PASS，也不得读作 S2 完成
   - L1 实现集成后的剩余停止边界不变：教师可见阶段结束 UI 与任何名单页/UI、生产 Capture 组装、纠错/Undo（G03）、FollowUp 与跨重启补记草稿、同班同名 UI 与旧名单迁移未实现或未批准；Q1 混向同时间不猜顺序、Q2 生产时间适配与历史归属未定、Q3 纠错/Undo 未启用、Q4 FollowUp 与跨重启草稿未定、Q5 同名 UI 与旧名单迁移未定、Q6 真机设备授权与平台准入 A/B 未准入；各只阻断所列分支，由 01 准备完整决策材料，不扩大为全业务总门
   - YZT-177 治理产物（L1 合成数据层已实现、经独立 R1 并被 01 接受并集成 develop 的 Reality 增量）同样须经 01 派发适用独立 R1、接受、部署并重建索引后，受影响消费者才以其 fresh SELF_CHECK 为准；本子任务 done 不等于已被接受、部署或 indexed，本次候选使用独立 context_package 身份 teachers-app1-s2-l1-episode-end-integrated-reality-governance，不与前序治理包同身份续版
+  - 从精确集成基线 0edffe3 继续：YZT-179 真机验收的离线执行包已交付、经 05 独立 R1 限定通过并被 01 内容等价集成 develop（见 cp-confirmed-015）——后续依赖切片与设备关口从该集成版本派发，不使用旧的 914e367、acad7b1、c87be89、b058b44、a67179d、83ba4a5、ba8e32d、main 或历史 Agent 分支
+  - 向 YZT-179 / 06 真机验收派发时必须携带 implementation / teachers-app1-yzt-179-offline-execution-pack / 0.1.0 与其 R1 delivery_review / teachers-app1-yzt-180-offline-pack-r1-review / 0.1.0 的精确指针及 APPROVE_AS_OFFLINE_EXECUTION_PACK_PREPARATION 限定、以及 3 项 QA 准入门与用户确认的精确时间窗：只准备材料，不得声明可安装、不得在用户确认前连接设备/安装/写入，A03 必须分两次执行并在宿主 aa force-stop，不得把离线预检 READY_OFFLINE 或宿主探针读作 relationalStore 平台 PASS
+  - YZT-182 治理产物（已审离线执行包进入 develop 的 Reality 增量）同样须经 01 派发适用独立 R1、接受、部署并重建索引后，受影响消费者才以其 fresh SELF_CHECK 为准；本子任务 done 不等于已被接受、部署或 indexed，本次候选使用独立 context_package 身份 teachers-app1-yzt-180-offline-pack-integrated-reality-governance，不与前序治理包同身份续版
 
 refs:
   - project.yaml
@@ -687,9 +749,12 @@ refs:
   - multica://issue/YZT-175
   - multica://issue/YZT-176
   - multica://issue/YZT-177
+  - multica://issue/YZT-180
+  - multica://issue/YZT-181
+  - multica://issue/YZT-182
   - FACT-TAPP1-000003
   - FACT-TAPP1-000005
   - FACT-TAPP1-000006
   - migration/retirement/app1-retirement-yzt98.md
 
-updated_at: 2026-09-22T05:45:00Z
+updated_at: 2026-09-26T18:40:00Z

@@ -1,7 +1,7 @@
 schema_version: "1.1"
 kind: current_fact
 id: FACT-TAPP1-000003
-title: TeachersApp1 集成基线与完成契约实态（YZT-131 治理，2026-09-17；YZT-139 更新集成基线至 a67179d，2026-09-18；YZT-142 更新 G01/G02 指针，2026-09-18；YZT-154 更新集成基线至 83ba4a5，2026-09-18；YZT-163 更新集成基线至 b058b44，2026-09-18；YZT-167 更新集成基线至 c87be89，2026-09-18；YZT-177 更新集成基线至 914e367，2026-09-22）
+title: TeachersApp1 集成基线与完成契约实态（YZT-131 治理，2026-09-17；YZT-139 更新集成基线至 a67179d，2026-09-18；YZT-142 更新 G01/G02 指针，2026-09-18；YZT-154 更新集成基线至 83ba4a5，2026-09-18；YZT-163 更新集成基线至 b058b44，2026-09-18；YZT-167 更新集成基线至 c87be89，2026-09-18；YZT-177 更新集成基线至 914e367，2026-09-22；YZT-182 更新集成基线至 0edffe3，2026-09-26）
 
 statement: >
   as-of 2026-09-17（YZT-131 治理核验）：origin/develop = 本地 develop =
@@ -258,6 +258,84 @@ statement: >
   边界、Axiomem 公开上传边界与设备/签名/发布边界亦均未被本批改动。本条既不改写 FACT-TAPP1-000002
   的既有 supersession 链，本批也不新增 supersession。
 
+  YZT-182 更新（2026-09-26 UTC 治理批次，只推进集成基线与其证据，不改写上文任何历史叙述）：
+  origin/develop = refs/remotes/origin/develop = 0edffe33e15292bb52aceca204514313750a3205
+  （"docs: pin YZT-179 offline pack locator"）。来源为 multica://issue/YZT-182 描述所载本轮 Decision
+  记录的"01 从远端 develop=914e367 等价摘取 0e7dc50 → 945514a、c631ba6 → 0edffe3，非强制推送后
+  ls-remote 读回 origin/develop=0edffe3"，以及本批在 D:\AI\projects\TeachersApp1 的独立只读核验：
+  git ls-remote origin refs/heads/develop、refs/remotes/origin/develop 与本机 refs/heads/develop
+  均为该 SHA（本机 develop 自本批起与远端一致；这与上文各批"本机 develop 仍未同步"的 as-of 叙述
+  不冲突——那些是其各自时点的正确实态，本段只声明本批实测的当前状态）。
+  相对上一 as-of 基线 914e367797ce25ba1606cf070cbe57760cd235da，develop 新增两个提交（本批实测
+  git log --oneline 914e367..0edffe3 恰为 945514a、0edffe3，git rev-list --count = 2，
+  git merge-base --is-ancestor 914e367 0edffe3 成立即确为快进，git log --format=%P 实测父链为
+  914e367→945514a→0edffe3）：
+  945514a5c4d2b4760d0b0ca5c323486aa4a7b160（"test: add YZT-179 offline device-gate pack"，
+  该切片的唯一业务提交：新增 entry/src/ohosTest/ets/test 下的 Yzt179RunContext.ets、
+  Yzt179VMatrixDriver.ets、Yzt179A03DeviceDriver.ets、Yzt179L1Driver.ets、Yzt179DeviceGate.test.ets
+  与 List.test.ets 的两行注册，新增 scripts/verification/yzt179_offline_pack.py 与其单测
+  scripts/verification/test_yzt179_offline_pack.py，新增 specs/yzt-179-device-pack 的信封、实现报告、
+  执行矩阵与清理剧本四个文件，并改 CHANGELOG.md 与 specs/README.md 各少量行；本批实测
+  git diff --stat 914e367..0edffe3 -- entry/src/main 为空，即未触及任何产品生产源码）、
+  0edffe33e15292bb52aceca204514313750a3205（"docs: pin YZT-179 offline pack locator"，只改
+  YZT-179 设备包的定位行）。两个提交经 git diff --stat 复核，改动全部落在 entry/src/ohosTest、
+  scripts/verification 与 specs/yzt-179-device-pack，无生产入口改动。
+  原提交到集成提交的映射与等价性（本批实测两条 git patch-id --stable 逐一相同，故为内容等价摘取
+  而非重写，这正是 01 本次"依次等价摘取"的机械证据）：
+  0e7dc50dfddf00442d8ecd5ce843ca7fc29fd674（04 交付的驱动源码，patch-id
+  28a786d9f7296aff536bfdb4bc59c862edd3f722）→ 945514a（同 patch-id）；
+  c631ba6dcac23754b42587345bf7d28f9a04ec97（文档 pin，patch-id
+  28ef7ecb2f5461dd3f635b75b0b7000ac5d11acf）→ 0edffe3（同 patch-id）；本批另实测
+  git diff --stat 0e7dc50..945514a 与 git diff --stat c631ba6..0edffe3 均为空，即被审内容与集成
+  内容逐字节等价。
+  被审业务内容与集成版本等价：本批实测 entry/ tree 在 0e7dc50 与 0edffe3 同为
+  e52e5e3cd4cc4b1da9e0d412d1671457b9093772，且 git diff --stat 0e7dc50..0edffe3 -- entry/ 为空，
+  故该切片"审查对象 = 集成版本"成立，不存在审后再次改码（914e367:entry 为
+  3fc5102a56babb7e261492e91ef926ec0ad42930，与本段不同是正常的：该切片在 ohosTest 下新增了测试
+  驱动，生产侧 entry/src/main 逐字节未变）。
+  被审对象为 implementation / teachers-app1-yzt-179-offline-execution-pack / 0.1.0（04 Software
+  Engineer，YZT-180 最终评论 01a0de3f-9f62-7542-a1ae-6842f971ca2b；驱动源码 0e7dc50、文档 pin
+  c631ba6，位于远端分支 origin/agent/04-software-engineer/yzt-180）；其独立 R1 为 delivery_review /
+  teachers-app1-yzt-180-offline-pack-r1-review / 0.1.0（05 Delivery Reviewer，YZT-181 最终评论
+  01a0dec9-a7cb-7768-a66b-fd3eff8b77ce），verdict APPROVE、限定
+  APPROVE_AS_OFFLINE_EXECUTION_PACK_PREPARATION、Required Changes NONE、Challenges NONE；本批实读
+  复算其报告 YZT-180-R1-delivery-review.md 的 SHA256
+  fe021320fb39641eeac43323cd0b3f6bc4253db5c772de9ee48d7f4e5cc1570e 与审查信封
+  delivery-review-envelope.json 的 SHA256
+  7a2fac7c768980ee3e2f9e60d181a0b48fbccc26ac4d457628f9bdbe1c0bc092 一致；YZT-180 的四个交付附件
+  （报告、信封、执行矩阵、清理剧本）经 git hash-object 逐字节核验与 c631ba6/0edffe3 的同名 blob
+  完全相同。
+  该切片的 Reality 与停止边界（本批在 0edffe3 只读核验）：新增内容全部是测试驱动、离线预检脚本与
+  规格/清理文档，产品生产源码未变——共享 build-profile.json5 的 signingConfigs 仍为 []，
+  entry/src/main/ets/entryability/EntryAbility.ets 在 914e367 与 0edffe3 同为同一 blob
+  6dd239c6b166034260d87d564b4caaa71d529cef。该包只是 YZT-179 真机验收的离线工程准备，不是执行、
+  不是平台 PASS、也不是可安装签名包：已签名可安装 HAP 仍 NOT_READY（自动签名材料只按文件名枚举、
+  未读取任何凭据字节，VDE-AL00 的 profile 归属仍 UNVERIFIED_NOT_READ），device 能力包仍 OFF，
+  未调用 hdc、未连接设备、未安装、未写设备、未取真实学生数据；平台 relationalStore V01–V10、
+  A03 真实跨进程重启、A08 真实硬件竞争、L1 真机断言、安装、UI 走查、发布与 R2 全部仍为 NOT_RUN，
+  宿主/仓库层与离线预检证据不得冒充平台持久化 PASS。R1 记录的 3 项 QA 准入门（在用户确认的时间窗内
+  由 DevEco 自动签名产出已签名 debug HAP；用户确认前不得连接设备、安装、写入或启动 06；A03 必须
+  分两次执行并在宿主用 aa force-stop 验证 PID 终止）全部仍待满足，YZT-179 保持 backlog，具体设备
+  时间窗仍未确认。本次集成不新增、不改写、不撤回任何产品 Norm（G01/G02/G06 与 L1 的 Norm 正文一字
+  未改），也不解除 Q1–Q6 停止边界。
+  main 本机与 origin/main 仍均为 558fdc939414142636f9b4f43530facf1c7cfb7e（本批 git ls-remote
+  origin refs/heads/main 实测）；develop 现领先 main 25 个提交（本批实测 git rev-list --count
+  558fdc93..0edffe3 = 25；上一 as-of 时点为 23，属正常版本推进而非旧条目计数错误），main 合并仍待
+  用户精确授权。验证归属分层：01 本轮在集成树实测仓库 Python 单测 49/49、能力声明校验 PASS、仓库
+  校验 PASS（142 tracked）、git diff --check PASS；05 对原被审 pin 另有独立的离线包单测与离线预检
+  证据；本批在 0edffe3 只读独立复跑同一组仓库/宿主检查（单测 49/49、能力策略 PASS、仓库校验 PASS、
+  离线包单测 4/4、离线预检 READY_OFFLINE 且 signed_hap=NOT_READY、device_capability=OFF、
+  hdc_invoked=false）。以上均为仓库与宿主层证据，不是 HarmonyOS 平台、设备、签名、安装或发布结论。
+  上文各段的 as-of 叙述（ba8e32d、a67179d、83ba4a5、b058b44、c87be89、914e367）保留为历史时点，
+  "当前集成基线"自本段起为 0edffe3，也不再读作 914e367。本条其余内容继续 current 且不被本更新改变：
+  授权分层（已审切片通过适用 Review 后由 01 及时合 develop、push 并远端读回，main 的最终确认与合并
+  保留给用户）、公共完成契约 parent-handoff-wake（75a9e56364c32dfeca9d20438e5228bb0d9e9d3c）、
+  本机能力策略默认拒绝与 knowledge/engineering/methods 按角色启用、device OFF、真机与 HarmonyOS
+  relationalStore/UI 走查/签名/发布/R2 的 NOT_RUN 边界、产品路径 D:\AI\projects\TeachersApp1 与
+  execution_mode=worktree、不继承旧 app1、G01/G02/G06 已由用户批准为 Norm（YZT-142）、main 授权
+  边界、Axiomem 公开上传边界与设备/签名/发布边界亦均未被本批改动。本条既不改写 FACT-TAPP1-000002
+  的既有 supersession 链，本批也不新增 supersession。
+
 scope:
   type: project
   project_id: teachers-app1
@@ -408,6 +486,37 @@ verified_against:
       - Requirements
       - Acceptance Criteria
       - Decision
+  - source_ref: repo://teachers-app-one@0edffe33e15292bb52aceca204514313750a3205/specs/yzt-179-device-pack/artifact-envelope.json
+    revision: 0edffe33e15292bb52aceca204514313750a3205
+    paths:
+      - specs/yzt-179-device-pack/artifact-envelope.json
+      - specs/yzt-179-device-pack/implementation-report.md
+      - specs/yzt-179-device-pack/execution-matrix.json
+      - specs/yzt-179-device-pack/cleanup-playbook.md
+  - source_ref: repo://teachers-app-one@0edffe33e15292bb52aceca204514313750a3205/entry/src/main/ets/entryability/EntryAbility.ets
+    revision: 0edffe33e15292bb52aceca204514313750a3205
+    paths:
+      - entry/src/main/ets/entryability/EntryAbility.ets
+      - build-profile.json5
+  - source_ref: multica://issue/YZT-180
+    revision: final-comment-01a0de3f-9f62-7542-a1ae-6842f971ca2b
+    paths:
+      - 01a0de3f-9f62-7542-a1ae-6842f971ca2b
+      - implementation-report.md
+      - artifact-envelope.json
+      - execution-matrix.json
+      - cleanup-playbook.md
+  - source_ref: multica://issue/YZT-181
+    revision: final-comment-01a0dec9-a7cb-7768-a66b-fd3eff8b77ce
+    paths:
+      - 01a0dec9-a7cb-7768-a66b-fd3eff8b77ce
+      - YZT-180-R1-delivery-review.md
+      - delivery-review-envelope.json
+  - source_ref: multica://issue/YZT-182
+    revision: stage-66-governance-batch
+    paths:
+      - description
+      - acceptance-and-stop
 source_refs:
   - repo://teachers-app-one@a67179dfc02f0461a7962dcc697161395c5deb76/docs/governance/version-control.md
   - repo://teachers-app-one@a67179dfc02f0461a7962dcc697161395c5deb76/docs/README.md
@@ -471,6 +580,14 @@ source_refs:
   - multica://comment/01a0c730-8c4a-78d9-a0e0-c32e25a07f10
   - multica://comment/01a0c753-67b0-7a69-9132-7767c7b33533
   - multica://comment/01a0c774-e068-7ded-a021-933d2a2ca4fe
+  - repo://teachers-app-one@0edffe33e15292bb52aceca204514313750a3205/specs/yzt-179-device-pack/artifact-envelope.json
+  - repo://teachers-app-one@0edffe33e15292bb52aceca204514313750a3205/specs/yzt-179-device-pack/implementation-report.md
+  - repo://teachers-app-one@0edffe33e15292bb52aceca204514313750a3205/entry/src/main/ets/entryability/EntryAbility.ets
+  - multica://issue/YZT-180
+  - multica://issue/YZT-181
+  - multica://issue/YZT-182
+  - multica://comment/01a0de3f-9f62-7542-a1ae-6842f971ca2b
+  - multica://comment/01a0dec9-a7cb-7768-a66b-fd3eff8b77ce
 relations:
   conflicts_with: []
   supersedes:
@@ -490,5 +607,5 @@ review:
   triggered_at: null
 
 created_at: 2026-09-17T14:00:00Z
-verified_at: 2026-09-22T05:45:00Z
-updated_at: 2026-09-22T05:45:00Z
+verified_at: 2026-09-26T18:40:00Z
+updated_at: 2026-09-26T18:40:00Z
