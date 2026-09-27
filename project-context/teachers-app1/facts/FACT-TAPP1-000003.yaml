@@ -1,7 +1,7 @@
 schema_version: "1.1"
 kind: current_fact
 id: FACT-TAPP1-000003
-title: TeachersApp1 集成基线与完成契约实态（YZT-131 治理，2026-09-17；YZT-139 更新集成基线至 a67179d，2026-09-18；YZT-142 更新 G01/G02 指针，2026-09-18；YZT-154 更新集成基线至 83ba4a5，2026-09-18；YZT-163 更新集成基线至 b058b44，2026-09-18；YZT-167 更新集成基线至 c87be89，2026-09-18；YZT-177 更新集成基线至 914e367，2026-09-22；YZT-182 更新集成基线至 0edffe3，2026-09-26；YZT-192 更新集成基线至 2330030 并治理设备能力与签名包托管实态，2026-09-27；YZT-199 更新集成基线至 df98fdf6 并治理已审 0.2.1 模拟器安全能力实态，2026-09-27）
+title: TeachersApp1 集成基线与完成契约实态（YZT-131 治理，2026-09-17；YZT-139 更新集成基线至 a67179d，2026-09-18；YZT-142 更新 G01/G02 指针，2026-09-18；YZT-154 更新集成基线至 83ba4a5，2026-09-18；YZT-163 更新集成基线至 b058b44，2026-09-18；YZT-167 更新集成基线至 c87be89，2026-09-18；YZT-177 更新集成基线至 914e367，2026-09-22；YZT-182 更新集成基线至 0edffe3，2026-09-26；YZT-192 更新集成基线至 2330030 并治理设备能力与签名包托管实态，2026-09-27；YZT-199 更新集成基线至 df98fdf6 并治理已审 0.2.1 模拟器安全能力实态，2026-09-27；YZT-204 治理当前签名包托管实态至 YZT-202 0.1.0 世代，2026-09-27）
 
 statement: >
   as-of 2026-09-17（YZT-131 治理核验）：origin/develop = 本地 develop =
@@ -558,6 +558,70 @@ statement: >
   边界与设备/签名/发布边界亦均未被本批改动。本条既不改写 FACT-TAPP1-000002 的既有
   supersession 链，本批也不新增 supersession。
 
+  YZT-204 更新（2026-09-27 UTC 治理批次，只治理当前签名包托管实态与其证据，不改写上文任何
+  历史叙述，也不把任何构建/验签结论升格为平台 PASS）：当前被托管的 debug 签名 App/Test 对已由
+  87f10ad 世代更换为 implementation / teachers-app1-yzt-202-a03-signed-hap-custody / 0.1.0
+  （04 Software Engineer，任务 multica://issue/YZT-202，最终评论
+  01a0e306-e8a2-7d7e-bb04-169214aa34fc；被审 envelope 声明 artifact_type implementation、
+  artifact_id teachers-app1-yzt-202-a03-signed-hap-custody、version 0.1.0、owner_role
+  software-engineer、status ready_for_review、locator
+  git://yann9596/teachers-app-one@f425aa2aad1bc2bab4b5fbca1cb730a6001fb8eb、based_on
+  implementation / teachers-app1-harmonyos-device-capabilities / 0.2.1）。该对被 05 Delivery
+  Reviewer 独立 R1（YZT-203，最终评论 01a0e316-bf1e-7832-a012-43dce4fe47a4）判定 verdict
+  APPROVE、Required Changes NONE、Challenges NONE，并在其 YZT-188 消费准入评估中判定可用于私有
+  app1-emulator 预检；设备执行仍为 NOT_RUN。本批的来源是该 producer 交付、该独立审查、私有托管
+  字节的本机复算与被审 envelope，不新增产品提交、不改任何 Norm。
+  构建基线与等价性（本批在 D:\AI\projects\TeachersApp1 独立只读实测）：源提交 f425aa2 的父提交
+  即当前已集成 develop df98fdf6c331084bfa1b3bd49ee3e2a78aae3404，git diff df98fdf6 f425aa2
+  为空（该 baseline 未改产品树），df98fdf6:build-profile.json5 的 signingConfigs 仍为 []，
+  私钥、证书链与密码仍只在未跟踪私有目录，Git 树与平台附件零凭证泄漏。已知偏差保留：源快照含
+  未提交的 AGENTS.md runtime 补丁，HEAD blob 快照与之不同。
+  当前托管字节（本批在规范目录
+  D:/AI/projects/TeachersApp1/.ai/local/capability-review/f425aa2aad1bc2bab4b5fbca1cb730a6001fb8eb/
+  与任务目录 D:/AI/projects/TeachersApp1/.ai/local/signing-readiness/YZT-202/0.1.0/ 两处逐字节
+  复算，两处一致，且与交付、审查及被审 envelope 的声明逐字一致）：App HAP SHA256
+  a36672ab5b07cf3601558bcb784ea1a9bc309836b2581f6648e86798e10609e8（159,978 B）、Test HAP
+  SHA256 42f3650b89dc302de1b22b2ee562e76b50f017b0764cea190221a58f04023934（2,172,691 B）、
+  hap-manifest.json SHA256 41db1493bc9f6b1957e07f4841dfbb3f1357227cf1412bf2bbec1c232aaa43c6
+  （1,205 B）、evidence.json SHA256
+  d49d53785cc3c1d216ce0fb5c4c2851e01001b322cfbe12a9686eedabe88ba54（3,809 B）、源快照 SHA256
+  5c3f4ade9e7ebad4e5ba4a51595206dbda60d457e465ca698401cc5d013055a7、实现报告 report.md SHA256
+  d6a7a37d35d86524282d3c3260a791b3a677d512bf635065497023ac8c5dd6fc、构建 run id
+  80120ee03dea4b958187056cdc54a86c。
+  被独立核验的结论（只到 04 交付与 05 审查实际覆盖的范围）：以 DevEco SDK hap-sign-tool.jar
+  （a434b6747e6c5d0b14e73837a46b39f4816ab25b42d1833d6f767bf867cf616d）对 App 与 Test 分别
+  verify-app 与 verify-profile 均 exit 0、verify success、Digest verify result true、
+  verifiedPassed true；profile 为 bundle teachers.app.one、type debug、apl normal、app-feature
+  hos_normal_app、有效期 1790472109～1822008109、device-ids 计数 2（UDID 不发表）；module.json
+  模块名 App entry / Test entry_test、bundleName teachers.app.one、debug true、minAPIVersion
+  60101024、targetAPIVersion 260000026、compileSdkVersion 26.0.0.105；独立解包 ets/modules.abc
+  字节码确认新 Test HAP 含 APP1_A03_EVIDENCE、emitA03Evidence、a03DevicePhaseA、
+  a03DevicePhaseB，新 App HAP 不含，而历史 87f10ad Test HAP（49053705…）含 Phase A/B 但 0 处
+  匹配 APP1_A03_EVIDENCE 与 emitA03Evidence——这既证实重建的必要性，也把"含 A03 证据串"限定为
+  字节码层事实，不是执行事实。
+  不得由本条读出的结论（NOT_RUN / NOT_READY 边界，本批未执行任何设备动作）：构建/验签 PASS 不是
+  模拟器安装 PASS、不是 A03 执行 PASS、不是 relationalStore PASS，也不是真机适配或 bundle/profile
+  兼容性结论；模拟器安装、定向清理、安装/覆盖/卸载、UI 走查、instrument、A03 双阶段协议执行、
+  hdc 调用、模拟器 inspect、profile device-ids 对 live app1-emulator UDID 的匹配、真机 Pura X
+  （VDE-AL00）、平台 relationalStore V01–V10、A03 真实跨进程重启、A08 真实硬件竞争、L1 真机断言、
+  签名生效、发布与 R2 仍全部 NOT_RUN；宿主单测、能力策略与仓库检查、离线预检也不得冒充平台
+  持久化 PASS。
+  历史叙述保留（只改读法，不改任何历史事实）：上文 YZT-199 段的"已签名可安装 HAP 仍 NOT_READY，
+  本批接管的签名包托管散列仍是 0.1.0 世代（source_commit 87f10ad）"与 YZT-192 段的 87f10ad
+  世代散列（App 500545ac…、Test 49053705…、清单 7b44280b…）均保留为其各自 as-of 时点的正确实态；
+  自本段起，当前被托管对只读为上述 YZT-202 0.1.0 世代（源 f425aa2，父提交即 df98fdf6），87f10ad
+  世代与更早的仓内盘点 1497a0cc…/361419ba…、4389f67 私有清单 fff572a2…、YZT-186/187 的
+  F9EA6C85… 只作历史本机证据，不再读作当前被托管对，也不得冒充最终被审字节。"该对是否可安装 /
+  已安装 / 平台已验收"仍未被证明，故本段只改"当前托管哪一对"，不改"是否已被接纳为可安装"。
+  本条其余内容继续 current 且不被本更新改变：YZT-195 对 0.2.0 的 CHANGES_REQUIRED 原判、0.2.1
+  的被审等价性与"授权前提 / 执行结果"分离、用户 member 评论
+  01a0e17a-f577-7767-af5c-83d33e5ba9bf 的有限清理授权（严格限定经核验私有 app1-emulator 上精确
+  teachers.app.one 的数据；YZT-202 未使用该授权，它也不是执行结果）、develop df98fdf6 领先 main
+  558fdc93 四十个提交与 main 合并仍待用户精确授权、授权分层、公共完成契约 parent-handoff-wake
+  （75a9e56364c32dfeca9d20438e5228bb0d9e9d3c）、本机能力策略、G01/G02/G06 产品 Norm、不继承
+  旧 app1、Axiomem 公开上传边界与设备/签名/发布边界。本条既不改写 FACT-TAPP1-000002 的既有
+  supersession 链，本批也不新增 supersession。
+
 scope:
   type: project
   project_id: teachers-app1
@@ -827,6 +891,30 @@ verified_against:
     revision: 2026-09-27T06:08:46Z
     paths:
       - 01a0e17a-f577-7767-af5c-83d33e5ba9bf
+  - source_ref: multica://issue/YZT-202
+    revision: final-comment-01a0e306-e8a2-7d7e-bb04-169214aa34fc
+    paths:
+      - 01a0e306-e8a2-7d7e-bb04-169214aa34fc
+      - specs/yzt-202-signed-hap-custody/artifact-envelope.json
+      - specs/yzt-202-signed-hap-custody/implementation-report.md
+  - source_ref: multica://issue/YZT-203
+    revision: final-comment-01a0e316-bf1e-7832-a012-43dce4fe47a4
+    paths:
+      - 01a0e316-bf1e-7832-a012-43dce4fe47a4
+  - source_ref: multica://comment/01a0e306-e8a2-7d7e-bb04-169214aa34fc
+    revision: 2026-09-27T13:21:15Z
+    paths:
+      - 01a0e306-e8a2-7d7e-bb04-169214aa34fc
+  - source_ref: multica://comment/01a0e316-bf1e-7832-a012-43dce4fe47a4
+    revision: 2026-09-27T13:38:33Z
+    paths:
+      - 01a0e316-bf1e-7832-a012-43dce4fe47a4
+  - source_ref: repo://teachers-app-one@f425aa2aad1bc2bab4b5fbca1cb730a6001fb8eb/specs/yzt-202-signed-hap-custody/artifact-envelope.json
+    revision: f425aa2aad1bc2bab4b5fbca1cb730a6001fb8eb
+    paths:
+      - specs/yzt-202-signed-hap-custody/artifact-envelope.json
+      - specs/yzt-202-signed-hap-custody/implementation-report.md
+      - build-profile.json5
 source_refs:
   - repo://teachers-app-one@a67179dfc02f0461a7962dcc697161395c5deb76/docs/governance/version-control.md
   - repo://teachers-app-one@a67179dfc02f0461a7962dcc697161395c5deb76/docs/README.md
@@ -932,6 +1020,12 @@ source_refs:
   - multica://comment/01a0e289-0997-74fa-84f3-1306b9b80171
   - multica://comment/01a0e292-26ea-74c0-8d21-a39fd3849466
   - multica://comment/01a0e17a-f577-7767-af5c-83d33e5ba9bf
+  - multica://issue/YZT-202
+  - multica://issue/YZT-203
+  - multica://comment/01a0e306-e8a2-7d7e-bb04-169214aa34fc
+  - multica://comment/01a0e316-bf1e-7832-a012-43dce4fe47a4
+  - repo://teachers-app-one@f425aa2aad1bc2bab4b5fbca1cb730a6001fb8eb/specs/yzt-202-signed-hap-custody/artifact-envelope.json
+  - repo://teachers-app-one@f425aa2aad1bc2bab4b5fbca1cb730a6001fb8eb/specs/yzt-202-signed-hap-custody/implementation-report.md
 relations:
   conflicts_with: []
   supersedes:
@@ -951,5 +1045,5 @@ review:
   triggered_at: null
 
 created_at: 2026-09-17T14:00:00Z
-verified_at: 2026-09-27T12:11:10Z
-updated_at: 2026-09-27T12:11:10Z
+verified_at: 2026-09-27T13:55:00Z
+updated_at: 2026-09-27T13:55:00Z

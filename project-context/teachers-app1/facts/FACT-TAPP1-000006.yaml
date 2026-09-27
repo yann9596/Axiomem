@@ -170,6 +170,19 @@ statement: >
    上传）完全不变；集成基线推进、设备/签名实态与清理授权边界以 FACT-TAPP1-000003 的 YZT-199
    更新段为准，本条不重复承载。
 
+   YZT-204 指针（2026-09-27 UTC 治理批次，只加指针、不改写上文任何历史叙述，也不复核 P01 的
+   任何平台结论）：本条上文 YZT-192 与 YZT-199 两段中"最终签名包托管（App/Test HAP 散列与验签
+   证据）"的指针保留为其各自 as-of 时点的含义；自本批起，当前被托管的签名对已更换为
+   implementation / teachers-app1-yzt-202-a03-signed-hap-custody / 0.1.0（源提交 f425aa2 的父
+   提交即已集成基线 df98fdf6，本批实测 git diff df98fdf6 f425aa2 为空，故 entry/src/main 与
+   build-profile.json5 的 signingConfigs=[] 与 df98fdf6 同；经 05 独立 R1 APPROVE，见
+   multica://issue/YZT-203 最终评论 01a0e316-bf1e-7832-a012-43dce4fe47a4），精确散列、验签证据
+   与 NOT_RUN 清单以 FACT-TAPP1-000003 的 YZT-204 更新段为准。本批未复核本条上文的 Norm、
+   Reality 与 pending 三段：平台准入 A/B 仍未选择，HarmonyOS relationalStore 真实 V01–V10、
+   A03 真实跨进程重启、A08 真实硬件竞争、L1 真机断言、安装、UI 走查、签名生效、发布与 R2 仍
+   全部 NOT_RUN；签名对已重建不得读作可安装、安装 PASS 或平台持久化 PASS，本条 pending 段完全
+   不变。
+
 scope:
   type: project
   project_id: teachers-app1
@@ -307,6 +320,15 @@ verified_against:
     revision: 2026-09-27T06:08:46Z
     paths:
       - 01a0e17a-f577-7767-af5c-83d33e5ba9bf
+  - source_ref: multica://issue/YZT-202
+    revision: final-comment-01a0e306-e8a2-7d7e-bb04-169214aa34fc
+    paths:
+      - 01a0e306-e8a2-7d7e-bb04-169214aa34fc
+      - specs/yzt-202-signed-hap-custody/artifact-envelope.json
+  - source_ref: multica://issue/YZT-203
+    revision: final-comment-01a0e316-bf1e-7832-a012-43dce4fe47a4
+    paths:
+      - 01a0e316-bf1e-7832-a012-43dce4fe47a4
 source_refs:
   - multica://issue/YZT-141
   - multica://issue/YZT-145
@@ -349,6 +371,10 @@ source_refs:
   - multica://issue/YZT-199
   - multica://comment/01a0e289-0997-74fa-84f3-1306b9b80171
   - multica://comment/01a0e17a-f577-7767-af5c-83d33e5ba9bf
+  - multica://issue/YZT-202
+  - multica://issue/YZT-203
+  - multica://comment/01a0e306-e8a2-7d7e-bb04-169214aa34fc
+  - multica://comment/01a0e316-bf1e-7832-a012-43dce4fe47a4
 relations:
   conflicts_with: []
   supersedes: []
@@ -361,5 +387,5 @@ review:
   triggered_at: null
 
 created_at: 2026-09-18T01:35:00Z
-verified_at: 2026-09-27T12:11:10Z
-updated_at: 2026-09-27T12:11:10Z
+verified_at: 2026-09-27T13:55:00Z
+updated_at: 2026-09-27T13:55:00Z
