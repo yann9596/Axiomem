@@ -1,7 +1,7 @@
 schema_version: "1.1"
 kind: current_fact
 id: FACT-TAPP1-000006
-title: P01 relationalStore 接入设计已审并被 01 接受；实现 0.1.1 已独立 R1（限定可编译准备）并集成 develop 83ba4a5，平台未验证（YZT-146 治理，2026-09-18；YZT-154 更新，2026-09-18；YZT-192 复核 2330030 上 P01 生产入口与平台边界不变，2026-09-27；YZT-199 复核 df98fdf6 上 P01 生产入口与平台边界不变并分离清理授权与执行结果，2026-09-27）
+title: P01 relationalStore 接入设计已审并被 01 接受；实现 0.1.1 已独立 R1（限定可编译准备）并集成 develop 83ba4a5，平台未验证（YZT-146 治理，2026-09-18；YZT-154 更新，2026-09-18；YZT-192 复核 2330030 上 P01 生产入口与平台边界不变，2026-09-27；YZT-199 复核 df98fdf6 上 P01 生产入口与平台边界不变并分离清理授权与执行结果，2026-09-27；YZT-211 复核 632368ac 上 P01 生产入口与平台边界不变并分离 0.2.2 只读身份能力与 scoped live 证据，2026-09-27）
 
 statement: >
   as-of 2026-09-18（YZT-146 治理核验）。 Norm（已审设计基线，仅权威指针，不复制设计正文，
@@ -183,6 +183,27 @@ statement: >
    全部 NOT_RUN；签名对已重建不得读作可安装、安装 PASS 或平台持久化 PASS，本条 pending 段完全
    不变。
 
+   YZT-211 复核（2026-09-27 UTC 治理批次，只加指针、不改写上文任何历史叙述，也不复核 P01 的
+   任何平台结论）：本批在已集成基线 632368ac2577befec68be0867210c385ebe12f59 上只读复核，
+   本条上文的 Norm、Reality 与 pending 三段继续 current 且一字未改：git diff --stat
+   df98fdf6..632368ac -- entry/src/main 为空，
+   entry/src/main/ets/entryability/EntryAbility.ets 在两提交同为 blob
+   6dd239c6b166034260d87d564b4caaa71d529cef，即生产入口仍未接入 RdbS1Store /
+   P01PlatformSupport / S1Session / S1SchemaGuard；共享 build-profile.json5 的 signingConfigs
+   在 632368ac 仍为 []。本批新治理的实态——已审并集成的 implementation /
+   teachers-app1-harmonyos-device-capabilities / 0.2.2（源 4bbf3e4e、报告 98cdccc4、信封
+   36782718，YZT-208 R1 APPROVE 限定 APPROVE_AS_DEVICE_CAPABILITY_READONLY_LIVE_IDENTITY）
+   与其只读 live 身份边界——记于 FACT-TAPP1-000003 的 YZT-211 更新段，不改变 P01 的平台执行
+   边界：平台准入 A/B 仍未选择；HarmonyOS relationalStore 真实 V01–V10、A03 真实跨进程重启、
+   A08 真实硬件竞争、L1 真机断言、安装、UI 走查、签名生效、发布与 R2 仍全部 NOT_RUN，宿主
+   SQLite 探针、FakeStore 与 Hypium 仍不得冒充平台持久化 PASS。0.2.2 新增的只读身份动作与
+   YZT-207 producer 的 scoped live PASS 同样不是安装、relationalStore 或真机结论：Stage 90
+   multica://issue/YZT-210 须在集成基线上就当前私有 app1-emulator、provider 路由与 YZT-202 双
+   debug profile 归属重新独立核验，其结果不得被本条或前一轮 producer 证据预先认定。本条
+   pending 段（平台准入 A/B、设备与签名、真实数据、v1 库迁移执行或清库、产品 main 合并与
+   Axiomem 公开上传）完全不变；集成基线推进、被审等价性与设备/签名实态以 FACT-TAPP1-000003
+   的 YZT-211 更新段为准，本条不重复承载。
+
 scope:
   type: project
   project_id: teachers-app1
@@ -329,6 +350,28 @@ verified_against:
     revision: final-comment-01a0e316-bf1e-7832-a012-43dce4fe47a4
     paths:
       - 01a0e316-bf1e-7832-a012-43dce4fe47a4
+  - source_ref: repo://teachers-app-one@632368ac2577befec68be0867210c385ebe12f59/entry/src/main/ets/entryability/EntryAbility.ets
+    revision: 632368ac2577befec68be0867210c385ebe12f59
+    paths:
+      - entry/src/main/ets/entryability/EntryAbility.ets
+      - build-profile.json5
+  - source_ref: repo://teachers-app-one@632368ac2577befec68be0867210c385ebe12f59/specs/harmonyos-device-capabilities/artifact-envelope.json
+    revision: 632368ac2577befec68be0867210c385ebe12f59
+    paths:
+      - specs/harmonyos-device-capabilities/artifact-envelope.json
+      - scripts/capabilities/device.py
+  - source_ref: multica://issue/YZT-208
+    revision: final-comment-01a0e3fe-05dc-7a65-bcfe-c6702bef916c
+    paths:
+      - 01a0e3fe-05dc-7a65-bcfe-c6702bef916c
+  - source_ref: multica://issue/YZT-210
+    revision: stage-90-fresh-emulator-identity-recheck-pending
+    paths:
+      - description
+  - source_ref: multica://comment/01a0e3fe-05dc-7a65-bcfe-c6702bef916c
+    revision: 2026-09-27T17:51:10Z
+    paths:
+      - 01a0e3fe-05dc-7a65-bcfe-c6702bef916c
 source_refs:
   - multica://issue/YZT-141
   - multica://issue/YZT-145
@@ -375,6 +418,17 @@ source_refs:
   - multica://issue/YZT-203
   - multica://comment/01a0e306-e8a2-7d7e-bb04-169214aa34fc
   - multica://comment/01a0e316-bf1e-7832-a012-43dce4fe47a4
+  - repo://teachers-app-one@632368ac2577befec68be0867210c385ebe12f59/entry/src/main/ets/entryability/EntryAbility.ets
+  - repo://teachers-app-one@632368ac2577befec68be0867210c385ebe12f59/build-profile.json5
+  - repo://teachers-app-one@632368ac2577befec68be0867210c385ebe12f59/specs/harmonyos-device-capabilities/artifact-envelope.json
+  - repo://teachers-app-one@632368ac2577befec68be0867210c385ebe12f59/scripts/capabilities/device.py
+  - multica://issue/YZT-207
+  - multica://issue/YZT-208
+  - multica://issue/YZT-209
+  - multica://issue/YZT-210
+  - multica://issue/YZT-211
+  - multica://comment/01a0e36e-f64f-703a-a47a-fcba54f34337
+  - multica://comment/01a0e3fe-05dc-7a65-bcfe-c6702bef916c
 relations:
   conflicts_with: []
   supersedes: []
@@ -387,5 +441,5 @@ review:
   triggered_at: null
 
 created_at: 2026-09-18T01:35:00Z
-verified_at: 2026-09-27T13:55:00Z
-updated_at: 2026-09-27T13:55:00Z
+verified_at: 2026-09-27T18:12:00Z
+updated_at: 2026-09-27T18:12:00Z
