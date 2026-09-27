@@ -1,7 +1,7 @@
 schema_version: "1.1"
 kind: current_fact
 id: FACT-TAPP1-000006
-title: P01 relationalStore 接入设计已审并被 01 接受；实现 0.1.1 已独立 R1（限定可编译准备）并集成 develop 83ba4a5，平台未验证（YZT-146 治理，2026-09-18；YZT-154 更新，2026-09-18）
+title: P01 relationalStore 接入设计已审并被 01 接受；实现 0.1.1 已独立 R1（限定可编译准备）并集成 develop 83ba4a5，平台未验证（YZT-146 治理，2026-09-18；YZT-154 更新，2026-09-18；YZT-192 复核 2330030 上 P01 生产入口与平台边界不变，2026-09-27）
 
 statement: >
   as-of 2026-09-18（YZT-146 治理核验）。 Norm（已审设计基线，仅权威指针，不复制设计正文，
@@ -129,6 +129,23 @@ statement: >
    也不改写它们的正文、来源与 pending 边界；集成基线推进由 FACT-TAPP1-000003 的 YZT-154
    更新段承接，本条只承接 P01 实现与验证边界。
 
+   YZT-192 复核（2026-09-27 UTC 治理批次，只加指针、不改写上文任何历史叙述）：本批在已集成
+   基线 2330030fe9b18947af464ff08ce097f0b10d84bd 上只读复核，本条上文的 Norm、Reality 与
+   pending 三段继续 current 且一字未改：git diff --stat 0edffe3..2330030 -- entry/src/main
+   为空，2330030 与 0edffe3 的 entry/src/main tree 同为
+   28c6a466ea2528879def837eebb6e75891c88508、entry/src/main/ets/entryability/EntryAbility.ets
+   同为 blob 6dd239c6b166034260d87d564b4caaa71d529cef，即生产入口仍未接入 RdbS1Store /
+   P01PlatformSupport / S1Session / S1SchemaGuard；共享 build-profile.json5 的 signingConfigs
+   在 2330030 仍为 []。本批新治理的两项实态——"项目 harmonyos-device 能力开关在已集成源码中为
+   true"与最终签名包托管（App/Test HAP 散列与验签证据）——均记于 FACT-TAPP1-000003 的 YZT-192
+   更新段，不改变 P01 的平台执行边界：平台准入 A/B 仍未选择；HarmonyOS relationalStore 真实
+   V01–V10、A03 真实跨进程重启、A08 真实硬件竞争、L1 真机断言、安装、UI 走查、签名生效、发布
+   与 R2 仍全部 NOT_RUN，宿主 SQLite 探针、FakeStore 与 Hypium 仍不得冒充平台持久化 PASS。
+   设备能力开关置 ON 只说明项目策略、绑定与脚本已入版本控制，既不证明 provider 可真实调用，
+   也不构成设备、安装或签名生效的授权。本条 pending 段（平台准入 A/B、设备与签名、真实数据、
+   v1 库迁移执行或清库、产品 main 合并与 Axiomem 公开上传）完全不变；集成基线推进与设备/签名
+   实态以 FACT-TAPP1-000003 的 YZT-192 更新段为准，本条不重复承载。
+
 scope:
   type: project
   project_id: teachers-app1
@@ -223,6 +240,26 @@ verified_against:
     revision: 83ba4a508d97f00f5cfdc326c88fc5c78481299b
     paths:
       - specs/p01-platform-storage/artifact-envelope.json
+  - source_ref: repo://teachers-app-one@2330030fe9b18947af464ff08ce097f0b10d84bd/entry/src/main/ets/entryability/EntryAbility.ets
+    revision: 2330030fe9b18947af464ff08ce097f0b10d84bd
+    paths:
+      - entry/src/main/ets/entryability/EntryAbility.ets
+      - build-profile.json5
+  - source_ref: multica://issue/YZT-190
+    revision: final-comment-01a0e120-bda2-7984-9f8e-67015648e9fd
+    paths:
+      - artifact-envelope.json
+      - implementation-report.md
+  - source_ref: multica://issue/YZT-191
+    revision: final-comment-01a0e133-5835-70c1-bb10-61aac2fd25e3
+    paths:
+      - YZT-190-R1-delivery-review.md
+      - delivery-review-envelope.json
+  - source_ref: multica://issue/YZT-192
+    revision: stage-73-governance-batch
+    paths:
+      - description
+      - acceptance-and-stop
 source_refs:
   - multica://issue/YZT-141
   - multica://issue/YZT-145
@@ -253,6 +290,12 @@ source_refs:
   - multica://comment/01a0b2dc-8b61-7071-91c9-93c4c2f8abfc
   - multica://comment/01a0b2ee-dee3-77cd-8aba-d8e3b41b9b25
   - multica://comment/01a0b301-b4c3-7e8b-be04-e889b06e36fb
+  - repo://teachers-app-one@2330030fe9b18947af464ff08ce097f0b10d84bd/entry/src/main/ets/entryability/EntryAbility.ets
+  - multica://issue/YZT-190
+  - multica://issue/YZT-191
+  - multica://issue/YZT-192
+  - multica://comment/01a0e120-bda2-7984-9f8e-67015648e9fd
+  - multica://comment/01a0e133-5835-70c1-bb10-61aac2fd25e3
 relations:
   conflicts_with: []
   supersedes: []
@@ -265,5 +308,5 @@ review:
   triggered_at: null
 
 created_at: 2026-09-18T01:35:00Z
-verified_at: 2026-09-18T05:48:32Z
-updated_at: 2026-09-18T05:48:32Z
+verified_at: 2026-09-27T05:05:00Z
+updated_at: 2026-09-27T05:05:00Z

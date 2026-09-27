@@ -46,6 +46,15 @@ confirmed:
       平台存储接入的四个已审提交 b8c4fd9/fd7f079/4c8a35d/83ba4a5），develop 现领先 main
       558fdc93 十二个提交；逐提交归属、证据与 NOT_RUN 边界以 FACT-TAPP1-000003 的 YZT-154
       更新段为准。
+      YZT-192 更新（2026-09-27 UTC 治理批次）：本条上文的集成基线 as-of 叙述保留为历史时点；
+      当前集成基线已由 0edffe3 推进为 origin/develop = refs/remotes/origin/develop = 本机
+      refs/heads/develop = 2330030fe9b18947af464ff08ce097f0b10d84bd（新增六个提交，含经 05 独立
+      R1 的 implementation / teachers-app1-harmonyos-device-capabilities / 0.1.0 与 custody 合并），
+      develop 现领先 main 558fdc93 三十一个提交；逐提交归属、被审等价性、签名包托管散列与
+      NOT_RUN/BLOCKED 边界以 FACT-TAPP1-000003 的 YZT-192 更新段为准。本条上文的"device OFF"
+      同样保留为其各自 as-of 时点的正确实态；自本批起只改读为"项目 harmonyos-device 能力开关在
+      已集成源码中为 true（本项目、software-engineer 与 qa 两角色）"，设备可用、平台已验收与真机
+      已适配仍为 NOT_RUN，二者不得互推（见 cp-confirmed-016）。
     refs:
       - repo://teachers-app-one@a67179dfc02f0461a7962dcc697161395c5deb76/docs/README.md
       - repo://teachers-app-one@a67179dfc02f0461a7962dcc697161395c5deb76/docs/product/product-expectations.md
@@ -560,6 +569,67 @@ confirmed:
       - FACT-TAPP1-000003
       - FACT-TAPP1-000006
 
+  - id: cp-confirmed-016
+    summary: >
+      HarmonyOS 设备能力接入与最终签名包托管已独立 R1 验收并被 01 接收集成 develop 2330030，
+      但设备执行仍阻断（YZT-192 治理，2026-09-27 UTC）：implementation /
+      teachers-app1-harmonyos-device-capabilities / 0.1.0（04 Software Engineer，YZT-190 最终评论
+      01a0e120-bda2-7984-9f8e-67015648e9fd；envelope version 0.1.0、owner_role software-engineer、
+      locator git://yann9596/teachers-app-one@87f10ad3368855839a72420cde377ded5ae661e5）经 05
+      Delivery Reviewer 独立 R1（YZT-191 最终评论 01a0e133-5835-70c1-bb10-61aac2fd25e3；报告
+      YZT-190-R1-delivery-review.md SHA256
+      850a73b373894e4bd333691f8133ce3d0852393805bcbaa0a835403d52411b42、审查信封
+      delivery-review-envelope.json SHA256
+      5a6487f61efb2eb702f4c9d4ef160d9d926fa6c684fedb4d54eb3b7684b5f499）verdict APPROVE、限定
+      APPROVE_AS_DEVICE_CAPABILITY_AND_SIGNING_CUSTODY、Required Changes NONE、Challenges NONE；
+      01 接受该限定结论并把远端 develop 由 0edffe33e15292bb52aceca204514313750a3205 非强制快进至
+      2330030fe9b18947af464ff08ce097f0b10d84bd（本批实测 origin/develop、
+      refs/remotes/origin/develop 与本机 develop 三者一致，六个提交，entry/src/main 逐字节未变）。
+      范围：只接管源码、能力脚本（scripts/capabilities/device.py、signing.py、run.py）、隐私分离
+      结构、绑定与规格，以及最终 debug 签名 App/Test HAP 的托管；.ai/project-capabilities.json 的
+      harmonyos-device.enabled 由 false 改为 true（本项目、software-engineer 与 qa 两角色，
+      binding_ref = specs/bootstrap/capability-binding.json）。
+      签名包托管实态：私有目录
+      D:/AI/projects/TeachersApp1/.ai/local/capability-review/87f10ad3368855839a72420cde377ded5ae661e5/
+      的 hap-manifest.json SHA256
+      7b44280bb59428a6ab7989b9d06d0854a8b5e142996cb25746c37e79c1f064b0、App HAP SHA256
+      500545acb5b8ef1eeb8f644c06773a69e84d940d5daa484ac1cf9efe7bfb90d7（159,979 B）、Test HAP
+      SHA256 49053705331fa281d74eb76947bf0854e760795d60cafcfec1cbb348ca8b74fe（2,173,501 B），
+      由本批逐字节复算并与交付、审查及被审 envelope 一致；05 以官方 hap-sign-tool.jar 的 verify-app
+      与 verify-profile 均 PASS（bundle teachers.app.one、type debug、minAPI 60101024、profile
+      device-ids 计数 2）。共享仓 build-profile.json5 的 signingConfigs 在 2330030 仍为 []，私钥、
+      证书链与密码只在未跟踪私有目录，Git 树与平台附件零凭证泄漏。
+      Reality 与阻断边界（本批未执行任何设备动作）：验签 PASS 不是安装 PASS、不是 relationalStore
+      PASS，也不是目标设备适配结论；设备能力开关在源码中为 ON 只证明项目策略、绑定与脚本已入版本
+      控制，真实 04/06 managed Context/Runner 设备调用仍为 NOT_RUN（TEAM_CALLABLE=NOT_RUN）；
+      模拟器侧只有 producer 本机维护证据（既有 Pura X Max 实例 widefold、HarmonyOS 6.1.1(24)、
+      HDC 127.0.0.1:5555 的枚举/启动/就绪/资源锁/停止本轮自有实例），且该实例已装同包
+      teachers.app.one、数据归属不明，故安装、覆盖、卸载、UI 走查与 instrument 全部 BLOCKED，
+      模拟器结果不得替代真机；A03 双进程宿主协调协议未实现、单独 Phase A/B 被 runner 拒绝
+      （BLOCKED）；真实 Pura X（VDE-AL00）未连接，平台 relationalStore V01–V10、A03 真实跨进程
+      重启、A08 真实硬件竞争、L1 真机断言、安装、UI 走查、发布与 R2 全部 NOT_RUN。历史世代
+      （仓内盘点 App 1497a0cc…/Test 361419ba…、4389f67 私有清单 fff572a2…、YZT-186/187 的 HAP
+      F9EA6C85…）只作历史本机证据、不得冒充最终被审字节；YZT-187 无 verdict 被取消，不是本切片
+      依赖。
+      仍未批准：产品 main 合并（main 仍 558fdc93，develop 领先 31）、真实学生数据、旧库迁移或清库、
+      公开上传与发布、以及其他应用的设备操作。下一步设备执行前必须先解决模拟器同名包数据归属或
+      准备全新干净目标，并补齐 A03 双进程协议与 scoped emulator/provider 绑定及适用审查；Q1–Q6
+      停止边界与 G01/G02/G06、L1 的产品 Norm 一字未改。精确散列、被审等价性与 NOT_RUN 边界以
+      FACT-TAPP1-000003 的 YZT-192 更新段为准，本条目只作摘要与引用。
+    refs:
+      - multica://issue/YZT-190
+      - multica://issue/YZT-191
+      - multica://issue/YZT-192
+      - multica://issue/YZT-116
+      - multica://comment/01a0e120-bda2-7984-9f8e-67015648e9fd
+      - multica://comment/01a0e133-5835-70c1-bb10-61aac2fd25e3
+      - multica://comment/01a0e0fd-eac0-7d81-81dd-0637fa917682
+      - multica://comment/01a0e108-465c-7bf4-93b4-6d3df6edaf0c
+      - repo://teachers-app-one@2330030fe9b18947af464ff08ce097f0b10d84bd/.ai/project-capabilities.json
+      - repo://teachers-app-one@2330030fe9b18947af464ff08ce097f0b10d84bd/specs/harmonyos-device-capabilities/artifact-envelope.json
+      - FACT-TAPP1-000003
+      - FACT-TAPP1-000006
+
 open:
   - id: cp-open-001
     summary: >
@@ -586,6 +656,13 @@ open:
       origin/develop、refs/remotes/origin/develop 与本机 develop 三者一致。本条 main 合并待用户精确
       授权、以及不因等待 main 阻塞已授权工作的边界仍完全不变；设备时间窗仍未确认，不得把"离线包已
       集成"或"用户已选设备并授权操作"推导成 main、签名、安装或发布授权。
+      YZT-192 更新（2026-09-27）：develop 远端与本机已达
+      2330030fe9b18947af464ff08ce097f0b10d84bd（含经独立 R1 的
+      implementation / teachers-app1-harmonyos-device-capabilities / 0.1.0 与 custody 合并，见
+      cp-confirmed-016），领先 main 558fdc93 三十一个已审提交；本批实测 origin/develop、
+      refs/remotes/origin/develop 与本机 develop 三者一致。本条 main 合并待用户精确授权、以及不因
+      等待 main 阻塞已授权工作的边界仍完全不变；"项目 device 能力开关在已集成源码中为 true"或
+      "最终 debug 签名包已托管"都不得推导成 main、安装、真机写入或发布授权。
     refs:
       - repo://teachers-app-one@a67179dfc02f0461a7962dcc697161395c5deb76/docs/governance/version-control.md
       - registry://teachers-app1
@@ -623,6 +700,16 @@ open:
       未写设备；R1 的 3 项 QA 准入门与用户确认的设备时间窗仍未满足，复用该包时不得把离线预检
       READY_OFFLINE、仓库单测 49/49 或宿主探针读作平台持久化 PASS，也不得读作可安装或已验收；本条
       NOT_RUN 边界完全不变。
+      YZT-192 补充（2026-09-27）：设备能力与签名包实态已变更但平台 NOT_RUN 边界不变——项目
+      harmonyos-device 能力开关在已集成源码中为 true（已集成基线
+      2330030fe9b18947af464ff08ce097f0b10d84bd，见 cp-confirmed-016），最终 debug 签名
+      App/Test HAP 已由 05 独立审定托管并以官方工具 verify-app/verify-profile PASS；但那不是执行、
+      不是平台 PASS、也不是可安装适配结论：真实 04/06 managed Context/Runner 设备调用、安装、
+      覆盖、卸载、UI 走查、instrument、平台 relationalStore V01–V10、A03 真实跨进程重启、A08
+      真实硬件竞争、L1 真机断言、真机 Pura X（VDE-AL00）与 R2 仍全部 NOT_RUN，模拟器同名包数据
+      归属未明与 A03 双进程协议缺失使相关设备动作保持 BLOCKED；宿主探针、FakeStore、Hypium 与
+      验签结果都不得冒充平台持久化 PASS。本条 NOT_RUN 边界与"不得以合成探针冒充平台 PASS"
+      完全不变，且设备执行前须先解决数据归属或准备全新干净目标。
     refs:
       - repo://teachers-app-one@a67179dfc02f0461a7962dcc697161395c5deb76/docs/engineering/harmonyos-toolchain.md
       - repo://teachers-app-one@a67179dfc02f0461a7962dcc697161395c5deb76/docs/project-management/mvp-execution-plan.md
@@ -725,6 +812,10 @@ next:
   - 从精确集成基线 0edffe3 继续：YZT-179 真机验收的离线执行包已交付、经 05 独立 R1 限定通过并被 01 内容等价集成 develop（见 cp-confirmed-015）——后续依赖切片与设备关口从该集成版本派发，不使用旧的 914e367、acad7b1、c87be89、b058b44、a67179d、83ba4a5、ba8e32d、main 或历史 Agent 分支
   - 向 YZT-179 / 06 真机验收派发时必须携带 implementation / teachers-app1-yzt-179-offline-execution-pack / 0.1.0 与其 R1 delivery_review / teachers-app1-yzt-180-offline-pack-r1-review / 0.1.0 的精确指针及 APPROVE_AS_OFFLINE_EXECUTION_PACK_PREPARATION 限定、以及 3 项 QA 准入门与用户确认的精确时间窗：只准备材料，不得声明可安装、不得在用户确认前连接设备/安装/写入，A03 必须分两次执行并在宿主 aa force-stop，不得把离线预检 READY_OFFLINE 或宿主探针读作 relationalStore 平台 PASS
   - YZT-182 治理产物（已审离线执行包进入 develop 的 Reality 增量）同样须经 01 派发适用独立 R1、接受、部署并重建索引后，受影响消费者才以其 fresh SELF_CHECK 为准；本子任务 done 不等于已被接受、部署或 indexed，本次候选使用独立 context_package 身份 teachers-app1-yzt-180-offline-pack-integrated-reality-governance，不与前序治理包同身份续版
+  - 从精确集成基线 2330030 继续：HarmonyOS 设备能力接入与最终签名包托管已由 05 独立 R1 限定通过并被 01 接收集成 develop（见 cp-confirmed-016）——后续依赖切片与设备关口从该集成版本派发，不使用旧的 0edffe3、914e367、acad7b1、c87be89、b058b44、a67179d、83ba4a5、ba8e32d、main 或历史 Agent 分支
+  - 向设备/平台切片派发时必须区分四层事实：已批准产品 Norm（G01/G02/G06 与 L1）、已接受并集成的源码/能力实态（harmonyos-device 开关 ON、脚本与绑定、签名包托管散列）、历史 as-of 的 OFF/NOT_READY 叙述、以及真实部署/可调用 provider 状态；"开关 ON"与"验签 PASS"都不得读作 provider 可调用、安装 PASS、relationalStore PASS 或真机适配，须先解决模拟器同名包数据归属或准备全新干净目标并补齐 A03 双进程宿主协议
+  - 依赖该切片的派发必须携带 implementation / teachers-app1-harmonyos-device-capabilities / 0.1.0 与其 R1 delivery_review（YZT-191 最终评论 01a0e133-5835-70c1-bb10-61aac2fd25e3）的精确指针及 APPROVE_AS_DEVICE_CAPABILITY_AND_SIGNING_CUSTODY 限定、最终签名包私有 locator 与散列，并保留 YZT-186/187 旧 HAP 世代与 YZT-187 无 verdict 取消的历史边界
+  - YZT-192 治理产物（设备能力/签名包托管进入 develop 的 Reality 增量）同样须经 01 派发适用独立 R1、接受、部署并重建索引后，受影响消费者才以其 fresh SELF_CHECK 为准；本子任务 done 不等于已被接受、部署或 indexed，本次候选使用独立 context_package 身份 teachers-app1-harmonyos-device-capability-signing-custody-governance，不与前序治理包同身份续版
 
 refs:
   - project.yaml
@@ -752,9 +843,12 @@ refs:
   - multica://issue/YZT-180
   - multica://issue/YZT-181
   - multica://issue/YZT-182
+  - multica://issue/YZT-190
+  - multica://issue/YZT-191
+  - multica://issue/YZT-192
   - FACT-TAPP1-000003
   - FACT-TAPP1-000005
   - FACT-TAPP1-000006
   - migration/retirement/app1-retirement-yzt98.md
 
-updated_at: 2026-09-26T18:40:00Z
+updated_at: 2026-09-27T05:05:00Z
