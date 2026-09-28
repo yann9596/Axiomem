@@ -1,7 +1,7 @@
 schema_version: "1.1"
 kind: current_fact
 id: FACT-TAPP1-000006
-title: P01 relationalStore 接入设计已审并被 01 接受；实现 0.1.1 已独立 R1（限定可编译准备）并集成 develop 83ba4a5，平台未验证（YZT-146 治理，2026-09-18；YZT-154 更新，2026-09-18；YZT-192 复核 2330030 上 P01 生产入口与平台边界不变，2026-09-27；YZT-199 复核 df98fdf6 上 P01 生产入口与平台边界不变并分离清理授权与执行结果，2026-09-27；YZT-211 复核 632368ac 上 P01 生产入口与平台边界不变并分离 0.2.2 只读身份能力与 scoped live 证据，2026-09-27）
+title: P01 relationalStore 接入设计已审并被 01 接受；实现 0.1.1 已独立 R1（限定可编译准备）并集成 develop 83ba4a5，平台未验证（YZT-146 治理，2026-09-18；YZT-154 更新，2026-09-18；YZT-192 复核 2330030 上 P01 生产入口与平台边界不变，2026-09-27；YZT-199 复核 df98fdf6 上 P01 生产入口与平台边界不变并分离清理授权与执行结果，2026-09-27；YZT-211 复核 632368ac 上 P01 生产入口与平台边界不变并分离 0.2.2 只读身份能力与 scoped live 证据，2026-09-27；YZT-216 复核 f0317fc 上 P01 生产入口与平台边界不变并分离 0.2.3 设备包状态分类器与平台执行，2026-09-28）
 
 statement: >
   as-of 2026-09-18（YZT-146 治理核验）。 Norm（已审设计基线，仅权威指针，不复制设计正文，
@@ -204,6 +204,26 @@ statement: >
    Axiomem 公开上传）完全不变；集成基线推进、被审等价性与设备/签名实态以 FACT-TAPP1-000003
    的 YZT-211 更新段为准，本条不重复承载。
 
+   YZT-216 复核（2026-09-28 UTC 治理批次，只加指针、不改写上文任何历史叙述，也不复核 P01 的
+   任何平台结论）：本批在已集成基线 f0317fc214915432139d6264bf077032b0281086 上只读复核，
+   本条上文的 Norm、Reality 与 pending 三段继续 current 且一字未改：git diff --stat
+   d1db2aa..f0317fc -- entry/ 为空，
+   entry/src/main/ets/entryability/EntryAbility.ets 在 d1db2aa、632368ac 与 f0317fc 三处同为
+   blob 6dd239c6b166034260d87d564b4caaa71d529cef，即生产入口仍未接入 RdbS1Store /
+   P01PlatformSupport / S1Session / S1SchemaGuard（本批在该 blob 上直接检索上述标识符为零命中）；
+   共享 build-profile.json5 的 signingConfigs 在 f0317fc 仍为 []。本批新治理的实态——已审并集成
+   的 implementation / teachers-app1-harmonyos-device-capabilities / 0.2.3（源 3773975、报告
+   8007e5c、信封 f0317fc，YZT-215 R1 APPROVE / Required Changes NONE）与其设备 NOT_RUN 边界
+   ——记于 FACT-TAPP1-000003 的 YZT-216 更新段，不改变 P01 的平台执行边界：平台准入 A/B 仍未
+   选择；HarmonyOS relationalStore 真实 V01–V10、A03 真实跨进程重启、A08 真实硬件竞争、L1 真机
+   断言、安装、UI 走查、签名生效、发布与 R2 仍全部 NOT_RUN，宿主 SQLite 探针、FakeStore 与
+   Hypium 仍不得冒充平台持久化 PASS。0.2.3 新增的是设备包状态分类器（JSON `bm dump` 的
+   bundleName 判定与 debug appId 元数据分离），属设备能力脚本层修正，不是安装、relationalStore
+   或真机结论；YZT-188 的历史 BLOCKED 结论（报告提交 5e72ccd，不在 f0317fc 祖先链上）与其
+   NOT_RUN 边界保留，其恢复不在本条范围。本条 pending 段（平台准入 A/B、设备与签名、真实数据、
+   v1 库迁移执行或清库、产品 main 合并与 Axiomem 公开上传）完全不变；集成基线推进、被审等价性
+   与设备/签名实态以 FACT-TAPP1-000003 的 YZT-216 更新段为准，本条不重复承载。
+
 scope:
   type: project
   project_id: teachers-app1
@@ -372,6 +392,26 @@ verified_against:
     revision: 2026-09-27T17:51:10Z
     paths:
       - 01a0e3fe-05dc-7a65-bcfe-c6702bef916c
+  - source_ref: repo://teachers-app-one@f0317fc214915432139d6264bf077032b0281086/entry/src/main/ets/entryability/EntryAbility.ets
+    revision: f0317fc214915432139d6264bf077032b0281086
+    paths:
+      - entry/src/main/ets/entryability/EntryAbility.ets
+      - build-profile.json5
+      - specs/harmonyos-device-capabilities/artifact-envelope.json
+      - scripts/capabilities/device.py
+  - source_ref: multica://issue/YZT-214
+    revision: final-comment-01a0e5a6-c78a-7c89-a1bd-99fae4a4eb6b
+    paths:
+      - 01a0e5a6-c78a-7c89-a1bd-99fae4a4eb6b
+  - source_ref: multica://issue/YZT-215
+    revision: final-comment-01a0e5b9-4a4f-758c-b9d1-97a9467c2b67
+    paths:
+      - 01a0e5b9-4a4f-758c-b9d1-97a9467c2b67
+  - source_ref: multica://issue/YZT-216
+    revision: stage-93-governance-batch
+    paths:
+      - description
+      - Decision
 source_refs:
   - multica://issue/YZT-141
   - multica://issue/YZT-145
@@ -429,6 +469,15 @@ source_refs:
   - multica://issue/YZT-211
   - multica://comment/01a0e36e-f64f-703a-a47a-fcba54f34337
   - multica://comment/01a0e3fe-05dc-7a65-bcfe-c6702bef916c
+  - repo://teachers-app-one@f0317fc214915432139d6264bf077032b0281086/entry/src/main/ets/entryability/EntryAbility.ets
+  - repo://teachers-app-one@f0317fc214915432139d6264bf077032b0281086/build-profile.json5
+  - repo://teachers-app-one@f0317fc214915432139d6264bf077032b0281086/specs/harmonyos-device-capabilities/artifact-envelope.json
+  - repo://teachers-app-one@f0317fc214915432139d6264bf077032b0281086/scripts/capabilities/device.py
+  - multica://issue/YZT-214
+  - multica://issue/YZT-215
+  - multica://issue/YZT-216
+  - multica://comment/01a0e5a6-c78a-7c89-a1bd-99fae4a4eb6b
+  - multica://comment/01a0e5b9-4a4f-758c-b9d1-97a9467c2b67
 relations:
   conflicts_with: []
   supersedes: []
@@ -441,5 +490,5 @@ review:
   triggered_at: null
 
 created_at: 2026-09-18T01:35:00Z
-verified_at: 2026-09-27T18:12:00Z
-updated_at: 2026-09-27T18:12:00Z
+verified_at: 2026-09-28T02:20:00Z
+updated_at: 2026-09-28T02:20:00Z
