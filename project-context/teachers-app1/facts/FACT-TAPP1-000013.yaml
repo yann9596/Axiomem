@@ -1,0 +1,51 @@
+schema_version: "1.1"
+kind: "current_fact"
+id: "FACT-TAPP1-000013"
+title: "D02 M1 已审名单底层合同：稳定身份与迁移停写边界"
+statement: >-
+  D02 design_baseline / teachers-app1-d02-roster-design / 0.1.0-draft（YZT-133，正文 SHA256 9240b3c17ba28fd5825f19a7d445ec0dcc236ffbdf87138a94680f8a758d9b6a）经 YZT-134 R1 APPROVE_AS_DESIGN_BASELINE_INCREMENT、01 在 YZT-135 接受 M1 技术合同。implementation / teachers-app1-d02-m1-roster / 0.1.1 经 YZT-138 独立 R1 APPROVE，并在 YZT-139 集成 a67179dfc02f0461a7962dcc697161395c5deb76；业务源 f84b85391c4bd9c377249caf3759ea5bd9ad43ba。原 locator 4594d558746409a66218d1e36eb21a1448b4b696 为真实祖先，随后由 2c3645a/a67179d 更正；缺陷版 0.1.0-f84b853 只为历史证据，不进当前 Artifact store。原审查/实现谱系不重写。
+
+  已实现底层命令 CreateClass/1、CreateStudent/1、RenameClass/1、RenameStudent/1 及 GetClass/1、GetStudent/1、ReadRosterMutation/1；class_id/student_id 是全库不透明稳定身份，跨班与同班同名不合并，姓名不是主键。改名不改历史 Evidence/Thread/Episode/Capture 回执、不重触发 U01。专用 roster_mutation_receipts 幂等重放提交时快照而不是最新值；写前校验、单事务、expectedRevision CAS 与数据库主键/外键守护不可省略。
+
+  schema2（user_version=2/schema_version=2/contract_id=d02-roster-m1/1）是该 M1 原版本合同，而非当前新建库版本；后继名单追加 schema3/L1 schema4 及 CreateStudent/2 的适用边界见 FACT-TAPP1-000011。已知旧库 MIGRATION_REQUIRED 保留拒写，未知/矛盾结构停写；本次不做 v1 迁移、清库、真实数据、归档、删除、转班或合并。
+
+  M1 是合成底层，不是名单 UI 或 S2 完成。原 A03 是同一 FakeStore 新建仓储实例，原 A08 是顺序 CAS 与宿主 SQLite 文件锁，不能冒充进程重启/真实硬件竞争。DR-01/DR-02 平台注入与错误恢复后续见 FACT-TAPP1-000012，不把原建议称为当时已实现。G01/G02/G06 后续已批准的范围见 FACT-TAPP1-000010；同名 UI/旧名单迁移等未决项、设备/签名/平台/R2/main 边界不因 M1 Review 解除。本条仅整理既有已核验来源；名单身份、合同或库版本变化需重验。
+scope:
+  type: "project"
+  project_id: "teachers-app1"
+  projects: []
+  task_id: null
+domains:
+  - "roster-contract"
+  - "implementation-state"
+  - "identity-integrity"
+repositories:
+  - "teachers-app-one"
+status: "active"
+verification: "verified"
+verified_against:
+  -
+    source_ref: "repo://multica-memory@9213a0e1a8e95e6fc3684e878fe8170846aba76c/project-context/teachers-app1/facts/FACT-TAPP1-000004.yaml"
+    revision: "9213a0e1a8e95e6fc3684e878fe8170846aba76c"
+    paths:
+      - "project-context/teachers-app1/facts/FACT-TAPP1-000004.yaml"
+source_refs:
+  - "repo://multica-memory@9213a0e1a8e95e6fc3684e878fe8170846aba76c/project-context/teachers-app1/facts/FACT-TAPP1-000004.yaml"
+  - "multica://issue/YZT-133"
+  - "multica://issue/YZT-134"
+  - "multica://issue/YZT-138"
+  - "multica://issue/YZT-139"
+  - "repo://teachers-app-one@a67179dfc02f0461a7962dcc697161395c5deb76/specs/d02-m1/artifact-envelope.json"
+relations:
+  conflicts_with: []
+  supersedes:
+    - "FACT-TAPP1-000004"
+  supersedes_note: "主题级替代：来源旧对象正文及来源完整保留为历史；本条只承接标题所列主题。多主题覆盖及退出条件见 docs/repairs/2026-09-28/canonical-migration.json。未新做平台复测或改变产品规范。"
+  drift_of: null
+  norm_reality_conflict: []
+review:
+  reason: null
+  triggered_at: null
+created_at: "2026-09-28T16:00:51Z"
+verified_at: "2026-09-18T00:30:00Z"
+updated_at: "2026-09-28T16:00:51Z"

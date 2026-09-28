@@ -1,0 +1,65 @@
+{
+  "schema_version": "memory-audit-validation/1",
+  "source_baseline": "9213a0e1a8e95e6fc3684e878fe8170846aba76c",
+  "preliminary_docs_ci_head": "c2bdbfeef052b85ec51b3f40b04d8166c22dcc7e",
+  "validation_environment": "isolated Linux source snapshots, Python 3.13.5",
+  "new_regressions": {
+    "index_tests": 22,
+    "repair_tests": 55,
+    "total": 77,
+    "passed": true
+  },
+  "full_baseline": {
+    "tests_run": 1323,
+    "failures": 323,
+    "errors": 117,
+    "skipped": 2,
+    "exit_code": 1
+  },
+  "full_after_core": {
+    "tests_run": 1398,
+    "failures": 323,
+    "errors": 117,
+    "skipped": 2,
+    "exit_code": 1,
+    "note": "Includes 75 new tests; two additional exact source-pin tests were subsequently added and passed in the 77-test focused run. CI reruns the complete final source."
+  },
+  "differential": {
+    "no_new_failed_test_ids": true,
+    "introduced": [],
+    "fixed": [],
+    "failed_test_ids_and_kinds_identical": true,
+    "failed_identity_count": 440,
+    "failed_identity_manifest_sha256": "3eb2c0f9a8fe69b346724f3648d3d4844e673772b647e1a15953aaf66ce8e4a1",
+    "all_tests_passed": false,
+    "same_failure_identity_does_not_prove_same_cause": true
+  },
+  "canonical": {
+    "all_objects_schema_valid": true,
+    "fact_schema_now_checked": true,
+    "authority_gate_passed": false,
+    "isolated_authority_errors": 13,
+    "preexisting_legacy_app1_missing_sources": 7,
+    "isolated_web_imagegen_external_sources": 6,
+    "new_authority_errors": 0,
+    "authority_not_waived": true
+  },
+  "index": {
+    "ok": true,
+    "reason": "index_current",
+    "canonical_revision": "sha256:7cbc1550cc3032f610b73bc4dd4d72f73946ff3039784f0ed6b68abd74bf6f51",
+    "index_build_version": "20260928.1"
+  },
+  "live_platform": "NOT_RUN",
+  "windows_deployment": "NOT_RUN",
+  "independent_review": "NOT_RUN",
+  "project_pause": "PRESERVED",
+  "raw_private_audit_published": false,
+  "network_reads_saved_by_parse_cache": 0,
+  "authoritative_global_freshness_changed": false,
+  "limitations": [
+    "Baseline remains red; no complete-suite PASS claim.",
+    "Only synthetic fixed request calibration is available; original live requests not supplied.",
+    "No live Findings/authority/Artifact or consumer acceptance receipt is asserted."
+  ]
+}

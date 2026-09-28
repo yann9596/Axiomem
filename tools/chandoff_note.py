@@ -647,9 +647,18 @@ def _parse_record(content: str) -> dict:
 def discover_handoff_records(issue_id: str, *, cli: NoteCli | None = None) -> list:
     """Parse every record candidate from the complete-thread read."""
     cli = cli or NoteCli()
+    from handoff_parse_cache import ParseCache, parser_revision
+    cache = getattr(cli, "_handoff_parse_cache", None)
+    if cache is None:
+        cache = ParseCache()
+        cli._handoff_parse_cache = cache
+    revision = parser_revision(Path(__file__).resolve().parents[1])
+    namespace = tuple(str(getattr(cli, k, "")) for k in ("executable", "profile", "workspace_id")) + (str(issue_id),)
     out = []
+    # Always a NEW complete live read: edits, deletions, newer broken records and
+    # server ordering are never resolved from the parse cache.
     for doc in cli.list_full(issue_id):
-        parsed = _parse_record(doc.get("content") or "")
+        parsed = cache.parse(namespace, revision, doc.get("content") or "", _parse_record)
         if parsed.get("not_a_record"):
             continue
         out.append({"comment": comment_provenance(doc), "parsed": parsed})
@@ -764,6 +773,11 @@ def publish_handoff(envelope, *, issue_id: str, prepared_by: str,
     body, record = render_note_record(
         envelope, prepared_by=prepared_by, prepared_at=prepared_at,
         clock=clock, allow_partial=allow_partial)
+    import context_quality
+    try:
+        context_quality.require("envelope", envelope)
+    except (context_quality.ContextBudgetError, context_quality.QualityPolicyError) as exc:
+        raise AdapterError(str(exc)) from exc
 
     if transport_body is not None:
         if not isinstance(transport_body, str) or not transport_body:
@@ -781,6 +795,10 @@ def publish_handoff(envelope, *, issue_id: str, prepared_by: str,
                 "body with its single terminal LF removed",
                 field="transport_body")
     sent = transport_body if transport_body is not None else body
+    try:
+        context_quality.require("transport", sent)
+    except (context_quality.ContextBudgetError, context_quality.QualityPolicyError) as exc:
+        raise AdapterError(str(exc)) from exc
 
     if parent_comment_id is not None:
         _require_text(parent_comment_id, "parent_comment_id")

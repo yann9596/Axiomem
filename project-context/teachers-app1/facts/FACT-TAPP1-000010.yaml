@@ -1,0 +1,52 @@
+schema_version: "1.1"
+kind: "current_fact"
+id: "FACT-TAPP1-000010"
+title: "已批准 G01/G02/G06 的来源、未决选项与产品边界"
+statement: >-
+  这是用户已批准产品语义的来源事实，不是新增 Rule 或再次批准设计。YZT-142 保存的决定为 UTC 2026-09-17T23:51:17Z 用户明确选择 1A/2A/3A/4A，原决定消息 01a0b1c8-1dd8-7786-a545-8f08f791b031、选项消息 01a0b1c4-9c18-782a-b1ed-4f31de3d68c8，approval-source.json SHA256 9b664b513775997cb4b7025b9454109394d8ab15aded7310577b82a4ac7d6856。候选设计全文、设计者建议和技术实现都不能替代该批准来源。
+
+  已批准：G01 限语文学科作业完成情况，按独立观察计数，不要求教师填写作业身份；同一作业多次观察也可计数。当前阶段末尾同向负向观察达到 1/2/3 次分别建议待再看/重复出现/持续关注，正向 1–2 为改善中、3 为已缓解；换向重新计同向段，无新记录不自动变化，教师判断不受阈值限制。G02 只有教师明确 resolved 或 teacher_stopped 才关闭阶段，系统的已缓解只是建议、不自动关闭、不设教师关闭的观察次数门槛；正向观察同样保留；历史时间归属不清的补记保留输入等待明确核对。新观察可建新阶段，不改写旧阶段。G06 名单按添加顺序，新学生放班尾，改名或新增学情不改变位置。
+
+  仍未批准：按不同作业计数、有限自动关闭、拖动排序、同班同名 UI 区分、归档/删除/转班/合并、旧名单与旧库迁移、真实数据操作。S2 已接受的候选技术设计不能整体升为产品批准。现有数据层实现参见 FACT-TAPP1-000011，底层名单身份参见 FACT-TAPP1-000013。
+
+  Q1：同观察时间混向返回 UNAVAILABLE/OBSERVATION_ORDER_UNRESOLVED，不用 ID 排序伪造先后。Q2：生产时间适配、历史目标归属及 opened_at 语义未定，无法判定须 HISTORICAL_TARGET_REQUIRED/TIME_CONTEXT_UNRESOLVED，不回写旧行。Q3：Undo/纠错 G03 生产入口关闭，正向记录不抵消错误。Q4：FollowUp 再出现节奏、教师调整合并、补记草稿跨进程/切班恢复未定，不以假 Evidence 存草稿。Q5：同名 UI 与旧名单迁移未定。Q6：L1 DDL/回执技术合同已给定且有合成实现，不再称未设计；平台、真机、签名及发布仍须独立准入。各 Q 只阻断其依赖分支，不凭此扩大为全产品门；当前用户主动暂停另行有效。
+
+  本条保留来源 as-of 的批准与未决边界，不代表新平台核验；授权/产品决定或依赖实现变化时重验。教师可见 UI、生产 Capture、设备验收、R2、产品 main 合并均未由批准语义自动完成。
+scope:
+  type: "project"
+  project_id: "teachers-app1"
+  projects: []
+  task_id: null
+domains:
+  - "product-expectation"
+  - "approval-boundary"
+  - "current-blockers"
+repositories:
+  - "teachers-app-one"
+status: "active"
+verification: "verified"
+verified_against:
+  -
+    source_ref: "repo://multica-memory@9213a0e1a8e95e6fc3684e878fe8170846aba76c/project-context/teachers-app1/facts/FACT-TAPP1-000005.yaml"
+    revision: "9213a0e1a8e95e6fc3684e878fe8170846aba76c"
+    paths:
+      - "project-context/teachers-app1/facts/FACT-TAPP1-000005.yaml"
+source_refs:
+  - "repo://multica-memory@9213a0e1a8e95e6fc3684e878fe8170846aba76c/project-context/teachers-app1/facts/FACT-TAPP1-000005.yaml"
+  - "multica://issue/YZT-142"
+  - "multica://issue/YZT-158"
+  - "multica://issue/YZT-171"
+  - "multica://issue/YZT-177"
+relations:
+  conflicts_with: []
+  supersedes:
+    - "FACT-TAPP1-000005"
+  supersedes_note: "主题级替代：来源旧对象正文及来源完整保留为历史；本条只承接标题所列主题。多主题覆盖及退出条件见 docs/repairs/2026-09-28/canonical-migration.json。未新做平台复测或改变产品规范。"
+  drift_of: null
+  norm_reality_conflict: []
+review:
+  reason: null
+  triggered_at: null
+created_at: "2026-09-28T16:00:51Z"
+verified_at: "2026-09-22T05:45:00Z"
+updated_at: "2026-09-28T16:00:51Z"

@@ -1,0 +1,588 @@
+{
+  "schema_version": "offline-quality-calibration/1",
+  "baseline_git_revision": "9213a0e1a8e95e6fc3684e878fe8170846aba76c",
+  "baseline_note": "c2bdbfee adds only authorization/CI; runtime/canonical equal to 9213a0e1",
+  "live_platform_evidence": false,
+  "fixture_type": "12 synthetic fixed requests, six roles by two topics; deterministic subset_result selector",
+  "coverage_limit": "No original live task requests, live Findings/authority, platform publication or required artifact enrichment are claimed. Large artifact enrichment is tested separately with synthetic fixtures.",
+  "policy_mode": "enforce",
+  "live_resume_requires_01_calibration": true,
+  "rows": [
+    {
+      "fixture_id": "engineering-lead:1",
+      "request_sha256": "aac24ab21592531d2b2f6d4dc622917b8fea8f951d72c58707d744b7d421ac41",
+      "before": {
+        "fixture_id": "engineering-lead:1",
+        "request_sha256": "aac24ab21592531d2b2f6d4dc622917b8fea8f951d72c58707d744b7d421ac41",
+        "plan_status": "PLAN_READY",
+        "plan_bytes": 21628,
+        "status": "READY",
+        "package_bytes": 214833,
+        "envelope_bytes": 215524,
+        "facts": 4,
+        "checkpoint_entries": 3,
+        "source_refs": 306,
+        "fact_bytes": [
+          97203,
+          11542,
+          45403,
+          27793
+        ],
+        "stop_reason": null,
+        "transport_bytes": 225275
+      },
+      "after": {
+        "fixture_id": "engineering-lead:1",
+        "request_sha256": "aac24ab21592531d2b2f6d4dc622917b8fea8f951d72c58707d744b7d421ac41",
+        "plan_status": "PLAN_READY",
+        "plan_bytes": 6477,
+        "status": "READY",
+        "package_bytes": 31231,
+        "envelope_bytes": 31922,
+        "facts": 7,
+        "checkpoint_entries": 3,
+        "source_refs": 54,
+        "fact_bytes": [
+          2634,
+          3345,
+          2316,
+          2978,
+          3434,
+          3154,
+          2629
+        ],
+        "stop_reason": null,
+        "transport_bytes": 36383
+      },
+      "package_reduction_percent": 85.46
+    },
+    {
+      "fixture_id": "engineering-lead:2",
+      "request_sha256": "7d603411e9d5f251dd53fca7d00b88d8f5eb9bb435ac34c866825cfd94201865",
+      "before": {
+        "fixture_id": "engineering-lead:2",
+        "request_sha256": "7d603411e9d5f251dd53fca7d00b88d8f5eb9bb435ac34c866825cfd94201865",
+        "plan_status": "PLAN_READY",
+        "plan_bytes": 21628,
+        "status": "READY",
+        "package_bytes": 214833,
+        "envelope_bytes": 215524,
+        "facts": 4,
+        "checkpoint_entries": 3,
+        "source_refs": 306,
+        "fact_bytes": [
+          97203,
+          11542,
+          45403,
+          27793
+        ],
+        "stop_reason": null,
+        "transport_bytes": 225275
+      },
+      "after": {
+        "fixture_id": "engineering-lead:2",
+        "request_sha256": "7d603411e9d5f251dd53fca7d00b88d8f5eb9bb435ac34c866825cfd94201865",
+        "plan_status": "PLAN_READY",
+        "plan_bytes": 6477,
+        "status": "READY",
+        "package_bytes": 31231,
+        "envelope_bytes": 31922,
+        "facts": 7,
+        "checkpoint_entries": 3,
+        "source_refs": 54,
+        "fact_bytes": [
+          2634,
+          3345,
+          2316,
+          2978,
+          3434,
+          3154,
+          2629
+        ],
+        "stop_reason": null,
+        "transport_bytes": 36383
+      },
+      "package_reduction_percent": 85.46
+    },
+    {
+      "fixture_id": "context-engineer:1",
+      "request_sha256": "d677d9e37ce82c13a60477239739cae1b10e867b994444359101e4887600a018",
+      "before": {
+        "fixture_id": "context-engineer:1",
+        "request_sha256": "d677d9e37ce82c13a60477239739cae1b10e867b994444359101e4887600a018",
+        "plan_status": "PLAN_READY",
+        "plan_bytes": 113948,
+        "status": "READY",
+        "package_bytes": 306406,
+        "envelope_bytes": 307097,
+        "facts": 4,
+        "checkpoint_entries": 31,
+        "source_refs": 306,
+        "fact_bytes": [
+          97203,
+          11542,
+          45403,
+          27793
+        ],
+        "stop_reason": null,
+        "transport_bytes": 322454
+      },
+      "after": {
+        "fixture_id": "context-engineer:1",
+        "request_sha256": "d677d9e37ce82c13a60477239739cae1b10e867b994444359101e4887600a018",
+        "plan_status": "PLAN_READY",
+        "plan_bytes": 16951,
+        "status": "READY",
+        "package_bytes": 40861,
+        "envelope_bytes": 41552,
+        "facts": 7,
+        "checkpoint_entries": 20,
+        "source_refs": 54,
+        "fact_bytes": [
+          2634,
+          3345,
+          2316,
+          2978,
+          3434,
+          3154,
+          2629
+        ],
+        "stop_reason": null,
+        "transport_bytes": 48144
+      },
+      "package_reduction_percent": 86.66
+    },
+    {
+      "fixture_id": "context-engineer:2",
+      "request_sha256": "ec655e7df5c1c429f47291469bbd055460e35558006ccb84c19308087c30be01",
+      "before": {
+        "fixture_id": "context-engineer:2",
+        "request_sha256": "ec655e7df5c1c429f47291469bbd055460e35558006ccb84c19308087c30be01",
+        "plan_status": "PLAN_READY",
+        "plan_bytes": 113948,
+        "status": "READY",
+        "package_bytes": 306406,
+        "envelope_bytes": 307097,
+        "facts": 4,
+        "checkpoint_entries": 31,
+        "source_refs": 306,
+        "fact_bytes": [
+          97203,
+          11542,
+          45403,
+          27793
+        ],
+        "stop_reason": null,
+        "transport_bytes": 322454
+      },
+      "after": {
+        "fixture_id": "context-engineer:2",
+        "request_sha256": "ec655e7df5c1c429f47291469bbd055460e35558006ccb84c19308087c30be01",
+        "plan_status": "PLAN_READY",
+        "plan_bytes": 16951,
+        "status": "READY",
+        "package_bytes": 40861,
+        "envelope_bytes": 41552,
+        "facts": 7,
+        "checkpoint_entries": 20,
+        "source_refs": 54,
+        "fact_bytes": [
+          2634,
+          3345,
+          2316,
+          2978,
+          3434,
+          3154,
+          2629
+        ],
+        "stop_reason": null,
+        "transport_bytes": 48144
+      },
+      "package_reduction_percent": 86.66
+    },
+    {
+      "fixture_id": "solution-architect:1",
+      "request_sha256": "64bac4c6f09864a02792d485b555f1d3f344b914b8b79b2e86929abae6276479",
+      "before": {
+        "fixture_id": "solution-architect:1",
+        "request_sha256": "64bac4c6f09864a02792d485b555f1d3f344b914b8b79b2e86929abae6276479",
+        "plan_status": "PLAN_READY",
+        "plan_bytes": 107391,
+        "status": "READY",
+        "package_bytes": 300160,
+        "envelope_bytes": 300855,
+        "facts": 4,
+        "checkpoint_entries": 21,
+        "source_refs": 306,
+        "fact_bytes": [
+          97203,
+          11542,
+          45403,
+          27793
+        ],
+        "stop_reason": null,
+        "transport_bytes": 314959
+      },
+      "after": {
+        "fixture_id": "solution-architect:1",
+        "request_sha256": "64bac4c6f09864a02792d485b555f1d3f344b914b8b79b2e86929abae6276479",
+        "plan_status": "PLAN_READY",
+        "plan_bytes": 9564,
+        "status": "READY",
+        "package_bytes": 34260,
+        "envelope_bytes": 34955,
+        "facts": 7,
+        "checkpoint_entries": 9,
+        "source_refs": 54,
+        "fact_bytes": [
+          2634,
+          3345,
+          2316,
+          2978,
+          3434,
+          3154,
+          2629
+        ],
+        "stop_reason": null,
+        "transport_bytes": 40166
+      },
+      "package_reduction_percent": 88.59
+    },
+    {
+      "fixture_id": "solution-architect:2",
+      "request_sha256": "df38bb152cbbf55f5ff11846760265e6846ffcf35bcbbbec339b1ac8fae51abe",
+      "before": {
+        "fixture_id": "solution-architect:2",
+        "request_sha256": "df38bb152cbbf55f5ff11846760265e6846ffcf35bcbbbec339b1ac8fae51abe",
+        "plan_status": "PLAN_READY",
+        "plan_bytes": 107391,
+        "status": "READY",
+        "package_bytes": 300160,
+        "envelope_bytes": 300855,
+        "facts": 4,
+        "checkpoint_entries": 21,
+        "source_refs": 306,
+        "fact_bytes": [
+          97203,
+          11542,
+          45403,
+          27793
+        ],
+        "stop_reason": null,
+        "transport_bytes": 314959
+      },
+      "after": {
+        "fixture_id": "solution-architect:2",
+        "request_sha256": "df38bb152cbbf55f5ff11846760265e6846ffcf35bcbbbec339b1ac8fae51abe",
+        "plan_status": "PLAN_READY",
+        "plan_bytes": 9919,
+        "status": "READY",
+        "package_bytes": 34615,
+        "envelope_bytes": 35310,
+        "facts": 7,
+        "checkpoint_entries": 10,
+        "source_refs": 54,
+        "fact_bytes": [
+          2634,
+          3345,
+          2316,
+          2978,
+          3434,
+          3154,
+          2629
+        ],
+        "stop_reason": null,
+        "transport_bytes": 40649
+      },
+      "package_reduction_percent": 88.47
+    },
+    {
+      "fixture_id": "software-engineer:1",
+      "request_sha256": "36b112bc998d32873b90e8a6abea7507b27c91dbe53487706cbd3754474e4a85",
+      "before": {
+        "fixture_id": "software-engineer:1",
+        "request_sha256": "36b112bc998d32873b90e8a6abea7507b27c91dbe53487706cbd3754474e4a85",
+        "plan_status": "PLAN_READY",
+        "plan_bytes": 107389,
+        "status": "READY",
+        "package_bytes": 300158,
+        "envelope_bytes": 300851,
+        "facts": 4,
+        "checkpoint_entries": 21,
+        "source_refs": 306,
+        "fact_bytes": [
+          97203,
+          11542,
+          45403,
+          27793
+        ],
+        "stop_reason": null,
+        "transport_bytes": 314951
+      },
+      "after": {
+        "fixture_id": "software-engineer:1",
+        "request_sha256": "36b112bc998d32873b90e8a6abea7507b27c91dbe53487706cbd3754474e4a85",
+        "plan_status": "PLAN_READY",
+        "plan_bytes": 9562,
+        "status": "READY",
+        "package_bytes": 34258,
+        "envelope_bytes": 34951,
+        "facts": 7,
+        "checkpoint_entries": 9,
+        "source_refs": 54,
+        "fact_bytes": [
+          2634,
+          3345,
+          2316,
+          2978,
+          3434,
+          3154,
+          2629
+        ],
+        "stop_reason": null,
+        "transport_bytes": 40158
+      },
+      "package_reduction_percent": 88.59
+    },
+    {
+      "fixture_id": "software-engineer:2",
+      "request_sha256": "cde674060e16211b48cb366cd43220e4786bd994919744daa212801614e68790",
+      "before": {
+        "fixture_id": "software-engineer:2",
+        "request_sha256": "cde674060e16211b48cb366cd43220e4786bd994919744daa212801614e68790",
+        "plan_status": "PLAN_READY",
+        "plan_bytes": 107389,
+        "status": "READY",
+        "package_bytes": 300158,
+        "envelope_bytes": 300851,
+        "facts": 4,
+        "checkpoint_entries": 21,
+        "source_refs": 306,
+        "fact_bytes": [
+          97203,
+          11542,
+          45403,
+          27793
+        ],
+        "stop_reason": null,
+        "transport_bytes": 314951
+      },
+      "after": {
+        "fixture_id": "software-engineer:2",
+        "request_sha256": "cde674060e16211b48cb366cd43220e4786bd994919744daa212801614e68790",
+        "plan_status": "PLAN_READY",
+        "plan_bytes": 9917,
+        "status": "READY",
+        "package_bytes": 34613,
+        "envelope_bytes": 35306,
+        "facts": 7,
+        "checkpoint_entries": 10,
+        "source_refs": 54,
+        "fact_bytes": [
+          2634,
+          3345,
+          2316,
+          2978,
+          3434,
+          3154,
+          2629
+        ],
+        "stop_reason": null,
+        "transport_bytes": 40641
+      },
+      "package_reduction_percent": 88.47
+    },
+    {
+      "fixture_id": "delivery-reviewer:1",
+      "request_sha256": "721c23b98b1c91ace4cbf8c64b3971b0736a14d56f5126fe039406c2a93d07cb",
+      "before": {
+        "fixture_id": "delivery-reviewer:1",
+        "request_sha256": "721c23b98b1c91ace4cbf8c64b3971b0736a14d56f5126fe039406c2a93d07cb",
+        "plan_status": "PLAN_READY",
+        "plan_bytes": 107389,
+        "status": "READY",
+        "package_bytes": 300158,
+        "envelope_bytes": 300851,
+        "facts": 4,
+        "checkpoint_entries": 21,
+        "source_refs": 306,
+        "fact_bytes": [
+          97203,
+          11542,
+          45403,
+          27793
+        ],
+        "stop_reason": null,
+        "transport_bytes": 314951
+      },
+      "after": {
+        "fixture_id": "delivery-reviewer:1",
+        "request_sha256": "721c23b98b1c91ace4cbf8c64b3971b0736a14d56f5126fe039406c2a93d07cb",
+        "plan_status": "PLAN_READY",
+        "plan_bytes": 9562,
+        "status": "READY",
+        "package_bytes": 34258,
+        "envelope_bytes": 34951,
+        "facts": 7,
+        "checkpoint_entries": 9,
+        "source_refs": 54,
+        "fact_bytes": [
+          2634,
+          3345,
+          2316,
+          2978,
+          3434,
+          3154,
+          2629
+        ],
+        "stop_reason": null,
+        "transport_bytes": 40158
+      },
+      "package_reduction_percent": 88.59
+    },
+    {
+      "fixture_id": "delivery-reviewer:2",
+      "request_sha256": "1a04cec9c0a1765221423b5faf2b0e0caff5545c983a3503dffbed1f8ffe5540",
+      "before": {
+        "fixture_id": "delivery-reviewer:2",
+        "request_sha256": "1a04cec9c0a1765221423b5faf2b0e0caff5545c983a3503dffbed1f8ffe5540",
+        "plan_status": "PLAN_READY",
+        "plan_bytes": 107389,
+        "status": "READY",
+        "package_bytes": 300158,
+        "envelope_bytes": 300851,
+        "facts": 4,
+        "checkpoint_entries": 21,
+        "source_refs": 306,
+        "fact_bytes": [
+          97203,
+          11542,
+          45403,
+          27793
+        ],
+        "stop_reason": null,
+        "transport_bytes": 314951
+      },
+      "after": {
+        "fixture_id": "delivery-reviewer:2",
+        "request_sha256": "1a04cec9c0a1765221423b5faf2b0e0caff5545c983a3503dffbed1f8ffe5540",
+        "plan_status": "PLAN_READY",
+        "plan_bytes": 9917,
+        "status": "READY",
+        "package_bytes": 34613,
+        "envelope_bytes": 35306,
+        "facts": 7,
+        "checkpoint_entries": 10,
+        "source_refs": 54,
+        "fact_bytes": [
+          2634,
+          3345,
+          2316,
+          2978,
+          3434,
+          3154,
+          2629
+        ],
+        "stop_reason": null,
+        "transport_bytes": 40641
+      },
+      "package_reduction_percent": 88.47
+    },
+    {
+      "fixture_id": "qa:1",
+      "request_sha256": "1eb87cdbbe289a10a6dc040fd2c96fa26edf75bc366197b1c284b24ad62707d5",
+      "before": {
+        "fixture_id": "qa:1",
+        "request_sha256": "1eb87cdbbe289a10a6dc040fd2c96fa26edf75bc366197b1c284b24ad62707d5",
+        "plan_status": "PLAN_READY",
+        "plan_bytes": 107359,
+        "status": "READY",
+        "package_bytes": 300128,
+        "envelope_bytes": 300791,
+        "facts": 4,
+        "checkpoint_entries": 21,
+        "source_refs": 306,
+        "fact_bytes": [
+          97203,
+          11542,
+          45403,
+          27793
+        ],
+        "stop_reason": null,
+        "transport_bytes": 314831
+      },
+      "after": {
+        "fixture_id": "qa:1",
+        "request_sha256": "1eb87cdbbe289a10a6dc040fd2c96fa26edf75bc366197b1c284b24ad62707d5",
+        "plan_status": "PLAN_READY",
+        "plan_bytes": 9532,
+        "status": "READY",
+        "package_bytes": 34228,
+        "envelope_bytes": 34891,
+        "facts": 7,
+        "checkpoint_entries": 9,
+        "source_refs": 54,
+        "fact_bytes": [
+          2634,
+          3345,
+          2316,
+          2978,
+          3434,
+          3154,
+          2629
+        ],
+        "stop_reason": null,
+        "transport_bytes": 40038
+      },
+      "package_reduction_percent": 88.6
+    },
+    {
+      "fixture_id": "qa:2",
+      "request_sha256": "4371d59171c5009137a4ae9f92766eb761932c6dc06c7007cd548dfd8b002887",
+      "before": {
+        "fixture_id": "qa:2",
+        "request_sha256": "4371d59171c5009137a4ae9f92766eb761932c6dc06c7007cd548dfd8b002887",
+        "plan_status": "PLAN_READY",
+        "plan_bytes": 107359,
+        "status": "READY",
+        "package_bytes": 300128,
+        "envelope_bytes": 300791,
+        "facts": 4,
+        "checkpoint_entries": 21,
+        "source_refs": 306,
+        "fact_bytes": [
+          97203,
+          11542,
+          45403,
+          27793
+        ],
+        "stop_reason": null,
+        "transport_bytes": 314831
+      },
+      "after": {
+        "fixture_id": "qa:2",
+        "request_sha256": "4371d59171c5009137a4ae9f92766eb761932c6dc06c7007cd548dfd8b002887",
+        "plan_status": "PLAN_READY",
+        "plan_bytes": 9887,
+        "status": "READY",
+        "package_bytes": 34583,
+        "envelope_bytes": 35246,
+        "facts": 7,
+        "checkpoint_entries": 10,
+        "source_refs": 54,
+        "fact_bytes": [
+          2634,
+          3345,
+          2316,
+          2978,
+          3434,
+          3154,
+          2629
+        ],
+        "stop_reason": null,
+        "transport_bytes": 40521
+      },
+      "package_reduction_percent": 88.48
+    }
+  ]
+}

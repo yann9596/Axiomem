@@ -1,0 +1,54 @@
+schema_version: "1.1"
+kind: "current_fact"
+id: "FACT-TAPP1-000012"
+title: "P01 可编译平台存储准备：权威版本与尚未执行的平台关口"
+statement: >-
+  P01 design_baseline / teachers-app1-p01-platform-storage / 0.1.0-draft（YZT-141）经 YZT-145 R1 APPROVE_AS_DESIGN_BASELINE_PREPARATION、01 接受，based_on 为 D02 设计及 M1 0.1.1。当前 implementation / teachers-app1-p01-platform-storage-implementation / 0.1.1（YZT-151，源 4c8a35df991cd802338ed82fdb77976da59cd480）经 YZT-152 独立 R1 APPROVE_AS_COMPILABLE_PLATFORM_STORAGE_PREPARATION，01 在 YZT-154 集成 83ba4a508d97f00f5cfdc326c88fc5c78481299b。审查信封当前为 delivery_review / teachers-app1-p01-platform-storage-implementation-r1-review / 0.1.2（YZT-153 谱系补正）；旧审查 0.1.0/0.1.1 与 YZT-149 CHANGES_REQUIRED 保留，不混入当前 live 依赖，不能因更正文档改原专业 verdict。
+
+  P01-01～06 已是已审可编译准备，不再称仅设计：空库分类、共享写队列 ready/复核/停写、commit 异常 UNKNOWN、CAS/insert 返回检查、每事务外键生命周期、view/FK/partial unique 结构检查。DR-01 的共享会话为顶层注入；DR-02 按事务阶段区分 FAILED（确认回滚）、UNKNOWN（提交/回滚不确定）及 STOPPED（完整性全局停写）。具体字段与错误合同以精确设计/实现为准。
+
+  仍需真实平台逐项验证：V02 事务中 PRAGMA foreign_keys 行为；V06 execute 返回原始类型/值而非盲目转换；A03 宿主两次调用与真正 PID 终止的跨进程协议；A08 独立 IMMEDIATE 连接、至多三次受限重试且须证明真实竞争，无法证明则 NOT_RUN。测试载体 P01Database/P01A03Driver/P01A08Driver 存在不代表已执行。
+
+  YZT-219 在 5b25cd0a8a9474899629795b605e2c17e9978a08 留存的源复核表明生产 EntryAbility 仍未接入 RdbS1Store/P01PlatformSupport/S1Session/S1SchemaGuard，blob 为 6dd239c6b166034260d87d564b4caaa71d529cef；共享 signingConfigs=[]。平台准入 A/B 未选择，V01–V10、A03、A08、L1 真机、UI、生产 Capture/S2、签名生效、安装、发布及 R2 不能从宿主/FakeStore 测试推导 PASS。YZT-153 自述的 38 测试缺少精确提交/argv/log，仍 NOT_AVAILABLE；时间偏差不能改写原专业 verdict。
+
+  设备 0.2.4 与 YZT-202 签名托管只由 FACT-TAPP1-000008/000009 承接，不在本条追加历代升级史。用户只批准有限模拟器同名数据清理，未授予旧库迁移、真实学生数据、真机或产品 main/发布授权；本次仓库修复允许的公开范围见 FACT-TAPP1-000007，不扩大为一般私有资料上传权。本条为既有来源的收敛，不是新的 live 复测；平台收据、入口代码、原批准或依赖版本变化时重验。
+scope:
+  type: "project"
+  project_id: "teachers-app1"
+  projects: []
+  task_id: null
+domains:
+  - "platform-storage"
+  - "implementation-state"
+  - "current-blockers"
+repositories:
+  - "teachers-app-one"
+status: "active"
+verification: "verified"
+verified_against:
+  -
+    source_ref: "repo://multica-memory@9213a0e1a8e95e6fc3684e878fe8170846aba76c/project-context/teachers-app1/facts/FACT-TAPP1-000006.yaml"
+    revision: "9213a0e1a8e95e6fc3684e878fe8170846aba76c"
+    paths:
+      - "project-context/teachers-app1/facts/FACT-TAPP1-000006.yaml"
+source_refs:
+  - "repo://multica-memory@9213a0e1a8e95e6fc3684e878fe8170846aba76c/project-context/teachers-app1/facts/FACT-TAPP1-000006.yaml"
+  - "multica://issue/YZT-145"
+  - "multica://issue/YZT-149"
+  - "multica://issue/YZT-152"
+  - "multica://issue/YZT-153"
+  - "multica://issue/YZT-219"
+  - "repo://teachers-app-one@5b25cd0a8a9474899629795b605e2c17e9978a08/entry/src/main/ets/entryability/EntryAbility.ets"
+relations:
+  conflicts_with: []
+  supersedes:
+    - "FACT-TAPP1-000006"
+  supersedes_note: "主题级替代：来源旧对象正文及来源完整保留为历史；本条只承接标题所列主题。多主题覆盖及退出条件见 docs/repairs/2026-09-28/canonical-migration.json。未新做平台复测或改变产品规范。"
+  drift_of: null
+  norm_reality_conflict: []
+review:
+  reason: null
+  triggered_at: null
+created_at: "2026-09-28T16:00:51Z"
+verified_at: "2026-09-28T14:40:00Z"
+updated_at: "2026-09-28T16:00:51Z"

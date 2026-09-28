@@ -1,0 +1,56 @@
+schema_version: "1.1"
+kind: "current_fact"
+id: "FACT-TAPP1-000008"
+title: "设备能力 0.2.4：修正 live 转储解释，但平台恢复仍 BLOCKED"
+statement: >-
+  来源快照 YZT-219 记载 implementation / teachers-app1-harmonyos-device-capabilities / 0.2.4 已经 YZT-220 独立 R1 APPROVE 并集成到 5b25cd0a8a9474899629795b605e2c17e9978a08。被审源码 642197d2b783755f5845e773a167936cf756374b 与集成补丁的等价性、信封 locator 和 supersedes 0.2.3 关系见精确来源；based_on 为 teachers-app1-yzt-179-offline-execution-pack / 0.1.0。离线执行包只是测试驱动、预检与两阶段协调准备，不是平台执行。
+
+  必须保留的更正：YZT-188 在 f0317fc214915432139d6264bf077032b0281086（0.2.3）执行 inspect-installed 的动作状态为 PASS，但包分类为 AMBIGUOUS、identity_matched=false。其转储 SHA256 为 2c088a0b9412025c38c246fa8886157bdd2bd2575ba67f42513f6d21a74fd6a5；首行为 teachers.app.one:，0.2.3 当作 text 而非 JSON。0.2.4 对同一输入的宿主重放得到 JSON/PRESENT，不能改读成当时 live 已解决或当前设备已复验。
+
+  0.2.4 仅接受精确前缀后的可信 JSON；PRESENT 要求全部非空 bundleName 严格等于 teachers.app.one，空 bundleName 和 debug appId/oldAppIds 的尾缀 _ 只作元数据。冲突、衍生名、重复键、非字符串、畸形结构或证据不足仍 AMBIGUOUS，可靠具名缺包才 ABSENT。身份、授权、provider 锁、清理与签名保护不放宽。项目 harmonyos-device 在声明中对 software-engineer/qa 为 true，不等于 TEAM_CALLABLE 或实际可用。
+
+  有限清理来源为用户 member 评论 01a0e17a-f577-7767-af5c-83d33e5ba9bf：仅已核验的私有 app1-emulator 上用户自有精确 teachers.app.one 数据，不含其他应用、全局重置或真机。授权不是已执行。YZT-210 的只读身份 PASS 仅属该时间/目标的收据，不代替新的 live 核验；模拟器 widefold 与 CLI phone 标签差异须保留，模拟器不替代真机。
+
+  YZT-188 的历史 BLOCKED 报告 5e72ccd162eb07eae6446acc99f68dc2c03311d5 及 YZT-195 对 0.2.0 的 CHANGES_REQUIRED 原判保留。恢复要求本次治理独立 R1、01 接受与部署、依赖刷新、同路径 fresh 只读 live 复核及 01 单独准入决定，且用户当前暂停不解除。104/104 是来源所述仓库/宿主测试（含维护增量），不是本次重跑，更不是设备结果。定向清理、安装/覆盖/卸载、UI、instrument、A03 两阶段/PID 终止、A08 真实竞争、L1 真机、relationalStore V01–V10、Pura X（VDE-AL00）、签名生效、发布与 R2 均无本批 PASS。能力或授权、目标、分类证据变化时重验。
+scope:
+  type: "project"
+  project_id: "teachers-app1"
+  projects: []
+  task_id: null
+domains:
+  - "toolchain-verification"
+  - "device-admission"
+  - "current-blockers"
+repositories:
+  - "teachers-app-one"
+status: "active"
+verification: "verified"
+verified_against:
+  -
+    source_ref: "repo://multica-memory@9213a0e1a8e95e6fc3684e878fe8170846aba76c/project-context/teachers-app1/facts/FACT-TAPP1-000003.yaml"
+    revision: "9213a0e1a8e95e6fc3684e878fe8170846aba76c"
+    paths:
+      - "project-context/teachers-app1/facts/FACT-TAPP1-000003.yaml"
+source_refs:
+  - "repo://multica-memory@9213a0e1a8e95e6fc3684e878fe8170846aba76c/project-context/teachers-app1/facts/FACT-TAPP1-000003.yaml"
+  - "repo://teachers-app-one@5b25cd0a8a9474899629795b605e2c17e9978a08/specs/harmonyos-device-capabilities/artifact-envelope.json"
+  - "repo://teachers-app-one@5b25cd0a8a9474899629795b605e2c17e9978a08/scripts/capabilities/device.py"
+  - "repo://teachers-app-one@5e72ccd162eb07eae6446acc99f68dc2c03311d5/specs/yzt-188-emulator-precheck/dump-classification.json"
+  - "multica://issue/YZT-219"
+  - "multica://issue/YZT-220"
+  - "multica://issue/YZT-188"
+  - "multica://issue/YZT-195"
+  - "multica://comment/01a0e17a-f577-7767-af5c-83d33e5ba9bf"
+relations:
+  conflicts_with: []
+  supersedes:
+    - "FACT-TAPP1-000003"
+  supersedes_note: "主题级替代：来源旧对象正文及来源完整保留为历史；本条只承接标题所列主题。多主题覆盖及退出条件见 docs/repairs/2026-09-28/canonical-migration.json。未新做平台复测或改变产品规范。"
+  drift_of: null
+  norm_reality_conflict: []
+review:
+  reason: null
+  triggered_at: null
+created_at: "2026-09-28T16:00:51Z"
+verified_at: "2026-09-28T14:40:00Z"
+updated_at: "2026-09-28T16:00:51Z"

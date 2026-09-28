@@ -536,6 +536,14 @@ def run_finalize(args, *, compose_fn: Callable | None = None,
             reviewed_artifact=inputs.get("reviewed_artifact"))
         _json_write(out / "artifact-ready-check.json", artifact_view)
 
+    import context_quality
+    result, quality = context_quality.guard_final_envelope(result)
+    _json_write(out / "context-quality.json", quality)
+    status = result.get("status")
+    import context_dependencies
+    _json_write(out / "dependency-shadow.json", context_dependencies.observe(
+        result.get("package", {}).get("scope") or {},
+        result.get("role") or "", result.get("package")))
     _json_write(out / "result.json", result)
 
     try:
@@ -737,6 +745,10 @@ def run_selfcheck(args, *, selfcheck_fn: Callable | None = None,
     result = trace["result"]
     _json_write(out / "self-check-request.json", request)
     _json_write(out / "self-check-result.json", result)
+    if trace.get("context_quality") is not None:
+        _json_write(out / "context-quality-selfcheck.json", trace["context_quality"])
+    if trace.get("dependency_shadow") is not None:
+        _json_write(out / "dependency-shadow-selfcheck.json", trace["dependency_shadow"])
     if trace.get("findings_observation") is not None:
         _json_write(out / "findings-observation.json",
                     trace["findings_observation"])

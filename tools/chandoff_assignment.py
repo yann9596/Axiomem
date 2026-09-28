@@ -87,7 +87,13 @@ YZT88_SKILL_BUNDLE_D2B6299 = (
     "sha256:f54f0395410cb5ed9596a2e4366dd9375813127391cd4131613942d9f30533ff")
 FORWARD_SKILL_BUNDLE = (
     "sha256:30adc7319e0d8c65a4f7ec4c5018d127ec144f34e19807b839da8341ab6ccc73")
-ACCEPTED_SKILL_BUNDLES = (FORWARD_SKILL_BUNDLE,)
+# Administrative audit repair versions the SOURCE acceptance pin forward.
+# Historical U04/U05 records and prior forward pin above remain immutable.
+# This is not evidence of installation, independent review, or live readiness;
+# 01 must deploy and verify this exact bundle before resuming the paused project.
+AUDIT_REPAIR_SKILL_BUNDLE = (
+    "sha256:e8f41158576251421967e84505079571b5f70cccbde9a8ec7f0fd4c152d4f96c")
+ACCEPTED_SKILL_BUNDLES = (AUDIT_REPAIR_SKILL_BUNDLE,)
 
 STATES = (
     "INIT", "ISSUE_CREATED", "ISSUE_UPDATED", "TARGET_BOUND",

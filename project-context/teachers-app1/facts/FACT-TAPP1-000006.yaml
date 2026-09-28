@@ -259,7 +259,7 @@ domains:
 repositories:
   - teachers-app-one
 
-status: active
+status: superseded
 verification: verified
 
 verified_against:
@@ -467,8 +467,8 @@ source_refs:
   - repo://teachers-app-one@a67179dfc02f0461a7962dcc697161395c5deb76/entry/src/main/ets/data/RdbS1Store.ets
   - repo://teachers-app-one@a67179dfc02f0461a7962dcc697161395c5deb76/entry/src/main/ets/data/S1SchemaGuard.ets
   - repo://teachers-app-one@a67179dfc02f0461a7962dcc697161395c5deb76/entry/src/ohosTest/ets/test/Ability.test.ets
-  - FACT-TAPP1-000003
-  - FACT-TAPP1-000004
+  - repo://multica-memory@9213a0e1a8e95e6fc3684e878fe8170846aba76c/project-context/teachers-app1/facts/FACT-TAPP1-000003.yaml
+  - repo://multica-memory@9213a0e1a8e95e6fc3684e878fe8170846aba76c/project-context/teachers-app1/facts/FACT-TAPP1-000004.yaml
 
   - repo://teachers-app-one@83ba4a508d97f00f5cfdc326c88fc5c78481299b/entry/src/main/ets/entryability/EntryAbility.ets
   - repo://teachers-app-one@83ba4a508d97f00f5cfdc326c88fc5c78481299b/entry/src/ohosTest/ets/test/P01Database.test.ets
@@ -537,4 +537,4 @@ review:
 
 created_at: 2026-09-18T01:35:00Z
 verified_at: 2026-09-28T14:40:00Z
-updated_at: 2026-09-28T14:40:00Z
+updated_at: 2026-09-28T16:00:51Z

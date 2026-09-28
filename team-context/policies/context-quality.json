@@ -1,0 +1,20 @@
+{
+  "schema_version": "context-quality/1",
+  "policy_version": "2026-09-28.1",
+  "mode": "enforce",
+  "limits": {
+    "plan_bytes": 98304,
+    "package_bytes": 65536,
+    "envelope_bytes": 69632,
+    "transport_bytes": 98304,
+    "fact_bytes": 8192,
+    "rule_bytes": 16384,
+    "checkpoint_entry_bytes": 4096,
+    "checkpoint_entries": 24,
+    "source_refs": 128,
+    "source_refs_bytes": 16384,
+    "current_facts_bytes": 32768,
+    "checkpoint_slices_bytes": 24576,
+    "candidate_source_bytes": 16384
+  }
+}

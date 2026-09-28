@@ -1,0 +1,52 @@
+schema_version: "1.1"
+kind: "current_fact"
+id: "FACT-TAPP1-000009"
+title: "YZT-202 签名对托管：精确散列与 NOT_READY 边界"
+statement: >-
+  来源 YZT-204/219 记载当前托管为 implementation / teachers-app1-yzt-202-a03-signed-hap-custody / 0.1.0；04 的 YZT-202 交付经 05 的 YZT-203 独立 R1 APPROVE。source_commit 为 f425aa2aad1bc2bab4b5fbca1cb730a6001fb8eb，其父为 df98fdf6c331084bfa1b3bd49ee3e2a78aae3404，二者产品树相同。该托管原 based_on 是设备能力 0.2.1，不得改成 0.2.4，后续分类器修正没有重建/重签这一对 HAP。
+
+  App HAP SHA256: a36672ab5b07cf3601558bcb784ea1a9bc309836b2581f6648e86798e10609e8。
+
+  Test HAP SHA256: 42f3650b89dc302de1b22b2ee562e76b50f017b0764cea190221a58f04023934。
+
+  托管 manifest SHA256: 41db1493bc9f6b1957e07f4841dfbb3f1357227cf1412bf2bbec1c232aaa43c6；evidence SHA256: d49d53785cc3c1d216ce0fb5c4c2851e01001b322cfbe12a9686eedabe88ba54。具体私有字节/路径通过受权的原始交付取回，不从本文重建凭据或打包文件。
+
+  验签与 profile 检查属于该来源的历史收据；测试 ABC 含 APP1_A03_EVIDENCE 与 Phase A/B 字符串，仅证明字节中存在驱动，不证明驱动被执行。源码快照包含工作树中的未提交 AGENTS 运行补丁，不能将其散列等同于纯 Git HEAD。旧 87f10ad 世代及更早 HAP 只为历史证据，不混入当前托管。
+
+  已签名可安装 HAP 仍 NOT_READY：profile device-ids 与当前 live UDID 的匹配、provider 团队调用、有效安装与平台结果未由本条证成。共享 signingConfigs=[] 的源码状态不等于私有签名材料不存在，亦不等于签名对可直接安装。A03、A08、UI、平台持久化、真机、发布、R2 仍需独立准入与实测。当前项目暂停；本次整理没有设备、重新验签、复制签名材料或部署行为。托管字节、基线、目标或 profile 变化时重验本条。
+scope:
+  type: "project"
+  project_id: "teachers-app1"
+  projects: []
+  task_id: null
+domains:
+  - "toolchain-verification"
+  - "signed-artifact-custody"
+repositories:
+  - "teachers-app-one"
+status: "active"
+verification: "verified"
+verified_against:
+  -
+    source_ref: "repo://multica-memory@9213a0e1a8e95e6fc3684e878fe8170846aba76c/project-context/teachers-app1/facts/FACT-TAPP1-000003.yaml"
+    revision: "9213a0e1a8e95e6fc3684e878fe8170846aba76c"
+    paths:
+      - "project-context/teachers-app1/facts/FACT-TAPP1-000003.yaml"
+source_refs:
+  - "repo://multica-memory@9213a0e1a8e95e6fc3684e878fe8170846aba76c/project-context/teachers-app1/facts/FACT-TAPP1-000003.yaml"
+  - "repo://teachers-app-one@f425aa2aad1bc2bab4b5fbca1cb730a6001fb8eb/specs/yzt-202-signed-hap-custody/artifact-envelope.json"
+  - "multica://comment/01a0e306-e8a2-7d7e-bb04-169214aa34fc"
+  - "multica://comment/01a0e316-bf1e-7832-a012-43dce4fe47a4"
+relations:
+  conflicts_with: []
+  supersedes:
+    - "FACT-TAPP1-000003"
+  supersedes_note: "主题级替代：来源旧对象正文及来源完整保留为历史；本条只承接标题所列主题。多主题覆盖及退出条件见 docs/repairs/2026-09-28/canonical-migration.json。未新做平台复测或改变产品规范。"
+  drift_of: null
+  norm_reality_conflict: []
+review:
+  reason: null
+  triggered_at: null
+created_at: "2026-09-28T16:00:51Z"
+verified_at: "2026-09-28T14:40:00Z"
+updated_at: "2026-09-28T16:00:51Z"

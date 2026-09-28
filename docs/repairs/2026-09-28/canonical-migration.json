@@ -1,0 +1,1205 @@
+{
+  "schema_version": "audit-curation-map/1",
+  "source_revision": "9213a0e1a8e95e6fc3684e878fe8170846aba76c",
+  "authorization_ref": "repo://multica-memory@c2bdbfeef052b85ec51b3f40b04d8166c22dcc7e/docs/repairs/2026-09-28/authorization-and-scope.md",
+  "scope": "teachers-app1; four long facts including the D02 direct dependency, and checkpoint",
+  "verification_boundary": "Semantic-preserving curation of the retained source snapshot; no new live product/platform verification or independent approval claimed.",
+  "history_preserved": true,
+  "old_fact_mappings": [
+    {
+      "old_id": "FACT-TAPP1-000003",
+      "source_ref": "repo://multica-memory@9213a0e1a8e95e6fc3684e878fe8170846aba76c/project-context/teachers-app1/facts/FACT-TAPP1-000003.yaml",
+      "statement_sha256": "5d45a57199479ac2374edee159510e8342e89fac8d099da4217d5d3bbe1c6569",
+      "source_refs_sha256": "ed7fba7812555eb8992c7c35f1be789a22317475c6ab641e4f4c509e9a8ff834",
+      "disposition": "superseded_by_topic",
+      "current_ids": [
+        "FACT-TAPP1-000007",
+        "FACT-TAPP1-000008",
+        "FACT-TAPP1-000009"
+      ],
+      "reason": "Current conclusions separated by topic; prior as-of progress, locator corrections, test attribution and verdicts remain verbatim in superseded source.",
+      "retention_reason": "Cross-task interpretation of approved limits and current implementation/verification split is not recoverable from a single product source file.",
+      "revalidate_on": "Changed underlying contract/approval, integration, runtime evidence, target or custody; no age-based truth decay.",
+      "owner": "context-engineer",
+      "independent_review": "NOT_RUN; PR requires independent review",
+      "paragraphs": [
+        {
+          "ordinal": 1,
+          "sha256": "93378109bbc11073e0fe8f6dc564c68634b0d08e100ad6cc6680554d21f08f8c",
+          "disposition": "history_pointer_with_current_topic_successors",
+          "current_ids": [
+            "FACT-TAPP1-000007",
+            "FACT-TAPP1-000008",
+            "FACT-TAPP1-000009"
+          ]
+        },
+        {
+          "ordinal": 2,
+          "sha256": "a6a5d04a47dca3b211f76bb05c4b148006277812e4431be6e1e70ec0844aedc2",
+          "disposition": "history_pointer_with_current_topic_successors",
+          "current_ids": [
+            "FACT-TAPP1-000007",
+            "FACT-TAPP1-000008",
+            "FACT-TAPP1-000009"
+          ]
+        },
+        {
+          "ordinal": 3,
+          "sha256": "2cbb2d5909e4dabc9378258dee057748893649c0737d9e8457175bc7532b790d",
+          "disposition": "history_pointer_with_current_topic_successors",
+          "current_ids": [
+            "FACT-TAPP1-000007",
+            "FACT-TAPP1-000008",
+            "FACT-TAPP1-000009"
+          ]
+        },
+        {
+          "ordinal": 4,
+          "sha256": "a955297026fe80ddfa56c8fe2c05d3bc0049e6f4bbb449fc97f2967c8c712763",
+          "disposition": "history_pointer_with_current_topic_successors",
+          "current_ids": [
+            "FACT-TAPP1-000007",
+            "FACT-TAPP1-000008",
+            "FACT-TAPP1-000009"
+          ]
+        },
+        {
+          "ordinal": 5,
+          "sha256": "7fed5332f5b8e62d4699498e27c667e284943bd189fb87124e902190cec2174f",
+          "disposition": "history_pointer_with_current_topic_successors",
+          "current_ids": [
+            "FACT-TAPP1-000007",
+            "FACT-TAPP1-000008",
+            "FACT-TAPP1-000009"
+          ]
+        },
+        {
+          "ordinal": 6,
+          "sha256": "db4c8451986e085b0b81efd473e5b6b140f4ba04451a92624ae02a7b2724f7bd",
+          "disposition": "history_pointer_with_current_topic_successors",
+          "current_ids": [
+            "FACT-TAPP1-000007",
+            "FACT-TAPP1-000008",
+            "FACT-TAPP1-000009"
+          ]
+        },
+        {
+          "ordinal": 7,
+          "sha256": "2a152d23934f12d537b25791bfa83b0cef783b6c58906c1779768d049fb3f809",
+          "disposition": "history_pointer_with_current_topic_successors",
+          "current_ids": [
+            "FACT-TAPP1-000007",
+            "FACT-TAPP1-000008",
+            "FACT-TAPP1-000009"
+          ]
+        },
+        {
+          "ordinal": 8,
+          "sha256": "7f2dff1ad0e504ce44c0e9569a503be1fb0b6bd4a9298b169376427463aea3a8",
+          "disposition": "history_pointer_with_current_topic_successors",
+          "current_ids": [
+            "FACT-TAPP1-000007",
+            "FACT-TAPP1-000008",
+            "FACT-TAPP1-000009"
+          ]
+        },
+        {
+          "ordinal": 9,
+          "sha256": "cf9fc1b6ab69737a3888ddb2f6822a49f791fde99030441c3484c13edf065103",
+          "disposition": "history_pointer_with_current_topic_successors",
+          "current_ids": [
+            "FACT-TAPP1-000007",
+            "FACT-TAPP1-000008",
+            "FACT-TAPP1-000009"
+          ]
+        },
+        {
+          "ordinal": 10,
+          "sha256": "55fbc52b766196128570d2723521eefa82640a9be8ef906c459f62e22e46e040",
+          "disposition": "history_pointer_with_current_topic_successors",
+          "current_ids": [
+            "FACT-TAPP1-000007",
+            "FACT-TAPP1-000008",
+            "FACT-TAPP1-000009"
+          ]
+        },
+        {
+          "ordinal": 11,
+          "sha256": "3f41a0430a8cd3c624a122ef6c3eba68b20a250cb9c2814713421778a73c29ec",
+          "disposition": "history_pointer_with_current_topic_successors",
+          "current_ids": [
+            "FACT-TAPP1-000007",
+            "FACT-TAPP1-000008",
+            "FACT-TAPP1-000009"
+          ]
+        }
+      ],
+      "normalized_source_refs_sha256": "ed7fba7812555eb8992c7c35f1be789a22317475c6ab641e4f4c509e9a8ff834"
+    },
+    {
+      "old_id": "FACT-TAPP1-000004",
+      "source_ref": "repo://multica-memory@9213a0e1a8e95e6fc3684e878fe8170846aba76c/project-context/teachers-app1/facts/FACT-TAPP1-000004.yaml",
+      "statement_sha256": "56e6daa07f53f3e81ceec55d1cae31cb42d5e2501a149d7f271645ad1387b611",
+      "source_refs_sha256": "4c9b6c7c1ec3153fe071032213d122e77bce787ca9486f770a034e4144e35cb6",
+      "disposition": "superseded_by_topic",
+      "current_ids": [
+        "FACT-TAPP1-000013"
+      ],
+      "reason": "Current conclusions separated by topic; prior as-of progress, locator corrections, test attribution and verdicts remain verbatim in superseded source.",
+      "retention_reason": "Cross-task interpretation of approved limits and current implementation/verification split is not recoverable from a single product source file.",
+      "revalidate_on": "Changed underlying contract/approval, integration, runtime evidence, target or custody; no age-based truth decay.",
+      "owner": "context-engineer",
+      "independent_review": "NOT_RUN; PR requires independent review",
+      "paragraphs": [
+        {
+          "ordinal": 1,
+          "sha256": "56e6daa07f53f3e81ceec55d1cae31cb42d5e2501a149d7f271645ad1387b611",
+          "disposition": "history_pointer_with_current_topic_successors",
+          "current_ids": [
+            "FACT-TAPP1-000013"
+          ]
+        }
+      ],
+      "normalized_source_refs_sha256": "4c9b6c7c1ec3153fe071032213d122e77bce787ca9486f770a034e4144e35cb6"
+    },
+    {
+      "old_id": "FACT-TAPP1-000005",
+      "source_ref": "repo://multica-memory@9213a0e1a8e95e6fc3684e878fe8170846aba76c/project-context/teachers-app1/facts/FACT-TAPP1-000005.yaml",
+      "statement_sha256": "cc86e06c8759cd8b67e9877edd3ff262d6925facda231306949281269492c186",
+      "source_refs_sha256": "18bea405b88d88a469e53d43c191ad71611e3de4a39c40c29a6041930b86d45a",
+      "disposition": "superseded_by_topic",
+      "current_ids": [
+        "FACT-TAPP1-000010",
+        "FACT-TAPP1-000011"
+      ],
+      "reason": "Current conclusions separated by topic; prior as-of progress, locator corrections, test attribution and verdicts remain verbatim in superseded source.",
+      "retention_reason": "Cross-task interpretation of approved limits and current implementation/verification split is not recoverable from a single product source file.",
+      "revalidate_on": "Changed underlying contract/approval, integration, runtime evidence, target or custody; no age-based truth decay.",
+      "owner": "context-engineer",
+      "independent_review": "NOT_RUN; PR requires independent review",
+      "paragraphs": [
+        {
+          "ordinal": 1,
+          "sha256": "c1d21eaef1602f65ddfc38b522b443743c01005857ae1cd58114a8714ed3a2c0",
+          "disposition": "history_pointer_with_current_topic_successors",
+          "current_ids": [
+            "FACT-TAPP1-000010",
+            "FACT-TAPP1-000011"
+          ]
+        },
+        {
+          "ordinal": 2,
+          "sha256": "0541197e289c715196b602ea9816d88e57f369094acb7cf09b982987c67ae101",
+          "disposition": "history_pointer_with_current_topic_successors",
+          "current_ids": [
+            "FACT-TAPP1-000010",
+            "FACT-TAPP1-000011"
+          ]
+        },
+        {
+          "ordinal": 3,
+          "sha256": "12e196307ebb7f9ef33a321e0a94269a78c7d0155079c4e52d361098723faa91",
+          "disposition": "history_pointer_with_current_topic_successors",
+          "current_ids": [
+            "FACT-TAPP1-000010",
+            "FACT-TAPP1-000011"
+          ]
+        },
+        {
+          "ordinal": 4,
+          "sha256": "a333f8b11a9d567eec7e08a4138bfeceaf38f0c86d765860646e7c6240ee4611",
+          "disposition": "history_pointer_with_current_topic_successors",
+          "current_ids": [
+            "FACT-TAPP1-000010",
+            "FACT-TAPP1-000011"
+          ]
+        }
+      ],
+      "normalized_source_refs_sha256": "129213e97b6c0be2439558a7ec75898add5ec4e2f57352fccd6dfb25aeec6239"
+    },
+    {
+      "old_id": "FACT-TAPP1-000006",
+      "source_ref": "repo://multica-memory@9213a0e1a8e95e6fc3684e878fe8170846aba76c/project-context/teachers-app1/facts/FACT-TAPP1-000006.yaml",
+      "statement_sha256": "b947b386ad94c1147f1853f530fa094f089a4e59e07dc9525272091050abd23c",
+      "source_refs_sha256": "fc3f34cc13f2c36ca356c60a543eb9e6578f1db79f6d0844e72f8b8f38083eea",
+      "disposition": "superseded_by_topic",
+      "current_ids": [
+        "FACT-TAPP1-000012"
+      ],
+      "reason": "Current conclusions separated by topic; prior as-of progress, locator corrections, test attribution and verdicts remain verbatim in superseded source.",
+      "retention_reason": "Cross-task interpretation of approved limits and current implementation/verification split is not recoverable from a single product source file.",
+      "revalidate_on": "Changed underlying contract/approval, integration, runtime evidence, target or custody; no age-based truth decay.",
+      "owner": "context-engineer",
+      "independent_review": "NOT_RUN; PR requires independent review",
+      "paragraphs": [
+        {
+          "ordinal": 1,
+          "sha256": "6534d9ee9991557e3aec57d11c69e19f9820862938ac31fa73c5e729a39ab256",
+          "disposition": "history_pointer_with_current_topic_successors",
+          "current_ids": [
+            "FACT-TAPP1-000012"
+          ]
+        },
+        {
+          "ordinal": 2,
+          "sha256": "83a81e053a57edcd4e7c2d7b78c312179e288c71ee0c30d136282c05a61caa9c",
+          "disposition": "history_pointer_with_current_topic_successors",
+          "current_ids": [
+            "FACT-TAPP1-000012"
+          ]
+        },
+        {
+          "ordinal": 3,
+          "sha256": "be2b03a677ce1b4f0a9633ce2b47c27526054cb76c49bb94fc888fa5602b6c93",
+          "disposition": "history_pointer_with_current_topic_successors",
+          "current_ids": [
+            "FACT-TAPP1-000012"
+          ]
+        },
+        {
+          "ordinal": 4,
+          "sha256": "692fd75c9efb8a61b7e9014e8b41e4791b933a831d251be4fc5e41060161db94",
+          "disposition": "history_pointer_with_current_topic_successors",
+          "current_ids": [
+            "FACT-TAPP1-000012"
+          ]
+        },
+        {
+          "ordinal": 5,
+          "sha256": "5a10b8e30b6926d4d7d82d647781df3526165915b3d8c674e78fe7646e698beb",
+          "disposition": "history_pointer_with_current_topic_successors",
+          "current_ids": [
+            "FACT-TAPP1-000012"
+          ]
+        },
+        {
+          "ordinal": 6,
+          "sha256": "d64ee88d8e47af4629ef8de3b594fff89c9404f9f6a3eab263b502ce16eca3ef",
+          "disposition": "history_pointer_with_current_topic_successors",
+          "current_ids": [
+            "FACT-TAPP1-000012"
+          ]
+        },
+        {
+          "ordinal": 7,
+          "sha256": "6006c10a6ce6798764ed5d436f3da2380cd9dd7ca18ff507f46dcc17aaa64035",
+          "disposition": "history_pointer_with_current_topic_successors",
+          "current_ids": [
+            "FACT-TAPP1-000012"
+          ]
+        },
+        {
+          "ordinal": 8,
+          "sha256": "638dbb7610135e7fd7ff01e457f8acd2481cc3f05afade2e31dffe6108be60af",
+          "disposition": "history_pointer_with_current_topic_successors",
+          "current_ids": [
+            "FACT-TAPP1-000012"
+          ]
+        }
+      ],
+      "normalized_source_refs_sha256": "23b3adca1684aac701d5b7b563d5bb3fcb95a69ed44db95cf21fd0e3677b2a30"
+    }
+  ],
+  "checkpoint_mappings": [
+    {
+      "section": "confirmed",
+      "old_id": "cp-confirmed-001",
+      "summary_sha256": "6c1bc538ad86bc101885378f396fe0c6f82e8b8d102cfe8805306fba69aa0321",
+      "disposition": "current_summary_replaced",
+      "history_ref": "repo://multica-memory@9213a0e1a8e95e6fc3684e878fe8170846aba76c/project-context/teachers-app1/checkpoint.yaml",
+      "current_ids": [
+        "cp-confirmed-001"
+      ],
+      "reason": "Keep only current premises and open stopping conditions; exact historical statement stays in source revision."
+    },
+    {
+      "section": "confirmed",
+      "old_id": "cp-confirmed-002",
+      "summary_sha256": "2d0c4bb51c0506849c6cd036de2b089b9891b15911cbbf3e303d56a68c155947",
+      "disposition": "current_summary_replaced",
+      "history_ref": "repo://multica-memory@9213a0e1a8e95e6fc3684e878fe8170846aba76c/project-context/teachers-app1/checkpoint.yaml",
+      "current_ids": [
+        "cp-confirmed-002"
+      ],
+      "reason": "Keep only current premises and open stopping conditions; exact historical statement stays in source revision."
+    },
+    {
+      "section": "confirmed",
+      "old_id": "cp-confirmed-003",
+      "summary_sha256": "eef743cec4861e6cdfbbe70e3c5c241690670ae055052d82f2aa2f37747db35d",
+      "disposition": "history_pointer_and_topic_fact",
+      "history_ref": "repo://multica-memory@9213a0e1a8e95e6fc3684e878fe8170846aba76c/project-context/teachers-app1/checkpoint.yaml",
+      "current_ids": [
+        "FACT-TAPP1-000007",
+        "FACT-TAPP1-000008",
+        "FACT-TAPP1-000009",
+        "FACT-TAPP1-000010",
+        "FACT-TAPP1-000011",
+        "FACT-TAPP1-000012",
+        "FACT-TAPP1-000013"
+      ],
+      "reason": "Keep only current premises and open stopping conditions; exact historical statement stays in source revision."
+    },
+    {
+      "section": "confirmed",
+      "old_id": "cp-confirmed-004",
+      "summary_sha256": "4dba8f8218d925571b4a5af59ec81d854d204727ccc494755afe9d92cad046ad",
+      "disposition": "history_pointer_and_topic_fact",
+      "history_ref": "repo://multica-memory@9213a0e1a8e95e6fc3684e878fe8170846aba76c/project-context/teachers-app1/checkpoint.yaml",
+      "current_ids": [
+        "FACT-TAPP1-000007",
+        "FACT-TAPP1-000008",
+        "FACT-TAPP1-000009",
+        "FACT-TAPP1-000010",
+        "FACT-TAPP1-000011",
+        "FACT-TAPP1-000012",
+        "FACT-TAPP1-000013"
+      ],
+      "reason": "Keep only current premises and open stopping conditions; exact historical statement stays in source revision."
+    },
+    {
+      "section": "confirmed",
+      "old_id": "cp-confirmed-005",
+      "summary_sha256": "0c2f02fbd8d80e050f9000e4b021dedd85a846259e59f100fbb7f4d42cd76bf5",
+      "disposition": "history_pointer_and_topic_fact",
+      "history_ref": "repo://multica-memory@9213a0e1a8e95e6fc3684e878fe8170846aba76c/project-context/teachers-app1/checkpoint.yaml",
+      "current_ids": [
+        "FACT-TAPP1-000007",
+        "FACT-TAPP1-000008",
+        "FACT-TAPP1-000009",
+        "FACT-TAPP1-000010",
+        "FACT-TAPP1-000011",
+        "FACT-TAPP1-000012",
+        "FACT-TAPP1-000013"
+      ],
+      "reason": "Keep only current premises and open stopping conditions; exact historical statement stays in source revision."
+    },
+    {
+      "section": "confirmed",
+      "old_id": "cp-confirmed-006",
+      "summary_sha256": "a76823ea7a9e0dffbce9e833403c1307a07e1f450f0f2a19ab086fbefc3e1881",
+      "disposition": "history_pointer_and_topic_fact",
+      "history_ref": "repo://multica-memory@9213a0e1a8e95e6fc3684e878fe8170846aba76c/project-context/teachers-app1/checkpoint.yaml",
+      "current_ids": [
+        "FACT-TAPP1-000007",
+        "FACT-TAPP1-000008",
+        "FACT-TAPP1-000009",
+        "FACT-TAPP1-000010",
+        "FACT-TAPP1-000011",
+        "FACT-TAPP1-000012",
+        "FACT-TAPP1-000013"
+      ],
+      "reason": "Keep only current premises and open stopping conditions; exact historical statement stays in source revision."
+    },
+    {
+      "section": "confirmed",
+      "old_id": "cp-confirmed-007",
+      "summary_sha256": "3ed17ccb075b2cc19d10af084e20e53a42c351a14cf344456adbdd9967dfccae",
+      "disposition": "current_summary_replaced",
+      "history_ref": "repo://multica-memory@9213a0e1a8e95e6fc3684e878fe8170846aba76c/project-context/teachers-app1/checkpoint.yaml",
+      "current_ids": [
+        "cp-confirmed-007"
+      ],
+      "reason": "Keep only current premises and open stopping conditions; exact historical statement stays in source revision."
+    },
+    {
+      "section": "confirmed",
+      "old_id": "cp-confirmed-008",
+      "summary_sha256": "28cad21d222d9a6d88520bfb96641bbff7b002ecc82c225beda5a7dfce8a4b3d",
+      "disposition": "history_pointer_and_topic_fact",
+      "history_ref": "repo://multica-memory@9213a0e1a8e95e6fc3684e878fe8170846aba76c/project-context/teachers-app1/checkpoint.yaml",
+      "current_ids": [
+        "FACT-TAPP1-000007",
+        "FACT-TAPP1-000008",
+        "FACT-TAPP1-000009",
+        "FACT-TAPP1-000010",
+        "FACT-TAPP1-000011",
+        "FACT-TAPP1-000012",
+        "FACT-TAPP1-000013"
+      ],
+      "reason": "Keep only current premises and open stopping conditions; exact historical statement stays in source revision."
+    },
+    {
+      "section": "confirmed",
+      "old_id": "cp-confirmed-009",
+      "summary_sha256": "d4091185279fe3b5494584223e0d9ff6d7ff916605c41c34e72b08929ed06abc",
+      "disposition": "history_pointer_and_topic_fact",
+      "history_ref": "repo://multica-memory@9213a0e1a8e95e6fc3684e878fe8170846aba76c/project-context/teachers-app1/checkpoint.yaml",
+      "current_ids": [
+        "FACT-TAPP1-000007",
+        "FACT-TAPP1-000008",
+        "FACT-TAPP1-000009",
+        "FACT-TAPP1-000010",
+        "FACT-TAPP1-000011",
+        "FACT-TAPP1-000012",
+        "FACT-TAPP1-000013"
+      ],
+      "reason": "Keep only current premises and open stopping conditions; exact historical statement stays in source revision."
+    },
+    {
+      "section": "confirmed",
+      "old_id": "cp-confirmed-010",
+      "summary_sha256": "c480ae244f85dc1ff23259cc0e585ea719a29fe64f13327fbc23e91d13bb1b11",
+      "disposition": "history_pointer_and_topic_fact",
+      "history_ref": "repo://multica-memory@9213a0e1a8e95e6fc3684e878fe8170846aba76c/project-context/teachers-app1/checkpoint.yaml",
+      "current_ids": [
+        "FACT-TAPP1-000007",
+        "FACT-TAPP1-000008",
+        "FACT-TAPP1-000009",
+        "FACT-TAPP1-000010",
+        "FACT-TAPP1-000011",
+        "FACT-TAPP1-000012",
+        "FACT-TAPP1-000013"
+      ],
+      "reason": "Keep only current premises and open stopping conditions; exact historical statement stays in source revision."
+    },
+    {
+      "section": "confirmed",
+      "old_id": "cp-confirmed-011",
+      "summary_sha256": "645efabaefade073e7de1da7184f06f28c884a6a4f4fc012087533335ba16c0a",
+      "disposition": "history_pointer_and_topic_fact",
+      "history_ref": "repo://multica-memory@9213a0e1a8e95e6fc3684e878fe8170846aba76c/project-context/teachers-app1/checkpoint.yaml",
+      "current_ids": [
+        "FACT-TAPP1-000007",
+        "FACT-TAPP1-000008",
+        "FACT-TAPP1-000009",
+        "FACT-TAPP1-000010",
+        "FACT-TAPP1-000011",
+        "FACT-TAPP1-000012",
+        "FACT-TAPP1-000013"
+      ],
+      "reason": "Keep only current premises and open stopping conditions; exact historical statement stays in source revision."
+    },
+    {
+      "section": "confirmed",
+      "old_id": "cp-confirmed-012",
+      "summary_sha256": "ce3b8ba4eae56a5595e3760d629162a54d4814f33120d8f118b39f50322c42c4",
+      "disposition": "history_pointer_and_topic_fact",
+      "history_ref": "repo://multica-memory@9213a0e1a8e95e6fc3684e878fe8170846aba76c/project-context/teachers-app1/checkpoint.yaml",
+      "current_ids": [
+        "FACT-TAPP1-000007",
+        "FACT-TAPP1-000008",
+        "FACT-TAPP1-000009",
+        "FACT-TAPP1-000010",
+        "FACT-TAPP1-000011",
+        "FACT-TAPP1-000012",
+        "FACT-TAPP1-000013"
+      ],
+      "reason": "Keep only current premises and open stopping conditions; exact historical statement stays in source revision."
+    },
+    {
+      "section": "confirmed",
+      "old_id": "cp-confirmed-013",
+      "summary_sha256": "a3023ad2191d1ef2363b37316a1b97049bebd4999d417b970fa7dc77bc1c484d",
+      "disposition": "history_pointer_and_topic_fact",
+      "history_ref": "repo://multica-memory@9213a0e1a8e95e6fc3684e878fe8170846aba76c/project-context/teachers-app1/checkpoint.yaml",
+      "current_ids": [
+        "FACT-TAPP1-000007",
+        "FACT-TAPP1-000008",
+        "FACT-TAPP1-000009",
+        "FACT-TAPP1-000010",
+        "FACT-TAPP1-000011",
+        "FACT-TAPP1-000012",
+        "FACT-TAPP1-000013"
+      ],
+      "reason": "Keep only current premises and open stopping conditions; exact historical statement stays in source revision."
+    },
+    {
+      "section": "confirmed",
+      "old_id": "cp-confirmed-014",
+      "summary_sha256": "e9757b6f10ab760009a2b6203d99c5e12c2464ac5f7c822a90493fddb353bf30",
+      "disposition": "history_pointer_and_topic_fact",
+      "history_ref": "repo://multica-memory@9213a0e1a8e95e6fc3684e878fe8170846aba76c/project-context/teachers-app1/checkpoint.yaml",
+      "current_ids": [
+        "FACT-TAPP1-000007",
+        "FACT-TAPP1-000008",
+        "FACT-TAPP1-000009",
+        "FACT-TAPP1-000010",
+        "FACT-TAPP1-000011",
+        "FACT-TAPP1-000012",
+        "FACT-TAPP1-000013"
+      ],
+      "reason": "Keep only current premises and open stopping conditions; exact historical statement stays in source revision."
+    },
+    {
+      "section": "confirmed",
+      "old_id": "cp-confirmed-015",
+      "summary_sha256": "766b4ce6364725d157863c49133a157d07c31ba4f72be2544baba1fe6031b072",
+      "disposition": "history_pointer_and_topic_fact",
+      "history_ref": "repo://multica-memory@9213a0e1a8e95e6fc3684e878fe8170846aba76c/project-context/teachers-app1/checkpoint.yaml",
+      "current_ids": [
+        "FACT-TAPP1-000007",
+        "FACT-TAPP1-000008",
+        "FACT-TAPP1-000009",
+        "FACT-TAPP1-000010",
+        "FACT-TAPP1-000011",
+        "FACT-TAPP1-000012",
+        "FACT-TAPP1-000013"
+      ],
+      "reason": "Keep only current premises and open stopping conditions; exact historical statement stays in source revision."
+    },
+    {
+      "section": "confirmed",
+      "old_id": "cp-confirmed-016",
+      "summary_sha256": "e41045abd51bd23b920edfb44d3c5914347bb0c2a067a796f33ef94c07ea35b6",
+      "disposition": "current_summary_replaced",
+      "history_ref": "repo://multica-memory@9213a0e1a8e95e6fc3684e878fe8170846aba76c/project-context/teachers-app1/checkpoint.yaml",
+      "current_ids": [
+        "cp-confirmed-016"
+      ],
+      "reason": "Keep only current premises and open stopping conditions; exact historical statement stays in source revision."
+    },
+    {
+      "section": "open",
+      "old_id": "cp-open-001",
+      "summary_sha256": "361002daa709f5b71fb97ae9dd035f4f8a27159d8ab1894763e66bf7987642a0",
+      "disposition": "current_summary_replaced",
+      "history_ref": "repo://multica-memory@9213a0e1a8e95e6fc3684e878fe8170846aba76c/project-context/teachers-app1/checkpoint.yaml",
+      "current_ids": [
+        "cp-open-001"
+      ],
+      "reason": "Keep only current premises and open stopping conditions; exact historical statement stays in source revision."
+    },
+    {
+      "section": "open",
+      "old_id": "cp-open-002",
+      "summary_sha256": "e56bdf8276e0d1efd196c4d64a70491e85fe23b892af2972ed8f655f757cd5ca",
+      "disposition": "current_summary_replaced",
+      "history_ref": "repo://multica-memory@9213a0e1a8e95e6fc3684e878fe8170846aba76c/project-context/teachers-app1/checkpoint.yaml",
+      "current_ids": [
+        "cp-open-002"
+      ],
+      "reason": "Keep only current premises and open stopping conditions; exact historical statement stays in source revision."
+    },
+    {
+      "section": "open",
+      "old_id": "cp-open-003",
+      "summary_sha256": "3f4b24f2d16ab1ecd15bc4808ee411d94dd1968ffa3535fba76ebb4e9869b7d1",
+      "disposition": "current_summary_replaced",
+      "history_ref": "repo://multica-memory@9213a0e1a8e95e6fc3684e878fe8170846aba76c/project-context/teachers-app1/checkpoint.yaml",
+      "current_ids": [
+        "cp-open-003"
+      ],
+      "reason": "Keep only current premises and open stopping conditions; exact historical statement stays in source revision."
+    },
+    {
+      "section": "open",
+      "old_id": "cp-open-004",
+      "summary_sha256": "bd7ead2854855a60e18e201b4e3af9b62674fc21308cbc7fb747518362676c62",
+      "disposition": "current_summary_replaced",
+      "history_ref": "repo://multica-memory@9213a0e1a8e95e6fc3684e878fe8170846aba76c/project-context/teachers-app1/checkpoint.yaml",
+      "current_ids": [
+        "cp-open-004"
+      ],
+      "reason": "Keep only current premises and open stopping conditions; exact historical statement stays in source revision."
+    },
+    {
+      "section": "open",
+      "old_id": "cp-open-005",
+      "summary_sha256": "cd6c01b1a4e4345a50ecddc331db31f5553fa32d17ad91552f38626f8f7751dd",
+      "disposition": "current_summary_replaced",
+      "history_ref": "repo://multica-memory@9213a0e1a8e95e6fc3684e878fe8170846aba76c/project-context/teachers-app1/checkpoint.yaml",
+      "current_ids": [
+        "cp-open-005"
+      ],
+      "reason": "Keep only current premises and open stopping conditions; exact historical statement stays in source revision."
+    },
+    {
+      "section": "next",
+      "old_ordinal": 1,
+      "summary_sha256": "dcaacb45ec3b3b242868538d1901d6bfc7881307cb956bf8920f14f241ba7fa5",
+      "disposition": "retired_historical_action_pointer",
+      "history_ref": "repo://multica-memory@9213a0e1a8e95e6fc3684e878fe8170846aba76c/project-context/teachers-app1/checkpoint.yaml",
+      "current_ids": [
+        "checkpoint:teachers-app1/next"
+      ],
+      "reason": "Do not instruct execution from older integration snapshots; unfinished deployment/verification obligations are carried by current next/open, not declared completed."
+    },
+    {
+      "section": "next",
+      "old_ordinal": 2,
+      "summary_sha256": "77c9de14fe6b4396f41cad7af260a27778066ac3134c665e909450fe118aea7e",
+      "disposition": "retired_historical_action_pointer",
+      "history_ref": "repo://multica-memory@9213a0e1a8e95e6fc3684e878fe8170846aba76c/project-context/teachers-app1/checkpoint.yaml",
+      "current_ids": [
+        "checkpoint:teachers-app1/next"
+      ],
+      "reason": "Do not instruct execution from older integration snapshots; unfinished deployment/verification obligations are carried by current next/open, not declared completed."
+    },
+    {
+      "section": "next",
+      "old_ordinal": 3,
+      "summary_sha256": "92806efa6f22c7e7dd5c3669e64403d04d5060f5f6a6e429f2fdeba672ad19ba",
+      "disposition": "retired_historical_action_pointer",
+      "history_ref": "repo://multica-memory@9213a0e1a8e95e6fc3684e878fe8170846aba76c/project-context/teachers-app1/checkpoint.yaml",
+      "current_ids": [
+        "checkpoint:teachers-app1/next"
+      ],
+      "reason": "Do not instruct execution from older integration snapshots; unfinished deployment/verification obligations are carried by current next/open, not declared completed."
+    },
+    {
+      "section": "next",
+      "old_ordinal": 4,
+      "summary_sha256": "6a3b982c41905622efd021c20458c1d0025b21010178fa160aaccd008f025ae8",
+      "disposition": "retired_historical_action_pointer",
+      "history_ref": "repo://multica-memory@9213a0e1a8e95e6fc3684e878fe8170846aba76c/project-context/teachers-app1/checkpoint.yaml",
+      "current_ids": [
+        "checkpoint:teachers-app1/next"
+      ],
+      "reason": "Do not instruct execution from older integration snapshots; unfinished deployment/verification obligations are carried by current next/open, not declared completed."
+    },
+    {
+      "section": "next",
+      "old_ordinal": 5,
+      "summary_sha256": "484eafbc70e0608e384a2532b67111263a09570a17147d363651ab7af345c64a",
+      "disposition": "retired_historical_action_pointer",
+      "history_ref": "repo://multica-memory@9213a0e1a8e95e6fc3684e878fe8170846aba76c/project-context/teachers-app1/checkpoint.yaml",
+      "current_ids": [
+        "checkpoint:teachers-app1/next"
+      ],
+      "reason": "Do not instruct execution from older integration snapshots; unfinished deployment/verification obligations are carried by current next/open, not declared completed."
+    },
+    {
+      "section": "next",
+      "old_ordinal": 6,
+      "summary_sha256": "a5ee7983d25ce082c84f069f8899bacce14df2e0e228f4896767f818e6c6e6d8",
+      "disposition": "retired_historical_action_pointer",
+      "history_ref": "repo://multica-memory@9213a0e1a8e95e6fc3684e878fe8170846aba76c/project-context/teachers-app1/checkpoint.yaml",
+      "current_ids": [
+        "checkpoint:teachers-app1/next"
+      ],
+      "reason": "Do not instruct execution from older integration snapshots; unfinished deployment/verification obligations are carried by current next/open, not declared completed."
+    },
+    {
+      "section": "next",
+      "old_ordinal": 7,
+      "summary_sha256": "eef71d946ad42f870c4e52d3f6f17de5797c9c56e1b0e0cf478702720fa886a3",
+      "disposition": "retired_historical_action_pointer",
+      "history_ref": "repo://multica-memory@9213a0e1a8e95e6fc3684e878fe8170846aba76c/project-context/teachers-app1/checkpoint.yaml",
+      "current_ids": [
+        "checkpoint:teachers-app1/next"
+      ],
+      "reason": "Do not instruct execution from older integration snapshots; unfinished deployment/verification obligations are carried by current next/open, not declared completed."
+    },
+    {
+      "section": "next",
+      "old_ordinal": 8,
+      "summary_sha256": "c252fa636daa8f0f356798ea66a96f905f48d79c367a54ae8dfcd85e9f43dd71",
+      "disposition": "retired_historical_action_pointer",
+      "history_ref": "repo://multica-memory@9213a0e1a8e95e6fc3684e878fe8170846aba76c/project-context/teachers-app1/checkpoint.yaml",
+      "current_ids": [
+        "checkpoint:teachers-app1/next"
+      ],
+      "reason": "Do not instruct execution from older integration snapshots; unfinished deployment/verification obligations are carried by current next/open, not declared completed."
+    },
+    {
+      "section": "next",
+      "old_ordinal": 9,
+      "summary_sha256": "11bc99de196a3f4248454df594010d380098bae51ca4b45a4d0749da5ee4ab5e",
+      "disposition": "retired_historical_action_pointer",
+      "history_ref": "repo://multica-memory@9213a0e1a8e95e6fc3684e878fe8170846aba76c/project-context/teachers-app1/checkpoint.yaml",
+      "current_ids": [
+        "checkpoint:teachers-app1/next"
+      ],
+      "reason": "Do not instruct execution from older integration snapshots; unfinished deployment/verification obligations are carried by current next/open, not declared completed."
+    },
+    {
+      "section": "next",
+      "old_ordinal": 10,
+      "summary_sha256": "07aeee2dc2463e327452a31fc632435d8a4888ff142b8c89957da59d450b0525",
+      "disposition": "retired_historical_action_pointer",
+      "history_ref": "repo://multica-memory@9213a0e1a8e95e6fc3684e878fe8170846aba76c/project-context/teachers-app1/checkpoint.yaml",
+      "current_ids": [
+        "checkpoint:teachers-app1/next"
+      ],
+      "reason": "Do not instruct execution from older integration snapshots; unfinished deployment/verification obligations are carried by current next/open, not declared completed."
+    },
+    {
+      "section": "next",
+      "old_ordinal": 11,
+      "summary_sha256": "6ac5402d46e8db1b5fd9511bedf8e7d54c12fa68ecec0c73937b4388e16cfe29",
+      "disposition": "retired_historical_action_pointer",
+      "history_ref": "repo://multica-memory@9213a0e1a8e95e6fc3684e878fe8170846aba76c/project-context/teachers-app1/checkpoint.yaml",
+      "current_ids": [
+        "checkpoint:teachers-app1/next"
+      ],
+      "reason": "Do not instruct execution from older integration snapshots; unfinished deployment/verification obligations are carried by current next/open, not declared completed."
+    },
+    {
+      "section": "next",
+      "old_ordinal": 12,
+      "summary_sha256": "a2fa93890afdbbcb310ba90f705bd1518d37c841c6b5bfc9ea7d3ba1c292c6d5",
+      "disposition": "retired_historical_action_pointer",
+      "history_ref": "repo://multica-memory@9213a0e1a8e95e6fc3684e878fe8170846aba76c/project-context/teachers-app1/checkpoint.yaml",
+      "current_ids": [
+        "checkpoint:teachers-app1/next"
+      ],
+      "reason": "Do not instruct execution from older integration snapshots; unfinished deployment/verification obligations are carried by current next/open, not declared completed."
+    },
+    {
+      "section": "next",
+      "old_ordinal": 13,
+      "summary_sha256": "b9299feb5016b210e3c75dcae30a49c3615726588f4db5690276b09dccb0ea2f",
+      "disposition": "retired_historical_action_pointer",
+      "history_ref": "repo://multica-memory@9213a0e1a8e95e6fc3684e878fe8170846aba76c/project-context/teachers-app1/checkpoint.yaml",
+      "current_ids": [
+        "checkpoint:teachers-app1/next"
+      ],
+      "reason": "Do not instruct execution from older integration snapshots; unfinished deployment/verification obligations are carried by current next/open, not declared completed."
+    },
+    {
+      "section": "next",
+      "old_ordinal": 14,
+      "summary_sha256": "06db6ccb28250668109d3ba4e132c0daed8fd3927aa6fcb6b42046775d39ba3d",
+      "disposition": "retired_historical_action_pointer",
+      "history_ref": "repo://multica-memory@9213a0e1a8e95e6fc3684e878fe8170846aba76c/project-context/teachers-app1/checkpoint.yaml",
+      "current_ids": [
+        "checkpoint:teachers-app1/next"
+      ],
+      "reason": "Do not instruct execution from older integration snapshots; unfinished deployment/verification obligations are carried by current next/open, not declared completed."
+    },
+    {
+      "section": "next",
+      "old_ordinal": 15,
+      "summary_sha256": "b77c5028b3a2e8f974754e5ed6b5ef0c7a839da424bff014e6915396d5a04f2e",
+      "disposition": "retired_historical_action_pointer",
+      "history_ref": "repo://multica-memory@9213a0e1a8e95e6fc3684e878fe8170846aba76c/project-context/teachers-app1/checkpoint.yaml",
+      "current_ids": [
+        "checkpoint:teachers-app1/next"
+      ],
+      "reason": "Do not instruct execution from older integration snapshots; unfinished deployment/verification obligations are carried by current next/open, not declared completed."
+    },
+    {
+      "section": "next",
+      "old_ordinal": 16,
+      "summary_sha256": "168e1c7d770c4c656b0d9bf4b10651db5efddd21e3f987c0df75bafa3a184805",
+      "disposition": "retired_historical_action_pointer",
+      "history_ref": "repo://multica-memory@9213a0e1a8e95e6fc3684e878fe8170846aba76c/project-context/teachers-app1/checkpoint.yaml",
+      "current_ids": [
+        "checkpoint:teachers-app1/next"
+      ],
+      "reason": "Do not instruct execution from older integration snapshots; unfinished deployment/verification obligations are carried by current next/open, not declared completed."
+    },
+    {
+      "section": "next",
+      "old_ordinal": 17,
+      "summary_sha256": "9e990828f9186abaa09049770b63760cbf8d597df2a3fe452a7bd750b4f12093",
+      "disposition": "retired_historical_action_pointer",
+      "history_ref": "repo://multica-memory@9213a0e1a8e95e6fc3684e878fe8170846aba76c/project-context/teachers-app1/checkpoint.yaml",
+      "current_ids": [
+        "checkpoint:teachers-app1/next"
+      ],
+      "reason": "Do not instruct execution from older integration snapshots; unfinished deployment/verification obligations are carried by current next/open, not declared completed."
+    },
+    {
+      "section": "next",
+      "old_ordinal": 18,
+      "summary_sha256": "c2ced8db6440e15eb6125589c2c317c05efa9c4bed227e6f8d3ce14dc743e62c",
+      "disposition": "retired_historical_action_pointer",
+      "history_ref": "repo://multica-memory@9213a0e1a8e95e6fc3684e878fe8170846aba76c/project-context/teachers-app1/checkpoint.yaml",
+      "current_ids": [
+        "checkpoint:teachers-app1/next"
+      ],
+      "reason": "Do not instruct execution from older integration snapshots; unfinished deployment/verification obligations are carried by current next/open, not declared completed."
+    },
+    {
+      "section": "next",
+      "old_ordinal": 19,
+      "summary_sha256": "3cc59b0ab5444ee72178e0d5af441408a7d4bc86a3b02f31bcaef3694cf9e6fa",
+      "disposition": "retired_historical_action_pointer",
+      "history_ref": "repo://multica-memory@9213a0e1a8e95e6fc3684e878fe8170846aba76c/project-context/teachers-app1/checkpoint.yaml",
+      "current_ids": [
+        "checkpoint:teachers-app1/next"
+      ],
+      "reason": "Do not instruct execution from older integration snapshots; unfinished deployment/verification obligations are carried by current next/open, not declared completed."
+    },
+    {
+      "section": "next",
+      "old_ordinal": 20,
+      "summary_sha256": "5d7bbd6f82c82a43aa671d812e066bae68deae47e4b18a20d0c7bf4038b04d10",
+      "disposition": "retired_historical_action_pointer",
+      "history_ref": "repo://multica-memory@9213a0e1a8e95e6fc3684e878fe8170846aba76c/project-context/teachers-app1/checkpoint.yaml",
+      "current_ids": [
+        "checkpoint:teachers-app1/next"
+      ],
+      "reason": "Do not instruct execution from older integration snapshots; unfinished deployment/verification obligations are carried by current next/open, not declared completed."
+    },
+    {
+      "section": "next",
+      "old_ordinal": 21,
+      "summary_sha256": "47867080e0feb4754726cf5c1b582e68fd7e73864cee57be1738024610058869",
+      "disposition": "retired_historical_action_pointer",
+      "history_ref": "repo://multica-memory@9213a0e1a8e95e6fc3684e878fe8170846aba76c/project-context/teachers-app1/checkpoint.yaml",
+      "current_ids": [
+        "checkpoint:teachers-app1/next"
+      ],
+      "reason": "Do not instruct execution from older integration snapshots; unfinished deployment/verification obligations are carried by current next/open, not declared completed."
+    },
+    {
+      "section": "next",
+      "old_ordinal": 22,
+      "summary_sha256": "773fa8c8169d368caad5cce0f780a9603cee1c2c9a54d94bfe1dbfc958ea3b6e",
+      "disposition": "retired_historical_action_pointer",
+      "history_ref": "repo://multica-memory@9213a0e1a8e95e6fc3684e878fe8170846aba76c/project-context/teachers-app1/checkpoint.yaml",
+      "current_ids": [
+        "checkpoint:teachers-app1/next"
+      ],
+      "reason": "Do not instruct execution from older integration snapshots; unfinished deployment/verification obligations are carried by current next/open, not declared completed."
+    },
+    {
+      "section": "next",
+      "old_ordinal": 23,
+      "summary_sha256": "142aa38965cc12f0e6756dc7767f895d78cf968ef832526a95509006f6524c90",
+      "disposition": "retired_historical_action_pointer",
+      "history_ref": "repo://multica-memory@9213a0e1a8e95e6fc3684e878fe8170846aba76c/project-context/teachers-app1/checkpoint.yaml",
+      "current_ids": [
+        "checkpoint:teachers-app1/next"
+      ],
+      "reason": "Do not instruct execution from older integration snapshots; unfinished deployment/verification obligations are carried by current next/open, not declared completed."
+    },
+    {
+      "section": "next",
+      "old_ordinal": 24,
+      "summary_sha256": "263137dc717fceba3edaf3d041501a8ea7e114f10bd28a6d96ee4a24156ad55b",
+      "disposition": "retired_historical_action_pointer",
+      "history_ref": "repo://multica-memory@9213a0e1a8e95e6fc3684e878fe8170846aba76c/project-context/teachers-app1/checkpoint.yaml",
+      "current_ids": [
+        "checkpoint:teachers-app1/next"
+      ],
+      "reason": "Do not instruct execution from older integration snapshots; unfinished deployment/verification obligations are carried by current next/open, not declared completed."
+    },
+    {
+      "section": "next",
+      "old_ordinal": 25,
+      "summary_sha256": "f0c7116a4ea9c3bb130f7c2c5c0dbc19e2db34e09453a790f6b5e883eaf7a535",
+      "disposition": "retired_historical_action_pointer",
+      "history_ref": "repo://multica-memory@9213a0e1a8e95e6fc3684e878fe8170846aba76c/project-context/teachers-app1/checkpoint.yaml",
+      "current_ids": [
+        "checkpoint:teachers-app1/next"
+      ],
+      "reason": "Do not instruct execution from older integration snapshots; unfinished deployment/verification obligations are carried by current next/open, not declared completed."
+    },
+    {
+      "section": "next",
+      "old_ordinal": 26,
+      "summary_sha256": "f0918991712fd7ba92d9579e6f0e5b060840ecd1f407c092f11fa462f54a3943",
+      "disposition": "retired_historical_action_pointer",
+      "history_ref": "repo://multica-memory@9213a0e1a8e95e6fc3684e878fe8170846aba76c/project-context/teachers-app1/checkpoint.yaml",
+      "current_ids": [
+        "checkpoint:teachers-app1/next"
+      ],
+      "reason": "Do not instruct execution from older integration snapshots; unfinished deployment/verification obligations are carried by current next/open, not declared completed."
+    },
+    {
+      "section": "next",
+      "old_ordinal": 27,
+      "summary_sha256": "ea34a748a189b0a8cd6ee9d3beb53effc2858299fa911fbfca8f322810908417",
+      "disposition": "retired_historical_action_pointer",
+      "history_ref": "repo://multica-memory@9213a0e1a8e95e6fc3684e878fe8170846aba76c/project-context/teachers-app1/checkpoint.yaml",
+      "current_ids": [
+        "checkpoint:teachers-app1/next"
+      ],
+      "reason": "Do not instruct execution from older integration snapshots; unfinished deployment/verification obligations are carried by current next/open, not declared completed."
+    },
+    {
+      "section": "next",
+      "old_ordinal": 28,
+      "summary_sha256": "f15df6931c416e19cf16974906f7ea89636afa018f9d66abd525d51014c04b0b",
+      "disposition": "retired_historical_action_pointer",
+      "history_ref": "repo://multica-memory@9213a0e1a8e95e6fc3684e878fe8170846aba76c/project-context/teachers-app1/checkpoint.yaml",
+      "current_ids": [
+        "checkpoint:teachers-app1/next"
+      ],
+      "reason": "Do not instruct execution from older integration snapshots; unfinished deployment/verification obligations are carried by current next/open, not declared completed."
+    },
+    {
+      "section": "next",
+      "old_ordinal": 29,
+      "summary_sha256": "b5f21761f6d2222e1c723e531d8813d886d1b92cfec14c1680ace4c1e50307cc",
+      "disposition": "retired_historical_action_pointer",
+      "history_ref": "repo://multica-memory@9213a0e1a8e95e6fc3684e878fe8170846aba76c/project-context/teachers-app1/checkpoint.yaml",
+      "current_ids": [
+        "checkpoint:teachers-app1/next"
+      ],
+      "reason": "Do not instruct execution from older integration snapshots; unfinished deployment/verification obligations are carried by current next/open, not declared completed."
+    },
+    {
+      "section": "next",
+      "old_ordinal": 30,
+      "summary_sha256": "6db5b9f81ea5078b7058ea14a68d1a26860029c842a546b223a4368f6c66691b",
+      "disposition": "retired_historical_action_pointer",
+      "history_ref": "repo://multica-memory@9213a0e1a8e95e6fc3684e878fe8170846aba76c/project-context/teachers-app1/checkpoint.yaml",
+      "current_ids": [
+        "checkpoint:teachers-app1/next"
+      ],
+      "reason": "Do not instruct execution from older integration snapshots; unfinished deployment/verification obligations are carried by current next/open, not declared completed."
+    },
+    {
+      "section": "next",
+      "old_ordinal": 31,
+      "summary_sha256": "1dbaa0b7ec55b76625e79badbfbe74999f7f61fc64b0d130f44049b582eb388c",
+      "disposition": "retired_historical_action_pointer",
+      "history_ref": "repo://multica-memory@9213a0e1a8e95e6fc3684e878fe8170846aba76c/project-context/teachers-app1/checkpoint.yaml",
+      "current_ids": [
+        "checkpoint:teachers-app1/next"
+      ],
+      "reason": "Do not instruct execution from older integration snapshots; unfinished deployment/verification obligations are carried by current next/open, not declared completed."
+    },
+    {
+      "section": "next",
+      "old_ordinal": 32,
+      "summary_sha256": "4aaa74b03296720512fbd7e26fc54414d8ad1d2107c6035dbf6c312c1e5b905f",
+      "disposition": "retired_historical_action_pointer",
+      "history_ref": "repo://multica-memory@9213a0e1a8e95e6fc3684e878fe8170846aba76c/project-context/teachers-app1/checkpoint.yaml",
+      "current_ids": [
+        "checkpoint:teachers-app1/next"
+      ],
+      "reason": "Do not instruct execution from older integration snapshots; unfinished deployment/verification obligations are carried by current next/open, not declared completed."
+    },
+    {
+      "section": "next",
+      "old_ordinal": 33,
+      "summary_sha256": "06b42a25f83ff76951a763bb8927f3c2638f5878465e3b869baf986fa39f0716",
+      "disposition": "retired_historical_action_pointer",
+      "history_ref": "repo://multica-memory@9213a0e1a8e95e6fc3684e878fe8170846aba76c/project-context/teachers-app1/checkpoint.yaml",
+      "current_ids": [
+        "checkpoint:teachers-app1/next"
+      ],
+      "reason": "Do not instruct execution from older integration snapshots; unfinished deployment/verification obligations are carried by current next/open, not declared completed."
+    },
+    {
+      "section": "next",
+      "old_ordinal": 34,
+      "summary_sha256": "83c6752af4dfced4731fc8dbfdd79cda48eae7dcc581e9d6ee4e72a2816992c7",
+      "disposition": "retired_historical_action_pointer",
+      "history_ref": "repo://multica-memory@9213a0e1a8e95e6fc3684e878fe8170846aba76c/project-context/teachers-app1/checkpoint.yaml",
+      "current_ids": [
+        "checkpoint:teachers-app1/next"
+      ],
+      "reason": "Do not instruct execution from older integration snapshots; unfinished deployment/verification obligations are carried by current next/open, not declared completed."
+    },
+    {
+      "section": "next",
+      "old_ordinal": 35,
+      "summary_sha256": "082df4d78be8c2059a5b313d8a7884b7fb2eece9e7ddc657aebb925a339224d6",
+      "disposition": "retired_historical_action_pointer",
+      "history_ref": "repo://multica-memory@9213a0e1a8e95e6fc3684e878fe8170846aba76c/project-context/teachers-app1/checkpoint.yaml",
+      "current_ids": [
+        "checkpoint:teachers-app1/next"
+      ],
+      "reason": "Do not instruct execution from older integration snapshots; unfinished deployment/verification obligations are carried by current next/open, not declared completed."
+    },
+    {
+      "section": "next",
+      "old_ordinal": 36,
+      "summary_sha256": "a717db32fddfa92e408d6fe5ab282977f8e6420f2ff233008a6358f0d4e0312f",
+      "disposition": "retired_historical_action_pointer",
+      "history_ref": "repo://multica-memory@9213a0e1a8e95e6fc3684e878fe8170846aba76c/project-context/teachers-app1/checkpoint.yaml",
+      "current_ids": [
+        "checkpoint:teachers-app1/next"
+      ],
+      "reason": "Do not instruct execution from older integration snapshots; unfinished deployment/verification obligations are carried by current next/open, not declared completed."
+    },
+    {
+      "section": "next",
+      "old_ordinal": 37,
+      "summary_sha256": "5113a8be77ab2aa3d41c5b861ded86a2af5459e7826f7c90195d502971d8f236",
+      "disposition": "retired_historical_action_pointer",
+      "history_ref": "repo://multica-memory@9213a0e1a8e95e6fc3684e878fe8170846aba76c/project-context/teachers-app1/checkpoint.yaml",
+      "current_ids": [
+        "checkpoint:teachers-app1/next"
+      ],
+      "reason": "Do not instruct execution from older integration snapshots; unfinished deployment/verification obligations are carried by current next/open, not declared completed."
+    },
+    {
+      "section": "next",
+      "old_ordinal": 38,
+      "summary_sha256": "c3420f13c4dbbf16134811e35ed61f2c54c3bc593604585f7cfbf566bf393044",
+      "disposition": "retired_historical_action_pointer",
+      "history_ref": "repo://multica-memory@9213a0e1a8e95e6fc3684e878fe8170846aba76c/project-context/teachers-app1/checkpoint.yaml",
+      "current_ids": [
+        "checkpoint:teachers-app1/next"
+      ],
+      "reason": "Do not instruct execution from older integration snapshots; unfinished deployment/verification obligations are carried by current next/open, not declared completed."
+    },
+    {
+      "section": "next",
+      "old_ordinal": 39,
+      "summary_sha256": "b07442ee7c3baf9ec9c71174a27ad3488eee8bc9a64da97a52643c82f3de6107",
+      "disposition": "retired_historical_action_pointer",
+      "history_ref": "repo://multica-memory@9213a0e1a8e95e6fc3684e878fe8170846aba76c/project-context/teachers-app1/checkpoint.yaml",
+      "current_ids": [
+        "checkpoint:teachers-app1/next"
+      ],
+      "reason": "Do not instruct execution from older integration snapshots; unfinished deployment/verification obligations are carried by current next/open, not declared completed."
+    },
+    {
+      "section": "next",
+      "old_ordinal": 40,
+      "summary_sha256": "a78d9ef209ed58cb54825c9fd3dd15102c4656699d9974d52a424578d2501110",
+      "disposition": "retired_historical_action_pointer",
+      "history_ref": "repo://multica-memory@9213a0e1a8e95e6fc3684e878fe8170846aba76c/project-context/teachers-app1/checkpoint.yaml",
+      "current_ids": [
+        "checkpoint:teachers-app1/next"
+      ],
+      "reason": "Do not instruct execution from older integration snapshots; unfinished deployment/verification obligations are carried by current next/open, not declared completed."
+    },
+    {
+      "section": "next",
+      "old_ordinal": 41,
+      "summary_sha256": "dc6d2419ae7bd1f24298e6730b35af9c11e433f7881db59d1b396cee46c95b27",
+      "disposition": "retired_historical_action_pointer",
+      "history_ref": "repo://multica-memory@9213a0e1a8e95e6fc3684e878fe8170846aba76c/project-context/teachers-app1/checkpoint.yaml",
+      "current_ids": [
+        "checkpoint:teachers-app1/next"
+      ],
+      "reason": "Do not instruct execution from older integration snapshots; unfinished deployment/verification obligations are carried by current next/open, not declared completed."
+    },
+    {
+      "section": "next",
+      "old_ordinal": 42,
+      "summary_sha256": "0e834d5260ba4e7553808400040f03072b4eaf16a3d08b62e5183954747e1d5a",
+      "disposition": "retired_historical_action_pointer",
+      "history_ref": "repo://multica-memory@9213a0e1a8e95e6fc3684e878fe8170846aba76c/project-context/teachers-app1/checkpoint.yaml",
+      "current_ids": [
+        "checkpoint:teachers-app1/next"
+      ],
+      "reason": "Do not instruct execution from older integration snapshots; unfinished deployment/verification obligations are carried by current next/open, not declared completed."
+    },
+    {
+      "section": "next",
+      "old_ordinal": 43,
+      "summary_sha256": "d3dca08c2d2fab85766922039411980b1872c6424840d36967db9f590012d1f1",
+      "disposition": "retired_historical_action_pointer",
+      "history_ref": "repo://multica-memory@9213a0e1a8e95e6fc3684e878fe8170846aba76c/project-context/teachers-app1/checkpoint.yaml",
+      "current_ids": [
+        "checkpoint:teachers-app1/next"
+      ],
+      "reason": "Do not instruct execution from older integration snapshots; unfinished deployment/verification obligations are carried by current next/open, not declared completed."
+    },
+    {
+      "section": "next",
+      "old_ordinal": 44,
+      "summary_sha256": "7587b47fedeabe8a7b923208d4c7cc99e97c559cf1cd2c5d2c747400f9b99396",
+      "disposition": "retired_historical_action_pointer",
+      "history_ref": "repo://multica-memory@9213a0e1a8e95e6fc3684e878fe8170846aba76c/project-context/teachers-app1/checkpoint.yaml",
+      "current_ids": [
+        "checkpoint:teachers-app1/next"
+      ],
+      "reason": "Do not instruct execution from older integration snapshots; unfinished deployment/verification obligations are carried by current next/open, not declared completed."
+    },
+    {
+      "section": "next",
+      "old_ordinal": 45,
+      "summary_sha256": "54be53204bced67a68cdd4c84ff26c5a4ae827df66116b962efb3e3a293d6bff",
+      "disposition": "retired_historical_action_pointer",
+      "history_ref": "repo://multica-memory@9213a0e1a8e95e6fc3684e878fe8170846aba76c/project-context/teachers-app1/checkpoint.yaml",
+      "current_ids": [
+        "checkpoint:teachers-app1/next"
+      ],
+      "reason": "Do not instruct execution from older integration snapshots; unfinished deployment/verification obligations are carried by current next/open, not declared completed."
+    }
+  ],
+  "new_objects": [
+    {
+      "id": "FACT-TAPP1-000007",
+      "statement_bytes": 1807,
+      "source_refs": 7
+    },
+    {
+      "id": "FACT-TAPP1-000008",
+      "statement_bytes": 2539,
+      "source_refs": 9
+    },
+    {
+      "id": "FACT-TAPP1-000009",
+      "statement_bytes": 1780,
+      "source_refs": 4
+    },
+    {
+      "id": "FACT-TAPP1-000010",
+      "statement_bytes": 2577,
+      "source_refs": 5
+    },
+    {
+      "id": "FACT-TAPP1-000011",
+      "statement_bytes": 2893,
+      "source_refs": 7
+    },
+    {
+      "id": "FACT-TAPP1-000012",
+      "statement_bytes": 2611,
+      "source_refs": 7
+    },
+    {
+      "id": "FACT-TAPP1-000013",
+      "statement_bytes": 2127,
+      "source_refs": 6
+    }
+  ],
+  "checkpoint_counts": {
+    "before": {
+      "confirmed": 16,
+      "open": 5,
+      "conflicts": 0,
+      "next": 45
+    },
+    "after": {
+      "confirmed": 4,
+      "open": 6,
+      "conflicts": 0,
+      "next": 4
+    }
+  },
+  "reference_normalizations": [
+    {
+      "object_id": "FACT-TAPP1-000003",
+      "field": "verified_against",
+      "old": {
+        "source_ref": "file:///.ai/local/runs/YZT-188/software-engineer/ab6b3053ef9644288b4a80b6c02f528e/result.json",
+        "revision": "2026-09-28T04:56:30Z",
+        "paths": [
+          ".ai/local/runs/YZT-188/software-engineer/ab6b3053ef9644288b4a80b6c02f528e/result.json",
+          ".ai/local/runs/YZT-188/software-engineer/ab6b3053ef9644288b4a80b6c02f528e/inspect-installed.log"
+        ]
+      },
+      "new": {
+        "source_ref": "repo://multica-memory@9213a0e1a8e95e6fc3684e878fe8170846aba76c/project-context/teachers-app1/facts/FACT-TAPP1-000003.yaml",
+        "revision": "9213a0e1a8e95e6fc3684e878fe8170846aba76c",
+        "paths": [
+          "project-context/teachers-app1/facts/FACT-TAPP1-000003.yaml"
+        ]
+      },
+      "reason": "The private receipt URI is not a Public evidence-ref. Point to the immutable public provenance record, not an invented tracked private file. No new live receipt is asserted."
+    },
+    {
+      "object_id": "FACT-TAPP1-000005",
+      "field": "source_refs",
+      "old": "FACT-TAPP1-000003",
+      "new": "repo://multica-memory@9213a0e1a8e95e6fc3684e878fe8170846aba76c/project-context/teachers-app1/facts/FACT-TAPP1-000003.yaml",
+      "reason": "Qualify an existing object pointer with its immutable source revision; original bytes remain in Git."
+    },
+    {
+      "object_id": "FACT-TAPP1-000005",
+      "field": "source_refs",
+      "old": "FACT-TAPP1-000004",
+      "new": "repo://multica-memory@9213a0e1a8e95e6fc3684e878fe8170846aba76c/project-context/teachers-app1/facts/FACT-TAPP1-000004.yaml",
+      "reason": "Qualify an existing object pointer with its immutable source revision; original bytes remain in Git."
+    },
+    {
+      "object_id": "FACT-TAPP1-000006",
+      "field": "source_refs",
+      "old": "FACT-TAPP1-000003",
+      "new": "repo://multica-memory@9213a0e1a8e95e6fc3684e878fe8170846aba76c/project-context/teachers-app1/facts/FACT-TAPP1-000003.yaml",
+      "reason": "Qualify an existing object pointer with its immutable source revision; original bytes remain in Git."
+    },
+    {
+      "object_id": "FACT-TAPP1-000006",
+      "field": "source_refs",
+      "old": "FACT-TAPP1-000004",
+      "new": "repo://multica-memory@9213a0e1a8e95e6fc3684e878fe8170846aba76c/project-context/teachers-app1/facts/FACT-TAPP1-000004.yaml",
+      "reason": "Qualify an existing object pointer with its immutable source revision; original bytes remain in Git."
+    }
+  ],
+  "history_preservation_detail": "Original statements and verdict text retained verbatim; five invalid reference encodings qualified with immutable source pointers. Original source bytes remain at source_revision and all normalization deltas are explicit."
+}

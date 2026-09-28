@@ -121,6 +121,7 @@ def main() -> int:
             pass
 
     for fdoc in facts:
+        errors += schema_check(fdoc, "fact.schema.json", f"fact:{fdoc.get('id')}")
         if fdoc["scope"]["type"] != "project":
             errors.append(f"fact:{fdoc['id']}: scope must be project")
         elif fdoc["scope"].get("project_id") not in registered_ids:
