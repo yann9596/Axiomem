@@ -80,6 +80,21 @@ confirmed:
       未变、共享 build-profile.json5 的 signingConfigs 仍为 []），develop 现领先 main 558fdc93
       四十六个提交；逐提交归属、被审等价性、被审字节散列与 NOT_RUN/NOT_READY 边界以
       FACT-TAPP1-000003 的 YZT-216 更新段为准（见 cp-confirmed-016）。
+      YZT-219 更新（2026-09-28 UTC 治理批次）：本条上文的集成基线 as-of 叙述保留为历史时点；
+      当前集成基线已由 f0317fc 推进为 origin/develop = refs/heads/develop =
+      5b25cd0a8a9474899629795b605e2c17e9978a08（YZT-219 批实测 git ls-remote origin
+      refs/heads/develop 即该 SHA，本机 HEAD 与该 SHA 一致、工作树干净；本批实测
+      git rev-list --count f0317fc..5b25cd0 为 5，其中 e6f2813 与 cb14bb9 两个协作脚本维护提交
+      之后，88fcad4 / 709034d / 5b25cd0 是经 05 独立 R1 APPROVE 的 implementation /
+      teachers-app1-harmonyos-device-capabilities / 0.2.4 的等价摘取，三条被审 patch-id 逐一
+      相同、被审字节逐字节一致），develop 现领先 main 558fdc93 五十一个提交
+      （本批实测 git rev-list --count 558fdc93..5b25cd0 = 51）；git diff --stat f0317fc..5b25cd0
+      -- entry/ 为空、entry/src/main/ets/entryability/EntryAbility.ets 在 f0317fc 与 5b25cd0 同为
+      blob 6dd239c6b166034260d87d564b4caaa71d529cef，.ai/project-capabilities.json 逐字节未变，
+      共享 build-profile.json5 的 signingConfigs 仍为 []，即本批不改变产品生产源码、能力开关或
+      签名配置。逐提交归属、被审等价性、被审字节散列与 NOT_RUN/NOT_READY 边界以
+      FACT-TAPP1-000003 的 YZT-219 更新段为准。本条上文的"四十六个提交"保留为 YZT-216 时点的
+      正确计数，不是本批的当前值。
     refs:
       - repo://teachers-app-one@a67179dfc02f0461a7962dcc697161395c5deb76/docs/README.md
       - repo://teachers-app-one@a67179dfc02f0461a7962dcc697161395c5deb76/docs/product/product-expectations.md
@@ -785,6 +800,12 @@ confirmed:
       - repo://teachers-app-one@632368ac2577befec68be0867210c385ebe12f59/scripts/capabilities/device.py
       - repo://teachers-app-one@632368ac2577befec68be0867210c385ebe12f59/specs/bootstrap/capability-binding.json
       - repo://teachers-app-one@4bbf3e4e73b99f806df7370099ab86221bacafb9/scripts/capabilities/device.py
+      - repo://teachers-app-one@5b25cd0a8a9474899629795b605e2c17e9978a08/specs/harmonyos-device-capabilities/artifact-envelope.json
+      - repo://teachers-app-one@5b25cd0a8a9474899629795b605e2c17e9978a08/scripts/capabilities/device.py
+      - repo://teachers-app-one@642197d2b783755f5845e773a167936cf756374b/scripts/capabilities/device.py
+      - multica://issue/YZT-218
+      - multica://issue/YZT-219
+      - multica://issue/YZT-220
 
 open:
   - id: cp-open-001
@@ -926,6 +947,35 @@ open:
       恢复须在 01 接受并部署本治理、受影响 Context 刷新后单独决定。YZT-210（Stage 90）的只读
       身份 PASS 同样只是 scoped producer 证据。仓库单测 83/83、能力策略与仓库检查、YZT-215 R1
       APPROVE 都不得冒充平台持久化 PASS 或安装许可。
+      YZT-219 更正（2026-09-28 UTC 治理批次）：上文 YZT-216 补充中"它解决的是 YZT-188 上轮
+      live 转储被判 AMBIGUOUS 的阻塞原因"一句按 YZT-188 的实测收据更正，不成立——已审 0.2.3 的
+      被接受规则本身只把以 `{` 或 `[` 起首的转储当 JSON 解析，而 YZT-188 记录的 live 转储以
+      `teachers.app.one:` 前缀行起首，因此 0.2.3 走文本解析路径并对同一输入返回 AMBIGUOUS
+      （YZT-219 批实测：设备脚本 parse_bundle_dump 对该转储返回 kind=text，classify_installed
+      返回 AMBIGUOUS；同一输入在 0.2.4 上为 kind=json / PRESENT）。YZT-216 上文其余叙述
+      （0.2.3 的 JSON 解析与 bundleName 判定修正、debug appId 尾缀 `_` 视为元数据、冲突/畸形仍
+      AMBIGUOUS）继续作为代码事实成立，本轮只更正 live 解决效果的断言，不重判 YZT-215/216/217
+      的 APPROVE，也不改写 0.2.3 的版本与历史。YZT-219 补充：该实态的新精确来源是 YZT-188
+      在集成基线 f0317fc 上按 task/role/target 门执行的只读 inspect-installed 收据
+      `.ai/local/runs/YZT-188/software-engineer/ab6b3053ef9644288b4a80b6c02f528e/result.json`
+      （action=inspect-installed、target_ref=app1-emulator、commit=f0317fc、status=PASS、
+      state=AMBIGUOUS、identity_matched=false、dump_sha256
+      2c088a0b9412025c38c246fa8886157bdd2bd2575ba67f42513f6d21a74fd6a5）；同目录
+      inspect-installed.log 的 LF 归一化字节复算即该 SHA256，其首行为 `teachers.app.one:`，
+      JSON 内九处 bundleName 中八处精确为 teachers.app.one、一处为空的 appQuickFix.bundleName，
+      appId/oldAppIds 为 teachers.app.one_，即"八处精确 bundleName"与实测一致，前缀行是
+      0.2.3 未覆盖的实态。该前缀形态由经 05 独立 R1 APPROVE 的 implementation /
+      teachers-app1-harmonyos-device-capabilities / 0.2.4 修正并在 develop 5b25cd0 集成
+      （被审源码 642197d、信封见 5b25cd0 的 specs/harmonyos-device-capabilities/
+      artifact-envelope.json），但其宿主复算（同一转储纯函数重放为 PRESENT、104 项仓库单测
+      PASS）是离线证据，不是集成后 live inspect-installed PASS，也不是安装、清理或平台结论。
+      本条 NOT_RUN 边界与"不得以合成探针冒充平台 PASS"完全不变：模拟器 clear / inspect /
+      install / 覆盖 / 卸载、定向清理、A03 执行、UI 走查、instrument、profile device-ids 对 live
+      UDID 的匹配复核、真机 Pura X（VDE-AL00）、平台 relationalStore V01–V10、A03 真实跨进程
+      重启、A08 真实硬件竞争、L1 真机断言、签名生效、发布与 R2 仍全部 NOT_RUN；YZT-188 仍为
+      blocked，其恢复须待本次 Canonical 更正经独立 R1、01 接受并部署、受影响 Context/Artifact
+      刷新，以及在同一路径上的 fresh 只读 live 复核之后单独决定；用户定向清理授权仍只限私有
+      app1-emulator 上其自有同名 teachers.app.one 数据，本轮未做任何清理。
     refs:
       - repo://teachers-app-one@a67179dfc02f0461a7962dcc697161395c5deb76/docs/engineering/harmonyos-toolchain.md
       - repo://teachers-app-one@a67179dfc02f0461a7962dcc697161395c5deb76/docs/project-management/mvp-execution-plan.md
@@ -945,6 +995,10 @@ open:
       - multica://issue/YZT-210
       - multica://comment/01a0e3fe-05dc-7a65-bcfe-c6702bef916c
       - repo://teachers-app-one@632368ac2577befec68be0867210c385ebe12f59/specs/harmonyos-device-capabilities/artifact-envelope.json
+      - repo://teachers-app-one@5b25cd0a8a9474899629795b605e2c17e9978a08/specs/harmonyos-device-capabilities/artifact-envelope.json
+      - multica://issue/YZT-218
+      - multica://issue/YZT-219
+      - multica://issue/YZT-220
   - id: cp-open-003
     summary: >
       尚未冻结的产品语义按产品仓 product-expectations 进入 D01 Contract Gap Register；
@@ -1115,8 +1169,13 @@ refs:
   - repo://teachers-app-one@377397554524d853dbcc8ab2304ca28d9e1b1bd0/scripts/capabilities/device.py
   - repo://teachers-app-one@5e72ccd162eb07eae6446acc99f68dc2c03311d5/specs/yzt-188-emulator-precheck/dump-classification.json
   - FACT-TAPP1-000003
+  - repo://teachers-app-one@5b25cd0a8a9474899629795b605e2c17e9978a08/specs/harmonyos-device-capabilities/artifact-envelope.json
+  - repo://teachers-app-one@5b25cd0a8a9474899629795b605e2c17e9978a08/scripts/capabilities/device.py
+  - multica://issue/YZT-218
+  - multica://issue/YZT-219
+  - multica://issue/YZT-220
   - FACT-TAPP1-000005
   - FACT-TAPP1-000006
   - migration/retirement/app1-retirement-yzt98.md
 
-updated_at: 2026-09-28T02:20:00Z
+updated_at: 2026-09-28T14:40:00Z

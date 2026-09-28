@@ -1,7 +1,7 @@
 schema_version: "1.1"
 kind: current_fact
 id: FACT-TAPP1-000003
-title: TeachersApp1 集成基线与完成契约实态（YZT-131 治理，2026-09-17；YZT-139 更新集成基线至 a67179d，2026-09-18；YZT-142 更新 G01/G02 指针，2026-09-18；YZT-154 更新集成基线至 83ba4a5，2026-09-18；YZT-163 更新集成基线至 b058b44，2026-09-18；YZT-167 更新集成基线至 c87be89，2026-09-18；YZT-177 更新集成基线至 914e367，2026-09-22；YZT-182 更新集成基线至 0edffe3，2026-09-26；YZT-192 更新集成基线至 2330030 并治理设备能力与签名包托管实态，2026-09-27；YZT-199 更新集成基线至 df98fdf6 并治理已审 0.2.1 模拟器安全能力实态，2026-09-27；YZT-204 治理当前签名包托管实态至 YZT-202 0.1.0 世代，2026-09-27；YZT-211 更新集成基线至 632368ac 并治理已审 0.2.2 只读 live 身份能力实态与其 scoped 证据边界，2026-09-27；YZT-216 更新集成基线至 f0317fc 并治理已审 0.2.3 JSON 安装态分类器实态与其设备 NOT_RUN 边界，2026-09-28）
+title: TeachersApp1 集成基线与完成契约实态（YZT-131 治理，2026-09-17；YZT-139 更新集成基线至 a67179d，2026-09-18；YZT-142 更新 G01/G02 指针，2026-09-18；YZT-154 更新集成基线至 83ba4a5，2026-09-18；YZT-163 更新集成基线至 b058b44，2026-09-18；YZT-167 更新集成基线至 c87be89，2026-09-18；YZT-177 更新集成基线至 914e367，2026-09-22；YZT-182 更新集成基线至 0edffe3，2026-09-26；YZT-192 更新集成基线至 2330030 并治理设备能力与签名包托管实态，2026-09-27；YZT-199 更新集成基线至 df98fdf6 并治理已审 0.2.1 模拟器安全能力实态，2026-09-27；YZT-204 治理当前签名包托管实态至 YZT-202 0.1.0 世代，2026-09-27；YZT-211 更新集成基线至 632368ac 并治理已审 0.2.2 只读 live 身份能力实态与其 scoped 证据边界，2026-09-27；YZT-216 更新集成基线至 f0317fc 并治理已审 0.2.3 JSON 安装态分类器实态与其设备 NOT_RUN 边界，2026-09-28；YZT-219 更新集成基线至 5b25cd0 并更正"0.2.3 已解决 YZT-188 live 转储"的失实断言、补入已审 0.2.4 前缀转储分类器实态与 YZT-188 恢复边界，2026-09-28）
 
 statement: >
   as-of 2026-09-17（YZT-131 治理核验）：origin/develop = 本地 develop =
@@ -804,6 +804,98 @@ statement: >
   （75a9e56364c32dfeca9d20438e5228bb0d9e9d3c）、本机能力策略、G01/G02/G06 产品 Norm、不继承旧
   app1、Axiomem 公开上传边界与设备/签名/发布边界；develop 现领先 main 558fdc93 四十六个提交
   （本批实测 git rev-list --count 558fdc93..f0317fc = 46），main 合并仍待用户精确授权。本条既
+  YZT-219 更正与补充（2026-09-28 UTC 治理批次，更正上文 YZT-216 更新段中一句对 live 解决效果的
+  失实断言，并补入 0.2.4 的精确来源指针与依赖边界；不改写上文任何其他历史叙述）：上文 YZT-216
+  段关于 0.2.3 被接受语义的记录（live `bm dump` 以 `{` 或 `[` 起首时按 JSON 解析、全部
+  bundleName 取值唯一且严格等于 teachers.app.one 为 PRESENT、debug appId / oldAppIds 尾缀 `_`
+  属安装元数据、冲突或衍生 bundleName / 重复键 / 非字符串 / 畸形结构与证据不足一律 AMBIGUOUS、
+  可靠缺包为 ABSENT、非 JSON 起首沿用文本解析路径、破坏性动作前仍由 PACKAGE_STATE_AMBIGUOUS
+  拒绝）经本批在 f0317fc 与 5b25cd0 两处逐字复核后继续成立，YZT-215 的 APPROVE / Required
+  Changes NONE 与 0.2.3 的版本、被审源码 3773975、报告 8007e5c、信封 f0317fc 一并保留，不重判。
+  本批更正的是"该修正已解决 YZT-188 实际 live 转储"这一层断言：YZT-188 在已集成基线 f0317fc 上
+  的 task/role/target 门内只读 inspect-installed 收据
+  `.ai/local/runs/YZT-188/software-engineer/ab6b3053ef9644288b4a80b6c02f528e/result.json`
+  （action=inspect-installed、target_ref=app1-emulator、capability=device-test、
+  commit=f0317fc214915432139d6264bf077032b0281086、policy_sha256 2b602947…、binding_sha256
+  4646f4fc…、status=PASS、state=AMBIGUOUS、identity_matched=false、dump_sha256
+  2c088a0b9412025c38c246fa8886157bdd2bd2575ba67f42513f6d21a74fd6a5、目标 Pura X Max /
+  widefold / HarmonyOS 6.1.1(24) / 127.0.0.1:5555）显示：该转储在 0.2.3 上仍为 AMBIGUOUS，
+  因为 0.2.3 的被接受规则只把以 `{` 或 `[` 起首的输出交给 JSON 解析，而该转储以
+  `teachers.app.one:` 前缀行起首。本批独立只读复算（不调设备、不执行产品破坏性动作）：同目录
+  inspect-installed.log 的 LF 归一化字节 SHA256 精确等于收据记录的
+  2c088a0b9412025c38c246fa8886157bdd2bd2575ba67f42513f6d21a74fd6a5；该转储 JSON 内共九处
+  bundleName，其中八处精确为 teachers.app.one、一处为空字符串（applicationInfo.appQuickFix
+  .bundleName），appId 与 oldAppIds 为 teachers.app.one_；以 f0317fc 的 device.py 重放该输入，
+  parse_bundle_dump 返回 kind=text（未进入 JSON 路径），classify_installed 返回 AMBIGUOUS，
+  与收据一致；以 5b25cd0 的 device.py 重放同一输入返回 kind=json 与 PRESENT（PRESENT 判定按
+  非空 bundleName 集合）。因此上文 YZT-216 段的"它解决的是 YZT-188 上轮 live 转储被判
+  AMBIGUOUS 的阻塞原因"只作为该批对其自身被接受规则的重述保留，不得再读作对 YZT-188 实际
+  live 转储的已解决结论。
+  已接受并集成的当前设备包版本（accepted Current Reality，本批新增指针）：implementation /
+  teachers-app1-harmonyos-device-capabilities / 0.2.4（04 Software Engineer，任务
+  multica://issue/YZT-218）——被审 envelope 见已集成 develop 5b25cd0 的
+  specs/harmonyos-device-capabilities/artifact-envelope.json：artifact_type implementation、
+  version 0.2.4、status ready_for_review、owner_role software-engineer、locator
+  git://yann9596/teachers-app-one@642197d2b783755f5845e773a167936cf756374b、supersedes
+  implementation / teachers-app1-harmonyos-device-capabilities / 0.2.3、based_on implementation /
+  teachers-app1-yzt-179-offline-execution-pack / 0.1.0；0.2.3 的已审信封归档为
+  artifact-envelope.0.2.3.json、报告归档为 implementation-report.0.2.3.md。本批实测远端
+  origin/develop = refs/heads/develop = 5b25cd0a8a9474899629795b605e2c17e9978a08（"docs: pin
+  0.2.4 report hashes"；本机 HEAD 与该 SHA 一致、工作树干净），相对 f0317fc 新增五个提交、
+  全为快进：e6f2813（协作脚本维护：原生 stage 屏障预检）与 cb14bb9（协作脚本维护：工作区内运行
+  收据回退）之后，88fcad4521b432f255fa6c5b1d840a2f8f705517（"fix: parse prefixed json bundle
+  dump"，被审源码的等价摘取）、709034dba75fe841eb93d572f09221d03e74957e（"docs: pin 0.2.4
+  prefix dump envelope"，报告提交）与 5b25cd0a8a9474899629795b605e2c17e9978a08（"docs: pin
+  0.2.4 report hashes"，信封提交）。被审等价性（本批实测）：被审源码
+  642197d2b783755f5845e773a167936cf756374b 不在 5b25cd0 的祖先链上（来自另一条实现分支的同
+  内容提交），但其三条被审提交的 patch-id 与 88fcad4 / 709034d / 5b25cd0 逐一相同，且
+  scripts/capabilities/device.py（blob 5e9bc8439855446d3a5e6a0635b7c4a954d7d64a、LF 字节
+  SHA256 7e87ab5c75075da825b826374b60da38549366f655ebd08254666c99dfebeeae）、
+  scripts/verification/test_device_capability.py（blob
+  99a6b257dcd4acb08a1da5668f1ec9af8d83a696、LF 字节 SHA256
+  d4d0a05cf47b87fb2aa37d2d483fee8f0bc8ebf4d8ef7fec101529eed837492e）与
+  specs/bootstrap/capability-binding.json（blob 3d9b561f757ee457514fe2effe5e117b9270974d、LF
+  字节 SHA256 9787813a2c395fdccc8008c2deb6f6af545cf8f7f292adc4182606ab9af52cc3）在被审源码
+  642197d 与集成 tip 5b25cd0 之间逐字节相同。被接受语义的增量（bounded，只到 04 交付与 05 审查
+  实际覆盖的范围）：`parse_bundle_dump` 现在也接受以精确 `teachers.app.one:` 前缀行起首、其余部分
+  以 `{` 或 `[` 开始的转储，PRESENT 仍要求全部非空 JSON bundleName 严格等于 teachers.app.one，
+  空字符串 bundleName 与 debug appId / oldAppIds 尾缀 `_` 都按元数据处理；冲突或衍生
+  bundleName、重复键、非字符串值、畸形或不可信结构与证据不足仍为 AMBIGUOUS，可靠具名缺包仍为
+  ABSENT，已审文本格式行为不变；授权门、目标身份、清理范围、签名与 provider 锁未被放宽，仅
+  device.py 的绑定散列随之更新。集成增量未触及产品生产源码：git diff --stat f0317fc..5b25cd0
+  -- entry/ 为空，entry/src/main/ets/entryability/EntryAbility.ets 在两处同为 blob
+  6dd239c6b166034260d87d564b4caaa71d529cef；.ai/project-capabilities.json 逐字节未变；共享
+  build-profile.json5 的 signingConfigs 仍为 []（本批只读复核）。develop 现领先 main 558fdc93
+  五十一个提交（本批实测 git rev-list --count 558fdc93..5b25cd0 = 51），main 合并仍待用户精确
+  授权。
+  验证归属分层（YZT-219 批在 D:/AI/projects/TeachersApp1 的 5b25cd0 上独立复跑，非引用）：
+  python -m unittest discover -s scripts/verification -p "test_*.py" 104/104 PASS（该数字包含
+  e6f2813 / cb14bb9 两个维护提交新增的排期与工作树收据测试，不是 0.2.4 的专属计数）；0.2.4
+  针对该 live 转储的宿主复算是同输入纯函数重放（PRESENT），不是设备调用。以上均为仓库与宿主层
+  证据，不是 HarmonyOS 平台、设备、安装、清理或发布结论。
+  不得由本条读出的结论（NOT_RUN / NOT_READY 边界，本批未执行任何设备动作）：模拟器
+  clear / inspect / install / 覆盖 / 卸载、定向清理、UI 走查、instrument、A03 双阶段协议执行、
+  A08 真实硬件竞争、L1 真机断言、真机 Pura X（VDE-AL00）、平台 relationalStore V01–V10、
+  profile device-ids 对 live UDID 的匹配复核、签名生效、发布、R2 与 YZT-188 开工仍全部
+  NOT_RUN；已签名可安装 HAP 仍 NOT_READY，当前托管对仍是 YZT-202 0.1.0 世代（本批未重建、未
+  重签、未重新验签 HAP）；0.2.4 的宿主复算、104/104 与 YZT-220 R1 APPROVE 都不得读作
+  provider 已可由团队调用、安装 PASS、可安装结论、平台持久化 PASS 或 YZT-188 的开工许可。
+  YZT-188 恢复的前置边界（本批新增，供 01 与消费者引用）：其历史 BLOCKED 报告提交
+  5e72ccd162eb07eae6446acc99f68dc2c03311d5 与 NOT_RUN 边界保留（本批实测其仍不在 5b25cd0
+  的祖先链上，git merge-base --is-ancestor 返回非零），恢复须待本次 Canonical 更正经适用独立
+  R1、01 接受并部署、受影响 Context / Artifact 刷新，以及在同一路径上的 fresh 只读 live
+  复核之后由 01 单独决定；用户定向清理授权仍只限私有 app1-emulator 上其自有同名
+  teachers.app.one 数据，本批未做任何清理、未使用设备、未改产品代码、未推送公开 Memory 远端。
+  历史负面与历史实态保留：YZT-195 对 0.2.0 的 CHANGES_REQUIRED 原判继续有效；0.2.2 与 0.2.3
+  只经各自 envelope 的 supersedes 关系被后继版本取代（0.2.2 的已审信封与谱系缺陷文件、
+  0.2.3 的已审信封与报告分别归档），不把 0.2.0 / 0.2.1 / 0.2.2 / 0.2.3 重标为其他状态；
+  YZT-211 / YZT-212 治理并经独立 R1 的 0.2.2 Reality 证据与 YZT-216 / YZT-217 治理并经独立 R1
+  的 0.2.3 Reality 证据都保留为其 as-of 时点的正确实态（0.2.2 的 context_package /
+  teachers-app1-harmonyos-device-capabilities-0.2.2-integrated-reality-governance /
+  0.1.0-8463383 因 based_on 0.2.2 已 stale，需由 01 在有界刷新时另行处置）；当前签名包托管实态
+  仍是 YZT-204 治理的 implementation / teachers-app1-yzt-202-a03-signed-hap-custody / 0.1.0
+  （App HAP SHA256 a36672ab…、Test HAP SHA256 42f3650b…），本批不改变该托管对。
+
   不改写 FACT-TAPP1-000002 的既有 supersession 链，本批也不新增 supersession。
 
 scope:
@@ -1193,6 +1285,43 @@ verified_against:
     paths:
       - description
       - Decision
+  - source_ref: repo://teachers-app-one@5b25cd0a8a9474899629795b605e2c17e9978a08/specs/harmonyos-device-capabilities/artifact-envelope.json
+    revision: 5b25cd0a8a9474899629795b605e2c17e9978a08
+    paths:
+      - specs/harmonyos-device-capabilities/artifact-envelope.json
+      - specs/harmonyos-device-capabilities/artifact-envelope.0.2.3.json
+      - specs/harmonyos-device-capabilities/implementation-report.md
+      - specs/harmonyos-device-capabilities/implementation-report.0.2.3.md
+      - specs/harmonyos-device-capabilities/current-state-and-gap.md
+      - scripts/capabilities/device.py
+      - scripts/verification/test_device_capability.py
+      - specs/bootstrap/capability-binding.json
+      - .ai/project-capabilities.json
+      - entry/src/main/ets/entryability/EntryAbility.ets
+      - build-profile.json5
+  - source_ref: repo://teachers-app-one@642197d2b783755f5845e773a167936cf756374b/scripts/capabilities/device.py
+    revision: 642197d2b783755f5845e773a167936cf756374b
+    paths:
+      - scripts/capabilities/device.py
+      - scripts/verification/test_device_capability.py
+      - specs/bootstrap/capability-binding.json
+  - source_ref: file:///.ai/local/runs/YZT-188/software-engineer/ab6b3053ef9644288b4a80b6c02f528e/result.json
+    revision: 2026-09-28T04:56:30Z
+    paths:
+      - .ai/local/runs/YZT-188/software-engineer/ab6b3053ef9644288b4a80b6c02f528e/result.json
+      - .ai/local/runs/YZT-188/software-engineer/ab6b3053ef9644288b4a80b6c02f528e/inspect-installed.log
+  - source_ref: multica://issue/YZT-218
+    revision: stage-95-bounded-0.2.4-correction
+    paths:
+      - description
+  - source_ref: multica://issue/YZT-219
+    revision: stage-97-bounded-reality-correction
+    paths:
+      - description
+  - source_ref: multica://issue/YZT-220
+    revision: stage-96-independent-r1-approve
+    paths:
+      - description
 source_refs:
   - repo://teachers-app-one@a67179dfc02f0461a7962dcc697161395c5deb76/docs/governance/version-control.md
   - repo://teachers-app-one@a67179dfc02f0461a7962dcc697161395c5deb76/docs/README.md
@@ -1340,12 +1469,28 @@ source_refs:
   - repo://teachers-app-one@377397554524d853dbcc8ab2304ca28d9e1b1bd0/scripts/capabilities/device.py
   - repo://teachers-app-one@5e72ccd162eb07eae6446acc99f68dc2c03311d5/specs/yzt-188-emulator-precheck/dump-classification.json
   - multica://issue/YZT-210
+  - repo://teachers-app-one@5b25cd0a8a9474899629795b605e2c17e9978a08/specs/harmonyos-device-capabilities/artifact-envelope.json
+  - repo://teachers-app-one@5b25cd0a8a9474899629795b605e2c17e9978a08/specs/harmonyos-device-capabilities/artifact-envelope.0.2.3.json
+  - repo://teachers-app-one@5b25cd0a8a9474899629795b605e2c17e9978a08/specs/harmonyos-device-capabilities/implementation-report.md
+  - repo://teachers-app-one@5b25cd0a8a9474899629795b605e2c17e9978a08/specs/harmonyos-device-capabilities/implementation-report.0.2.3.md
+  - repo://teachers-app-one@5b25cd0a8a9474899629795b605e2c17e9978a08/specs/harmonyos-device-capabilities/current-state-and-gap.md
+  - repo://teachers-app-one@5b25cd0a8a9474899629795b605e2c17e9978a08/scripts/capabilities/device.py
+  - repo://teachers-app-one@5b25cd0a8a9474899629795b605e2c17e9978a08/scripts/verification/test_device_capability.py
+  - repo://teachers-app-one@5b25cd0a8a9474899629795b605e2c17e9978a08/specs/bootstrap/capability-binding.json
+  - repo://teachers-app-one@5b25cd0a8a9474899629795b605e2c17e9978a08/.ai/project-capabilities.json
+  - repo://teachers-app-one@5b25cd0a8a9474899629795b605e2c17e9978a08/entry/src/main/ets/entryability/EntryAbility.ets
+  - repo://teachers-app-one@5b25cd0a8a9474899629795b605e2c17e9978a08/build-profile.json5
+  - repo://teachers-app-one@642197d2b783755f5845e773a167936cf756374b/scripts/capabilities/device.py
   - multica://issue/YZT-214
   - multica://issue/YZT-215
   - multica://issue/YZT-216
   - multica://comment/01a0e5a6-c78a-7c89-a1bd-99fae4a4eb6b
   - multica://comment/01a0e5b9-4a4f-758c-b9d1-97a9467c2b67
   - multica://comment/01a0e570-2d53-72ee-8e9e-3210a09c6b7d
+  - multica://issue/YZT-218
+  - multica://issue/YZT-219
+  - multica://issue/YZT-220
+
 relations:
   conflicts_with: []
   supersedes:
@@ -1365,5 +1510,5 @@ review:
   triggered_at: null
 
 created_at: 2026-09-17T14:00:00Z
-verified_at: 2026-09-28T02:20:00Z
-updated_at: 2026-09-28T02:20:00Z
+verified_at: 2026-09-28T14:40:00Z
+updated_at: 2026-09-28T14:40:00Z
