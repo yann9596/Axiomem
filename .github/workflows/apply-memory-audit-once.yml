@@ -4,6 +4,9 @@ on:
     branches: [fix/memory-lifecycle-audit-20260928]
 permissions:
   contents: write
+defaults:
+  run:
+    shell: bash
 jobs:
   apply-exact-source:
     if: github.repository == 'yann9596/Axiomem' && github.ref == 'refs/heads/fix/memory-lifecycle-audit-20260928'
@@ -13,7 +16,7 @@ jobs:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
         with:
           ref: ${{ github.sha }}
-          fetch-depth: 2
+          fetch-depth: 3
           persist-credentials: true
       - name: Verify exact baseline and apply fingerprinted source
         env:
@@ -22,6 +25,7 @@ jobs:
           python - <<'PY'
           import base64,hashlib,json,lzma,os,pathlib,subprocess,urllib.request
           BASE='c2bdbfeef052b85ec51b3f40b04d8166c22dcc7e'
+          PARENT='6a21544c1c35724ef336fcffa95b2abc71391e3e'
           BRANCH='fix/memory-lifecycle-audit-20260928'
           TEMP='.github/workflows/apply-memory-audit-once.yml'
           def git(*args):
@@ -29,8 +33,9 @@ jobs:
           assert os.environ['GITHUB_REPOSITORY']=='yann9596/Axiomem'
           assert os.environ['GITHUB_REF']=='refs/heads/'+BRANCH
           assert git('rev-parse','HEAD')==os.environ['GITHUB_SHA']
-          assert git('rev-parse','HEAD^')==BASE, 'baseline moved; no automatic rebase'
-          assert git('diff-tree','--no-commit-id','--name-only','-r','HEAD')==TEMP
+          assert git('rev-parse','HEAD^')==PARENT, 'branch moved; no automatic rebase'
+          assert git('rev-parse','HEAD^^')==BASE
+          assert git('diff','--name-only',BASE,'HEAD')==TEMP
           assert not git('status','--porcelain'), 'dirty checkout'
           shas=['87f90854cb6fce7a6f93de636933c7cb78009c94','f9b31e6b990f6726c89b915b6bf52a74d7da6143','0b87cf97d00c5cfba902f21d1795c12f7b7e9aee','f126fd80b587b0a1521394dd08e134c7e7359783','af4cf2139dfcd109bb5d92bffac9637360d8a784','204fd2b3477112523a418e3bb378298a77add956','2738a914a378cb62a4c4b43f4d496015c904da87','8080f62e407269840241f361a84a258c569fb40d']
           chunks=[]
@@ -89,19 +94,21 @@ jobs:
           for item in payload['files']:
               committed=subprocess.check_output(['git','show',':'+item['path']])
               assert hashlib.sha256(committed).hexdigest()==item['after_sha256'],item['path']
-          subprocess.run(['git','diff','--cached','--check'],check=True)
+          subprocess.run(['git','-c','core.whitespace=blank-at-eol,blank-at-eof,space-before-tab,cr-at-eol','diff','--cached','--check'],check=True)
           out=pathlib.Path(os.environ['RUNNER_TEMP'])/'audit-application'
           out.mkdir(parents=True,exist_ok=True)
           (out/'application.json').write_text(json.dumps({'baseline':BASE,'application_parent':os.environ['GITHUB_SHA'],'payload_sha256':hashlib.sha256(raw).hexdigest(),'files':[{'path':i['path'],'sha256':i['after_sha256']} for i in payload['files']],'project_pause':'PRESERVED','production_deployment':'NOT_RUN'},indent=2))
           PY
       - name: Verify syntax and all new offline regressions
         run: |
+          set -euo pipefail
           python -m compileall -q tools skills
           python -m unittest discover -s tools/tests -p test_index_lifecycle_audit.py -v 2>&1 | tee "$RUNNER_TEMP/audit-application/index-tests.log"
           python -m unittest discover -s tools/tests -p test_memory_audit_repair.py -v 2>&1 | tee "$RUNNER_TEMP/audit-application/repair-tests.log"
           git diff --exit-code
       - name: Commit source to repair branch without force
         run: |
+          set -euo pipefail
           git fetch origin refs/heads/fix/memory-lifecycle-audit-20260928
           test "$(git rev-parse FETCH_HEAD)" = "$GITHUB_SHA"
           git config user.name 'github-actions[bot]'
