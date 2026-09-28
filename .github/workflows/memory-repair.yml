@@ -1,0 +1,34 @@
+name: Memory audit repair
+
+on:
+  push:
+    branches: [fix/memory-lifecycle-audit-20260928]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  repository-validation:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          persist-credentials: false
+      - name: Capture exact public source snapshot
+        run: |
+          mkdir -p "$RUNNER_TEMP/memory-audit"
+          git rev-parse HEAD > "$RUNNER_TEMP/memory-audit/source-sha.txt"
+          git archive --format=zip --output="$RUNNER_TEMP/memory-audit/repository-source.zip" HEAD
+      - name: Check Python syntax
+        run: python -m compileall -q tools skills tests
+      - name: Export exact source for isolated regression validation
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: memory-audit-source-${{ github.sha }}
+          path: ${{ runner.temp }}/memory-audit
+          retention-days: 3
+          if-no-files-found: error
