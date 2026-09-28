@@ -367,6 +367,14 @@ def check_package(request: dict, envelope: dict, *, registry=None,
         elif cur.get(key) != built.get(key):
             reasons.append(reason)
 
+    import context_quality
+    try:
+        quality = context_quality.assess("envelope", envelope)
+        if quality["blocked"]:
+            reasons.append("package_stale")
+    except context_quality.QualityPolicyError:
+        return _emit(envelope, "BLOCKED", "ESCALATE", reasons + ["package_stale"])
+
     package_status = envelope.get("status")
     if package_status == "BLOCKED":
         reasons.append("package_not_ready")
@@ -585,8 +593,17 @@ def self_check_with_trace(request: dict, *, packages=None, store_dir=None,
                 finding_store=finding_store, mutator=mutator)
     result = check_package(request, envelope, registry=registry,
                            current=current, gate=gate)
+    import context_quality
+    import context_dependencies
+    try:
+        quality = context_quality.assess("envelope", envelope)
+    except context_quality.QualityPolicyError as exc:
+        quality = {"ok": False, "blocked": True, "reason": str(exc)}
+    shadow = context_dependencies.observe(scope, request.get("role") or "", envelope.get("package"))
     return {
         "result": result,
+        "context_quality": quality,
+        "dependency_shadow": shadow,
         "finding_gate": gate,
         "gate_ran": gate is not None,
         "verified_scope": verified_scope,

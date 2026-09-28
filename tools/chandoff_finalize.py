@@ -825,6 +825,15 @@ def _emit(request, plan, result, built_from, errors, *, clock, registry, by_id=N
             blocked_by=_codes(bounded),
         )
 
+    import context_quality
+    try:
+        quality = context_quality.assess("package", package)
+        if quality["blocked"]:
+            bounded = _bound(bounded + [_error("CONTEXT_BUDGET_OVERFLOW", "$.package",
+                                             context_quality.diagnostic(quality))])
+    except context_quality.QualityPolicyError as exc:
+        bounded = _bound(bounded + [_error("CONTEXT_QUALITY_POLICY_INVALID", "$.package", str(exc))])
+
     if bounded:
         # Hard failures never keep illegal objects in a READY/PARTIAL package.
         # Rebuild a valid minimal package that still carries visible blockers.

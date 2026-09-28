@@ -211,7 +211,7 @@ def build_package(task_id: str, role: str, task_scope: dict, decision: str = "",
     seen = set()
     trace["filters_applied"] = [f for f in trace["filters_applied"]
                                 if not (f in seen or seen.add(f))]
-    return {
+    package = {
         "schema_version": "1.1", "kind": "context_package",
         "request": {"task_id": task_id, "role": role,
                     "project_id": task_scope.get("project_id")},
@@ -233,3 +233,7 @@ def build_package(task_id: str, role: str, task_scope: dict, decision: str = "",
         "repo_local_pointers": pointers,
         "assembly_trace": trace, "generated_at": trace["generated_at"],
     }
+
+    from context_quality import require
+    require("package", package)
+    return package

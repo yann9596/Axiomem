@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 """Multica Context & Memory System V1.1 CLI (zero-dependency).
 
-Bypass-rebuild runtime for YZT-40 (R3-R9). The V1 CLI (tools/memory_cli.py)
-stays untouched and remains production until human Cutover.
+Active V1.1 runtime after cutover. The V1 CLI (tools/memory_cli.py) is
+retained read-only for compatibility/history, not the production write path.
 
   validate-canonical   Gate A0/A: schema + authority + legacy accounting
   rebuild-index        rebuild the derived index from zero
@@ -34,6 +34,7 @@ def main() -> int:
     sub = parser.add_subparsers(dest="command", required=True)
     sub.add_parser("validate-canonical")
     sub.add_parser("rebuild-index")
+    sub.add_parser("check-index", help="read-only V1.1 index freshness check")
     sub.add_parser("gate-b")
     sub.add_parser("migrate-replay")
 
@@ -98,6 +99,11 @@ def main() -> int:
         if args.command == "validate-canonical":
             import validate_canonical
             return validate_canonical.main()
+        if args.command == "check-index":
+            import index_builder
+            report = index_builder.check()
+            print(json.dumps(report, ensure_ascii=False, indent=2))
+            return 0 if report["ok"] else 2
         if args.command == "rebuild-index":
             import index_builder
             print(json.dumps(index_builder.rebuild(), ensure_ascii=False, indent=2))

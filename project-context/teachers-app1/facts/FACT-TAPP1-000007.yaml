@@ -1,0 +1,52 @@
+schema_version: "1.1"
+kind: "current_fact"
+id: "FACT-TAPP1-000007"
+title: "TeachersApp1 已核验集成基线、工作流与当前暂停边界"
+statement: >-
+  截至 YZT-219 的已留存核验，TeachersApp1 的产品 develop 为 5b25cd0a8a9474899629795b605e2c17e9978a08，main 为 558fdc939414142636f9b4f43530facf1c7cfb7e。本条整理 Axiomem@9213a0e1a8e95e6fc3684e878fe8170846aba76c 的来源，不是对当前 Windows、Multica 或产品远端的一次新复测；消费者须使用受审且已部署的精确版本，不推断 latest。各批提交计数与中间基线留原对象历史，不继续作为当前指令。
+
+  项目身份为 teachers-app1，执行使用经项目资源确认的隔离 worktree；不继承已归档 app1 的路径、授权、规则或未完成状态。产品文档入口为 docs/README.md，集成规则见 docs/governance/version-control.md。现有授权允许 01 在适用 Review 通过后完成 develop 集成、push 与远端回读；产品 main 的最终合并仍属用户决定，不能由本次 Memory 修复替代。
+
+  公共协作按当前绑定的 multica-context-handoff 与 parent-handoff-wake 执行：交付完成与独立验收、接受、部署、里程碑完成分开。完整负面 Review/QA 报告可以完成其报告任务，但不得改写负面 verdict；单条最终结果、原生完成回读及一次派发规则不变。角色路径和能力由当前 Registry/绑定解析；项目能力声明不证明设备 provider 可调用。
+
+  用户在本次审计修复授权中明确项目已阻断。修复 PR 不解除暂停、不派发专业任务、不执行设备或发布；只授权该有界仓库修复及其审查。公开原始私有审计包、聊天、运行状态、凭据或签名材料不在授权内。01 在外部验收、受影响 Context/Artifact 刷新及 fresh SELF_CHECK 完成后单独报告恢复条件；存在未决源/权威冲突时继续阻断。部署或基线改变时重验本条。
+scope:
+  type: "project"
+  project_id: "teachers-app1"
+  projects: []
+  task_id: null
+domains:
+  - "repository-state"
+  - "integration-workflow"
+  - "completion-contract"
+repositories:
+  - "teachers-app-one"
+status: "active"
+verification: "verified"
+verified_against:
+  -
+    source_ref: "repo://multica-memory@9213a0e1a8e95e6fc3684e878fe8170846aba76c/project-context/teachers-app1/facts/FACT-TAPP1-000003.yaml"
+    revision: "9213a0e1a8e95e6fc3684e878fe8170846aba76c"
+    paths:
+      - "project-context/teachers-app1/facts/FACT-TAPP1-000003.yaml"
+source_refs:
+  - "repo://multica-memory@9213a0e1a8e95e6fc3684e878fe8170846aba76c/project-context/teachers-app1/facts/FACT-TAPP1-000003.yaml"
+  - "repo://multica-memory@c2bdbfeef052b85ec51b3f40b04d8166c22dcc7e/docs/repairs/2026-09-28/authorization-and-scope.md"
+  - "repo://teachers-app-one@5b25cd0a8a9474899629795b605e2c17e9978a08/docs/README.md"
+  - "repo://teachers-app-one@5b25cd0a8a9474899629795b605e2c17e9978a08/docs/governance/version-control.md"
+  - "repo://multica-memory@9213a0e1a8e95e6fc3684e878fe8170846aba76c/skills/multica-context-handoff/SKILL.md"
+  - "repo://multica-memory@9213a0e1a8e95e6fc3684e878fe8170846aba76c/skills/parent-handoff-wake/SKILL.md"
+  - "multica://issue/YZT-219"
+relations:
+  conflicts_with: []
+  supersedes:
+    - "FACT-TAPP1-000003"
+  supersedes_note: "主题级替代：来源旧对象正文及来源完整保留为历史；本条只承接标题所列主题。多主题覆盖及退出条件见 docs/repairs/2026-09-28/canonical-migration.json。未新做平台复测或改变产品规范。"
+  drift_of: null
+  norm_reality_conflict: []
+review:
+  reason: null
+  triggered_at: null
+created_at: "2026-09-28T16:00:51Z"
+verified_at: "2026-09-28T14:40:00Z"
+updated_at: "2026-09-28T16:00:51Z"

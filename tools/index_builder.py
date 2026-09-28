@@ -1,14 +1,17 @@
 #!/usr/bin/env python3
 """Derived retrieval layer builder for V1.1 (YZT-40 R7).
 
-Deletes index/v1.1/memory.db and rebuilds it from zero from the V1.1 canonical
+Atomically rebuilds index/v1.1/memory.db from the V1.1 canonical
 Git documents (Spec §24.1, §39: never copy V1 tables, never let the derived
 layer own canonical state). The DB directory is git-ignored.
 """
 from __future__ import annotations
 
+import argparse
+import hashlib
 import json
-import shutil
+import os
+import tempfile
 import sqlite3
 import sys
 from datetime import datetime, timezone
@@ -21,6 +24,7 @@ ROOT = Path(__file__).resolve().parents[1]
 TEAM = ROOT / "team-context"
 PROJECTS = ROOT / "project-context"
 DB = ROOT / "index" / "v1.1" / "memory.db"
+INDEX_BUILD_VERSION = "20260928.1"
 
 DDL = """
 CREATE TABLE settings(key TEXT PRIMARY KEY, value TEXT NOT NULL);
@@ -50,11 +54,41 @@ CREATE VIRTUAL TABLE fts_content USING fts5(
 """
 
 
-def _yaml(path: Path):
-    return parse_yaml(path.read_text(encoding="utf-8"))
+def _yaml(path: Path, data: bytes | None = None):
+    # Paths are derived provenance, never trusted from a YAML field.
+    doc = parse_yaml((data if data is not None else path.read_bytes()).decode("utf-8"))
+    if not isinstance(doc, dict):
+        raise ValueError(f"canonical document must be a mapping: {path}")
+    doc["_path"] = path.relative_to(ROOT).as_posix()
+    return doc
 
 
-def collect():
+def _source_paths() -> list[Path]:
+    paths = {TEAM / "registry" / "projects.yaml", TEAM / "checkpoint.yaml"}
+    for base, pattern in (
+        (PROJECTS, "*/project.yaml"), (TEAM / "rules", "RULE-*.yaml"),
+        (PROJECTS, "*/rules/RULE-*.yaml"), (PROJECTS, "*/facts/FACT-*.yaml"),
+        (PROJECTS, "*/cases/CASE-*.yaml"), (PROJECTS, "*/checkpoint.yaml"),
+        (TEAM / "roles", "*.yaml"),
+    ):
+        paths.update(base.glob(pattern))
+    return sorted(paths)
+
+
+def _snapshot() -> dict[Path, bytes]:
+    return {path: path.read_bytes() for path in _source_paths()}
+
+
+def _revision(snapshot: dict[Path, bytes]) -> str:
+    # Index-specific raw-byte revision, NOT the Public Handoff memory_revision.
+    manifest = [[p.relative_to(ROOT).as_posix(), hashlib.sha256(data).hexdigest()]
+                for p, data in sorted(snapshot.items())]
+    payload = json.dumps(manifest, ensure_ascii=False, separators=(",", ":"))
+    return "sha256:" + hashlib.sha256(payload.encode("utf-8")).hexdigest()
+
+
+def collect(*, loader=None):
+    _yaml = loader or globals()["_yaml"]
     registry = _yaml(TEAM / "registry" / "projects.yaml")
     anchors = [_yaml(p) for p in sorted(PROJECTS.glob("*/project.yaml"))]
     rule_paths = sorted((TEAM / "rules").glob("RULE-*.yaml")) \
@@ -74,7 +108,11 @@ def _insert(conn, doc, kind):
     title = doc.get("title", "") if kind != "anchor" else doc["project_id"]
     statement = doc.get("statement", "") if kind != "anchor" \
         else doc.get("governance", {}).get("mission", "")
-    status = "active"
+    # Anchor lifecycle is the registry phase; do not invent object statuses.
+    # Rule/Fact/Case lifecycle must faithfully project Canonical, not default active.
+    status = "active" if kind == "anchor" else doc.get("status")
+    if not isinstance(status, str) or not status.strip():
+        raise ValueError(f"missing canonical lifecycle status: {oid}")
     verification = "verified" if kind == "anchor" else doc.get("verification", "unverified")
     conn.execute("INSERT INTO memory_object VALUES(?,?,?,?,?,?,?,?)", (
         oid, kind, title, statement, status, verification,
@@ -125,18 +163,23 @@ def _scope_of(doc):
             "projects": [], "task_id": None}
 
 
-def rebuild() -> dict:
-    registry, anchors, rules, facts, cases, checkpoints, roles = collect()
-    if DB.parent.exists():
-        shutil.rmtree(DB.parent)
-    DB.parent.mkdir(parents=True, exist_ok=True)
-    conn = sqlite3.connect(str(DB))
+def _write_database(path: Path, snapshot: dict[Path, bytes]) -> dict:
+    data = collect(loader=lambda p: _yaml(p, snapshot[p]))
+    registry, anchors, rules, facts, cases, checkpoints, roles = data
+    revision = _revision(snapshot)
+    conn = sqlite3.connect(str(path))
     try:
         conn.executescript(DDL)
         conn.executemany("INSERT INTO settings VALUES(?,?)", [
             ("schema_version", "1.1"),
             ("embedding_provider", "disabled"),
-            ("embedding_status", "interface_reserved_model_not_selected")])
+            ("embedding_status", "interface_reserved_model_not_selected"),
+            ("index_build_version", INDEX_BUILD_VERSION),
+            ("canonical_revision", revision),
+            ("canonical_revision_algorithm", "relative-path-raw-sha256-v1"),
+            ("built_at", datetime.now(timezone.utc).isoformat()),
+            ("canonical_file_count", str(len(snapshot))),
+        ])
         for p in registry["projects"]:
             conn.execute("INSERT INTO project_registry_cache VALUES(?,?,?,?,?,?,?,?)", (
                 p["id"], p["name"], p["phase"], p.get("multica_project_id"),
@@ -162,16 +205,100 @@ def rebuild() -> dict:
                          json.dumps(entry.get("refs", []), ensure_ascii=False),
                          scope.get("project_id"), scope["type"]))
         conn.commit()
+        if conn.execute("PRAGMA quick_check").fetchone() != ("ok",):
+            raise RuntimeError("index integrity check failed")
     finally:
         conn.close()
     return {"objects": len(anchors) + len(rules) + len(facts) + len(cases),
             "checkpoints": len(checkpoints), "role_profiles": len(roles),
-            "database": str(DB.relative_to(ROOT)), "embedding_provider": "disabled"}
+            "database": str(DB.relative_to(ROOT)), "embedding_provider": "disabled",
+            "canonical_revision": revision, "index_build_version": INDEX_BUILD_VERSION}
 
 
-def main():
+def rebuild() -> dict:
+    """Build beside the old DB, then replace only that file after validation.
+
+    A canonical deployment must remain quiescent through this operation and its
+    acceptance check. The content recheck detects drift; it is not a lock on
+    other programs editing Canonical. A stale rebuild lock is never auto-deleted.
+    """
+    DB.parent.mkdir(parents=True, exist_ok=True)
+    lock = DB.with_name(DB.name + ".rebuild.lock")
+    # Exclusive-create serializes cooperating builders without platform packages.
+    fd = os.open(str(lock), os.O_CREAT | os.O_EXCL | os.O_WRONLY, 0o600)
+    temp = None
+    try:
+        with os.fdopen(fd, "w", encoding="utf-8") as stream:
+            stream.write(str(os.getpid()))
+        if any(Path(str(DB) + suffix).exists() for suffix in ("-wal", "-shm", "-journal")):
+            raise RuntimeError("index has SQLite sidecars; quiesce writers before rebuild")
+        snapshot = _snapshot()
+        temp_fd, temp_name = tempfile.mkstemp(prefix=".memory-", suffix=".db", dir=DB.parent)
+        os.close(temp_fd)
+        temp = Path(temp_name)
+        report = _write_database(temp, snapshot)
+        with temp.open("r+b") as stream:
+            os.fsync(stream.fileno())
+        if _snapshot() != snapshot:
+            raise RuntimeError("canonical changed during rebuild; old index retained")
+        if any(Path(str(DB) + suffix).exists() for suffix in ("-wal", "-shm", "-journal")):
+            raise RuntimeError("SQLite writer appeared during rebuild; old index retained")
+        # On Windows an open handle can prevent replace; failure preserves old DB.
+        os.replace(temp, DB)
+        return report
+    finally:
+        if temp is not None:
+            temp.unlink(missing_ok=True)
+        lock.unlink(missing_ok=True)
+
+
+def check() -> dict:
+    """Read-only freshness/integrity check; no implicit rebuild or DB creation.
+
+    This verifies provenance and SQLite structural integrity, not the truth of
+    the Canonical facts or every index row's semantic equivalence.
+    """
+    if not DB.is_file():
+        return {"ok": False, "reason": "index_missing"}
+    try:
+        before = _snapshot()
+        conn = sqlite3.connect(DB.resolve().as_uri() + "?mode=ro", uri=True)
+        try:
+            settings = dict(conn.execute("SELECT key, value FROM settings"))
+            integrity = conn.execute("PRAGMA quick_check").fetchone() == ("ok",)
+        finally:
+            conn.close()
+        current = _revision(before)
+        if _snapshot() != before:
+            return {"ok": False, "reason": "canonical_changed_during_check"}
+        if not integrity:
+            return {"ok": False, "reason": "index_integrity_failed"}
+        if settings.get("index_build_version") != INDEX_BUILD_VERSION:
+            return {"ok": False, "reason": "index_builder_version_mismatch"}
+        if (settings.get("schema_version") != "1.1" or
+                settings.get("canonical_revision_algorithm") != "relative-path-raw-sha256-v1"):
+            return {"ok": False, "reason": "index_metadata_incompatible"}
+        if settings.get("canonical_revision") != current:
+            return {"ok": False, "reason": "index_stale",
+                    "canonical_revision": current,
+                    "indexed_revision": settings.get("canonical_revision")}
+        return {"ok": True, "reason": "index_current", "canonical_revision": current,
+                "index_build_version": INDEX_BUILD_VERSION}
+    except (OSError, sqlite3.Error, ValueError) as exc:
+        return {"ok": False, "reason": "index_check_failed", "error": str(exc)}
+
+
+def main() -> int:
+    parser = argparse.ArgumentParser(description="Rebuild or check the derived V1.1 index")
+    parser.add_argument("command", nargs="?", choices=("rebuild", "check"), default="rebuild")
+    args = parser.parse_args()
+    if args.command == "check":
+        report = check()
+        print(json.dumps(report, ensure_ascii=False, indent=2))
+        return 0 if report["ok"] else 2
     print(json.dumps(rebuild(), ensure_ascii=False, indent=2))
+    return 0
 
 
 if __name__ == "__main__":
-    main()
+    raise SystemExit(main())

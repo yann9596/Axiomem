@@ -971,6 +971,7 @@ class MemorySideEffectTests(unittest.TestCase):
 
     def test_note_module_imports_are_allowlisted(self):
         allowed = {"chandoff", "chandoff_finalize", "cutil", "schema_mini",
+                   "context_quality", "handoff_parse_cache",
                    "__future__", "argparse", "hashlib", "json", "re",
                    "subprocess", "sys", "uuid", "pathlib", "typing"}
         source = (TOOLS / "chandoff_note.py").read_text(encoding="utf-8")

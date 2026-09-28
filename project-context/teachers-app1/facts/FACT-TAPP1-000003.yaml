@@ -913,7 +913,7 @@ domains:
 repositories:
   - teachers-app-one
 
-status: active
+status: superseded
 verification: verified
 
 verified_against:
@@ -1305,11 +1305,10 @@ verified_against:
       - scripts/capabilities/device.py
       - scripts/verification/test_device_capability.py
       - specs/bootstrap/capability-binding.json
-  - source_ref: file:///.ai/local/runs/YZT-188/software-engineer/ab6b3053ef9644288b4a80b6c02f528e/result.json
-    revision: 2026-09-28T04:56:30Z
+  - source_ref: repo://multica-memory@9213a0e1a8e95e6fc3684e878fe8170846aba76c/project-context/teachers-app1/facts/FACT-TAPP1-000003.yaml
+    revision: 9213a0e1a8e95e6fc3684e878fe8170846aba76c
     paths:
-      - .ai/local/runs/YZT-188/software-engineer/ab6b3053ef9644288b4a80b6c02f528e/result.json
-      - .ai/local/runs/YZT-188/software-engineer/ab6b3053ef9644288b4a80b6c02f528e/inspect-installed.log
+      - project-context/teachers-app1/facts/FACT-TAPP1-000003.yaml
   - source_ref: multica://issue/YZT-218
     revision: stage-95-bounded-0.2.4-correction
     paths:
@@ -1511,4 +1510,4 @@ review:
 
 created_at: 2026-09-17T14:00:00Z
 verified_at: 2026-09-28T14:40:00Z
-updated_at: 2026-09-28T14:40:00Z
+updated_at: 2026-09-28T16:00:51Z

@@ -1,0 +1,59 @@
+name: Memory audit repair
+on:
+  push:
+    branches: [fix/memory-lifecycle-audit-20260928]
+  pull_request:
+  workflow_dispatch:
+permissions:
+  contents: read
+defaults:
+  run:
+    shell: bash
+jobs:
+  repository-validation:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          persist-credentials: false
+          fetch-depth: 0
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+      - name: Exact source and Python syntax
+        run: |
+          mkdir -p "$RUNNER_TEMP/memory-audit"
+          git rev-parse HEAD > "$RUNNER_TEMP/memory-audit/source-sha.txt"
+          git archive --format=zip --output="$RUNNER_TEMP/memory-audit/repository-source.zip" HEAD
+          python -m compileall -q tools skills
+      - name: New offline regressions (not live acceptance)
+        run: |
+          python -m unittest discover -s tools/tests -p test_index_lifecycle_audit.py -v 2>&1 | tee "$RUNNER_TEMP/memory-audit/index-tests.log"
+          python -m unittest discover -s tools/tests -p test_memory_audit_repair.py -v 2>&1 | tee "$RUNNER_TEMP/memory-audit/repair-tests.log"
+      - name: Canonical schema and authority report (no waiver)
+        run: |
+          set +e
+          python tools/context_cli.py validate-canonical > "$RUNNER_TEMP/memory-audit/canonical.json"
+          echo "$?" > "$RUNNER_TEMP/memory-audit/authority-gate-exit.txt"
+          set -e
+          python - <<'PY'
+          import json,os,pathlib
+          report=json.loads((pathlib.Path(os.environ['RUNNER_TEMP'])/'memory-audit/canonical.json').read_text())
+          assert report['all_objects_schema_valid'],report
+          print('Schema valid; authority gate is reported separately and is NOT waived.')
+          PY
+      - name: Isolated index and current-size checks
+        run: |
+          python tools/context_cli.py rebuild-index > "$RUNNER_TEMP/memory-audit/index-rebuild.json"
+          python tools/context_cli.py check-index > "$RUNNER_TEMP/memory-audit/index-check.json"
+          python tools/memory_health.py audit --project teachers-app1 > "$RUNNER_TEMP/memory-audit/health.json"
+          python tools/replay_memory_quality.py --repo "$GITHUB_WORKSPACE" > "$RUNNER_TEMP/memory-audit/offline-calibration.json"
+      - name: Full suite differential (no new failed identities, not all-green)
+        run: python tools/audit_regression.py --out "$RUNNER_TEMP/memory-audit/full-suite"
+      - name: Export source and exact validation receipts
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: memory-audit-validation-${{ github.run_id }}
+          path: ${{ runner.temp }}/memory-audit
+          retention-days: 3
+          if-no-files-found: error

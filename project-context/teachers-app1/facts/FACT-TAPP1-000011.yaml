@@ -1,0 +1,54 @@
+schema_version: "1.1"
+kind: "current_fact"
+id: "FACT-TAPP1-000011"
+title: "C1、名单追加与 L1 已审合成切片：生产入口未接入"
+statement: >-
+  来源快照中的当前实现覆盖如下；精确合同仍在版本化 Artifact，历史中间版本及每轮测试计数不重复进入当前正文。
+
+  S2 design_baseline / teachers-app1-s2-approved-rules-design / 0.1.0-draft 经 YZT-157 R1 限定 APPROVE_AS_CANDIDATE_DESIGN_FOR_C1_AND_R1_SLICES、01 在 YZT-158 接受。C1 implementation / teachers-app1-s2-c1-homework-suggestion / 0.1.1 经 YZT-162 独立 R1 限定通过并在 YZT-163 集成 b058b44172534ac78e053be060893aea19e79295；业务源 0b6684837ba79d85f4481c7ba9cc9b1a58413d9a。它是纯内存观察计数器，CALCULATOR_KIND_SYNTHETIC，无 DB/schema/时钟改动；UnboundProductionCalculator 和生产未组装边界不变。
+
+  implementation / teachers-app1-s2-roster-append / 0.1.0 经 YZT-166 R1 APPROVE_AS_S2_ROSTER_APPEND_DATA_LAYER_CANDIDATE、01 在 YZT-167 集成 c87be8922006e7c1ec10d670737447225b67dca7（业务源 20396487bc524075e687bb75a132ac74a31f46c7）。其 schema3 合成合同新增 roster_order_state/student_order；CreateStudent/2 原子分配班尾 position、CAS 与不可变回执，v3 的 CreateStudent/1 拒绝 COMMAND_VERSION_UNSUPPORTED。ListStudentsInOrder/1 位置升序，缺行/重复/断裂即 DATA_INTEGRITY_ERROR 停写，不回退姓名/时间/ID；改名不移动位置。它不是教师名单 UI。
+
+  L1 design_baseline / teachers-app1-s2-l1-episode-end-design / 0.1.0-draft 经 YZT-170 R1、01 在 YZT-171 接受。implementation / teachers-app1-s2-l1-episode-end / 0.1.1 经 YZT-175 R1 APPROVE_AS_S2_L1_EPISODE_END_IMPLEMENTATION_CANDIDATE、01 在 YZT-177 集成 914e367797ce25ba1606cf070cbe57760cd235da；被审 pin 1cb6dcfc74b8c425937caaa242d160ae2fb210d2、业务源 e80723e7e067c755072be5d275db9c8f329184c1 的等价映射在原来源。当前 schema4 三项为 user_version=4/schema_version=4/contract_id=s2-l1-episode-end/1。EndEpisode/1 单事务成对写不可变结束记录与独立回执、关闭 Episode，并与观察争用同一 Thread revision；另有 ReadEpisodeMutation/1、ReadThreadHistory/1、合成 CaptureHomeworkObservation/1 和 Projection 失效保护。已知 v1/v2/v3 库 MIGRATION_REQUIRED 保留拒写，未知/矛盾版本整体停写，不 ALTER、不迁移、不旁建替代库、不清库。
+
+  以上源码/审查事实不代表生产接入：EntryAbility 仍未接入 L1Episode/RdbS1Store/P01PlatformSupport/S1Session/S1SchemaGuard，生产 Capture、教师阶段结束 UI/名单页、Undo/FollowUp/草稿恢复未交付。Q1–Q6 及批准边界见 FACT-TAPP1-000010。FakeStore/Hypium、宿主 SQLite/仓库测试与 unsigned HAP 不是 relationalStore V01–V10、A03 跨进程、A08 真实竞争、L1 真机、安装、发布或 R2 PASS；YZT-175 运行器 locator 缺失的局部 BLOCKED 原记录保留。审查附件嵌入时间不代替服务器交付顺序。源码/合同/部署变化时重验，本次没有重跑上述产品测试。
+scope:
+  type: "project"
+  project_id: "teachers-app1"
+  projects: []
+  task_id: null
+domains:
+  - "implementation-state"
+  - "product-expectation"
+  - "synthetic-validation"
+repositories:
+  - "teachers-app-one"
+status: "active"
+verification: "verified"
+verified_against:
+  -
+    source_ref: "repo://multica-memory@9213a0e1a8e95e6fc3684e878fe8170846aba76c/project-context/teachers-app1/facts/FACT-TAPP1-000005.yaml"
+    revision: "9213a0e1a8e95e6fc3684e878fe8170846aba76c"
+    paths:
+      - "project-context/teachers-app1/facts/FACT-TAPP1-000005.yaml"
+source_refs:
+  - "repo://multica-memory@9213a0e1a8e95e6fc3684e878fe8170846aba76c/project-context/teachers-app1/facts/FACT-TAPP1-000005.yaml"
+  - "multica://issue/YZT-162"
+  - "multica://issue/YZT-166"
+  - "multica://issue/YZT-170"
+  - "multica://issue/YZT-175"
+  - "multica://issue/YZT-177"
+  - "repo://teachers-app-one@914e367797ce25ba1606cf070cbe57760cd235da/specs/s2-l1-episode-end/artifact-envelope.json"
+relations:
+  conflicts_with: []
+  supersedes:
+    - "FACT-TAPP1-000005"
+  supersedes_note: "主题级替代：来源旧对象正文及来源完整保留为历史；本条只承接标题所列主题。多主题覆盖及退出条件见 docs/repairs/2026-09-28/canonical-migration.json。未新做平台复测或改变产品规范。"
+  drift_of: null
+  norm_reality_conflict: []
+review:
+  reason: null
+  triggered_at: null
+created_at: "2026-09-28T16:00:51Z"
+verified_at: "2026-09-22T05:45:00Z"
+updated_at: "2026-09-28T16:00:51Z"

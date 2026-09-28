@@ -55,7 +55,9 @@ Run from the repository root with Python 3.10+:
 
 ```text
 python tools/context_cli.py validate-canonical    # Gate A0/A: schema + authority + legacy accounting
-python tools/context_cli.py rebuild-index         # rebuild derived index from canonical
+python tools/context_cli.py rebuild-index         # atomically rebuild the derived index
+python tools/context_cli.py check-index           # read-only source/index freshness check
+python tools/memory_health.py audit --project teachers-app1  # size/hygiene, not truth
 python tools/context_cli.py build --task-id ... --role ... --project ...
 python tools/context_cli.py gate-b                # Gate B hard acceptance tests
 python tools/context_cli.py migrate-replay        # Gate C historical replay
@@ -75,6 +77,20 @@ gap or material findings that cannot be safely auto-processed.
 `--embedding-query` style semantic-vector retrieval is not implemented:
 V1.1 stores `embedding_provider=disabled`; no embedding model has been
 selected and embedding must never be claimed as active.
+
+## Memory quality and audit repair
+
+The [2026-09-28 repair](docs/repairs/2026-09-28/implementation.md) separates
+current facts from retained history and adds trusted UTF-8 byte budgets at
+candidate, assembly, artifact, publication and consumer boundaries. Oversized
+information is never silently truncated. Read the implementation report and
+[01 application tasks](docs/repairs/2026-09-28/01-external-issues.md) for exact
+validation, migration, live-deployment and paused-project boundaries.
+
+Discovery still reads the complete live thread; only unchanged parsing is
+cached. Scoped dependencies are shadow diagnostics, not permission to skip
+the frozen global freshness checks. `memory_health.py source-change` emits
+read-only narrowing proposals; existing Lead/02 Memory Disposition owns action.
 
 ## Legacy V1.0 (retained, read-only, cleanup window)
 

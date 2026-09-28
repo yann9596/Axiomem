@@ -1079,11 +1079,26 @@ def prepare_handoff_plan(request: dict, *, findings: list | None = None,
         "candidates": candidates,
         "semantic_jobs": _semantic_jobs(candidates, case_allowed),
     }
+    import context_dependencies
+    dependency_shadow = context_dependencies.observe(task_scope, role)
+    import context_quality
+    try:
+        quality = context_quality.assess("plan", plan, source_docs=rules + facts + cases)
+    except context_quality.QualityPolicyError as exc:
+        quality = {"ok": False, "blocked": True, "reason": str(exc)}
+    if quality["blocked"]:
+        return {"status": "BLOCKED", "plan": None, "llm_called": False,
+                "scope_pollution": pollution, "compatibility_check": compat,
+                "finding_gate": gate, "context_quality": quality,
+                "escalation": {"required": True, "reason": quality.get("reason") or context_quality.diagnostic(quality)},
+                "context_engineer_woken": False, "findings_observation": findings_observation}
     schema_errors = _validate("context-handoff/context-plan.schema.json", plan)
     if schema_errors:
         raise ValueError("PLAN failed context_plan schema: " + "; ".join(schema_errors[:8]))
     return {
         "status": "PLAN_READY",
+        "context_quality": quality,
+        "dependency_shadow": dependency_shadow,
         "plan": plan,
         "llm_called": False,
         "scope_pollution": pollution,

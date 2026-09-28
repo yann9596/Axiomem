@@ -133,7 +133,7 @@ domains:
 repositories:
   - teachers-app-one
 
-status: active
+status: superseded
 verification: verified
 
 verified_against:
@@ -203,4 +203,4 @@ review:
 
 created_at: 2026-09-17T15:12:00Z
 verified_at: 2026-09-18T00:30:00Z
-updated_at: 2026-09-18T00:30:00Z
+updated_at: 2026-09-28T16:00:51Z
